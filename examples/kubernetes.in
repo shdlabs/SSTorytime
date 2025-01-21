@@ -1,0 +1,76 @@
+ # Kubernetes notes
+
+weak coupling
+strong coupling
+
+operator
+
+crd (short for) Custom resource definitions (CRDs)
+crd (implements) a way to extend the API or add functionality and capabilities
+
+Custom Resource Definition
+
+When you create a new Custom Resource Definition (CRD), the Kubernetes API Server creates a new RESTful resource path for each version you specify. The custom resource created from a CRD object can be either namespaced or cluster-scoped, as specified in the CRD's spec.
+
+ " (refers to) namespaces
+ " (refers to) API
+
+
+pod (implements) the smallest deployable units of computing that you can create and manage in Kubernetes
+
+pod (named after) pod of whales or pea pod
+
+
+A +pod's contents are always co-located and co-scheduled, and run in a +"shared context". A pod models an application-specific +"logical host": it contains one or more +application +containers which are relatively +"tightly coupled". In +non-cloud contexts, applications executed on the same +physical or +virtual machine are analogous to cloud applications executed on the same +logical +host.
+
+::single container pod::
+
+The "one-container-per-Pod" model is the most common Kubernetes use case; in this case, you can think of a Pod as a wrapper around a single container; Kubernetes manages Pods rather than managing the containers directly.
+
+:: multiple container pods::
+
+A Pod can encapsulate an application composed of multiple co-located containers that are tightly coupled and need to share resources. These co-located containers form a single cohesive unit.
+
+Grouping multiple co-located and co-managed containers in a single Pod is a relatively advanced use case. You should use this pattern only in specific instances in which your containers are tightly coupled.
+
+Restarting a container in a Pod should not be confused with restarting a Pod. A Pod is not a process, but an environment for running container(s). A Pod persists until it is deleted.
+
+The name of a Pod must be a valid DNS subdomain value
+
+
+As well as application containers, a Pod can contain init containers that run during Pod startup. You can also inject ephemeral containers for debugging a running Pod
+
+CI/CD pipelines (short for) Continuous integration/continuous deployment
+enhance the software delivery process by automating key stages such as testing, security scanning, and deployment
+
+controller (implements) a control loop that regulates the state of a system.
+
+Operators (implements) software extensions to Kubernetes that make use of custom resources to manage applications and their components.
+
+storage
+bare metal
+self-hosted
+managed kubernetes
+docker
+
+
+containers
+containerd
+kubectl
+kubectl get pods -n kube-system
+kubectl apply -f https://github.com/app.yml
+
+
+Kubernetes has a "hub-and-spoke" API pattern. All API usage from nodes (or the pods they run) terminates at the API server. None of the other control plane components are designed to expose remote services. The API server is configured to listen for remote connections on a secure HTTPS port (typically 443) with one or more forms of client authentication enabled. One or more forms of authorization should be enabled, especially if anonymous requests or service account tokens are allowed.
+
+Nodes should be provisioned with the public root certificate for the cluster such that they can connect securely to the API server along with valid client credentials. A good approach is that the client credentials provided to the kubelet are in the form of a client certificate. See kubelet TLS bootstrapping for automated provisioning of kubelet client certificates.
+
+Pods that wish to connect to the API server can do so securely by leveraging a service account so that Kubernetes will automatically inject the public root certificate and a valid bearer token into the pod when it is instantiated. The kubernetes service (in default namespace) is configured with a virtual IP address that is redirected (via kube-proxy) to the HTTPS endpoint on the API server.
+
+
+On Linux, control groups constrain resources that are allocated to processes.
+
+There are two versions of cgroups in Linux: cgroup v1 and cgroup v2. cgroup v2 is the new generation of the cgroup API
+
+
+

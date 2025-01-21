@@ -1,0 +1,167 @@
+
+# common config for a user
+
+- arrows
+
+ 	# Define arrow causal directions ... left to right
+ 	# what does A -----> B mean, and what is its opposite?
+
+ 	# causal order, preconditions, succession
+
+ 	+ forwards - backwards      	# A (forwards)	B,  B (backwards) A
+ 	+ affects  - affected by    	# A (affects) 	B,  B (affected by) A
+ 	+ causes   - is caused by
+ 	+ leads to - comes from
+
+ 	# these translations are causal transformations, not just properties.
+ 	# they have transitive meaning
+
+ : chinese language :
+
+ 	+ english for pinyin (ep) - pinyin for english (pe)
+ 	+ pinyin for hanzi (ph) - hanzi for pinyin (hp)
+ 	+ hanzi for english (he) - english for hanzi (eh)
+ 	+ english for Norwegian (en) - Norwegian for english (ne)
+ 	+ english to norsk (en) - norsk to english (ne)
+
+ 	# if we insist on using + or - in the name, then quote it
+
+ 	+ "+" - "-"
+
+ 	# these two are equivalent
+
+ 	+ followed by - preceded by	# A (followed by) B,  B (preceded by) A
+ 	+ precedes - follows       	# A (precedes)	B,  B (follows)
+
+ 	// Note logically in PT A can only say what it uses, not what it is used by,
+ 	// so we may prefer
+
+ 	+ used by - uses
+
+ 	// over : + uses - used by
+ 	// but when annotating observations, we are a 3rd party, no one is self-declaring as such
+
+
+ 	+ results in - relies on
+ 	+ depends on - has consequence
+ 	+ influences - influenced by  	# A (influences) B,  A (is influenced by) B
+
+	lays eggs >< hatches from egg
+
+	# partial order, size
+
+	+ comes before - comes after
+
+	+ less than ("<") - greater than (">")   # A (less than)> B
+
+#########################################################
+
+- membership
+
+ + component of - has component
+ + contains - is in
+ + set of (contains) - element of (in) 	// designations can be multi-valued
+ + contains - is element of
+ + is inside - contains
+ + is part of - contains
+
+ + in the context of - is a possible context for
+
+#########################################################
+
+- properties
+
+ # properties are more type-centric in a logical sense
+ # because they are ontological
+
+ #  A (expresses) B, B (is expressed by) A
+
+ + expresses - is expressed by
+ + has property - is a property of
+ + means - is meant by
+ + intends - is the intent of
+ + has interpretation - is the interpretation of
+ + is pronounced - is the pronunciation for
+
+ # Here we see type classifiers in action
+
+ + is called - has name
+ + has state - is the state of
+ + has value - is the value of
+
+ + can connect to - can be connected from
+ + can reach - can be reached by
+ + is next to - can be reached by // ambiguous
+
+#########################################################
+
+- similarity # nearness, proximity
+
+ looks like         	(ll)
+ sounds like        	(sl)
+
+
+ equals             	(eq)
+ is not the same as 	(!eq)
+
+ similar to         	(sim)
+ associated with    	(a)  # (loose coupling)
+ near               	(n)
+
+#########################################################
+
+- equivalences
+
+:: answering | questioning || assessment ::
+
+ right (eq) correct
+
+:: direction | orientation | politics ::
+
+ right (!eq) correct  // !eq will block any preexisting eq
+
+::
+
+ may be confused with (cf) = { "looks like", "sounds like" }
+
+#########################################################
+
+- triangles  // completions
+
+ (eh) (hp) -> (ep)
+ (he) (ep) -> (ph)
+ (hp) (pe) -> (he)
+ (ph) (he) -> (pe)
+ (pe) (eh) -> (ph)
+
+#########################################################
+
+- aliases
+
+ has state = has value
+
+ causes = results in
+
+
+#########################################################
+
+ - annotations
+
+ // for marking up a text body: body (relation) annotation
+
+ + (discusses)
+ # (depends on)
+ * (is a special case of)
+ - (explains)
+ > (has subject)
+
+
+
+
+
+
+
+
+
+
+
