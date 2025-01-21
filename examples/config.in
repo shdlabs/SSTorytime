@@ -1,7 +1,7 @@
 
 # common config for a user
 
-- arrows
+- affects
 
  	# Define arrow causal directions ... left to right
  	# what does A -----> B mean, and what is its opposite?
@@ -11,12 +11,13 @@
  	+ forwards - backwards      	# A (forwards)	B,  B (backwards) A
  	+ affects  - affected by    	# A (affects) 	B,  B (affected by) A
  	+ causes   - is caused by
+
  	+ leads to - comes from
 
  	# these translations are causal transformations, not just properties.
  	# they have transitive meaning
 
- : chinese language :
+ :: chinese language ::
 
  	+ english for pinyin (ep) - pinyin for english (pe)
  	+ pinyin for hanzi (ph) - hanzi for pinyin (hp)
@@ -46,24 +47,24 @@
  	+ depends on - has consequence
  	+ influences - influenced by  	# A (influences) B,  A (is influenced by) B
 
-	lays eggs >< hatches from egg
+	+lays eggs of - hatches from egg of
 
 	# partial order, size
 
 	+ comes before - comes after
 
-	+ less than ("<") - greater than (">")   # A (less than)> B
+	+ less than - greater than   # A (less than)> B
 
 #########################################################
 
-- membership
+- contains
 
- + component of - has component
+ + has component - is component of
  + contains - is in
- + set of (contains) - element of (in) 	// designations can be multi-valued
- + contains - is element of
- + is inside - contains
- + is part of - contains
+ + is a set of - is an element of	// designations can be multi-valued
+ + contains - is an element of
+ + subsumes - is inside
+ + covers - is part of
 
  + in the context of - is a possible context for
 
@@ -93,6 +94,10 @@
  + can reach - can be reached by
  + is next to - can be reached by // ambiguous
 
+
+ has state = has value
+
+
 #########################################################
 
 - similarity # nearness, proximity
@@ -108,39 +113,6 @@
  associated with    	(a)  # (loose coupling)
  near               	(n)
 
-#########################################################
-
-- equivalences
-
-:: answering | questioning || assessment ::
-
- right (eq) correct
-
-:: direction | orientation | politics ::
-
- right (!eq) correct  // !eq will block any preexisting eq
-
-::
-
- may be confused with (cf) = { "looks like", "sounds like" }
-
-#########################################################
-
-- triangles  // completions
-
- (eh) (hp) -> (ep)
- (he) (ep) -> (ph)
- (hp) (pe) -> (he)
- (ph) (he) -> (pe)
- (pe) (eh) -> (ph)
-
-#########################################################
-
-- aliases
-
- has state = has value
-
- causes = results in
 
 
 #########################################################
@@ -150,7 +122,7 @@
  // for marking up a text body: body (relation) annotation
 
  + (discusses)
- # (depends on)
+ = (depends on)
  * (is a special case of)
  - (explains)
  > (has subject)

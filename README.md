@@ -36,6 +36,8 @@ the information. Even Wikipedia information is not knowledge unless
 it's in someone's head. To the causal browser, it is merely
 information, even hearsay.
 
+Not a static knowledge graph like RDF, but a switching network.
+
 Scaling knowledge is like scaling the activity in a city. Time is driven by parallel events arriving. The more people, the faster the pace or pulse.
 
 
