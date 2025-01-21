@@ -1,4 +1,0 @@
-
-#
-# SSTorytime library
-#

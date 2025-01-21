@@ -18,9 +18,17 @@ A (relation) B (relation) C
 
 "2 (relation) E
 
-paragraph paragraph paragraph paragraph paragraph
+: list, context, words :
+
+::  list, context, words ::
+
++: extend-list, context, words :
+
+-: delete, words :
+
+paragraph =specialword paragraph paragraph paragraph paragraph
  paragraph paragraph paragraph paragraph paragraph
-  paragraph paragraph paragraph paragraph paragraph
+  paragraph paragraph =specialword paragraph paragraph paragraph
 paragraph paragraph paragraph paragraphparagraph
 
 </pre>

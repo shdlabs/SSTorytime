@@ -44,9 +44,9 @@ Scaling knowledge is like scaling the activity in a city. Time is driven by para
 
 The toolset consistent of several components.
 
-N4L - a unicode text based note taking language for jotting down notes in a way
-      that can be parsed and loaded into a semantic database. 
-      N = note, 4 = 4 semantic type, L = language
-      N4L = notes for loading
+* N4L - a unicode text based note taking language for jotting down notes in a way
+        that can be parsed and loaded into a semantic database. 
+        N = note, 4 = 4 semantic type, L = language
+        N4L = notes for loading
 
-s
+
