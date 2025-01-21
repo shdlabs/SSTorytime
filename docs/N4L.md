@@ -45,7 +45,7 @@ parentheses are reserved symbols. Literal parentheses can be quoted
 
 
 Reserved topics and their aliases include the four spacetime meta-semantic types:
-* affects    / follows
+* leadsto    / affects, causes
 * contains   / contains
 * properties / express
 * similarity / near, alike
@@ -91,3 +91,9 @@ bwd  string    # currently undecied how to represesnt negative patterns NOT, !, 
 }
 
 </pre>
+
+
+
+## TODO
+
+Implement aliasing and inferences of graph structures

@@ -1,7 +1,7 @@
 
 # common config for a user
 
-- affects
+- leadsto
 
  	# Define arrow causal directions ... left to right
  	# what does A -----> B mean, and what is its opposite?
@@ -19,7 +19,7 @@
 
  :: chinese language ::
 
- 	+ english for pinyin (ep) - pinyin for english (pe)
+ 	+ english for pinyin (ep) - pinyin for english (pe)       // because e leads to p conditionally
  	+ pinyin for hanzi (ph) - hanzi for pinyin (hp)
  	+ hanzi for english (he) - english for hanzi (eh)
  	+ english for Norwegian (en) - Norwegian for english (ne)
@@ -127,6 +127,13 @@
  - (explains)
  > (has subject)
 
+
+#########################################################
+
+
+- contexts  // rolling episodic time window
+
+ shopping = { paying trying quality } 
 
 
 
