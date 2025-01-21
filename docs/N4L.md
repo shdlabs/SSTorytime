@@ -66,14 +66,21 @@ item_set         []string
 relation_set     []string
 }
 
+</pre>
+<pre>
 # abbreviation lookup table
 
 type Alias map[string]string
+
+</pre>
+<pre>
 
 # relation lookup
 
 type LinkType map[string]string
 
+</pre>
+<pre>
 # relation inverse and type table
 
 type Association struct {
