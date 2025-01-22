@@ -17,6 +17,10 @@ heart and still have no idea how to use it. As long as it remains a
 lump of data, in your head or simply on paper, in a computer, or and the back of your hand,
 it's of little use to you. Knowledge comes from knowing things deeply---by
 forming a relationship to material. You know something when you know it like a friend.
+You won't have go and look up details because access will be intregrated into your
+conscious experience and awareness of environments you know about. This is what it
+means to have knowledge at your fingertips. We are designed to use our hands
+and fingers.
 
 https://medium.com/@mark-burgess-oslo-mb/the-failure-of-knowledge-management-5d97bb748fc3
 
@@ -58,10 +62,11 @@ architectures have discovered this, but they are still based mainly on
 recall.
 
 Learning examines spacelike and timelike invariants.
-\begin{itemize}
-\item Learning things discovers mesoscopic invariants snapshot structures.
-\item Learning stories discovers behavioural invariants (mesoscopic sequences).
-\end{itemize}
+
+* Learning things discovers mesoscopic invariants snapshot structures.
+* Learning stories discovers behavioural invariants (mesoscopic sequences).
+
+
 Context: where, when
 
 Think of learning a language. You can quickly the vocabulary but you
