@@ -30,10 +30,13 @@ $2 (relation) E                  # Continuation from second previous
 +: extend-list, context, words : # extend context set
 -: delete, words :               # prune context set
 
-paragraph =specialword paragraph paragraph paragraph paragraph
+@name                            # alias this line for easy reference
+@name.$1                         # alias column in a line for easy reference
+
+"paragraph =specialword paragraph paragraph paragraph paragraph
  paragraph paragraph paragraph paragraph paragraph
   paragraph paragraph =specialword paragraph paragraph paragraph
-paragraph paragraph paragraph paragraphparagraph
+paragraph paragraph paragraph paragraphparagraph"
 
 [=,*,..]A                        # implicit relation marker
 

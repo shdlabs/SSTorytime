@@ -8,6 +8,8 @@
 
 # SSTorytime
 
+* This is a work in progress, planned for 2025 *
+
 Semantic knowledge representations have not evolved since the Semantic
 Web was proposed during the 1990s. Modern graph databases offer new
 possibilities for knowledge representation, but the methods are poorly

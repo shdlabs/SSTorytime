@@ -17,19 +17,6 @@ import (
 
 //**************************************************************
 
-// Notes states
-
-const (
-	start = iota
-	section
-	notes
-	context
-)
-
-// Config states
-
-//**************************************************************
-
 type ConfigParser struct 
 {
 stream_position  int
@@ -40,15 +27,26 @@ item_set         []string
 relation_set     []string
 }
 
+//**************************************************************
+
 type NoteParser struct 
 {
 pos              int
 mode             int
+alias            string
 topic            string   // in case we mix together several
 context_set      []string
-item_set         []string
-relation_set     []string
+
+item_set         []string  // these reset on each line
+relation_set     []string  // < item_set
 }
+
+//**************************************************************
+// Globals
+//**************************************************************
+
+var LAST_LINE_ITEM_CACHE []string
+var LAST_LINE_RELN_CACHE []string
 
 //**************************************************************
 
@@ -88,16 +86,6 @@ func ParseN4L(src []rune) {
 
 		fmt.Println("GOT",token)
 	}
-
-/*	switch (p.mode) {
-
-	case init: 
-	case section:
-	case notes:
-	case context:
-
-	}*/
-
 }
 
 //**************************************************************
@@ -105,12 +93,15 @@ func ParseN4L(src []rune) {
 //**************************************************************
 
 func SkipWhiteSpace(src []rune, pos int) int {
-
+	
 	for ; pos < len(src) && (unicode.IsSpace(src[pos]) || src[pos] == '#' || src[pos] == '/') ; pos++ {
-
+		
 		if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
+			
 			for ; pos < len(src) && src[pos] != '\n'; pos++ {
 			}
+			
+			UpdateLastLineCache() 
 		}
 	}
 
@@ -250,6 +241,7 @@ func IsGeneralString(src []rune,pos int) bool {
 	case '#':
 		return false
 	case '\n':
+		UpdateLastLineCache() 
 		return false
 
 	case '/':
@@ -266,6 +258,7 @@ func IsGeneralString(src []rune,pos int) bool {
 func LastSpecialChar(src []rune,pos int, stop rune) bool {
 
 	if src[pos] == '\n' {
+		UpdateLastLineCache() 
 		return true
 	}
 
@@ -274,6 +267,17 @@ func LastSpecialChar(src []rune,pos int, stop rune) bool {
 	}
 
 	return false
+}
+
+//**************************************************************
+
+func UpdateLastLineCache() {
+
+	// reset $n variables
+
+	LAST_LINE_ITEM_CACHE = nil
+	LAST_LINE_RELN_CACHE = nil
+
 }
 
 //**************************************************************
