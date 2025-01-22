@@ -5,7 +5,7 @@
 package main
 
 import (
-	//"strings"
+	"strings"
 	"os"
 	//"io"
 	"io/ioutil"
@@ -32,7 +32,7 @@ relation_set     []string
 type NoteParser struct 
 {
 pos              int
-mode             int
+state            int
 alias            string
 topic            string   // in case we mix together several
 context_set      []string
@@ -81,10 +81,10 @@ func ParseN4L(src []rune) {
 	for p.pos = 0; p.pos < len(src); {
 
 		p.pos = SkipWhiteSpace(src,p.pos)
-
 		token,p.pos = GetToken(src,p.pos)
 
-		fmt.Println("GOT",token)
+		ClassifyTokenRole(token,p.state)
+
 	}
 }
 
@@ -163,6 +163,34 @@ func GetToken(src []rune, pos int) (string,int) {
 	}
 
 	return token, pos
+
+}
+
+//**************************************************************
+
+func ClassifyTokenRole(token string,state int) {
+
+	switch token[0] {
+
+	case ':':
+		expression := ContextExpression(token)
+		fmt.Println("context reset:",expression)
+
+	case '+':
+		expression := ContextExpression(token)
+		fmt.Println("context augmentation:",expression)
+
+	case '-':
+		expression := ContextExpression(token)
+		fmt.Println("context pruning:",expression)
+
+	case '(':
+		reln := FindAssociation(token)
+		fmt.Println("Relationship:",reln)
+	default:
+
+		fmt.Println("Node item:",token)
+	}
 
 }
 
@@ -278,6 +306,34 @@ func UpdateLastLineCache() {
 	LAST_LINE_ITEM_CACHE = nil
 	LAST_LINE_RELN_CACHE = nil
 
+}
+
+//**************************************************************
+
+func ContextExpression(token string) string {
+
+	var expression string
+
+	s := strings.Split(token, ":")
+
+	for i := 1; i < len(s); i++ {
+		if len(s[i]) > 1 {
+			expression = s[i]
+		}
+	}
+	
+	return expression
+}
+
+//**************************************************************
+
+func FindAssociation(token string) string {
+
+	name := token[1:len(token)-1]
+
+	// lookup in the alias table
+
+	return name
 }
 
 //**************************************************************
