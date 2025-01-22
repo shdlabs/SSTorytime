@@ -106,10 +106,10 @@ func ParseN4L(src []rune) {
 
 func SkipWhiteSpace(src []rune, pos int) int {
 
-	for ; unicode.IsSpace(src[pos]) || src[pos] == '#' || src[pos] == '/' ; pos++ {
+	for ; pos < len(src) && (unicode.IsSpace(src[pos]) || src[pos] == '#' || src[pos] == '/') ; pos++ {
 
 		if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
-			for ; src[pos] != '\n'; pos++ {
+			for ; pos < len(src) && src[pos] != '\n'; pos++ {
 			}
 		}
 	}
@@ -124,6 +124,10 @@ func GetToken(src []rune, pos int) (string,int) {
 	// Handle concatenation of words/lines and separation of types
 
 	var token string
+
+	if pos == len(src) {
+		return "", pos
+	}
 
 	switch (src[pos]) {
 
@@ -210,7 +214,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 	} else {
 		// a ::: cluster is special, we don't care how many
 
-		if stop != ':' { 
+		if stop != ':' && stop != '"' { 
 			return !LastSpecialChar(src,pos,stop)
 		} else {
 			var groups int = 0
@@ -218,6 +222,10 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 			for r := 1; r < len(cpy); r++ {
 
 				if cpy[r] != ':' && cpy[r-1] == ':' {
+					groups++
+				}
+
+				if cpy[r] != '"' && cpy[r-1] == '"' {
 					groups++
 				}
 			}

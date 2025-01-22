@@ -2392,11 +2392,15 @@ What happened to him later? (eh) 他后来怎么了 (hp) Tā hòulái zěnmeliǎ
 
 :: rhyme, song, tiger ::
 
-Liǎng zhī lǎohǔ, liǎng zhī lǎohǔ 两只老虎, 两只老虎 two tigers, two tigers 
-Pǎo dé kuài,Pǎo dé kuài 跑得快,跑得快 running fast, running fast 
-Yī zhǐ méiyǒu ěrduǒ 一只没有耳朵 One has no ears 
-Yī zhǐ méiyǒu wěibā 一只没有尾巴 One has no tail 
-Zhēn qíguài, Zhēn qíguài 真奇怪,真奇怪 So weird, so weird! 
+@1 Liǎng zhī lǎohǔ, liǎng zhī lǎohǔ (ph) 两只老虎, 两只老虎 (he) two tigers, two tigers 
+@2 Pǎo dé kuài,Pǎo dé kuài (ph) 跑得快,跑得快  (he) running fast, running fast 
+@3 Yī zhǐ méiyǒu ěrduǒ (ph) 一只没有耳朵  (he) One has no ears 
+@4 Yī zhǐ méiyǒu wěibā (ph) 一只没有尾巴  (he) One has no tail 
+@5 Zhēn qíguài, Zhēn qíguài (ph) 真奇怪,真奇怪  (he) So weird, so weird! 
+
+# Link the lines
+@1.$1 (then) @2.$1 (then) @3.$1 (then) @4.$1 (then) @5.$1
+
 
 
 
