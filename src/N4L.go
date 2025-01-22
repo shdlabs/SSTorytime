@@ -155,6 +155,14 @@ func GetToken(src []rune, pos int) (string,int) {
         case '"': // only a quoted string must end with the same followed by one of above
 		token,pos = ReadToLast(src,pos,'"')
 
+	case '#':
+		token,pos = ReadToLast(src,pos,'\n')
+
+	case '/':
+		if src[pos+1] == '/' {
+			token,pos = ReadToLast(src,pos,'\n')
+		}
+
 	default: // a text item that could end with any of the above
 		token,pos = ReadToLast(src,pos,'x')
 	}
@@ -179,31 +187,85 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 	var cpy []rune
 
-	if stop == 'x' {
+	for ; pos > 0 && Collect(src,pos,stop,cpy); pos++ {
 
-		for ; pos > 0 && !(unicode.IsLetter(src[pos-1]) && !unicode.IsLetter(src[pos])); pos++ {
-			cpy = append(cpy,src[pos])
-		}
+		cpy = append(cpy,src[pos])
+	}
+	
+	token := string(cpy)
+	
+	return token,pos
+}
+
+//**************************************************************
+
+func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
+
+	var collect bool = true
+
+	if stop == 'x' {
+		
+		collect = IsGeneralString(src,pos)
 
 	} else {
-		var passed_lhs bool = false
+		// a ::: cluster is special, we don't care how many
 
-		for ; pos > 0 && !(passed_lhs && src[pos-1] == stop && src[pos] != stop); pos++ {
+		if stop != ':' { 
+			return !LastSpecialChar(src,pos,stop)
+		} else {
+			var groups int = 0
 
-			// In the case of ::, we need to count a contiguous block
+			for r := 1; r < len(cpy); r++ {
 
-			if src[pos] != ':' && src[pos+1] != ':' {
-				passed_lhs = true
+				if cpy[r] != ':' && cpy[r-1] == ':' {
+					groups++
+				}
 			}
 
-			cpy = append(cpy,src[pos])
-		}
+			if groups > 1 {
+				collect = !LastSpecialChar(src,pos,stop)
+			}
+		} 
+	}
+	
+	return collect
+}
 
+//**************************************************************
+
+func IsGeneralString(src []rune,pos int) bool {
+
+	switch src[pos] {
+
+	case '(':
+		return false
+	case '#':
+		return false
+	case '\n':
+		return false
+
+	case '/':
+		if src[pos+1] == '/' {
+			return false
+		}
 	}
 
-	token := string(cpy)
+	return true
+}
 
-	return token,pos
+//**************************************************************
+
+func LastSpecialChar(src []rune,pos int, stop rune) bool {
+
+	if src[pos] == '\n' {
+		return true
+	}
+
+	if src[pos-1] == stop && src[pos] != stop {
+		return true
+	}
+
+	return false
 }
 
 //**************************************************************
