@@ -7,7 +7,6 @@ package main
 import (
 	"strings"
 	"os"
-	//"io"
 	"io/ioutil"
 	"flag"
 	"fmt"
@@ -45,8 +44,9 @@ relation_set     []string  // < item_set
 // Globals
 //**************************************************************
 
-var LAST_LINE_ITEM_CACHE []string
-var LAST_LINE_RELN_CACHE []string
+var LINE_ITEM_CACHE []string
+var LINE_RELN_CACHE []string
+var LINE_ITEM_COUNTER int = 1
 
 //**************************************************************
 
@@ -95,6 +95,10 @@ func ParseN4L(src []rune) {
 func SkipWhiteSpace(src []rune, pos int) int {
 	
 	for ; pos < len(src) && (unicode.IsSpace(src[pos]) || src[pos] == '#' || src[pos] == '/') ; pos++ {
+
+		if src[pos] == '\n' {
+			UpdateLastLineCache() 
+		}
 		
 		if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
 			
@@ -148,14 +152,23 @@ func GetToken(src []rune, pos int) (string,int) {
 		token,pos = ReadToLast(src,pos,')')
 
         case '"': // only a quoted string must end with the same followed by one of above
-		token,pos = ReadToLast(src,pos,'"')
+		if unicode.IsSpace(src[pos+1]) {
+			token = "\""
+			pos++
+		} else {
+			token,pos = ReadToLast(src,pos,'"')
+			token = strings.TrimSpace(token)
+			token = strings.Trim(token,"\"")
+		}
 
 	case '#':
 		token,pos = ReadToLast(src,pos,'\n')
+		UpdateLastLineCache() 
 
 	case '/':
 		if src[pos+1] == '/' {
 			token,pos = ReadToLast(src,pos,'\n')
+			UpdateLastLineCache() 
 		}
 
 	default: // a text item that could end with any of the above
@@ -170,8 +183,14 @@ func GetToken(src []rune, pos int) (string,int) {
 
 func ClassifyTokenRole(token string,state int) {
 
+	if len(token) == 0 {
+		return
+	}
+
 	switch token[0] {
 
+	case '"':
+		fmt.Println("prior-reference: $n",LINE_ITEM_COUNTER)
 	case ':':
 		expression := ContextExpression(token)
 		fmt.Println("context reset:",expression)
@@ -181,8 +200,15 @@ func ClassifyTokenRole(token string,state int) {
 		fmt.Println("context augmentation:",expression)
 
 	case '-':
-		expression := ContextExpression(token)
-		fmt.Println("context pruning:",expression)
+		if token[1:2] == string(':') {
+			expression := ContextExpression(token)
+			fmt.Println("context pruning:",expression)
+		} else {
+			section := strings.TrimSpace(token[1:])
+			fmt.Println("notes section name:",section)
+		}
+
+		// No quotes here in a string, we need to allow quoting in excerpts.
 
 	case '(':
 		reln := FindAssociation(token)
@@ -190,6 +216,7 @@ func ClassifyTokenRole(token string,state int) {
 	default:
 
 		fmt.Println("Node item:",token)
+		LINE_ITEM_COUNTER++
 	}
 
 }
@@ -303,8 +330,9 @@ func UpdateLastLineCache() {
 
 	// reset $n variables
 
-	LAST_LINE_ITEM_CACHE = nil
-	LAST_LINE_RELN_CACHE = nil
+	LINE_ITEM_CACHE = nil
+	LINE_RELN_CACHE = nil
+	LINE_ITEM_COUNTER = 1
 
 }
 
@@ -318,7 +346,8 @@ func ContextExpression(token string) string {
 
 	for i := 1; i < len(s); i++ {
 		if len(s[i]) > 1 {
-			expression = s[i]
+			expression = strings.TrimSpace(s[i])
+			break
 		}
 	}
 	
@@ -333,7 +362,7 @@ func FindAssociation(token string) string {
 
 	// lookup in the alias table
 
-	return name
+	return strings.TrimSpace(name)
 }
 
 //**************************************************************

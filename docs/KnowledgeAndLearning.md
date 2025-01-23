@@ -20,7 +20,7 @@ forming a relationship to material. You know something when you know it like a f
 You won't have go and look up details because access will be intregrated into your
 conscious experience and awareness of environments you know about. This is what it
 means to have knowledge at your fingertips. We are designed to use our hands
-and fingers.
+and fingers. 
 
 https://medium.com/@mark-burgess-oslo-mb/the-failure-of-knowledge-management-5d97bb748fc3
 
