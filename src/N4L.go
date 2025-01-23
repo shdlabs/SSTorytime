@@ -189,8 +189,6 @@ func ClassifyTokenRole(token string,state int) {
 
 	switch token[0] {
 
-	case '"':
-		fmt.Println("prior-reference: $n",LINE_ITEM_COUNTER)
 	case ':':
 		expression := ContextExpression(token)
 		fmt.Println("context reset:",expression)
@@ -213,6 +211,11 @@ func ClassifyTokenRole(token string,state int) {
 	case '(':
 		reln := FindAssociation(token)
 		fmt.Println("Relationship:",reln)
+
+	case '"':
+		fmt.Println("prior-reference: $n",LINE_ITEM_COUNTER)
+		LINE_ITEM_COUNTER++
+
 	default:
 
 		fmt.Println("Node item:",token)
