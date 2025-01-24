@@ -29,10 +29,10 @@ const (
 )
 
 var LINE_NUM int = 1
-var LINE_ITEM_CACHE []string
-var LINE_RELN_CACHE []string
+var LINE_ITEM_CACHE = make(map[string][]string)
+var LINE_RELN_CACHE = make(map[string][]string)
 var LINE_ITEM_COUNTER int = 1
-var LINE_ITEM_ROLE int = ROLE_BLANK_LINE
+var LINE_ITEM_STATE int = ROLE_BLANK_LINE
 
 //**************************************************************
 
@@ -182,22 +182,22 @@ func ClassifyTokenRole(token string) {
 	case ':':
 		expression := ContextExpression(token)
 		Role("context reset:",expression)
-		LINE_ITEM_ROLE = ROLE_CONTEXT
+		LINE_ITEM_STATE = ROLE_CONTEXT
 
 	case '+':
 		expression := ContextExpression(token)
 		Role("context augmentation:",expression)
-		LINE_ITEM_ROLE = ROLE_CONTEXT
+		LINE_ITEM_STATE = ROLE_CONTEXT
 
 	case '-':
 		if token[1:2] == string(':') {
 			expression := ContextExpression(token)
 			Role("context pruning:",expression)
-			LINE_ITEM_ROLE = ROLE_CONTEXT
+			LINE_ITEM_STATE = ROLE_CONTEXT
 		} else {
 			section := strings.TrimSpace(token[1:])
 			Role("notes section name:",section)
-			LINE_ITEM_ROLE = ROLE_SECTION
+			LINE_ITEM_STATE = ROLE_SECTION
 		}
 
 		// No quotes here in a string, we need to allow quoting in excerpts.
@@ -205,16 +205,16 @@ func ClassifyTokenRole(token string) {
 	case '(':
 		reln := FindAssociation(token)
 		Role("Relationship:",reln)
-		LINE_ITEM_ROLE = ROLE_RELATION
+		LINE_ITEM_STATE = ROLE_RELATION
 
 	case '"':
-		Role("prior-reference: $n",fmt.Sprintf("%d",LINE_ITEM_COUNTER))
-		LINE_ITEM_ROLE = ROLE_EVENT
+		Role("prior-reference",fmt.Sprintf("$%d",LINE_ITEM_COUNTER))
+		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
 
 	default:
 		Role("Event item:",token)
-		LINE_ITEM_ROLE = ROLE_EVENT
+		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
 	}
 
@@ -333,20 +333,34 @@ func UpdateLastLineCache() {
 		ParseError(ERR_MISSING_EVENT)
 	}
 
-	LINE_ITEM_ROLE = ROLE_BLANK_LINE
-	// reset $n variables
-
 	LINE_NUM++
-	LINE_ITEM_CACHE = nil
-	LINE_RELN_CACHE = nil
-	LINE_ITEM_COUNTER = 1
+
+	// If this line was not blank, overwrite previous settings and reset
+
+	if LINE_ITEM_STATE != ROLE_BLANK_LINE {
+
+		if LINE_ITEM_CACHE["THIS"] != nil {
+			LINE_ITEM_CACHE["PREV"] = LINE_ITEM_CACHE["THIS"]
+		}
+		if LINE_RELN_CACHE["THIS"] != nil {
+			LINE_RELN_CACHE["PREV"] = LINE_RELN_CACHE["THIS"]
+		}
+
+	} else {
+
+		LINE_ITEM_CACHE["THIS"] = nil
+		LINE_RELN_CACHE["THIS"] = nil
+		LINE_ITEM_COUNTER = 1
+	}
+
+	LINE_ITEM_STATE = ROLE_BLANK_LINE
 }
 
 //**************************************************************
 
 func Dangler() bool {
 
-	switch LINE_ITEM_ROLE {
+	switch LINE_ITEM_STATE {
 
 	case ROLE_EVENT:
 		return false
