@@ -44,9 +44,21 @@ relation_set     []string  // < item_set
 // Globals
 //**************************************************************
 
+var LINE_NUM int = 1
 var LINE_ITEM_CACHE []string
 var LINE_RELN_CACHE []string
 var LINE_ITEM_COUNTER int = 1
+var LINE_ITEM_ROLE int
+
+const (
+	ROLE_EVENT = 1
+	ROLE_RELATION = 2
+	ROLE_SECTION = 3
+	ROLE_CONTEXT = 4
+	ROLE_BLANK_LINE = 5
+
+	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
+)
 
 //**************************************************************
 
@@ -76,8 +88,6 @@ func ParseN4L(src []rune) {
 	var p NoteParser
 	var token string
 
-	//fmt.Println(string(src))
-
 	for p.pos = 0; p.pos < len(src); {
 
 		p.pos = SkipWhiteSpace(src,p.pos)
@@ -85,6 +95,10 @@ func ParseN4L(src []rune) {
 
 		ClassifyTokenRole(token,p.state)
 
+	}
+
+	if Dangler() {
+		ParseError(ERR_MISSING_EVENT)
 	}
 }
 
@@ -98,14 +112,13 @@ func SkipWhiteSpace(src []rune, pos int) int {
 
 		if src[pos] == '\n' {
 			UpdateLastLineCache() 
-		}
+		} else {
 		
-		if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
-			
-			for ; pos < len(src) && src[pos] != '\n'; pos++ {
+			if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
+				
+				for ; pos < len(src) && src[pos] != '\n'; pos++ {
+				}
 			}
-			
-			UpdateLastLineCache() 
 		}
 	}
 
@@ -157,18 +170,21 @@ func GetToken(src []rune, pos int) (string,int) {
 			pos++
 		} else {
 			token,pos = ReadToLast(src,pos,'"')
+
+			if strings.Contains(token,"\n") {
+				// \n might get caught up in overreach/trim
+				pos--
+			}
 			token = strings.TrimSpace(token)
 			token = strings.Trim(token,"\"")
 		}
 
 	case '#':
 		token,pos = ReadToLast(src,pos,'\n')
-		UpdateLastLineCache() 
 
 	case '/':
 		if src[pos+1] == '/' {
 			token,pos = ReadToLast(src,pos,'\n')
-			UpdateLastLineCache() 
 		}
 
 	default: // a text item that could end with any of the above
@@ -191,34 +207,40 @@ func ClassifyTokenRole(token string,state int) {
 
 	case ':':
 		expression := ContextExpression(token)
-		fmt.Println("context reset:",expression)
+		Role("context reset:",expression)
+		LINE_ITEM_ROLE = ROLE_CONTEXT
 
 	case '+':
 		expression := ContextExpression(token)
-		fmt.Println("context augmentation:",expression)
+		Role("context augmentation:",expression)
+		LINE_ITEM_ROLE = ROLE_CONTEXT
 
 	case '-':
 		if token[1:2] == string(':') {
 			expression := ContextExpression(token)
-			fmt.Println("context pruning:",expression)
+			Role("context pruning:",expression)
+			LINE_ITEM_ROLE = ROLE_CONTEXT
 		} else {
 			section := strings.TrimSpace(token[1:])
-			fmt.Println("notes section name:",section)
+			Role("notes section name:",section)
+			LINE_ITEM_ROLE = ROLE_SECTION
 		}
 
 		// No quotes here in a string, we need to allow quoting in excerpts.
 
 	case '(':
 		reln := FindAssociation(token)
-		fmt.Println("Relationship:",reln)
+		Role("Relationship:",reln)
+		LINE_ITEM_ROLE = ROLE_RELATION
 
 	case '"':
-		fmt.Println("prior-reference: $n",LINE_ITEM_COUNTER)
+		Role("prior-reference: $n",fmt.Sprintf("%d",LINE_ITEM_COUNTER))
+		LINE_ITEM_ROLE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
 
 	default:
-
-		fmt.Println("Node item:",token)
+		Role("Event item:",token)
+		LINE_ITEM_ROLE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
 	}
 
@@ -299,7 +321,6 @@ func IsGeneralString(src []rune,pos int) bool {
 	case '#':
 		return false
 	case '\n':
-		UpdateLastLineCache() 
 		return false
 
 	case '/':
@@ -316,7 +337,6 @@ func IsGeneralString(src []rune,pos int) bool {
 func LastSpecialChar(src []rune,pos int, stop rune) bool {
 
 	if src[pos] == '\n' {
-		UpdateLastLineCache() 
 		return true
 	}
 
@@ -331,12 +351,32 @@ func LastSpecialChar(src []rune,pos int, stop rune) bool {
 
 func UpdateLastLineCache() {
 
+	if Dangler() {
+		ParseError(ERR_MISSING_EVENT)
+	}
+
+	LINE_ITEM_ROLE = ROLE_BLANK_LINE
 	// reset $n variables
 
+	LINE_NUM++
 	LINE_ITEM_CACHE = nil
 	LINE_RELN_CACHE = nil
 	LINE_ITEM_COUNTER = 1
+}
 
+//**************************************************************
+
+func Dangler() bool {
+
+	switch LINE_ITEM_ROLE {
+
+	case ROLE_EVENT:
+		return false
+	case ROLE_BLANK_LINE:
+		return false
+	}
+
+	return true
 }
 
 //**************************************************************
@@ -370,6 +410,21 @@ func FindAssociation(token string) string {
 
 //**************************************************************
 // Tools
+//**************************************************************
+
+func Role(role,item string) {
+
+	fmt.Println(LINE_NUM,":",role,item)
+
+}
+
+//**************************************************************
+
+func ParseError(message string) {
+
+	fmt.Println("N4L",message,"at line", LINE_NUM)
+}
+
 //**************************************************************
 
 func ReadTUF8File(filename string) []rune {
