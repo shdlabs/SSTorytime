@@ -14,7 +14,7 @@ alpha (beta) gamma (delta) epsilon (xx)
 
  A (begets) B // let's end with a remark
 
-  one two three (x99)  " (xx) "
+@myalias  one two three (x99)  " (xx) "
 
   " 
   three four (dangle)

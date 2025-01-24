@@ -15,32 +15,6 @@ import (
 )
 
 //**************************************************************
-
-type ConfigParser struct 
-{
-stream_position  int
-mode             int
-topic            string   // in case we mix together several
-context_set      []string
-item_set         []string
-relation_set     []string
-}
-
-//**************************************************************
-
-type NoteParser struct 
-{
-pos              int
-state            int
-alias            string
-topic            string   // in case we mix together several
-context_set      []string
-
-item_set         []string  // these reset on each line
-relation_set     []string  // < item_set
-}
-
-//**************************************************************
 // Globals
 //**************************************************************
 
@@ -85,15 +59,14 @@ func main() {
 
 func ParseN4L(src []rune) {
 
-	var p NoteParser
 	var token string
 
-	for p.pos = 0; p.pos < len(src); {
+	for pos := 0; pos < len(src); {
 
-		p.pos = SkipWhiteSpace(src,p.pos)
-		token,p.pos = GetToken(src,p.pos)
+		pos = SkipWhiteSpace(src,pos)
+		token,pos = GetToken(src,pos)
 
-		ClassifyTokenRole(token,p.state)
+		ClassifyTokenRole(token)
 
 	}
 
@@ -198,7 +171,7 @@ func GetToken(src []rune, pos int) (string,int) {
 
 //**************************************************************
 
-func ClassifyTokenRole(token string,state int) {
+func ClassifyTokenRole(token string) {
 
 	if len(token) == 0 {
 		return
@@ -244,6 +217,10 @@ func ClassifyTokenRole(token string,state int) {
 		LINE_ITEM_ROLE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
 	}
+
+	//To do, store classified parts for grammar rules
+
+	//AssessGrammarCompletions()
 
 }
 
