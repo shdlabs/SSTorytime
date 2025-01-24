@@ -44,12 +44,6 @@ relation_set     []string  // < item_set
 // Globals
 //**************************************************************
 
-var LINE_NUM int = 1
-var LINE_ITEM_CACHE []string
-var LINE_RELN_CACHE []string
-var LINE_ITEM_COUNTER int = 1
-var LINE_ITEM_ROLE int
-
 const (
 	ROLE_EVENT = 1
 	ROLE_RELATION = 2
@@ -59,6 +53,12 @@ const (
 
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
 )
+
+var LINE_NUM int = 1
+var LINE_ITEM_CACHE []string
+var LINE_RELN_CACHE []string
+var LINE_ITEM_COUNTER int = 1
+var LINE_ITEM_ROLE int = ROLE_BLANK_LINE
 
 //**************************************************************
 
@@ -118,6 +118,8 @@ func SkipWhiteSpace(src []rune, pos int) int {
 				
 				for ; pos < len(src) && src[pos] != '\n'; pos++ {
 				}
+
+				UpdateLastLineCache() 
 			}
 		}
 	}
@@ -148,6 +150,7 @@ func GetToken(src []rune, pos int) (string,int) {
 		default:
 			token,pos = ReadToLast(src,pos,'x')
 		}
+		pos = AdjustPos(token,pos)
 
 	case '-':  // could -:: or -section
 
@@ -158,9 +161,11 @@ func GetToken(src []rune, pos int) (string,int) {
 		default:
 			token,pos = ReadToLast(src,pos,'x')
 		}
+		pos = AdjustPos(token,pos)
 
 	case ':':
 		token,pos = ReadToLast(src,pos,':')
+		pos = AdjustPos(token,pos)
 	case '(':
 		token,pos = ReadToLast(src,pos,')')
 
@@ -170,11 +175,7 @@ func GetToken(src []rune, pos int) (string,int) {
 			pos++
 		} else {
 			token,pos = ReadToLast(src,pos,'"')
-
-			if strings.Contains(token,"\n") {
-				// \n might get caught up in overreach/trim
-				pos--
-			}
+			pos = AdjustPos(token,pos)
 			token = strings.TrimSpace(token)
 			token = strings.Trim(token,"\"")
 		}
@@ -374,6 +375,10 @@ func Dangler() bool {
 		return false
 	case ROLE_BLANK_LINE:
 		return false
+	case ROLE_SECTION:
+		return false
+	case ROLE_CONTEXT:
+		return false
 	}
 
 	return true
@@ -406,6 +411,20 @@ func FindAssociation(token string) string {
 	// lookup in the alias table
 
 	return strings.TrimSpace(name)
+}
+
+//**************************************************************
+
+func AdjustPos(token string, pos int) int {
+
+	// a newline that needs counting might 
+	// get caught up in overreach/trim
+
+	if strings.Contains(token,"\n") {
+		pos--
+	}
+
+	return pos
 }
 
 //**************************************************************
