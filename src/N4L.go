@@ -125,7 +125,6 @@ func GetToken(src []rune, pos int) (string,int) {
 		default:
 			token,pos = ReadToLast(src,pos,'x')
 		}
-		pos = AdjustPos(token,pos)
 
 	case '-':  // could -:: or -section
 
@@ -136,11 +135,10 @@ func GetToken(src []rune, pos int) (string,int) {
 		default:
 			token,pos = ReadToLast(src,pos,'x')
 		}
-		pos = AdjustPos(token,pos)
 
 	case ':':
 		token,pos = ReadToLast(src,pos,':')
-		pos = AdjustPos(token,pos)
+
 	case '(':
 		token,pos = ReadToLast(src,pos,')')
 
@@ -150,9 +148,8 @@ func GetToken(src []rune, pos int) (string,int) {
 			pos++
 		} else {
 			token,pos = ReadToLast(src,pos,'"')
-			pos = AdjustPos(token,pos)
-			token = strings.TrimSpace(token)
-			token = strings.Trim(token,"\"")
+			strip := strings.Split(token,"\"")
+			token = strip[1]
 		}
 
 	case '#':
@@ -165,6 +162,7 @@ func GetToken(src []rune, pos int) (string,int) {
 
 	default: // a text item that could end with any of the above
 		token,pos = ReadToLast(src,pos,'x')
+
 	}
 
 	return token, pos
@@ -254,7 +252,7 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 		cpy = append(cpy,src[pos])
 	}
-	
+
 	token := string(cpy)
 	
 	return token,pos
@@ -265,6 +263,10 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 
 	var collect bool = true
+
+	if src[pos] == '\n' {
+		return false
+	}
 
 	if stop == 'x' {
 		
@@ -278,7 +280,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 		} else {
 			var groups int = 0
 
-			for r := 1; r < len(cpy); r++ {
+			for r := 1; r < len(cpy)-1; r++ {
 
 				if cpy[r] != ':' && cpy[r-1] == ':' {
 					groups++
@@ -294,7 +296,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 			}
 		} 
 	}
-	
+
 	return collect
 }
 
@@ -348,7 +350,7 @@ func UpdateLastLineCache() {
 	// If this line was not blank, overwrite previous settings and reset
 
 	if LINE_ITEM_STATE != ROLE_BLANK_LINE {
-
+		
 		if LINE_ITEM_CACHE["THIS"] != nil {
 			LINE_ITEM_CACHE["PREV"] = LINE_ITEM_CACHE["THIS"]
 		}
@@ -356,12 +358,12 @@ func UpdateLastLineCache() {
 			LINE_RELN_CACHE["PREV"] = LINE_RELN_CACHE["THIS"]
 		}
 
-	} else {
+	} 
 
-		LINE_ITEM_CACHE["THIS"] = nil
-		LINE_RELN_CACHE["THIS"] = nil
-		LINE_ITEM_COUNTER = 1
-	}
+	LINE_ITEM_CACHE["THIS"] = nil
+	LINE_RELN_CACHE["THIS"] = nil
+	LINE_ITEM_COUNTER = 1
+
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
 }
@@ -412,20 +414,6 @@ func FindAssociation(token string) string {
 	// lookup in the alias table
 
 	return strings.TrimSpace(name)
-}
-
-//**************************************************************
-
-func AdjustPos(token string, pos int) int {
-
-	// a newline that needs counting might 
-	// get caught up in overreach/trim
-
-	if strings.Contains(token,"\n") {
-		pos--
-	}
-
-	return pos
 }
 
 //**************************************************************

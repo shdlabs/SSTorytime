@@ -6,7 +6,7 @@
 
 +::context2 ::
 
-alpha (beta) gamma (delta) epsilon (xx)
+alpha (beta) gamma (delta) epsilon 
 
   one two three (x99) "27ljdlksjflj"
 
@@ -16,7 +16,7 @@ alpha (beta) gamma (delta) epsilon (xx)
 
 @myalias  one two three (x99)  " (xx) "
 
-  " 
+
   three four (dangle)
 
 
