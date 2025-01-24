@@ -31,8 +31,10 @@ const (
 var LINE_NUM int = 1
 var LINE_ITEM_CACHE = make(map[string][]string)
 var LINE_RELN_CACHE = make(map[string][]string)
-var LINE_ITEM_COUNTER int = 1
 var LINE_ITEM_STATE int = ROLE_BLANK_LINE
+
+var LINE_ITEM_COUNTER int = 1
+var LINE_RELN_COUNTER int = 1
 
 //**************************************************************
 
@@ -206,15 +208,23 @@ func ClassifyTokenRole(token string) {
 		reln := FindAssociation(token)
 		Role("Relationship:",reln)
 		LINE_ITEM_STATE = ROLE_RELATION
+		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],token)
+
+		LINE_RELN_COUNTER++
 
 	case '"':
-		Role("prior-reference",fmt.Sprintf("$%d",LINE_ITEM_COUNTER))
+		Role("prior-reference",LookupAlias("PREV",LINE_ITEM_COUNTER))
 		LINE_ITEM_STATE = ROLE_EVENT
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],LookupAlias("PREV",LINE_ITEM_COUNTER))
+
 		LINE_ITEM_COUNTER++
+
+// NEED A CASE FOR @ALIAS too....like the above
 
 	default:
 		Role("Event item:",token)
 		LINE_ITEM_STATE = ROLE_EVENT
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
 		LINE_ITEM_COUNTER++
 	}
 
@@ -416,6 +426,21 @@ func AdjustPos(token string, pos int) int {
 	}
 
 	return pos
+}
+
+//**************************************************************
+
+func LookupAlias(alias string, counter int) string {
+	
+	value,ok := LINE_ITEM_CACHE[alias]
+
+	if !ok || counter > len(value) {
+		ParseError("No such alias or \" reference exists to fill in - aborting")
+		os.Exit(1)
+	}
+	
+	return LINE_ITEM_CACHE[alias][counter-1]
+
 }
 
 //**************************************************************
