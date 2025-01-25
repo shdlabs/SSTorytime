@@ -25,6 +25,7 @@ const (
 	ROLE_CONTEXT = 4
 	ROLE_BLANK_LINE = 5
 	ROLE_LINE_ALIAS = 6
+	ROLE_LOOKUP = 6
 
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
 	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
@@ -226,12 +227,14 @@ func ClassifyTokenRole(token string) {
 	case '@':
 		Role("line-alias",token)
 		LINE_ITEM_STATE = ROLE_LINE_ALIAS
+		token  = strings.TrimSpace(token)
 		LINE_ALIAS = token[1:]
 
 	case '$':
 		Role("variable-reference",token)
+		LINE_ITEM_STATE = ROLE_LOOKUP
 		actual := HandleAliasedItem(token)
-		fmt.Println("...resolved",actual)
+		fmt.Println("...resolved to",actual)
 
 	default:
 		Role("Event item:",token)
@@ -240,9 +243,12 @@ func ClassifyTokenRole(token string) {
 		// need to check if we have () embedded between items or missing....
 
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+
 		if LINE_ALIAS != "" {
-			LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE["THIS"],token)
+			LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS],token)
+			fmt.Println(LINE_ALIAS,"=",LINE_ITEM_CACHE[LINE_ALIAS],len(LINE_ITEM_CACHE[LINE_ALIAS]))
 		}
+
 		LINE_ITEM_COUNTER++
 	}
 
@@ -398,6 +404,8 @@ func Dangler() bool {
 
 	case ROLE_EVENT:
 		return false
+	case ROLE_LOOKUP:
+		return false
 	case ROLE_BLANK_LINE:
 		return false
 	case ROLE_SECTION:
@@ -448,7 +456,7 @@ func LookupAlias(alias string, counter int) string {
 		ParseError(ERR_NO_SUCH_ALIAS)
 		os.Exit(1)
 	}
-	
+
 	return LINE_ITEM_CACHE[alias][counter-1]
 
 }
@@ -457,10 +465,15 @@ func LookupAlias(alias string, counter int) string {
 
 func HandleAliasedItem(token string) string {
 
- // construct lookup from $alias.n or $n
- // if define
+	// split $alias.n into (alias string,n int)
 
-	return ""
+	split := strings.Split(token[1:],".")
+	name := strings.TrimSpace(split[0])
+
+	var number int = 0
+	fmt.Sscanf(split[1],"%d",&number)
+
+	return LookupAlias(name,number)
 }
 
 //**************************************************************

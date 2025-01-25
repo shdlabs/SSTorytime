@@ -12,12 +12,11 @@ alpha (beta) gamma (delta) epsilon
 
     " (another) something 
 
- A (begets) B // let's end with a remark
+@myalias A (begets) B // let's end with a remark
 
-@myalias	one two three (x99)  " (xx) "
+	one two three (x99)  " (xx) nothing
 
-
-  three four (dangle) $myalias.1
+  three four (dangle) $myalias.2
 
 
 
