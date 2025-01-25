@@ -30,8 +30,8 @@ $2 (relation) E                  # Continuation from second previous
 +: extend-list, context, words : # extend context set
 -: delete, words :               # prune context set
 
-@name                            # alias this line for easy reference
-@name.$1                         # alias column in a line for easy reference
+@myalias                            # alias this line for easy reference
+$myalias.1                          # a reference to the aliased line for easy reference
 
 "paragraph =specialword paragraph paragraph paragraph paragraph
  paragraph paragraph paragraph paragraph paragraph
@@ -41,11 +41,58 @@ paragraph paragraph paragraph paragraphparagraph"
 [=,*,..]A                        # implicit relation marker
 
 </pre>
+Here A,B,C,D,E stand for unicode strings
+Parentheses are reserved symbols. Literal parentheses can be quoted
 
-Here A,B,C,D,E are unicode strings
+##Example
 
-parentheses are reserved symbols. Literal parentheses can be quoted
+<pre>
 
+::food::
+
+  meat    (english for pinyin) ròu
+          (english for hanzi)  肉
+  chicken (english for pinyin) jīròu
+          (english for hanzi)  鸡肉 
+
+  lamb (english for pinyin) yángròu (pinyin for hanzi) 羊肉
+  beef (english for pinyin) niúròu  (pinyin for hanzi) 牛肉
+  milk (english for pinyin) niúnǎi  (pinyin for hanzi) 牛奶
+
+  # more realistic with abbreviations ...
+
+菜 (hp) Cài (pe) vegetable 
+meat (eh) 肉 (hp) Ròu
+beef  (eh) 牛肉  (hp) Niúròu
+lamb  (eh) 羊肉  (hp) Yángròu
+chicken (eh)  鸡肉 (hp)  Jīròu
+pork  (eh) 猪肉  (hp) Zhūròu
+soup (eh)  汤 (hp) Tāng
+sugar (eh)  糖 (hp) Táng
+porridge  (eh) 粥 (hp) zhōu
+
+:: phrases, in the hotel ::
+
+@robot I'm waiting for some food from the robot (eh) 我在等机器人送来的食物 (hp) Wǒ zài děng jīqìrén sòng lái de shíwù
+
+:: technology ::
+
+jīqìrén (pe) robot (example) $robot.1
+
+</pre>
+
+## How references work
+
+References are written in parentheses. They are designed to be highly
+abbreviated for note taking. As they are written, the examples above
+look like RDF (Resource Description Framework) triplets. However, they
+are much more powerful than the ad hoc references in RDF.  In order
+for references to be used for reasoning and effective semantic search,
+they need to be declared with more properties. Declarations are made in the configuration file. 
+
+Each relationship needs to be classified as one of four types depending
+on how it is to be interpreted. This might be tricky in the beginning, so you
+can stick to some predefined relation.
 
 Reserved topics and their aliases include the four spacetime meta-semantic types:
 * leadsto    / affects, causes
@@ -53,50 +100,33 @@ Reserved topics and their aliases include the four spacetime meta-semantic types
 * properties / express
 * similarity / near, alike
 
-## Running state vector
+These four classes of association behave like placing items around
+each other in a mind-map on paper. Things that belong close together
+because they are aliases for one another are *similar*.  If one thing
+leads to another, e.g. because it causes it or because it precedes it
+in a history then we use *leadsto*. Some items are parts of other items,
+so we use *contains*. Finally, something that's purely descriptive
+or is expressed by an item, e.g. "is blue" or 
 
-The interpretation of the language has items, relationships, and context.
-Within a stream of Unicode runes:
+Some relationships can be tricky to fathom. The semantics of ownership,
+for example, are not completely unambiguous. Suppose you want to say
 
 <pre>
-# parser state
+The bracelet "belongs to" Martin 
+</pre> 
 
-type Parser struct 
-{
-stream_position  int
-context_set      []string
-item_set         []string
-relation_set     []string
-}
+Is the bracelet a property of Martin or a part of him?  As an object,
+we might choose to make this a part the "extended space of
+martin". There is no right answer. You can choose what works for you.
+The difference between the two is how they are searched.  If we
+interpret the bracelet as "a part of" Martin then we can also say that
+the bracelet contains a diamond and thus the diamond is also a part of
+Martin, because "part of" is a transitive relationship. But if we say
+that the bracelet is just something that characterizes him, it's not
+clear that that is transitive because a bracelet may be characterized
+by being golden but this does not imply that Martin is golden!
 
-</pre>
-<pre>
-# abbreviation lookup table
-
-type Alias map[string]string
-
-</pre>
-<pre>
-
-# relation lookup
-
-type LinkType map[string]string
-
-</pre>
-<pre>
-# relation inverse and type table
-
-type Association struct {
-
-type int
-fwd  string
-bwd  string    # currently undecied how to represesnt negative patterns NOT, !, exceptions
-}
-
-</pre>
-
-
-
-## TODO
-
-Implement aliasing and inferences of graph structures
+You might make the wrong choices about things initially, but it's easy to
+change your decision because the definition of the relationship is
+made independently of all the data where you use it. This is the usefulness
+of a language interface.
