@@ -14,10 +14,10 @@ alpha (beta) gamma (delta) epsilon
 
  A (begets) B // let's end with a remark
 
-@myalias  one two three (x99)  " (xx) "
+@myalias	one two three (x99)  " (xx) "
 
 
-  three four (dangle)
+  three four (dangle) $myalias.1
 
 
 

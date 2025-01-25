@@ -24,15 +24,18 @@ const (
 	ROLE_SECTION = 3
 	ROLE_CONTEXT = 4
 	ROLE_BLANK_LINE = 5
+	ROLE_LINE_ALIAS = 6
 
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
+	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
+
 )
 
 var LINE_NUM int = 1
 var LINE_ITEM_CACHE = make(map[string][]string)
 var LINE_RELN_CACHE = make(map[string][]string)
 var LINE_ITEM_STATE int = ROLE_BLANK_LINE
-
+var LINE_ALIAS string = ""
 var LINE_ITEM_COUNTER int = 1
 var LINE_RELN_COUNTER int = 1
 
@@ -155,6 +158,9 @@ func GetToken(src []rune, pos int) (string,int) {
 	case '#':
 		token,pos = ReadToLast(src,pos,'\n')
 
+	case '@':
+		token,pos = ReadToLast(src,pos,' ')
+
 	case '/':
 		if src[pos+1] == '/' {
 			token,pos = ReadToLast(src,pos,'\n')
@@ -217,18 +223,32 @@ func ClassifyTokenRole(token string) {
 
 		LINE_ITEM_COUNTER++
 
-// NEED A CASE FOR @ALIAS too....like the above
+	case '@':
+		Role("line-alias",token)
+		LINE_ITEM_STATE = ROLE_LINE_ALIAS
+		LINE_ALIAS = token[1:]
+
+	case '$':
+		Role("variable-reference",token)
+		actual := HandleAliasedItem(token)
+		fmt.Println("...resolved",actual)
 
 	default:
 		Role("Event item:",token)
 		LINE_ITEM_STATE = ROLE_EVENT
+
+		// need to check if we have () embedded between items or missing....
+
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+		if LINE_ALIAS != "" {
+			LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE["THIS"],token)
+		}
 		LINE_ITEM_COUNTER++
 	}
 
 	//To do, store classified parts for grammar rules
 
-	//AssessGrammarCompletions()
+	AssessGrammarCompletions()
 
 }
 
@@ -269,9 +289,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 	}
 
 	if stop == 'x' {
-		
 		collect = IsGeneralString(src,pos)
-
 	} else {
 		// a ::: cluster is special, we don't care how many
 
@@ -330,7 +348,9 @@ func LastSpecialChar(src []rune,pos int, stop rune) bool {
 		return true
 	}
 
-	if src[pos-1] == stop && src[pos] != stop {
+	// tabs are divisors, don't use them!
+
+	if (src[pos-1] == stop || src[pos-1] == '\t') && src[pos] != stop {
 		return true
 	}
 
@@ -344,6 +364,8 @@ func UpdateLastLineCache() {
 	if Dangler() {
 		ParseError(ERR_MISSING_EVENT)
 	}
+
+// check if len(itemcache) = len(relcache)+1 --- something wrong
 
 	LINE_NUM++
 
@@ -363,7 +385,7 @@ func UpdateLastLineCache() {
 	LINE_ITEM_CACHE["THIS"] = nil
 	LINE_RELN_CACHE["THIS"] = nil
 	LINE_ITEM_COUNTER = 1
-
+	LINE_ALIAS = ""
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
 }
@@ -423,11 +445,39 @@ func LookupAlias(alias string, counter int) string {
 	value,ok := LINE_ITEM_CACHE[alias]
 
 	if !ok || counter > len(value) {
-		ParseError("No such alias or \" reference exists to fill in - aborting")
+		ParseError(ERR_NO_SUCH_ALIAS)
 		os.Exit(1)
 	}
 	
 	return LINE_ITEM_CACHE[alias][counter-1]
+
+}
+
+//**************************************************************
+
+func HandleAliasedItem(token string) string {
+
+ // construct lookup from $alias.n or $n
+ // if define
+
+	return ""
+}
+
+//**************************************************************
+
+func AssessGrammarCompletions() {
+
+ //using foreach in LINE_ITEM_CACHE["THIS"]  LINE_RELN_CACHE["THIS"]
+
+	// completions
+        // @alias --> set current in hash table @alias.$1 etc ... until \n (default alias = "")
+	// :: :: ---> set current until next :: ::
+	// ITEM1 ITEM2 -> install first item and keep ITEM2++
+        // ITEM1 (reln) ITEM2 ITEM3 --> install whole relation and keep ITEM3++
+        // ITEM1 (reln) ITEM2 (reln2) --> install whole relation and keep ITEM2++
+
+	// item, context (special case of) item
+	// (item1,context) (reln,context) (item2,context)
 
 }
 
