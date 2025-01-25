@@ -46,6 +46,10 @@ Parentheses are reserved symbols. Literal parentheses can be quoted
 
 ## Example
 
+Assocations have explanatory power, so we want to take advantage of that.
+On the other hand, we don't want to type a lot when making notes, so
+it's sensible to make extensive use of abbreviations.
+
 <pre>
 
 ::food::
@@ -80,6 +84,19 @@ porridge  (eh) 粥 (hp) zhōu
 jīqìrén (pe) robot (example) $robot.1
 
 </pre>
+
+Notice how the different ends of the implicit arrows in (pe) from
+pinyin to English effectively define the type of thing they are
+attached to. So we don't need to define the ontology for things
+because it can be allowed to emergy from the already implicit choices
+we've made about the kinds of relationship things can have.
+
+Semantic reasoning can make use of the fuzziness of associative types
+when reasoning. This is a powerful feature that enables automated
+inference with lateral thinking, just as humans do. Languages that use
+logic to define ontologies are greatly over-constrained and make
+reasoning precise but trivial, because they can only retrieve exactly
+what you typed into the model.
 
 ## How references work
 
