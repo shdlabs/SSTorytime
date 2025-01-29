@@ -38,7 +38,7 @@ var LINE_RELN_CACHE = make(map[string][]string)
 var LINE_ITEM_STATE int = ROLE_BLANK_LINE
 var LINE_ALIAS string = ""
 var LINE_ITEM_COUNTER int = 1
-var LINE_RELN_COUNTER int = 1
+var LINE_RELN_COUNTER int = 0
 
 //**************************************************************
 
@@ -232,30 +232,27 @@ func ClassifyTokenRole(token string) {
 
 	case '$':
 		Role("variable-reference",token)
+		actual := ResolveAliasedItem(token)
+		fmt.Println(LINE_NUM,": -",token,"...resolved to",actual)
+
+		AssessGrammarCompletions(actual,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_LOOKUP
-		actual := HandleAliasedItem(token)
-		fmt.Println("...resolved to",actual)
 
 	default:
 		Role("Event item:",token)
-		LINE_ITEM_STATE = ROLE_EVENT
-
-		// need to check if we have () embedded between items or missing....
 
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
 
 		if LINE_ALIAS != "" {
 			LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS],token)
-			fmt.Println(LINE_ALIAS,"=",LINE_ITEM_CACHE[LINE_ALIAS],len(LINE_ITEM_CACHE[LINE_ALIAS]))
+			//fmt.Println(LINE_ALIAS,"=",LINE_ITEM_CACHE[LINE_ALIAS],len(LINE_ITEM_CACHE[LINE_ALIAS]))
 		}
 
+		AssessGrammarCompletions(token,LINE_ITEM_STATE)
+
+		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
 	}
-
-	//To do, store classified parts for grammar rules
-
-	AssessGrammarCompletions()
-
 }
 
 //**************************************************************
@@ -391,6 +388,7 @@ func UpdateLastLineCache() {
 	LINE_ITEM_CACHE["THIS"] = nil
 	LINE_RELN_CACHE["THIS"] = nil
 	LINE_ITEM_COUNTER = 1
+	LINE_RELN_COUNTER = 0
 	LINE_ALIAS = ""
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
@@ -463,7 +461,7 @@ func LookupAlias(alias string, counter int) string {
 
 //**************************************************************
 
-func HandleAliasedItem(token string) string {
+func ResolveAliasedItem(token string) string {
 
 	// split $alias.n into (alias string,n int)
 
@@ -478,7 +476,7 @@ func HandleAliasedItem(token string) string {
 
 //**************************************************************
 
-func AssessGrammarCompletions() {
+func AssessGrammarCompletions(token string, prior_state int) {
 
  //using foreach in LINE_ITEM_CACHE["THIS"]  LINE_RELN_CACHE["THIS"]
 
@@ -492,6 +490,20 @@ func AssessGrammarCompletions() {
 	// item, context (special case of) item
 	// (item1,context) (reln,context) (item2,context)
 
+	this_item := token
+	fmt.Print(LINE_NUM,":")
+
+	switch prior_state {
+
+	case ROLE_RELATION:
+
+		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
+		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
+		fmt.Println("New relation:",last_item,"--",last_reln,"->",this_item)
+
+	default:
+		fmt.Println("New event:",this_item)
+	}
 }
 
 //**************************************************************
@@ -500,7 +512,7 @@ func AssessGrammarCompletions() {
 
 func Role(role,item string) {
 
-	fmt.Println(LINE_NUM,":",role,item)
+	//fmt.Println(LINE_NUM,":",role,item)
 
 }
 
