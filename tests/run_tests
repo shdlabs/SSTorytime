@@ -1,10 +1,20 @@
 #!/bin/sh
 
-PROG=../src/N4L
+PROG="../src/N4L -v"
 
 # test_1 no section error - fail
 
-$PROG -v 
+if $PROG test_1.in > test_1.out; 
+then 
+delta="`diff test_1.out test_1.cmp`"
+if [$delta -eq ""]; then
+echo pass
+else
+echo fail
+fi
+fi
+
+
 
 # test_1a comments
 

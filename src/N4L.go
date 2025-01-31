@@ -30,6 +30,7 @@ const (
 	ROLE_LINE_ALIAS = 8
 	ROLE_LOOKUP = 9
 
+	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
 	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
 	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
@@ -813,8 +814,13 @@ func ParseError(message string) {
 
 func ReadTUF8File(filename string) []rune {
 	
-	content, _ := ioutil.ReadFile(filename)
+	content,err := ioutil.ReadFile(filename)
 	
+	if err != nil {
+		ParseError(ERR_NO_SUCH_FILE_FOUND+filename)
+		os.Exit(-1)
+	}
+
 	var unicode []rune
 	
 	for i, w := 0, 0; i < len(content); i += w {
