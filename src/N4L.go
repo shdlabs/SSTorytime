@@ -118,6 +118,10 @@ func ParseN4L(src []rune) {
 //**************************************************************
 
 func SkipWhiteSpace(src []rune, pos int) int {
+
+	if !unicode.IsSpace(src[pos]) {
+		return pos
+	}
 	
 	for ; pos < len(src) && (unicode.IsSpace(src[pos]) || src[pos] == '#' || src[pos] == '/') ; pos++ {
 
@@ -205,7 +209,6 @@ func GetToken(src []rune, pos int) (string,int) {
 	}
 
 	return token, pos
-
 }
 
 //**************************************************************
@@ -308,19 +311,18 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 	var cpy []rune
 
-	// sanitize small case at start of item
+	for ; Collect(src,pos,stop,cpy); pos++ {
 
-	if stop == 'x' {
-		src[0] = unicode.ToLower(src[0])
-	}
-
-	for ; pos > 0 && Collect(src,pos,stop,cpy); pos++ {
-
+		// sanitize small case at start of item
+		if stop == 'x' {
+			src[pos] = unicode.ToLower(src[pos])
+		}
 		cpy = append(cpy,src[pos])
 	}
 
 	token := string(cpy)
-	
+	token = strings.TrimSpace(token)
+
 	return token,pos
 }
 
@@ -396,7 +398,7 @@ func LastSpecialChar(src []rune,pos int, stop rune) bool {
 
 	// tabs are divisors, don't use them!
 
-	if (src[pos-1] == stop || src[pos-1] == '\t') && src[pos] != stop {
+	if pos > 0 && (src[pos-1] == stop || src[pos-1] == '\t') && src[pos] != stop {
 		return true
 	}
 
@@ -410,8 +412,6 @@ func UpdateLastLineCache() {
 	if Dangler() {
 		ParseError(ERR_MISSING_EVENT)
 	}
-
-// check if len(itemcache) = len(relcache)+1 --- something wrong
 
 	LINE_NUM++
 
@@ -829,7 +829,7 @@ func ReadTUF8File(filename string) []rune {
 
 		unicode = append(unicode,runeValue)
 	}
-	
+
 	return unicode
 }
 
