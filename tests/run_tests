@@ -1,0 +1,34 @@
+#!/bin/sh
+
+PROG=../src/N4L
+
+# test_1 no section error - fail
+
+# test_1a comments
+
+# test_1b section with items - pass
+
+# test_2 alter section - pass
+
+# test_3 pick up context - pass
+
+# test_4 add to context - pass
+
+# test_5 remove from context - pass
+
+# test_6 install relation - pass
+
+# test_7 missing item in relation - fail
+
+# test_8 " reference to last line
+
+# test_9 " last reference with several lines
+
+# test_10 alias label a line
+
+# test_11 refer to alias as $x.y
+
+# test_12 two tigers
+
+$PROG
+

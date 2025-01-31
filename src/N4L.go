@@ -47,25 +47,36 @@ var LINE_ITEM_COUNTER int = 1
 var LINE_RELN_COUNTER int = 0
 var CONTEXT_STATE = make(map[string]bool)
 var SECTION_STATE string
+var VERBOSE bool = false
+var CURRENT_FILE string
 
 //**************************************************************
 
 func main() {
 
 	flag.Usage = usage
+	verbosePtr := flag.Bool("v", false,"verbose")
 	flag.Parse()
 	args := flag.Args()
-	
+
 	if len(args) < 1 {
 		usage()
 		os.Exit(1);
 	}
 
+	if *verbosePtr {
+		VERBOSE = true
+	}
+
 	//config := ReadFile("config.in")
 	//ParseConfig(config)
 
-	input := ReadFile(args[0])
-	ParseN4L(input)
+	for input := 0; input < len(args); input++ {
+
+		CURRENT_FILE = args[input]
+		input := ReadFile(CURRENT_FILE)
+		ParseN4L(input)
+	}
 }
 
 
@@ -246,7 +257,7 @@ func ClassifyTokenRole(token string) {
 	case '$':
 		Role("variable-reference",token)
 		actual := ResolveAliasedItem(token)
-		fmt.Println(LINE_NUM,": -",token,"...resolved to",actual)
+		Verbose(LINE_NUM,": -",token,"...resolved to",actual)
 
 		AssessGrammarCompletions(actual,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_LOOKUP
@@ -258,7 +269,7 @@ func ClassifyTokenRole(token string) {
 
 		if LINE_ALIAS != "" {
 			LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS],token)
-			//fmt.Println(LINE_ALIAS,"=",LINE_ITEM_CACHE[LINE_ALIAS],len(LINE_ITEM_CACHE[LINE_ALIAS]))
+			//Verbose(LINE_ALIAS,"=",LINE_ITEM_CACHE[LINE_ALIAS],len(LINE_ITEM_CACHE[LINE_ALIAS]))
 		}
 
 		AssessGrammarCompletions(token,LINE_ITEM_STATE)
@@ -514,13 +525,11 @@ func AssessGrammarCompletions(token string, prior_state int) {
 	// (item1,context) (reln,context) (item2,context)
 
 	if AllCaps(token) {
-		ParseError(WARN_NOTE_TO_SELF)
+		ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
 		return
 	}
 
 	this_item := token
-
-	fmt.Print(LINE_NUM,":")
 
 	switch prior_state {
 
@@ -529,27 +538,27 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		CheckNonNegative(LINE_ITEM_COUNTER-2)
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
-		fmt.Println("New relation:",last_item,"--",last_reln,"->",this_item,"when",CONTEXT_STATE)
+		Verbose("New relation:",last_item,"--",last_reln,"->",this_item,"when",CONTEXT_STATE)
 		CheckSection()
 
 	case ROLE_CONTEXT:
-		fmt.Println("New context: ->",this_item)
+		Verbose("New context: ->",this_item)
 		ContextEval(this_item,"=")
 
 	case ROLE_CONTEXT_ADD:
-		fmt.Println("Add to context:",this_item)
+		Verbose("Add to context:",this_item)
 		ContextEval(this_item,"+")
 
 	case ROLE_CONTEXT_SUBTRACT:
-		fmt.Println("Remove from context:",this_item)
+		Verbose("Remove from context:",this_item)
 		ContextEval(this_item,"-")
 
 	case ROLE_SECTION:
-		fmt.Println("Reset chapter/section: ->",this_item)
+		Verbose("Reset chapter/section: ->",this_item)
 		SECTION_STATE = this_item
 
 	default:
-		fmt.Println("New item/event:",this_item,"when",CONTEXT_STATE)
+		Verbose("New item/event:",this_item,"when",CONTEXT_STATE)
 		CheckSection()
 	}
 }
@@ -714,10 +723,10 @@ func ModContext(list []string,op string) {
 		for part := range and_parts {
 			switch op {
 			case "+":
-				fmt.Println(" Add PART",frag,"because",and_parts[part])
+				Verbose(" Add PART",frag,"because",and_parts[part])
 				CONTEXT_STATE[frag] = true
 			case "-":
-				fmt.Println(" del PART",frag,"because",and_parts[part])
+				Verbose(" del PART",frag,"because",and_parts[part])
 				delete(CONTEXT_STATE,frag)
 				delete(CONTEXT_STATE,and_parts[part])
 			}
@@ -749,6 +758,10 @@ func CheckSection() {
 
 func AllCaps(s string) bool {
 
+	if len(s) < 3 {
+		return false
+	}
+
 	for _, r := range s {
 		if !unicode.IsUpper(r) && unicode.IsLetter(r) {
 			return false
@@ -764,7 +777,7 @@ func AllCaps(s string) bool {
 
 func Role(role,item string) {
 
-	//fmt.Println(LINE_NUM,":",role,item)
+	//Verbose(LINE_NUM,":",role,item)
 
 }
 
@@ -772,7 +785,8 @@ func Role(role,item string) {
 
 func ParseError(message string) {
 
-	fmt.Println("N4L",message,"at line", LINE_NUM)
+	fmt.Print(LINE_NUM,":")
+	fmt.Println("N4L",CURRENT_FILE,message,"at line", LINE_NUM)
 }
 
 //**************************************************************
@@ -797,7 +811,18 @@ func ReadTUF8File(filename string) []rune {
 
 func usage() {
 	
-	fmt.Fprintf(os.Stderr, "usage: go run N4L.go [file].dat\n")
+	fmt.Fprintf(os.Stderr, "usage: go run N4L.go [-v] [file].dat\n")
 	flag.PrintDefaults()
 	os.Exit(2)
+}
+
+//**************************************************************
+
+func Verbose(a ...interface{}) (n int, err error) {
+
+	if VERBOSE {
+		fmt.Print(LINE_NUM,":")
+		n, err = fmt.Println(a...)
+	}
+	return
 }
