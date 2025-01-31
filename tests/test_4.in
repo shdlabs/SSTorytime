@@ -1,11 +1,10 @@
 #
 
 -sectioname
--new section name
 
-::context, , a list of things ::  #...
+::context ::  #... L4
 
-+::context2, !context3, context5.context6 ::
++::context2 ::
 
 alpha (beta) gamma (delta) epsilon 
 
@@ -17,9 +16,7 @@ alpha (beta) gamma (delta) epsilon
 
 	one two three (x99)  " (xx) nothing
 
-
-
-  three four (dangle) $myalias.2  # L21
+  three four (dangle) $myalias.2
 
 
 

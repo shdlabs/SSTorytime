@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"unicode/utf8"
 	"unicode"
+	"regexp"
 )
 
 //**************************************************************
@@ -23,13 +24,18 @@ const (
 	ROLE_RELATION = 2
 	ROLE_SECTION = 3
 	ROLE_CONTEXT = 4
-	ROLE_BLANK_LINE = 5
-	ROLE_LINE_ALIAS = 6
-	ROLE_LOOKUP = 6
+	ROLE_CONTEXT_ADD = 5
+	ROLE_CONTEXT_SUBTRACT = 6
+	ROLE_BLANK_LINE = 7
+	ROLE_LINE_ALIAS = 8
+	ROLE_LOOKUP = 9
 
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
+	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
 	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
+	ERR_MISSING_ITEM_SOMEWHERE = "Missing item somewhere"
 
+	WARN_NOTE_TO_SELF = "Found a note to self in the text"
 )
 
 var LINE_NUM int = 1
@@ -39,6 +45,8 @@ var LINE_ITEM_STATE int = ROLE_BLANK_LINE
 var LINE_ALIAS string = ""
 var LINE_ITEM_COUNTER int = 1
 var LINE_RELN_COUNTER int = 0
+var CONTEXT_STATE = make(map[string]bool)
+var SECTION_STATE string
 
 //**************************************************************
 
@@ -187,24 +195,28 @@ func ClassifyTokenRole(token string) {
 	switch token[0] {
 
 	case ':':
-		expression := ContextExpression(token)
+		expression := ExtractContextExpression(token)
 		Role("context reset:",expression)
 		LINE_ITEM_STATE = ROLE_CONTEXT
+		AssessGrammarCompletions(expression,LINE_ITEM_STATE)
 
 	case '+':
-		expression := ContextExpression(token)
+		expression := ExtractContextExpression(token)
 		Role("context augmentation:",expression)
-		LINE_ITEM_STATE = ROLE_CONTEXT
+		LINE_ITEM_STATE = ROLE_CONTEXT_ADD
+		AssessGrammarCompletions(expression,LINE_ITEM_STATE)
 
 	case '-':
 		if token[1:2] == string(':') {
-			expression := ContextExpression(token)
+			expression := ExtractContextExpression(token)
 			Role("context pruning:",expression)
-			LINE_ITEM_STATE = ROLE_CONTEXT
+			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
+			AssessGrammarCompletions(expression,LINE_ITEM_STATE)
 		} else {
 			section := strings.TrimSpace(token[1:])
 			Role("notes section name:",section)
 			LINE_ITEM_STATE = ROLE_SECTION
+			AssessGrammarCompletions(section,LINE_ITEM_STATE)
 		}
 
 		// No quotes here in a string, we need to allow quoting in excerpts.
@@ -220,8 +232,9 @@ func ClassifyTokenRole(token string) {
 	case '"':
 		Role("prior-reference",LookupAlias("PREV",LINE_ITEM_COUNTER))
 		LINE_ITEM_STATE = ROLE_EVENT
-		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],LookupAlias("PREV",LINE_ITEM_COUNTER))
-
+		result := LookupAlias("PREV",LINE_ITEM_COUNTER)
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
+		AssessGrammarCompletions(result,LINE_ITEM_STATE)
 		LINE_ITEM_COUNTER++
 
 	case '@':
@@ -270,6 +283,12 @@ func ReadFile(filename string) []rune {
 func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 	var cpy []rune
+
+	// sanitize small case at start of item
+
+	if stop == 'x' {
+		src[0] = unicode.ToLower(src[0])
+	}
 
 	for ; pos > 0 && Collect(src,pos,stop,cpy); pos++ {
 
@@ -410,6 +429,10 @@ func Dangler() bool {
 		return false
 	case ROLE_CONTEXT:
 		return false
+	case ROLE_CONTEXT_ADD:
+		return false
+	case ROLE_CONTEXT_SUBTRACT:
+		return false
 	}
 
 	return true
@@ -417,7 +440,7 @@ func Dangler() bool {
 
 //**************************************************************
 
-func ContextExpression(token string) string {
+func ExtractContextExpression(token string) string {
 
 	var expression string
 
@@ -490,20 +513,249 @@ func AssessGrammarCompletions(token string, prior_state int) {
 	// item, context (special case of) item
 	// (item1,context) (reln,context) (item2,context)
 
+	if AllCaps(token) {
+		ParseError(WARN_NOTE_TO_SELF)
+		return
+	}
+
 	this_item := token
+
 	fmt.Print(LINE_NUM,":")
 
 	switch prior_state {
 
 	case ROLE_RELATION:
 
+		CheckNonNegative(LINE_ITEM_COUNTER-2)
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
-		fmt.Println("New relation:",last_item,"--",last_reln,"->",this_item)
+		fmt.Println("New relation:",last_item,"--",last_reln,"->",this_item,"when",CONTEXT_STATE)
+		CheckSection()
+
+	case ROLE_CONTEXT:
+		fmt.Println("New context: ->",this_item)
+		ContextEval(this_item,"=")
+
+	case ROLE_CONTEXT_ADD:
+		fmt.Println("Add to context:",this_item)
+		ContextEval(this_item,"+")
+
+	case ROLE_CONTEXT_SUBTRACT:
+		fmt.Println("Remove from context:",this_item)
+		ContextEval(this_item,"-")
+
+	case ROLE_SECTION:
+		fmt.Println("Reset chapter/section: ->",this_item)
+		SECTION_STATE = this_item
 
 	default:
-		fmt.Println("New event:",this_item)
+		fmt.Println("New item/event:",this_item,"when",CONTEXT_STATE)
+		CheckSection()
 	}
+}
+
+//**************************************************************
+// Context logic
+//**************************************************************
+
+func ContextEval(s,op string) {
+
+	expr := CleanExpression(s)
+
+	or_parts := SplitWithParensIntact(expr,'|')
+
+	// +,-,= on CONTEXT_STATE
+
+	switch op {
+		
+	case "=": 
+		CONTEXT_STATE = make(map[string]bool)
+		ModContext(or_parts,"+")
+	default:
+		ModContext(or_parts,op)
+	}
+}
+
+// ***********************************************************************
+
+func CleanExpression(s string) string {
+
+	s = TrimParen(s)
+	r1 := regexp.MustCompile("[|,]+") 
+	s = r1.ReplaceAllString(s,"|") 
+	r2 := regexp.MustCompile("[&]+") 
+	s = r2.ReplaceAllString(s,".") 
+	r3 := regexp.MustCompile("[.]+") 
+	s = r3.ReplaceAllString(s,".") 
+
+	return s
+}
+
+// ***********************************************************************
+
+func SplitWithParensIntact(expr string,split_ch byte) []string {
+
+	var token string = ""
+	var set []string
+
+	for c := 0; c < len(expr); c++ {
+
+		switch expr[c] {
+
+		case split_ch:
+			set = append(set,token)
+			token = ""
+
+		case '(':
+			subtoken,offset := Paren(expr,c)
+			token += subtoken
+			c = offset-1
+
+		default:
+			token += string(expr[c])
+		}
+	}
+
+	if len(token) > 0 {
+		set = append(set,token)
+	}
+
+	return set
+} 
+
+// ***********************************************************************
+
+func Paren(s string, offset int) (string,int) {
+
+	var level int = 0
+
+	for c := offset; c < len(s); c++ {
+
+		if s[c] == '(' {
+			level++
+			continue
+		}
+
+		if s[c] == ')' {
+			level--
+			if level == 0 {
+				token := s[offset:c+1]
+				return token, c+1
+			}
+		}
+	}
+
+	return "bad expression", -1
+}
+
+
+// ***********************************************************************
+
+func TrimParen(s string) string {
+
+	var level int = 0
+	var trim = true
+
+	if len(s) == 0 {
+		return s
+	}
+
+	s = strings.TrimSpace(s)
+
+	if s[0] != '(' {
+		return s
+	}
+
+	for c := 0; c < len(s); c++ {
+
+		if s[c] == '(' {
+			level++
+			continue
+		}
+
+		if level == 0 && c < len(s)-1 {
+			trim = false
+		}
+		
+		if s[c] == ')' {
+			level--
+
+			if level == 0 && c == len(s)-1 {
+				
+				var token string
+				
+				if trim {
+					token = s[1:len(s)-1]
+				} else {
+					token = s
+				}
+				return token
+			}
+		}
+	}
+	
+	return s
+}
+
+//**************************************************************
+
+func ModContext(list []string,op string) {
+
+	for or_frag := range list {
+
+		frag := strings.TrimSpace(list[or_frag])
+
+		if len(frag) == 0 {
+			continue
+		}
+
+		and_parts := SplitWithParensIntact(frag,'.') 
+		
+		for part := range and_parts {
+			switch op {
+			case "+":
+				fmt.Println(" Add PART",frag,"because",and_parts[part])
+				CONTEXT_STATE[frag] = true
+			case "-":
+				fmt.Println(" del PART",frag,"because",and_parts[part])
+				delete(CONTEXT_STATE,frag)
+				delete(CONTEXT_STATE,and_parts[part])
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func CheckNonNegative(i int) {
+
+	if i < 0 {
+		ParseError(ERR_MISSING_ITEM_SOMEWHERE)
+		os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func CheckSection() {
+
+	if len(SECTION_STATE) == 0 {
+		ParseError(ERR_MISSING_SECTION)
+		os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func AllCaps(s string) bool {
+
+	for _, r := range s {
+		if !unicode.IsUpper(r) && unicode.IsLetter(r) {
+			return false
+		}
+	}
+
+	return true
 }
 
 //**************************************************************
