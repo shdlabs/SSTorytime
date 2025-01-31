@@ -4,6 +4,8 @@ PROG=../src/N4L
 
 # test_1 no section error - fail
 
+$PROG -v 
+
 # test_1a comments
 
 # test_1b section with items - pass
@@ -15,6 +17,8 @@ PROG=../src/N4L
 # test_4 add to context - pass
 
 # test_5 remove from context - pass
+
+# test_5a remove anded context
 
 # test_6 install relation - pass
 
@@ -30,5 +34,8 @@ PROG=../src/N4L
 
 # test_12 two tigers
 
-$PROG
+# test_13 embedded quotes - pass
+
+
+
 

@@ -6,17 +6,4 @@
 
 +::context2 ::
 
-alpha (beta) gamma (delta) epsilon 
-
-  one two three (x99) "27ljdlksjflj"
-
-    " (another) something 
-
-@myalias A (begets) B // let's end with a remark
-
-	one two three (x99)  " (xx) nothing
-
-  three four (dangle) $myalias.2
-
-
-
+item

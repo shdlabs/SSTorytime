@@ -16,7 +16,7 @@ import (
 )
 
 //**************************************************************
-// Globals
+// Global state
 //**************************************************************
 
 const (
@@ -35,24 +35,45 @@ const (
 	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
 	ERR_MISSING_ITEM_SOMEWHERE = "Missing item somewhere"
 
-	WARN_NOTE_TO_SELF = "Found a note to self in the text"
+	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
+	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 )
 
-var LINE_NUM int = 1
-var LINE_ITEM_CACHE = make(map[string][]string)
-var LINE_RELN_CACHE = make(map[string][]string)
-var LINE_ITEM_STATE int = ROLE_BLANK_LINE
-var LINE_ALIAS string = ""
-var LINE_ITEM_COUNTER int = 1
-var LINE_RELN_COUNTER int = 0
-var CONTEXT_STATE = make(map[string]bool)
-var SECTION_STATE string
-var VERBOSE bool = false
-var CURRENT_FILE string
+var ( 
+	LINE_NUM int = 1
+	LINE_ITEM_CACHE = make(map[string][]string)
+	LINE_RELN_CACHE = make(map[string][]string)
+	LINE_ITEM_STATE int = ROLE_BLANK_LINE
+	LINE_ALIAS string = ""
+	LINE_ITEM_COUNTER int = 1
+	LINE_RELN_COUNTER int = 0
+	CONTEXT_STATE = make(map[string]bool)
+	SECTION_STATE string
+	VERBOSE bool = false
+	CURRENT_FILE string
+)
 
 //**************************************************************
 
 func main() {
+
+	args := Init()
+
+	//config := ReadFile("config.in")
+	//ParseConfig(config)
+
+	for input := 0; input < len(args); input++ {
+
+		CURRENT_FILE = args[input]
+		input := ReadFile(CURRENT_FILE)
+		ParseN4L(input)
+	}
+}
+
+
+//**************************************************************
+
+func Init() []string {
 
 	flag.Usage = usage
 	verbosePtr := flag.Bool("v", false,"verbose")
@@ -68,17 +89,8 @@ func main() {
 		VERBOSE = true
 	}
 
-	//config := ReadFile("config.in")
-	//ParseConfig(config)
-
-	for input := 0; input < len(args); input++ {
-
-		CURRENT_FILE = args[input]
-		input := ReadFile(CURRENT_FILE)
-		ParseN4L(input)
-	}
+	return args
 }
-
 
 //**************************************************************
 
@@ -573,6 +585,10 @@ func ContextEval(s,op string) {
 
 	or_parts := SplitWithParensIntact(expr,'|')
 
+	if strings.Contains(s,"(") {
+		ParseError(WARN_INADVISABLE_CONTEXT_EXPRESSION)
+	}
+
 	// +,-,= on CONTEXT_STATE
 
 	switch op {
@@ -718,19 +734,23 @@ func ModContext(list []string,op string) {
 			continue
 		}
 
-		and_parts := SplitWithParensIntact(frag,'.') 
+		switch op {
+		case "+":
+			CONTEXT_STATE[frag] = true
+
+		case "-": // to remove, we also need to look at children
+			for cand := range CONTEXT_STATE {
+				and_parts := SplitWithParensIntact(cand,'.') 
 		
-		for part := range and_parts {
-			switch op {
-			case "+":
-				Verbose(" Add PART",frag,"because",and_parts[part])
-				CONTEXT_STATE[frag] = true
-			case "-":
-				Verbose(" del PART",frag,"because",and_parts[part])
-				delete(CONTEXT_STATE,frag)
-				delete(CONTEXT_STATE,and_parts[part])
+				for part := range and_parts {
+
+					if strings.Contains(and_parts[part],frag) {
+						delete(CONTEXT_STATE,cand)
+					}
+				}
 			}
 		}
+
 	}
 }
 
