@@ -119,10 +119,6 @@ func ParseN4L(src []rune) {
 
 func SkipWhiteSpace(src []rune, pos int) int {
 
-/*	if !unicode.IsSpace(src[pos]) {
-		return pos
-	}*/
-
 	for ; pos < len(src) && (unicode.IsSpace(src[pos]) || src[pos] == '#' || src[pos] == '/') ; pos++ {
 
 		if src[pos] == '\n' {
