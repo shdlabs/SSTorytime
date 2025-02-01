@@ -86,7 +86,7 @@ jīqìrén (pe) robot (example) $robot.1
 
 Notice how the implicit "arrows" in relations like 
 <pre>(is english for the pinyin)</pre> or its short form
-<pre>(pe)</pre> effectively define the `types' of thing they are
+<pre>(pe)</pre> effectively define the `types' of thing they are 
 attached to at either end. So we don't need to define the ontology for things
 because it emerges automatically from the names
 we've given to relationships.
@@ -98,24 +98,33 @@ logic to define ontologies are greatly over-constrained and make
 reasoning precise but trivial, because they can only retrieve exactly
 what you typed into the model.
 
-## How references work
+## How relationships work
 
-References are written in parentheses. They are designed to be highly
-abbreviated for note taking. As they are written, the examples above
-look like RDF (Resource Description Framework) triplets. However, they
-are much more powerful than the ad hoc references in RDF.  In order
-for references to be used for reasoning and effective semantic search,
-they need to be declared with more properties. Declarations are made in the configuration file. 
+A piece of text can be thought of as an item or an event.
+Relationships between items or events are written inside parentheses, as in the
+examples above. They are designed to be highly
+abbreviated for note taking. 
 
-Each relationship needs to be classified as one of four types depending
-on how it is to be interpreted. This might be tricky in the beginning, so you
-can stick to some predefined relation.
+As written, the examples above look a bit like any old RDF (Resource
+Description Framework) triplets. However, with the underlying
+assumptions of the language that we'll lay out below, they are much
+more powerful than the ad hoc references in RDF, because RDF
+relationships are just strings without any semantics.
 
-Reserved topics and their aliases include the four spacetime meta-semantic types:
-* leadsto    / affects, causes
-* contains   / contains
-* properties / express
-* similarity / near, alike
+In order for references to be used for reasoning (and effective
+semantic search), they need some basic properties. The simplest thing
+we can do is to classify each relationship as though it were a special
+case of one of four basic types, depending on how you want to
+interpret it. This might be tricky in the beginning, so you can stick
+to some predefined relation.
+
+It turns out that every relationship basically falls into one of
+four basic types that help you to imagine sketching the items on a map.
+Here are the four types. 
+* **leadsto    / affects, causes** one thing follows from the other
+* **contains   / contains** something is a part of something else
+* **properties / express** something just has a name or an attribute
+* **similarity / near, alike** something is close to something else
 
 These four classes of association behave like placing items around
 each other in a mind-map on paper. Things that belong close together
