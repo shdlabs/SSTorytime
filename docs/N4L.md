@@ -1,48 +1,56 @@
 
 # N4L - notes for loading utility
 
+N4L is a simple language parser for keeping notes and scanning into a
+structured format for uploading into a database or for use with other tools.
 
-The purpose of modelling a language for the information as a starting
+The purpose of using a simple yet semi-formal language as a starting
 point is to avoid the "information model trap" that befalls many data
-representations. If we can first determine the necessary and
-sufficient roles for semantic expression without assuming a normal form
-that later becomes a liability, then we start from the correct user perspective.
-We also understand what data structures will be needed on a pragmatic level.
-
-N4L parse text files that contain a semmi-formal language for easily taking notes and commenting
-on their meaning. The idea is to jot down examples and nuggets of meaning.
+representations, i.e. forcing users to put everything into a pre-approved,
+like filling out a form. Without any structure, it's only guesswork to
+understand intent. N4L is a compromise that allows you to use any kind of
+familiar editor to write notes in pure text (Unicode).
 
 ## Language syntax
 
 <pre>
 
--section                         # topic or reserved-topic
+#  a comment for the rest of the line
+// also a comment for the rest of the line
+
+-section/chapter                 # declare section/chapter as the subject
+
+: list, context, words :         # context (persistent) set
+::  list, context, words ::      # any number of :: is ok
+
++:: extend-list, context, words :: # extend the existing context set
+-:: delete, words :                # prune the existing context set
 
 A                                # Item
-"A"                              # Quoted item
+Any text not including a "("     # Item
+"A..."                           # Quoted item
 A (relation) B                   # Relationship
 A (relation) B (relation) C      # Chain relationship
 " (relation) D                   # Continuination of chain from previous single item
 $1 (relation) D                  # Continuination of chain from previous first item
 $2 (relation) E                  # Continuation from second previous
-: list, context, words :         # context (persistent) set
-::  list, context, words ::
-+: extend-list, context, words : # extend context set
--: delete, words :               # prune context set
 
 @myalias                            # alias this line for easy reference
 $myalias.1                          # a reference to the aliased line for easy reference
 
 "paragraph =specialword paragraph paragraph paragraph paragraph
  paragraph paragraph paragraph paragraph paragraph
-  paragraph paragraph =specialword paragraph paragraph paragraph
+  paragraph paragraph =specialword *paragraph paragraph paragraph
 paragraph paragraph paragraph paragraphparagraph"
 
-[=,*,..]A                        # implicit relation marker
+where [=,*,..]A                        # implicit relation marker
 
 </pre>
-Here A,B,C,D,E stand for unicode strings
-Parentheses are reserved symbols. Literal parentheses can be quoted
+Here A,B,C,D,E stand for unicode strings. Reserved symbols:
+<pre>
+(), +, -, @, $, and # 
+</pre>
+Literal parentheses can be quoted
 
 ## Example
 
@@ -51,29 +59,20 @@ On the other hand, we don't want to type a lot when making notes, so
 it's sensible to make extensive use of abbreviations.
 
 <pre>
+-chinese notes
 
 ::food::
 
-  meat    (english for pinyin) ròu
-          (english for hanzi)  肉
-  chicken (english for pinyin) jīròu
-          (english for hanzi)  鸡肉 
-
-  lamb (english for pinyin) yángròu (pinyin for hanzi) 羊肉
-  beef (english for pinyin) niúròu  (pinyin for hanzi) 牛肉
-  milk (english for pinyin) niúnǎi  (pinyin for hanzi) 牛奶
+  meat    (is english for the pinyin) ròu
+   "      (is english for the chinese or hanzi)  肉
 
   # more realistic with abbreviations ...
 
-菜 (hp) Cài (pe) vegetable 
-meat (eh) 肉 (hp) Ròu
-beef  (eh) 牛肉  (hp) Niúròu
-lamb  (eh) 羊肉  (hp) Yángròu
-chicken (eh)  鸡肉 (hp)  Jīròu
-pork  (eh) 猪肉  (hp) Zhūròu
-soup (eh)  汤 (hp) Tāng
-sugar (eh)  糖 (hp) Táng
-porridge  (eh) 粥 (hp) zhōu
+ 菜 (hp) Cài (pe) vegetable 
+ meat (eh) 肉 (hp) Ròu
+ beef  (eh) 牛肉  (hp) Niúròu
+ lamb  (eh) 羊肉  (hp) Yángròu
+ chicken (eh)  鸡肉 (hp)  Jīròu
 
 :: phrases, in the hotel ::
 
@@ -85,13 +84,14 @@ jīqìrén (pe) robot (example) $robot.1
 
 </pre>
 
-Notice how the different ends of the implicit arrows in (pe) from
-pinyin to English effectively define the type of thing they are
-attached to. So we don't need to define the ontology for things
-because it can be allowed to emergy from the already implicit choices
-we've made about the kinds of relationship things can have.
+Notice how the implicit "arrows" in relations like 
+<pre>(is english for the pinyin)</pre> or its short form
+<pre>(pe)</pre> effectively define the `types' of thing they are
+attached to at either end. So we don't need to define the ontology for things
+because it emerges automatically from the names
+we've given to relationships.
 
-Semantic reasoning can make use of the fuzziness of associative types
+Semantic reasoning can make use of both the precision and the fuzziness of associative types
 when reasoning. This is a powerful feature that enables automated
 inference with lateral thinking, just as humans do. Languages that use
 logic to define ontologies are greatly over-constrained and make
