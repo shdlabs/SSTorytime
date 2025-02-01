@@ -34,50 +34,7 @@ stamp-h1
 
 /configure_flags.env
 
-cf-agent
-cf-execd
-cf-key
-cf-monitord
-cf-promises
-cf-runagent
-cf-serverd
-cf-upgrade
-gen_bdk
-gen_cgndk
-gen_dsdk
-gen_msdk
-gen_movie
-gen_plum
-gen_monbas
-stories
-stories2
-conceptualize
-rpmvercmp
-/Percolibrium/Percolators/conceptualize
-/Percolibrium/Percolators/scan_logs
-/Percolibrium/Percolators/get_k8s_context
-/Percolibrium/Narrators/stories
-/Percolibrium/Percolators/echo.fcgi
-
-# autogen
-cf3lex.c
-cf3parse.c
-cf3parse.h
-config.h
-config.h.in
-config.post.h
-
-# examples
-cfengine_stdlib.cf
-
-# gcov/lcov
-*.gcno
-*.gcda
-*.trace
-cfengine-lcov-base.info
-cfengine-lcov.info
-coverage-html/
-
+N4L
 
 # tags
 TAGS
