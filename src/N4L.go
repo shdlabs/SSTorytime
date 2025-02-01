@@ -119,10 +119,10 @@ func ParseN4L(src []rune) {
 
 func SkipWhiteSpace(src []rune, pos int) int {
 
-	if !unicode.IsSpace(src[pos]) {
+/*	if !unicode.IsSpace(src[pos]) {
 		return pos
-	}
-	
+	}*/
+
 	for ; pos < len(src) && (unicode.IsSpace(src[pos]) || src[pos] == '#' || src[pos] == '/') ; pos++ {
 
 		if src[pos] == '\n' {
@@ -193,15 +193,16 @@ func GetToken(src []rune, pos int) (string,int) {
 		}
 
 	case '#':
-		token,pos = ReadToLast(src,pos,'\n')
+		return "",pos
+
+	case '/':
+		if src[pos+1] == '/' {
+			return "",pos
+		}
 
 	case '@':
 		token,pos = ReadToLast(src,pos,' ')
 
-	case '/':
-		if src[pos+1] == '/' {
-			token,pos = ReadToLast(src,pos,'\n')
-		}
 
 	default: // a text item that could end with any of the above
 		token,pos = ReadToLast(src,pos,'x')
@@ -551,11 +552,12 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		CheckNonNegative(LINE_ITEM_COUNTER-2)
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
-		Verbose("New relation:",last_item,"--",last_reln,"->",this_item,"when",CONTEXT_STATE)
+		Verbose("New item/event:",this_item)
+		Verbose("... Relation:",last_item,"--",last_reln,"->",this_item)
 		CheckSection()
 
 	case ROLE_CONTEXT:
-		Verbose("New context: ->",this_item)
+		Box("Fresh context: ->",this_item)
 		ContextEval(this_item,"=")
 
 	case ROLE_CONTEXT_ADD:
@@ -567,11 +569,11 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		ContextEval(this_item,"-")
 
 	case ROLE_SECTION:
-		Verbose("Reset chapter/section: ->",this_item)
+		Box("Set chapter/section: ->",this_item)
 		SECTION_STATE = this_item
 
 	default:
-		Verbose("New item/event:",this_item,"when",CONTEXT_STATE)
+		Verbose("New item/event:",this_item)
 		CheckSection()
 	}
 }
@@ -849,6 +851,20 @@ func Verbose(a ...interface{}) (n int, err error) {
 	if VERBOSE {
 		fmt.Print(LINE_NUM,":")
 		n, err = fmt.Println(a...)
+	}
+	return
+}
+
+//**************************************************************
+
+func Box(a ...interface{}) (n int, err error) {
+
+	if VERBOSE {
+
+		fmt.Println("------------------------------------")
+		fmt.Print(LINE_NUM,":")
+		fmt.Println(a...)
+		fmt.Println("------------------------------------")
 	}
 	return
 }
