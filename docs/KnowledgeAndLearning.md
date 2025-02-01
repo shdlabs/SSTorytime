@@ -30,7 +30,7 @@ heart and still have no idea how to use it. As long as it remains a
 lump of data, in your head or simply on paper, in a computer, or and the back of your hand,
 it's of little use to you. Knowledge comes from knowing things deeply---by
 forming a relationship to material. You know something when you know it like a friend.
-You won't have go and look up details because access will be intregrated into your
+You won't have go and look up details because access will be integrated into your
 conscious experience and awareness of environments you know about. This is what it
 means to have knowledge at your fingertips. We are designed to use our hands
 and fingers. 
@@ -50,15 +50,15 @@ their results.
 
 ## Limits on learning
 
-Even simply learning by memorization is hard. There is a limit to the
-scaling of learning. Machine learning is not something that will lead
-to endless improvements, because the cost benefit of learning rapidly
-becomes untenable. Adding resources to capture every last variable
-takes too long and costs too much energy. It's most effective for
-common short-term experiential learning, like pattern recognition in
-the immediate environment of sensory pre-processing. After that, a
-Monte Carlo approach to guesswork or ``prediction'' would be much more
-energy efficient.
+Even simply cramming facts by brute force memorization is hard. There
+is a limit to the scaling of learning. Even machine learning can't
+lead to endless improvements, because the cost-benefit of finding the
+right data and automating learning rapidly becomes untenable. Adding
+resources to capture every last variable takes too long and costs too
+much energy. It's most effective for common short-term experiential
+learning, like pattern recognition in the immediate environment of
+sensory pre-processing. After that, a Monte Carlo approach to
+guesswork or ``prediction'' would be much more energy efficient.
 
 Of course, one might say that humans have developed vast learning
 resources--far greater perhaps than could be accounted for by a strict
@@ -76,7 +76,7 @@ pattern memories.
 We also need to expose contextual knowledge.  Brute force learning
 also doesn't discriminate by context: there is a far greater number of
 seemingly-infinite combinatoric contexts for relevant data. Each will
-have its own learning plateau associated with its charcteristic scales
+have its own learning plateau associated with its characteristic scales
 (particularly timescales). In machine learning, transformer
 architectures have discovered this, but they are still based mainly on
 recall.
@@ -94,9 +94,9 @@ for finding it later.
 
 By following trails of thought, we are assembling a trail of prerequisites that
 our brains, evolved for navigation in a landscape, can understand. If we 
-fall prey to the conceits of perfect logic we will tend to overconstrain information
+fall prey to the conceits of perfect logic we will tend to over-constrain information
 so that it becomes impossible to find without the precise criteria used to store
-it. This probaby the most common mistake in using tools like RDF with OWL (the web ontology language)
+it. This probably the most common mistake in using tools like RDF with OWL (the web ontology language)
 as these as based on first order logic.
 
 This ends up working against us, because we need to reproduce the precise lookup key
@@ -150,7 +150,7 @@ and its meaning into a new context.
 
 The old jibe `those who cannot do teach' is about this mismatch
 between crammed knowledge and applied knowledge. Of course, the best
-teachers have already done things and try to pass on that experienceof
+teachers have already done things and try to pass on that experience of
 transmuting facts into action, though students won't necessarily have
 the context or experience to follow them. A good teacher creates that
 context. This is why we are asked to do exercises, not just reading.
@@ -231,7 +231,7 @@ surrogate alphabet for names and foreign words, in particular.
 
 ## Classification and misclassification
 
-As we write down our notes, we can't possibly ansure that every item
+As we write down our notes, we can't possibly ensure that every item
 is correctly classified into the right chapter, or in the right
 order. We still need to be able to find that misplaced book in the
 library, or a missing person amongst the busy goings-on of the
@@ -243,10 +243,10 @@ for `searching' cannot be eliminated as long as knowledge is alive.
 Indexing is the tool that makes that possible, alongside the storyline
 of tables of contents and order.
 
-Overconstraint, or over-doing classification leads to ideas like data normalization,
+Over-constraint, or over-doing classification leads to ideas like data normalization,
 or the normal forms that were invented for databases when humans were supposed
 to type in the data by hand. Consistency errors were an issue, so a scheme of normalized
-forms was invented to reduce the possibilty of error.
+forms was invented to reduce the possibility of error.
 
 If we over-constrain data by placing them perfectly so that they can only be found with
 the precise (highly precise) key, then we reduce the chances of finding the information
@@ -286,13 +286,13 @@ Part of our difficulty in making notes and organizing is also our lack
 of an overview. It doesn't take very much information to fill a page
 and exceed our visual resolution. Even if we could organize everything
 on a single sheet, our ability to resolve and comprehend it is
-limited. So what we need is a way of integrating disjointed fragmemts
+limited. So what we need is a way of integrating disjointed fragments
 of note-taking to create that integrated model.
 
 ## Tidying up is a learning strategy
 
 If you do it once, it just hides information. If you keep doing to improve and fiddle with the
-organization of things, you become intimately and cognitively familar with the placement and
+organization of things, you become intimately and cognitively familiar with the placement and
 usefulness of things. This is what our brains do. There has to be re-use activity, involving motor
 functions to extract things from their tidy places.
 
@@ -311,7 +311,7 @@ agent.
 But there is a problem with this. When we group things together, we made trade-offs and approximations
 that we might not agree with later. For instance, is a a duckbilled platypus a mammal or a bird.
 It's a warm blooded species that lays eggs. It flouts the boundaries of the largest boxes in biology
-by belonging to two boxes or a box all by itself. When we rely og box logic, things always go wrong in the end.
+by belonging to two boxes or a box all by itself. When we rely on box logic, things always go wrong in the end.
 This is the trouble with ontologies as we use them in technology today. The main benefit of doing this
 is that it forces us to revisit the model over and over again and make connections. We then identify knowledge
 with those "aha!" moments at which we independently had insights. Those are the moments we remember
@@ -324,7 +324,7 @@ to a separate sensory language that represents experience, not the concepts deri
 
 The temptation to continue classifying and sub-classifying by inventing ad hoc discriminators is a 
 powerful tendency that occasionally runs riot and appeals to the bureaucratic mind. Even though applying
-discrimintators from general experience ad hoc seems like a smart approach, it easily
+discriminators from general experience ad hoc seems like a smart approach, it easily
  leads to tunnel vision.
 
 
@@ -346,4 +346,4 @@ This may not strictly be necessary in the long run, but it's a useful
 place to begin: in particular we need the ability to identify
 sub-parts of an image of audio segment in order to cross-reference it.
 
-The basic syntatic format of the contextual note taking language takes the following form:
+The basic syntactic format of the contextual note taking language takes the following form:
