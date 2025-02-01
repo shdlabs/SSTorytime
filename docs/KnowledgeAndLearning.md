@@ -2,17 +2,30 @@
 # Knowledge and learning
 
 You might think you know how to acquire knowledge. You learn stuff---how hard could it be?
-You take a course, or read a book. There is much more to it than that.
-If you don't do the exercises, or apply the knowledge hands-on, you
-quickly find that very little of what you heard or read sticks.
+You take a course, or read a book. But, of course, there is much more to it than that.
 
-There's an old joke: that Wikis are places where knowledge goes to die. 
-Well meaning individuals may invest hours of work to write something down for
-others. But no one forms an intimate relationship to what has been written,
-it is not knowledge. It's just a graveyard of bits and bytes that means nothing
-to anyone except the person who wrote it.
+Knowing isn't just remembering. You might remember where the fire
+extinguisher is, but when there's a fire, do you know what to do? You
+might have seen people knit a sweater, but could you do it?  We need
+to use knowledge to actually `know' it. It's like food. You can collect it,
+but you don't know what it is until you actually taste it.
 
-Knowledge is more than learning. You can learn a page of text by
+## Wikis and why documentation is so bad
+
+There's an old joke: that Wikis are places where knowledge goes to
+die. Well meaning individuals may invest hours of work to write
+something down for others. But no one forms an intimate relationship
+to what has been written, it is not knowledge. It's just a graveyard
+of bits and bytes that means nothing to anyone except the person who
+wrote it. The same is true of any book, even those written by a well
+meaning author. Some books might be vanity projects, not meant to be
+embraced, but teaching books always try to reach an audience in some
+way. Success or failure depends on building a rapport with a certain reader.
+You can't reach everyone, so you aim for a few.
+
+## What is knowing, actually?
+
+Knowledge is more than memory. You can `learn' a page of text by
 heart and still have no idea how to use it. As long as it remains a
 lump of data, in your head or simply on paper, in a computer, or and the back of your hand,
 it's of little use to you. Knowledge comes from knowing things deeply---by
