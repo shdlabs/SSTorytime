@@ -35,8 +35,10 @@ A (relation) B (relation) C      # Chain relationship
 $1 (relation) D                  # Continuination of chain from previous first item
 $2 (relation) E                  # Continuation from second previous
 
-@myalias                            # alias this line for easy reference
-$myalias.1                          # a reference to the aliased line for easy reference
+@myalias                         # alias this line for easy reference
+$myalias.1                       # a reference to the aliased line for easy reference
+
+NOTE TO SELF ALLCAPS             # picked up as a "to do" item, not actual knowledge
 
 "paragraph =specialword paragraph paragraph paragraph paragraph
  paragraph paragraph paragraph paragraph paragraph
@@ -50,7 +52,8 @@ Here A,B,C,D,E stand for unicode strings. Reserved symbols:
 <pre>
 (), +, -, @, $, and # 
 </pre>
-Literal parentheses can be quoted
+Literal parentheses can be quoted. There should be no whitespace after the initial quote
+of a quoted string.
 
 ## Example
 

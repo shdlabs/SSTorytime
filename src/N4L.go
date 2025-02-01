@@ -38,6 +38,7 @@ const (
 
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
+	WARN_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
 )
 
 var ( 
@@ -119,7 +120,7 @@ func ParseN4L(src []rune) {
 
 func SkipWhiteSpace(src []rune, pos int) int {
 
-	for ; pos < len(src) && (unicode.IsSpace(src[pos]) || src[pos] == '#' || src[pos] == '/') ; pos++ {
+	for ; pos < len(src) && IsWhiteSpace(src[pos],src[pos]); pos++ {
 
 		if src[pos] == '\n' {
 			UpdateLastLineCache() 
@@ -146,7 +147,7 @@ func GetToken(src []rune, pos int) (string,int) {
 
 	var token string
 
-	if pos == len(src) {
+	if pos >= len(src) {
 		return "", pos
 	}
 
@@ -179,10 +180,13 @@ func GetToken(src []rune, pos int) (string,int) {
 		token,pos = ReadToLast(src,pos,')')
 
         case '"': // only a quoted string must end with the same followed by one of above
-		if unicode.IsSpace(src[pos+1]) {
+		if IsBackReference(src,pos) {
 			token = "\""
 			pos++
 		} else {
+			if pos+2 < len(src) && IsWhiteSpace(src[pos+1],src[pos+2]) {
+				ParseError(WARN_ILLEGAL_QUOTED_STRING_OR_REF)
+			}
 			token,pos = ReadToLast(src,pos,'"')
 			strip := strings.Split(token,"\"")
 			token = strip[1]
@@ -255,10 +259,10 @@ func ClassifyTokenRole(token string) {
 
 	case '"':
 		Role("prior-reference",LookupAlias("PREV",LINE_ITEM_COUNTER))
-		LINE_ITEM_STATE = ROLE_EVENT
 		result := LookupAlias("PREV",LINE_ITEM_COUNTER)
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
 		AssessGrammarCompletions(result,LINE_ITEM_STATE)
+		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
 
 	case '@':
@@ -318,6 +322,7 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 	}
 
 	token := string(cpy)
+
 	token = strings.TrimSpace(token)
 
 	return token,pos
@@ -328,6 +333,25 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 
 	var collect bool = true
+
+	// Quoted strings are tricky
+
+	if stop == '"' {
+		var is_end bool
+
+		if pos+1 >= len(src) {
+			is_end= true
+		} else {
+			is_end = IsWhiteSpace(src[pos],src[pos+1])
+		}
+
+		if src[pos-1] == stop && is_end {
+			return false
+		} else {
+			return true
+		}
+
+	}
 
 	if src[pos] == '\n' {
 		return false
@@ -390,12 +414,12 @@ func IsGeneralString(src []rune,pos int) bool {
 func LastSpecialChar(src []rune,pos int, stop rune) bool {
 
 	if src[pos] == '\n' {
-		return true
+		if stop != '"' {
+			return true
+		}
 	}
 
-	// tabs are divisors, don't use them!
-
-	if pos > 0 && (src[pos-1] == stop || src[pos-1] == '\t') && src[pos] != stop {
+	if pos > 0 && src[pos-1] == stop && src[pos] != stop {
 		return true
 	}
 
@@ -432,6 +456,33 @@ func UpdateLastLineCache() {
 	LINE_ALIAS = ""
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
+}
+
+//**************************************************************
+
+func IsWhiteSpace(r,rn rune) bool {
+
+	return (unicode.IsSpace(r) || r == '#' || r == '/' && rn == '/')
+}
+
+//**************************************************************
+
+func IsBackReference(src []rune,pos int) bool {
+
+	// Any non-whitespace before \n or ( means it's not a back reference
+
+	for pos++; pos < len(src); pos++ {
+
+		if src[pos] == '(' || src[pos] == '\n' || src[pos] == '#' {
+			return true
+		} else {
+			if !unicode.IsSpace(src[pos]) {
+				return false
+			}
+		}
+	}
+
+	return false
 }
 
 //**************************************************************
