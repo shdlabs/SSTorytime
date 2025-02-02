@@ -30,7 +30,7 @@ this problem and think we can do better than what we have today.
 
 The toolset consistent of several components.
 
-* N4L - a unicode text based note taking language for jotting down notes in a way
+* [N4L](docs/N4L.md) - a unicode text based note taking language for jotting down notes in a way
         that can be parsed and loaded into a semantic database. 
         N = note, 4 = 4 semantic type, L = language
         N4L = notes for loading
