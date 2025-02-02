@@ -1,0 +1,39 @@
+ ::private.commentary.mark.chinese::
+
+
+
+Kuàizi (ph) 筷子 (he) chopsticks
+kuài   (ph) 块 (he) yuan / quid
+Kuàilè (ph) 快乐 (he) happy
+
+块 (sounds like) 快 (sl) 筷   // don't confuse these
+
+  Diǎnxīn (cf)  Duǎnxìn
+
+  zuì (sounds like,0.4)  shuì , shéi 
+
+  zou     (ll:0.9|sl:0.9) zuo
+  zou,zuo (ll:0.5|sl:0.8) zao
+
+  zuo  (confused with) zhuo
+  zhuo (confused with) Zhao
+  zhuo (confused with) zhou
+
+  Zuò fàn (sl) Zǎofàn
+
+// this should scale ok, as we know strings of length > 3 are generally unique 
+
+Huì (cf) huí (cf) huǐ (cf)  $1
+
+会 (cf) 回 (cf) 悔
+
+ dǔchē (cf)  Dǎchē       // traffic, get a cab
+ 堵车 (sounds like) 打车
+
+
+#################################################
+
+:: private.commentary.mark.norwegian ::
+
+
+ bønder (sl) bønner  // not pronounced like, because that's against downstream 
