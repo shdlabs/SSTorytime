@@ -4,11 +4,13 @@
 *If you want to know the deep thought behind an apparently ad hoc bit of
 software, please take a look at [the project's own research website](http://markburgess.org/spacetime.html).*
 
-Knowledge management is like tending a garden. You plant, you have to
-tend, you organize, and you have to pull weeds. Eventually, you learn
-your way around the garden, where to pick flowers and vegetables. The
-bigger the garden, the more effort it takes to reach this level of
-familiarity.
+Knowledge management is not about writing stuff down. Knowledge
+existed before writing was invented. Animals know things without the
+World Wide Web.  It's more like tending a garden. You plant, you have
+to tend, you organize, and you have to pull weeds. Eventually, you
+learn your way around the garden, where to pick flowers and
+vegetables. The bigger the garden, the more effort it takes to reach
+this level of familiarity.
 
 When we're familar with knowledge, we communicate by telling stories
 about it.  A story is much more than idle gossip about unfamiliar
@@ -25,6 +27,8 @@ pace or pulse. We have to let this evolve, like the weather. You can't
 easy capture the weather, but with a little ingenuity you can put up a
 sail to ride the wind, and learn yourself to know its currents.
 
+## Remembering and forgetting
+
 Memory has a horizon.  Things we learn, thoughts that we have, are
 easily lost and forgotten.  Writing stuff down (intructions,
 experiences, etc) seems like a good idea, but it's useless if no one
@@ -40,11 +44,17 @@ that doen't mean that you, an individual, will learn from what is
 written there. Even Wikipedia information is not knowledge unless it's
 in someone's head. To the causal browser, it is merely information,
 even hearsay. Knowledge for the population is different from knowledge
-for a single person. A library doesn't make you smartif you don't read
-the books.
+for a single person. A library doesn't make you smart if you don't read
+the books. So engineering knowledge involves engineering habits and behaviour.
 
-Technology tries to help, but it can also get us stuck doing the wrong
-thing.  Semantic knowledge representations have not evolved since the
+## Tools make work easier?
+
+We're talking about knowing how to acquire and retain knowledge.
+Technology can help, but it can also get us stuck doing the wrong
+thing. If we take away too much of the work from people, people will forget
+how to do the work. That's how knowledge works. 
+
+Semantic knowledge representations have not evolved since the
 Semantic Web was proposed during the 1990s, at a time when the
 technology was primitive and the technologists weren't themselves
 experienced in how to use it.
