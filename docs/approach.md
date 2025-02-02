@@ -1,5 +1,6 @@
 
-# An approach to knowledge
+# The Mission
+### An approach to knowledge
 
 *If you want to know the deep thought behind an apparently ad hoc bit of
 software, please take a look at [the project's own research website](http://markburgess.org/spacetime.html).*

@@ -21,7 +21,7 @@ to force discipline onto people at the wrong moment and neglecting to
 do so when it matters. As a lifelong teacher of ideas, I've studied
 this problem and think we can do better than what we have today.
 
-* [Approach](docs/approach.md)
+* [The Mission and Approach](docs/approach.md)
 * [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
 * [SSTorytelling](docs/Storytelling.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
