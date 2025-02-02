@@ -15,7 +15,7 @@ for general use. AI can only capture knowledge from humans, so even if we
 want to use AI, we'd better get the knowledge representations right.
 
 Knowledge capture requires tools for collecting factual notes, data
-relatioships, and structures for representing and organizing them, so
+relationships, and structures for representing and organizing them, so
 that they can be found easily. Many mistakes have been made around
 this in the past, trying to force discipline onto people at the wrong
 moment and neglecting to do so when it matters. As a lifelong teacher
@@ -30,9 +30,9 @@ what we have today.
 
 ## The tools
 
-The toolset consistent of several components.
+The tool-set consistent of several components.
 
-* [N4L](docs/N4L.md) - a unicode text based note taking language for jotting down notes in a way
+* [N4L](docs/N4L.md) - a Unicode text based note taking language for jotting down notes in a way
         that can be parsed and loaded into a semantic database. 
         N = note, 4 = 4 semantic type, L = language
         N4L = notes for loading
