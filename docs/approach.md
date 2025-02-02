@@ -57,23 +57,24 @@ person, book, or assistant (human or otherwise) that we're relying on.
 ## Stories
 
 When we're familar with `knowledge' (which is the actual definition of
-it), we communicate by telling stories about it.  A story is much more
-than idle gossip about unfamiliar hearsay: it has to make sense, it
-has to be grounded in intimate detail. Condensing knowledge into
-*intentional* stories (at different levels of detail for different
-purposes) helps us to pass on knowledge.  Some stories are about
-solving problems, others are merely descriptive lessons learned.
+it), we can communicate it to others by telling stories about it to people,
+machines, abstract processes, work in general. By communicating
+it to a process we're engaged in, we make use of it. It could be how to operate
+a cash register, or drive a car, when and how much to water a crop. 
+Basically, it's about having the familiarity with cause and effect to trust
+ourselves to act appropriately in the appropriate circumstance or context.
 
-Gardens aside, one could say that generating familiarity and
-maintaining knowledge is like scaling the activity in a city. Time is
-driven by parallel events arriving. The more people, the faster the
-pace or pulse. We have to let this evolve, like the weather. You can't
-easy capture the weather, but with a little ingenuity you can put up a
-sail to ride the wind, and learn yourself to know its currents.
+A simple measure of knowledge is what kind of story we could tell.  A
+knowledgable `story' is much more than idle gossip about unfamiliar hearsay: it has
+to make sense, it has to be grounded in intimate detail. Condensing
+knowledge into *intentional* stories (at different levels of detail
+for different purposes) helps us to pass on knowledge.  Some stories
+are about solving problems, others are merely descriptive lessons
+learned.
 
 ## Remembering and forgetting
 
-Memory has a horizon.  Things we learn, thoughts that we have, are
+Learning requires memory, and memory has a horizon.  Things we learn, thoughts that we have, are
 easily lost and forgotten.  Writing stuff down (intructions,
 experiences, etc) seems like a good idea, but it's useless if no one
 reads what is written regularly. It doesn't matter how you try to
