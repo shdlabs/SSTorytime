@@ -10,7 +10,7 @@
 
 * This is a work in progress, planned work for 2025 *
 
-This project aims to make knowledge capture easy for humans
+This project aims to make knowledge capture, querying, and dissemination easy for humans
 for general use. AI can only capture knowledge from humans, so even if we
 want to use AI, we'd better get the knowledge representations right.
 
@@ -21,9 +21,9 @@ to force discipline onto people at the wrong moment and neglecting to
 do so when it matters. As a lifelong teacher of ideas, I've studied
 this problem and think we can do better than what we have today.
 
-* [Approach]
+* [Approach](docs/approach.md)
 * [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
-* [N4L - Notes For Learning/Loading]
+* [N4L - Notes For Learning/Loading](docs/N4L.md)
 
 
 ## The tools
