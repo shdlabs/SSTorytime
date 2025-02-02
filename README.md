@@ -23,6 +23,7 @@ this problem and think we can do better than what we have today.
 
 * [Approach](docs/approach.md)
 * [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
+* [SSTorytelling](docs/Storytelling.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
 
 
