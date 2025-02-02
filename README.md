@@ -8,7 +8,7 @@
 
 # SSTorytime
 
-* This is a work in progress, planned work for 2025 *
+* This is a work in progress for 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/) *
 
 This project aims to make knowledge capture, querying, and dissemination easy for humans
 for general use. AI can only capture knowledge from humans, so even if we
