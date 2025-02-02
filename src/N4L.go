@@ -20,6 +20,7 @@ import (
 //**************************************************************
 
 const (
+	ALPHATEXT = 'x'
 	ROLE_EVENT = 1
 	ROLE_RELATION = 2
 	ROLE_SECTION = 3
@@ -160,7 +161,7 @@ func GetToken(src []rune, pos int) (string,int) {
 		case ':':
 			token,pos = ReadToLast(src,pos,':')
 		default:
-			token,pos = ReadToLast(src,pos,'x')
+			token,pos = ReadToLast(src,pos,ALPHATEXT)
 		}
 
 	case '-':  // could -:: or -section
@@ -170,7 +171,7 @@ func GetToken(src []rune, pos int) (string,int) {
 		case ':':
 			token,pos = ReadToLast(src,pos,':')
 		default:
-			token,pos = ReadToLast(src,pos,'x')
+			token,pos = ReadToLast(src,pos,ALPHATEXT)
 		}
 
 	case ':':
@@ -205,7 +206,7 @@ func GetToken(src []rune, pos int) (string,int) {
 
 
 	default: // a text item that could end with any of the above
-		token,pos = ReadToLast(src,pos,'x')
+		token,pos = ReadToLast(src,pos,ALPHATEXT)
 
 	}
 
@@ -315,7 +316,7 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 	for ; Collect(src,pos,stop,cpy); pos++ {
 
 		// sanitize small case at start of item
-		if stop == 'x' {
+		if stop == ALPHATEXT {
 			src[pos] = unicode.ToLower(src[pos])
 		}
 		cpy = append(cpy,src[pos])
@@ -357,7 +358,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 		return false
 	}
 
-	if stop == 'x' {
+	if stop == ALPHATEXT {
 		collect = IsGeneralString(src,pos)
 	} else {
 		// a ::: cluster is special, we don't care how many
