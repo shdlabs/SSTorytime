@@ -5,38 +5,54 @@
 *If you want to know the deep thought behind an apparently ad hoc bit of
 software, please take a look at [the project's own research website](http://markburgess.org/spacetime.html).*
 
-We tend to confuse knowledge with our *desire* for knowledge. You could
-say we covet other people's knowledge. But, if somebody else knows the answer, that's
-`world knowledge', it's not ours.  
+We tend to confuse knowledge with our *desire* for knowledge. In fact,
+you might say we covet other people's knowledge, but we don't always
+understand what that means. If somebody else knows the answer, that's
+`world knowledge', but it's not ours.
 
-Do we need to know so much? There's an argument about not
-having to know everything ourselves, but then we need knowledge about
-how to make use of knowledge that we don't actually have ourselves.
-We take this for granted because it's all sort of worked out in the
-past.  What's new in the modern world is the *pace* at which the world
-changes and old world knowledge expires and the need to update our
-relationships to key facts accelerates. It's becoming stressful,
-and this places a focus on Artificial Intelligence.
+Do we need to know so much? There's, of course, an argument about not
+having to know everything ourselves. Then we need knowledge about how
+to make use of other people's knowledge.  In the past, we've taken
+this for granted because it all sort of worked out when things were
+slower and there were fewer people and pressures on us all.  What's
+new in the modern world is the *pace* of change, and the rate at which
+our old world knowledge expires. We need to update ourselves by
+deepening our relationships to what we want to know as the world
+accelerates. It's becoming stressful, and this places a focus on tools like
+databases and Artificial Intelligence to relieve that stress---but they
+are a devil's bargain, because they require us to trust *unknowingly*.
 
-Knowledge management is not really about writing stuff down or putting
-is in a database. Knowledge
-existed before writing was invented; animals know things without using
-the World Wide Web. Knowledge management is more like tending a
-garden. You discover, you plant, you have to tend to growth, you organize, and you have to
-pull weeds and fix damage *yourself*. Eventually, you learn your way around the
-garden, where to pick flowers and vegetables. The bigger the garden,
-the more effort it takes to reach this level of familiarity.
+Knowledge management is not really about writing stuff down, filing
+it, or putting is in a database. Knowledge existed before writing was
+invented; animals know things without using the World Wide
+Web. Knowledge management is more like tending a garden. You discover,
+you plant, you have to tend to growth, you organize, and you have to
+pull weeds and fix damage *yourself*. Eventually, you learn your way
+around the garden, where to pick flowers and vegetables. The bigger
+the garden, the more effort it takes to reach this level of
+familiarity.  So where are the knowledge tractors and harvesters?
 
-The key thing is that---to acquire knowledge---you have to do it all yourself,
-otherwise it's merely someone else's  knowledge.
+The key thing is that---to acquire knowledge---you have to have the
+intent to do it all yourself, otherwise it's merely someone else's
+knowledge. It requires our attention! We can't pass that on to someone else.
 
 ## Delegating and working together
 
-Because we can't know everything, we've learned to work together. Trusting
-others' knowledge allows us to make use of it, without understanding all the 
-details. We exchange actual knowledge for trust, but trust is also about knowing:
-we exchange knowing the facts or skills ourself for 
-knowing another person, book, or assistant (human or otherwise).
+So why not trust others? Why not just trust Artificial Intelligence and databases?
+The simple answer is that we need to know enough to judge whether what others
+tell us is reliable.
+
+Because we can't know and do everything ourselves, we've learned to
+work together. Trusting others' knowledge and skill allows us to make
+use of it, without understanding all the details. But we do need to
+check their homework for errors and for negligence. As soon as we
+delegate, we become managers and inspectors if we want to know
+anything at all---otherwise, we've simply accepted ignorance.
+
+When we delegate, we exchange our knowledge for trust in someone or
+something else; but trust is also about knowing! We exchange our
+knowing of facts or skills with the knowing about the accuracy of the
+person, book, or assistant (human or otherwise) that we're relying on.
 
 ## Stories
 
