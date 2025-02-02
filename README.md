@@ -14,12 +14,13 @@ This project aims to make knowledge capture, querying, and dissemination easy fo
 for general use. AI can only capture knowledge from humans, so even if we
 want to use AI, we'd better get the knowledge representations right.
 
-Knowledge capture requires tools for collecting notes, and structures
-for representing and organizing them, so that they can be found
-easily. Many mistakes have been made around this in the past, trying
-to force discipline onto people at the wrong moment and neglecting to
-do so when it matters. As a lifelong teacher of ideas, I've studied
-this problem and think we can do better than what we have today.
+Knowledge capture requires tools for collecting factual notes, data
+relatioships, and structures for representing and organizing them, so
+that they can be found easily. Many mistakes have been made around
+this in the past, trying to force discipline onto people at the wrong
+moment and neglecting to do so when it matters. As a lifelong teacher
+of ideas, I've studied this problem and think we can do better than
+what we have today.
 
 * [The Mission and Approach](docs/approach.md)
 * [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
