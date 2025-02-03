@@ -26,8 +26,7 @@ Documentation often assumes you already know go quite well and is more intereste
 
  basic example (same as) hello world
 
- hello word (example) 
-'package main
+ hello word (example) 'package main
 
 import (
     "dependency 1"

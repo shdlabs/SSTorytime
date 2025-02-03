@@ -68,12 +68,12 @@ func main() {
 
 	args := Init()
 
-	//config := ReadFile("config.in")
-	//ParseConfig(config)
+	config := ReadFile("N4Lconfig.in")
+	ParseConfig(config)
 
 	for input := 0; input < len(args); input++ {
 
-		CURRENT_FILE = args[input]
+		NewFile(args[input])
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
@@ -103,6 +103,39 @@ func Init() []string {
 
 //**************************************************************
 
+func NewFile(filename string) {
+
+	CURRENT_FILE = filename
+	LINE_NUM = 1
+	LINE_ITEM_CACHE["THIS"] = nil
+	LINE_RELN_CACHE["THIS"] = nil
+	LINE_ITEM_COUNTER = 1
+	LINE_RELN_COUNTER = 0
+	LINE_ALIAS = ""
+}
+
+//**************************************************************
+
+func ParseConfig(src []rune) {
+
+/*	var token string
+
+	for pos := 0; pos < len(src); {
+
+		pos = SkipWhiteSpace(src,pos)
+		token,pos = GetConfigToken(src,pos)
+	}*/
+}
+
+//**************************************************************
+// N4L configuration
+//**************************************************************
+
+
+//**************************************************************
+// N4L language
+//**************************************************************
+
 func ParseN4L(src []rune) {
 
 	var token string
@@ -121,8 +154,6 @@ func ParseN4L(src []rune) {
 	}
 }
 
-//**************************************************************
-// Parsing objects
 //**************************************************************
 
 func SkipWhiteSpace(src []rune, pos int) int {
