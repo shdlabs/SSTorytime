@@ -180,16 +180,17 @@ func GetToken(src []rune, pos int) (string,int) {
 	case '(':
 		token,pos = ReadToLast(src,pos,')')
 
-        case '"': // only a quoted string must end with the same followed by one of above
-		if IsBackReference(src,pos) {
+        case '"','\'':
+		quote := src[pos]
+		if quote == '"' && IsBackReference(src,pos) {
 			token = "\""
 			pos++
 		} else {
 			if pos+2 < len(src) && IsWhiteSpace(src[pos+1],src[pos+2]) {
 				ParseError(WARN_ILLEGAL_QUOTED_STRING_OR_REF)
 			}
-			token,pos = ReadToLast(src,pos,'"')
-			strip := strings.Split(token,"\"")
+			token,pos = ReadToLast(src,pos,quote)
+			strip := strings.Split(token,string(quote))
 			token = strip[1]
 		}
 
@@ -337,7 +338,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 
 	// Quoted strings are tricky
 
-	if stop == '"' {
+	if stop == '"' || stop == '\'' {
 		var is_end bool
 
 		if pos+1 >= len(src) {

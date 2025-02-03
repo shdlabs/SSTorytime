@@ -90,12 +90,9 @@
  + has state - is the state of
  + has value - is the value of
 
- + can connect to - can be connected from
- + can reach - can be reached by
- + is next to - can be reached by // ambiguous
+ + note - is a note about 
 
 
- has state = has value
 
 
 #########################################################
