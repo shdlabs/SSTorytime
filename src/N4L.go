@@ -50,8 +50,14 @@ var (
 	LINE_ALIAS string = ""
 	LINE_ITEM_COUNTER int = 1
 	LINE_RELN_COUNTER int = 0
+
 	CONTEXT_STATE = make(map[string]bool)
 	SECTION_STATE string
+
+	SEQUENCE_MODE bool = false
+	SEQUENCE_RELN string = "then" 
+	LAST_IN_SEQUENCE string = ""
+
 	VERBOSE bool = false
 	CURRENT_FILE string
 )
@@ -226,12 +232,14 @@ func ClassifyTokenRole(token string) {
 
 	case ':':
 		expression := ExtractContextExpression(token)
+		CheckSequenceMode(expression,'+')
 		Role("context reset:",expression)
 		LINE_ITEM_STATE = ROLE_CONTEXT
 		AssessGrammarCompletions(expression,LINE_ITEM_STATE)
 
 	case '+':
 		expression := ExtractContextExpression(token)
+		CheckSequenceMode(expression,'+')
 		Role("context augmentation:",expression)
 		LINE_ITEM_STATE = ROLE_CONTEXT_ADD
 		AssessGrammarCompletions(expression,LINE_ITEM_STATE)
@@ -239,6 +247,7 @@ func ClassifyTokenRole(token string) {
 	case '-':
 		if token[1:2] == string(':') {
 			expression := ExtractContextExpression(token)
+			CheckSequenceMode(expression,'-')
 			Role("context pruning:",expression)
 			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
 			AssessGrammarCompletions(expression,LINE_ITEM_STATE)
@@ -276,10 +285,11 @@ func ClassifyTokenRole(token string) {
 	case '$':
 		Role("variable-reference",token)
 		actual := ResolveAliasedItem(token)
-		Verbose(LINE_NUM,": -",token,"...resolved to",actual)
+		Verbose("fyi, line reference",token,"resolved to",actual)
 
 		AssessGrammarCompletions(actual,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_LOOKUP
+		LINE_ITEM_COUNTER++
 
 	default:
 		Role("Event item:",token)
@@ -288,7 +298,6 @@ func ClassifyTokenRole(token string) {
 
 		if LINE_ALIAS != "" {
 			LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS],token)
-			//Verbose(LINE_ALIAS,"=",LINE_ITEM_CACHE[LINE_ALIAS],len(LINE_ITEM_CACHE[LINE_ALIAS]))
 		}
 
 		AssessGrammarCompletions(token,LINE_ITEM_STATE)
@@ -355,7 +364,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 
 	}
 
-	if src[pos] == '\n' {
+	if pos >= len(src) || src[pos] == '\n' {
 		return false
 	}
 
@@ -532,6 +541,37 @@ func ExtractContextExpression(token string) string {
 
 //**************************************************************
 
+func CheckSequenceMode(context string, mode rune) {
+
+	if (strings.Contains(context,"_sequence_")) {
+
+		switch mode {
+		case '+':
+			Verbose("\nStart sequence mode for items")
+			SEQUENCE_MODE = true
+		case '-':
+			Verbose("End sequence mode for items\n")
+			SEQUENCE_MODE = false
+			LAST_IN_SEQUENCE = ""
+		}
+	}
+
+}
+
+//**************************************************************
+
+func LinkSequence(this string) {
+
+	if SEQUENCE_MODE {
+		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
+			Verbose("... Sequence:",LAST_IN_SEQUENCE,"--",SEQUENCE_RELN,"->",this)
+		}
+		LAST_IN_SEQUENCE = this
+	}
+}
+
+//**************************************************************
+
 func FindAssociation(token string) string {
 
 	name := token[1:len(token)-1]
@@ -575,18 +615,6 @@ func ResolveAliasedItem(token string) string {
 
 func AssessGrammarCompletions(token string, prior_state int) {
 
- //using foreach in LINE_ITEM_CACHE["THIS"]  LINE_RELN_CACHE["THIS"]
-
-	// completions
-        // @alias --> set current in hash table @alias.$1 etc ... until \n (default alias = "")
-	// :: :: ---> set current until next :: ::
-	// ITEM1 ITEM2 -> install first item and keep ITEM2++
-        // ITEM1 (reln) ITEM2 ITEM3 --> install whole relation and keep ITEM3++
-        // ITEM1 (reln) ITEM2 (reln2) --> install whole relation and keep ITEM2++
-
-	// item, context (special case of) item
-	// (item1,context) (reln,context) (item2,context)
-
 	if AllCaps(token) {
 		ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
 		return
@@ -601,12 +629,12 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		CheckNonNegative(LINE_ITEM_COUNTER-2)
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
-		Verbose("New item/event:",this_item)
+		Verbose("Event/item:",this_item)
 		Verbose("... Relation:",last_item,"--",last_reln,"->",this_item)
 		CheckSection()
 
 	case ROLE_CONTEXT:
-		Box("Fresh context: ->",this_item)
+		Box("Reset context: ->",this_item)
 		ContextEval(this_item,"=")
 
 	case ROLE_CONTEXT_ADD:
@@ -622,8 +650,10 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		SECTION_STATE = this_item
 
 	default:
-		Verbose("New item/event:",this_item)
+		Verbose("Event/item:",this_item)
 		CheckSection()
+		LinkSequence(token)
+
 	}
 }
 
@@ -898,7 +928,7 @@ func usage() {
 func Verbose(a ...interface{}) (n int, err error) {
 
 	if VERBOSE {
-		fmt.Print(LINE_NUM,":")
+		fmt.Print(LINE_NUM,":\t")
 		n, err = fmt.Println(a...)
 	}
 	return

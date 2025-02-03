@@ -56,6 +56,32 @@ Here A,B,C,D,E stand for unicode strings. Reserved symbols:
 Literal parentheses can be quoted. There should be no whitespace after the initial quote
 of a quoted string.
 
+## Sequence mode ##
+
+Sometimes it's useful to link items together into a chain or sequence.
+By adding the sequence directive to a context
+<pre>
+
+ +:: _sequence_ , poem ::   // starting sequence mode
+
+ Mary had a little lamb         (note) Had means possessed not gave birth to
+ Whose fleece was white as snow
+ And everywhere that Mary went
+
+ The lamb was sure to go        (note) SatNav invented later
+
+ -:: _sequence_ ::          // ending sequence mode
+
+</pre>
+This results is a sequence of lines linked by `then' arrows, until the context is removed.
+<pre>
+Mary had a little lamb (then) Whose fleece was white as snow (then) ...
+</pre>
+Then is a pre-defined and effectively reserved association.
+
+* Only the first items on a line are linked. 
+* Only new items are linked, so the use of a " or variable reference will not trigger a new item.
+
 ## Example
 
 Assocations have explanatory power, so we want to take advantage of that.
