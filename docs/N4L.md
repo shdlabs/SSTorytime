@@ -29,6 +29,7 @@ familiar editor to write notes in pure text (Unicode).
 A                                # Item
 Any text not including a "("     # Item
 "A..."                           # Quoted item
+'also "quoted" item'             # Useful if item contains double quotes
 A (relation) B                   # Relationship
 A (relation) B (relation) C      # Chain relationship
 " (relation) D                   # Continuination of chain from previous single item
