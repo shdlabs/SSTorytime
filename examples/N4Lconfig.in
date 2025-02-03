@@ -8,65 +8,61 @@
 
  	# causal order, preconditions, succession
 
- 	+ forwards - backwards      	# A (forwards)	B,  B (backwards) A
- 	+ affects  - affected by    	# A (affects) 	B,  B (affected by) A
- 	+ causes   - is caused by
+ 	+ forwards (fwd) - backwards (bwd)      # A (forwards)	B,  B (backwards) A
+ 	+ affects  (af)  - affected by (baf)  	# A (affects) 	B,  B (affected by) A
+ 	+ causes   (cf)  - is caused by (cb)
+ 	+ leads to (to)  - comes from (fr)
+        + is followed by (next) - is preceded by (prev)    
+        + then the next is (then) - previous (prior)
 
- 	+ leads to - comes from
+ 	# these next two are mutually complementary interpretations
+
+ 	+ succeeded by (succ) - preceded by (pre)
+ 	+ comes before (bfr)  - comes after (aft)
 
  	# these translations are causal transformations, not just properties.
  	# they have transitive meaning
 
+ 	# if we insist on using + or - in the name, then quote it
+
+ 	+ "positive (+)" (+) - "negative (-)" (-)
+
+
+        # More examples to play with, semantics are always reversible
+
+ 	+ results in (res) - comes from (comfr)
+ 	+ depends on (dep) - drives (drv)
+ 	+ influences (infl) - is influenced by (isinfl)
+
+        # Numbers can be interpreted either as set order (value) 
+        # or by set containment (count), so be careful with semantics!
+
+        # succeeds is more accurate in terms of order
+        #
+	# + is less than (lt) - is greater than (gt)
+
  :: chinese language ::
 
- 	+ english for pinyin (ep) - pinyin for english (pe)       // because e leads to p conditionally
+ 	+ english for pinyin (ep) - pinyin for english (pe)  
  	+ pinyin for hanzi (ph) - hanzi for pinyin (hp)
  	+ hanzi for english (he) - english for hanzi (eh)
  	+ english for Norwegian (en) - Norwegian for english (ne)
  	+ english to norsk (en) - norsk to english (ne)
 
- 	# if we insist on using + or - in the name, then quote it
-
- 	+ "+" - "-"
-
- 	# these two are equivalent
-
- 	+ followed by - preceded by	# A (followed by) B,  B (preceded by) A
- 	+ precedes - follows       	# A (precedes)	B,  B (follows)
-
- 	// Note logically in PT A can only say what it uses, not what it is used by,
- 	// so we may prefer
-
- 	+ used by - uses
-
- 	// over : + uses - used by
- 	// but when annotating observations, we are a 3rd party, no one is self-declaring as such
-
-
- 	+ results in - relies on
- 	+ depends on - has consequence
- 	+ influences - influenced by  	# A (influences) B,  A (is influenced by) B
-
-	+lays eggs of - hatches from egg of
-
-	# partial order, size
-
-	+ comes before - comes after
-
-	+ less than - greater than   # A (less than)> B
 
 #########################################################
 
 - contains
 
- + has component - is component of
- + contains - is in
- + is a set of - is an element of	// designations can be multi-valued
- + contains - is an element of
- + subsumes - is inside
- + covers - is part of
+ + has component (has) - is component of (part)
+ + contains (c)        - is within (in)
+ + is a set of (setof) - is part of set (inset) // designations can be multi-valued
+ + contains (cont)     - is an element of (el)
+ + subsumes (sub)      - is subsumed by (subby)
+ + swallows (sw)       - is swallowed by (swby)
+ + consists of (cons   - is part of (pt)
 
- + in the context of - is a possible context for
+ + occurs in the context of (occurs in)  - is a possible context for (ctxfor)
 
 #########################################################
 
@@ -77,22 +73,20 @@
 
  #  A (expresses) B, B (is expressed by) A
 
- + expresses - is expressed by
- + has property - is a property of
- + means - is meant by
- + intends - is the intent of
- + has interpretation - is the interpretation of
- + is pronounced - is the pronunciation for
+ + expresses (expr)          - is expressed by  (exprby)
+ + has property (prop)       - is a property of (propof)
+ + means (means)             - is meant by (meansb)
+ + intends (intt)            - is the intent of (iof)
+ + is pronounced as (pronas) - is the pronunciation for (pronof)
 
  # Here we see type classifiers in action
 
- + is called - has name
- + has state - is the state of
- + has value - is the value of
+ + is called (called) - name of (pname)
 
- + note - is a note about 
+ + may have state (instate) - is a possible state of (stateof)
+ + may have value (hasX)    - is a possible value for (isX)
 
-
+ + note/remark (note) - is a note or remark about (isnotefor)
 
 
 #########################################################
@@ -102,13 +96,12 @@
  looks like         	(ll)
  sounds like        	(sl)
 
-
  equals             	(eq)
  is not the same as 	(!eq)
 
  similar to         	(sim)
- associated with    	(a)  # (loose coupling)
- near               	(n)
+ associated with    	(ass)  # (loose coupling)
+ near               	(nr)
 
 
 

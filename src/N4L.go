@@ -21,6 +21,11 @@ import (
 
 const (
 	ALPHATEXT = 'x'
+
+        HAVE_PLUS = 11
+        HAVE_MINUS = 22
+	ROLE_ABBR = 33
+
 	ROLE_EVENT = 1
 	ROLE_RELATION = 2
 	ROLE_SECTION = 3
@@ -37,6 +42,8 @@ const (
 	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
 	ERR_MISSING_ITEM_SOMEWHERE = "Missing item somewhere"
 
+	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
+
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	WARN_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
@@ -50,6 +57,9 @@ var (
 	LINE_ALIAS string = ""
 	LINE_ITEM_COUNTER int = 1
 	LINE_RELN_COUNTER int = 0
+
+	FWD_ARROW string
+	BWD_ARROW string
 
 	CONTEXT_STATE = make(map[string]bool)
 	SECTION_STATE string
@@ -68,7 +78,8 @@ func main() {
 
 	args := Init()
 
-	config := ReadFile("N4Lconfig.in")
+	NewFile("N4Lconfig.in")
+	config := ReadFile(CURRENT_FILE)
 	ParseConfig(config)
 
 	for input := 0; input < len(args); input++ {
@@ -106,31 +117,153 @@ func Init() []string {
 func NewFile(filename string) {
 
 	CURRENT_FILE = filename
+	LINE_ITEM_STATE = ROLE_BLANK_LINE
 	LINE_NUM = 1
 	LINE_ITEM_CACHE["THIS"] = nil
 	LINE_RELN_CACHE["THIS"] = nil
 	LINE_ITEM_COUNTER = 1
 	LINE_RELN_COUNTER = 0
 	LINE_ALIAS = ""
-}
-
-//**************************************************************
-
-func ParseConfig(src []rune) {
-
-/*	var token string
-
-	for pos := 0; pos < len(src); {
-
-		pos = SkipWhiteSpace(src,pos)
-		token,pos = GetConfigToken(src,pos)
-	}*/
+	FWD_ARROW = ""
+	BWD_ARROW = ""
 }
 
 //**************************************************************
 // N4L configuration
 //**************************************************************
 
+func ParseConfig(src []rune) {
+
+	var token string
+
+	for pos := 0; pos < len(src); {
+
+		pos = SkipWhiteSpace(src,pos)
+		token,pos = GetConfigToken(src,pos)
+
+		ClassifyConfigRole(token)
+	}
+}
+
+//**************************************************************
+
+func GetConfigToken(src []rune, pos int) (string,int) {
+
+	// Handle concatenation of words/lines and separation of types
+
+	var token string
+
+	if pos >= len(src) {
+		return "", pos
+	}
+
+	switch (src[pos]) {
+
+	case '+':
+		token,pos = ReadToLast(src,pos,ALPHATEXT)
+
+	case '-':
+		token,pos = ReadToLast(src,pos,ALPHATEXT)
+
+	case '(':
+		token,pos = ReadToLast(src,pos,')')  // alias
+
+	case '#':
+		return "",pos
+
+	case '/':
+		if src[pos+1] == '/' {
+			return "",pos
+		}
+
+	default: // similarity
+		token,pos = ReadToLast(src,pos,ALPHATEXT)
+
+	}
+
+	return token, pos
+}
+
+//**************************************************************
+
+func ClassifyConfigRole(token string) {
+
+	if len(token) == 0 {
+		return
+	}
+
+	if token[0] == '-' && LINE_ITEM_STATE == ROLE_BLANK_LINE {
+		SECTION_STATE = strings.TrimSpace(token[1:])
+		Box("Configuration of",SECTION_STATE)
+		LINE_ITEM_STATE = ROLE_SECTION
+		return
+	}
+
+	switch SECTION_STATE {
+
+	case "leadsto","contains","properties":
+
+		switch token[0] {
+
+		case '+':
+			FWD_ARROW = strings.TrimSpace(token[1:])
+			LINE_ITEM_STATE = HAVE_PLUS
+			Verbose("fwd arrow in",SECTION_STATE, token)
+			
+		case '-':
+			BWD_ARROW = strings.TrimSpace(token[1:])
+			LINE_ITEM_STATE = HAVE_MINUS
+			Verbose("bwd arrow in",SECTION_STATE, token)
+
+		case '(':
+			reln := FindAssociation(token)
+			if LINE_ITEM_STATE == HAVE_MINUS {
+				Verbose("Abbreviation",reln,"for",BWD_ARROW)
+			} else if LINE_ITEM_STATE == HAVE_PLUS {
+				Verbose("Abbreviation",reln,"for",FWD_ARROW)
+			} else {
+				Verbose("Abbreviation out of place")
+			}
+		}
+
+	case "similarity":
+
+		switch token[0] {
+
+		case '(':
+			reln := FindAssociation(token)
+			if LINE_ITEM_STATE == HAVE_MINUS {
+				Verbose("Abbreviation",reln,"for",BWD_ARROW)
+			} else if LINE_ITEM_STATE == HAVE_PLUS {
+				Verbose("Abbreviation",reln,"for",FWD_ARROW)
+			} else {
+				Verbose("Abbreviation out of place")
+			}
+
+		default:
+			Verbose("fwd/bwd",SECTION_STATE, token)
+			similarity := strings.TrimSpace(token)
+			FWD_ARROW = similarity
+			BWD_ARROW = similarity
+			LINE_ITEM_STATE = HAVE_MINUS
+		}
+
+	case "annotations":
+	case "contexts":
+
+	default:
+		ParseError(ERR_ILLEGAL_CONFIGURATION+" "+SECTION_STATE)
+		os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func AssessConfigCompletions(token string, prior_state int) {
+
+	Verbose("lost config:",token)
+
+}
 
 //**************************************************************
 // N4L language
@@ -264,14 +397,12 @@ func ClassifyTokenRole(token string) {
 	case ':':
 		expression := ExtractContextExpression(token)
 		CheckSequenceMode(expression,'+')
-		Role("context reset:",expression)
 		LINE_ITEM_STATE = ROLE_CONTEXT
 		AssessGrammarCompletions(expression,LINE_ITEM_STATE)
 
 	case '+':
 		expression := ExtractContextExpression(token)
 		CheckSequenceMode(expression,'+')
-		Role("context augmentation:",expression)
 		LINE_ITEM_STATE = ROLE_CONTEXT_ADD
 		AssessGrammarCompletions(expression,LINE_ITEM_STATE)
 
@@ -279,12 +410,10 @@ func ClassifyTokenRole(token string) {
 		if token[1:2] == string(':') {
 			expression := ExtractContextExpression(token)
 			CheckSequenceMode(expression,'-')
-			Role("context pruning:",expression)
 			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
 			AssessGrammarCompletions(expression,LINE_ITEM_STATE)
 		} else {
 			section := strings.TrimSpace(token[1:])
-			Role("notes section name:",section)
 			LINE_ITEM_STATE = ROLE_SECTION
 			AssessGrammarCompletions(section,LINE_ITEM_STATE)
 		}
@@ -293,14 +422,11 @@ func ClassifyTokenRole(token string) {
 
 	case '(':
 		reln := FindAssociation(token)
-		Role("Relationship:",reln)
 		LINE_ITEM_STATE = ROLE_RELATION
-		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],token)
-
+		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],reln)
 		LINE_RELN_COUNTER++
 
-	case '"':
-		Role("prior-reference",LookupAlias("PREV",LINE_ITEM_COUNTER))
+	case '"': // prior reference
 		result := LookupAlias("PREV",LINE_ITEM_COUNTER)
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
 		AssessGrammarCompletions(result,LINE_ITEM_STATE)
@@ -308,13 +434,11 @@ func ClassifyTokenRole(token string) {
 		LINE_ITEM_COUNTER++
 
 	case '@':
-		Role("line-alias",token)
 		LINE_ITEM_STATE = ROLE_LINE_ALIAS
 		token  = strings.TrimSpace(token)
 		LINE_ALIAS = token[1:]
 
 	case '$':
-		Role("variable-reference",token)
 		actual := ResolveAliasedItem(token)
 		Verbose("fyi, line reference",token,"resolved to",actual)
 
@@ -323,8 +447,6 @@ func ClassifyTokenRole(token string) {
 		LINE_ITEM_COUNTER++
 
 	default:
-		Role("Event item:",token)
-
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
 
 		if LINE_ALIAS != "" {
@@ -335,6 +457,52 @@ func ClassifyTokenRole(token string) {
 
 		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
+	}
+}
+
+//**************************************************************
+
+func AssessGrammarCompletions(token string, prior_state int) {
+
+	if AllCaps(token) {
+		ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
+		return
+	}
+
+	this_item := token
+
+	switch prior_state {
+
+	case ROLE_RELATION:
+
+		CheckNonNegative(LINE_ITEM_COUNTER-2)
+		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
+		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
+		Verbose("Event/item:",this_item)
+		Verbose("... Relation:",last_item,"--",last_reln,"->",this_item)
+		CheckSection()
+
+	case ROLE_CONTEXT:
+		Box("Reset context: ->",this_item)
+		ContextEval(this_item,"=")
+
+	case ROLE_CONTEXT_ADD:
+		Verbose("Add to context:",this_item)
+		ContextEval(this_item,"+")
+
+	case ROLE_CONTEXT_SUBTRACT:
+		Verbose("Remove from context:",this_item)
+		ContextEval(this_item,"-")
+
+	case ROLE_SECTION:
+		Box("Set chapter/section: ->",this_item)
+		SECTION_STATE = this_item
+
+	default:
+		Verbose("Event/item:",this_item)
+		CheckSection()
+		LinkSequence(token)
+
 	}
 }
 
@@ -547,6 +715,8 @@ func Dangler() bool {
 		return false
 	case ROLE_CONTEXT_SUBTRACT:
 		return false
+	case HAVE_MINUS:
+		return false
 	}
 
 	return true
@@ -640,52 +810,6 @@ func ResolveAliasedItem(token string) string {
 	fmt.Sscanf(split[1],"%d",&number)
 
 	return LookupAlias(name,number)
-}
-
-//**************************************************************
-
-func AssessGrammarCompletions(token string, prior_state int) {
-
-	if AllCaps(token) {
-		ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
-		return
-	}
-
-	this_item := token
-
-	switch prior_state {
-
-	case ROLE_RELATION:
-
-		CheckNonNegative(LINE_ITEM_COUNTER-2)
-		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
-		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
-		Verbose("Event/item:",this_item)
-		Verbose("... Relation:",last_item,"--",last_reln,"->",this_item)
-		CheckSection()
-
-	case ROLE_CONTEXT:
-		Box("Reset context: ->",this_item)
-		ContextEval(this_item,"=")
-
-	case ROLE_CONTEXT_ADD:
-		Verbose("Add to context:",this_item)
-		ContextEval(this_item,"+")
-
-	case ROLE_CONTEXT_SUBTRACT:
-		Verbose("Remove from context:",this_item)
-		ContextEval(this_item,"-")
-
-	case ROLE_SECTION:
-		Box("Set chapter/section: ->",this_item)
-		SECTION_STATE = this_item
-
-	default:
-		Verbose("Event/item:",this_item)
-		CheckSection()
-		LinkSequence(token)
-
-	}
 }
 
 //**************************************************************
@@ -906,14 +1030,6 @@ func AllCaps(s string) bool {
 
 //**************************************************************
 // Tools
-//**************************************************************
-
-func Role(role,item string) {
-
-	//Verbose(LINE_NUM,":",role,item)
-
-}
-
 //**************************************************************
 
 func ParseError(message string) {
