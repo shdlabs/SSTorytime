@@ -7,7 +7,7 @@ strong coupling
 
 operator
 
-crd (short for) Custom resource definitions (CRDs)
+crd (short for) Custom resource definitions
 crd (implements) a way to extend the API or add functionality and capabilities
 
 Custom Resource Definition

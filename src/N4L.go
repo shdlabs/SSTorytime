@@ -16,6 +16,15 @@ import (
 )
 
 //**************************************************************
+
+type Arrow struct {
+
+	From   string
+	To     string
+	Weight float32
+}
+
+//**************************************************************
 // Global state
 //**************************************************************
 
@@ -48,6 +57,7 @@ const (
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	WARN_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
 	ERR_ANNOTATION_TOO_LONG = "Annotation marker should be a single non-alphnumeric character "
+	ERR_BAD_ABBRV = "abbreviation out of place"
 	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
 	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
 )
@@ -74,7 +84,13 @@ var (
 
 	VERBOSE bool = false
 	CURRENT_FILE string
-	TEST_DIAG_OUTPUT string
+	TEST_DIAG_FILE string
+
+	// Long/short relation lookup
+	RELN_L2S = make(map[string]string)
+	RELN_S2L = make(map[string]string)
+
+	RELN_BY_SST [4][]Arrow
 )
 
 //**************************************************************
@@ -122,7 +138,7 @@ func Init() []string {
 func NewFile(filename string) {
 
 	CURRENT_FILE = filename
-	TEST_DIAG_OUTPUT = DiagnosticName(filename)
+	TEST_DIAG_FILE = DiagnosticName(filename)
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
 	LINE_NUM = 1
@@ -229,8 +245,8 @@ func ClassifyConfigRole(token string) {
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
 				Diag(SECTION_STATE,"abbreviation",reln,"for",FWD_ARROW)
 			} else {
-				Verbose(SECTION_STATE,"abbreviation out of place")
-				Diag(SECTION_STATE,"abbreviation out of place")
+				ParseError(ERR_BAD_ABBRV)
+				os.Exit(-1)
 			}
 		}
 
@@ -1157,10 +1173,10 @@ func Box(a ...interface{}) (n int, err error) {
 
 	if VERBOSE {
 
-		fmt.Println("------------------------------------")
+		fmt.Println("\n------------------------------------")
 		fmt.Print(LINE_NUM,":")
 		fmt.Println(a...)
-		fmt.Println("------------------------------------")
+		fmt.Println("------------------------------------\n")
 	}
 	return
 }
@@ -1181,7 +1197,7 @@ func Diag(a ...interface{}) {
 
 	prefix := fmt.Sprint(LINE_NUM,":")
 	s := fmt.Sprintln(a...)
-	AppendStringToFile(TEST_DIAG_OUTPUT,prefix+s)
+	AppendStringToFile(TEST_DIAG_FILE,prefix+s)
 }
 
 //**************************************************************
