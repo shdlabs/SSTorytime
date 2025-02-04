@@ -70,6 +70,7 @@ var (
 
 	VERBOSE bool = false
 	CURRENT_FILE string
+	TEST_DIAG_OUTPUT string
 )
 
 //**************************************************************
@@ -117,6 +118,8 @@ func Init() []string {
 func NewFile(filename string) {
 
 	CURRENT_FILE = filename
+	TEST_DIAG_OUTPUT = DiagnosticName(filename)
+
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
 	LINE_NUM = 1
 	LINE_ITEM_CACHE["THIS"] = nil
@@ -208,21 +211,22 @@ func ClassifyConfigRole(token string) {
 		case '+':
 			FWD_ARROW = strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = HAVE_PLUS
-			Verbose("fwd arrow in",SECTION_STATE, token)
+			Diag("fwd arrow in",SECTION_STATE, token)
 			
 		case '-':
 			BWD_ARROW = strings.TrimSpace(token[1:])
 			LINE_ITEM_STATE = HAVE_MINUS
-			Verbose("bwd arrow in",SECTION_STATE, token)
+			Diag("bwd arrow in",SECTION_STATE, token)
 
 		case '(':
 			reln := FindAssociation(token)
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				Verbose("Abbreviation",reln,"for",BWD_ARROW)
+				Diag(SECTION_STATE,"abbreviation",reln,"for",BWD_ARROW)
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
-				Verbose("Abbreviation",reln,"for",FWD_ARROW)
+				Diag(SECTION_STATE,"abbreviation",reln,"for",FWD_ARROW)
 			} else {
-				Verbose("Abbreviation out of place")
+				Verbose(SECTION_STATE,"abbreviation out of place")
+				Diag(SECTION_STATE,"abbreviation out of place")
 			}
 		}
 
@@ -233,15 +237,17 @@ func ClassifyConfigRole(token string) {
 		case '(':
 			reln := FindAssociation(token)
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				Verbose("Abbreviation",reln,"for",BWD_ARROW)
+				Diag(SECTION_STATE,"abbreviation",reln,"for",BWD_ARROW)
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
-				Verbose("Abbreviation",reln,"for",FWD_ARROW)
+				Diag(SECTION_STATE,"abbreviation",reln,"for",FWD_ARROW)
 			} else {
-				Verbose("Abbreviation out of place")
+				Verbose(SECTION_STATE,"abbreviation out of place")
+				Diag(SECTION_STATE,"abbreviation out of place")
 			}
 
 		default:
-			Verbose("fwd/bwd",SECTION_STATE, token)
+			Verbose(SECTION_STATE,"fwd/bwd",token)
+			Diag(SECTION_STATE,"fwd/bwd",token)
 			similarity := strings.TrimSpace(token)
 			FWD_ARROW = similarity
 			BWD_ARROW = similarity
@@ -249,6 +255,7 @@ func ClassifyConfigRole(token string) {
 		}
 
 	case "annotations":
+
 	case "contexts":
 
 	default:
@@ -441,7 +448,7 @@ func ClassifyTokenRole(token string) {
 	case '$':
 		actual := ResolveAliasedItem(token)
 		Verbose("fyi, line reference",token,"resolved to",actual)
-
+		Diag("fyi, line reference",token,"resolved to",actual)
 		AssessGrammarCompletions(actual,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_LOOKUP
 		LINE_ITEM_COUNTER++
@@ -480,26 +487,32 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		Verbose("Event/item:",this_item)
 		Verbose("... Relation:",last_item,"--",last_reln,"->",this_item)
+		Diag("Relation:",last_item,"--",last_reln,"->",this_item)
 		CheckSection()
 
 	case ROLE_CONTEXT:
 		Box("Reset context: ->",this_item)
+		Diag("Reset context: ->",this_item)
 		ContextEval(this_item,"=")
 
 	case ROLE_CONTEXT_ADD:
 		Verbose("Add to context:",this_item)
+		Diag("Add to context:",this_item)
 		ContextEval(this_item,"+")
 
 	case ROLE_CONTEXT_SUBTRACT:
 		Verbose("Remove from context:",this_item)
+		Diag("Remove from context:",this_item)
 		ContextEval(this_item,"-")
 
 	case ROLE_SECTION:
 		Box("Set chapter/section: ->",this_item)
+		Diag("Set chapter/section: ->",this_item)
 		SECTION_STATE = this_item
 
 	default:
 		Verbose("Event/item:",this_item)
+		Diag("Event/item:",this_item)
 		CheckSection()
 		LinkSequence(token)
 
@@ -765,7 +778,8 @@ func LinkSequence(this string) {
 
 	if SEQUENCE_MODE {
 		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
-			Verbose("... Sequence:",LAST_IN_SEQUENCE,"--",SEQUENCE_RELN,"->",this)
+			Verbose("... Append sequence:",SEQUENCE_RELN,"->",this)
+			Diag("Sequence:",LAST_IN_SEQUENCE,"--",SEQUENCE_RELN,"->",this)
 		}
 		LAST_IN_SEQUENCE = this
 	}
@@ -1034,8 +1048,14 @@ func AllCaps(s string) bool {
 
 func ParseError(message string) {
 
-	fmt.Print(LINE_NUM,":")
-	fmt.Println("N4L",CURRENT_FILE,message,"at line", LINE_NUM)
+	const red = "\033[31;1;4m"
+	const endred = "\033[0m"
+	const green = "\x1b[36m"
+	const endgreen = "\x1b[0m\n"
+
+	fmt.Print("\n",LINE_NUM,":",red)
+	fmt.Println("N4L",CURRENT_FILE,message,"at line", LINE_NUM,endred)
+	Diag("N4L",CURRENT_FILE,message,"at line", LINE_NUM)
 }
 
 //**************************************************************
@@ -1094,3 +1114,43 @@ func Box(a ...interface{}) (n int, err error) {
 	}
 	return
 }
+
+//**************************************************************
+
+func DiagnosticName(filename string) string {
+
+	return filename+"_test_log"
+
+}
+
+//**************************************************************
+
+func Diag(a ...interface{}) {
+
+	// Log diagnostic output for self-diagnostic tests
+
+	prefix := fmt.Sprint(LINE_NUM,":")
+	s := fmt.Sprintln(a...)
+	AppendStringToFile(TEST_DIAG_OUTPUT,prefix+s)
+}
+
+//**************************************************************
+
+func AppendStringToFile(name string, s string) {
+
+	f, err := os.OpenFile(name,os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		fmt.Println("Couldn't open for write/append to",name,err)
+		return
+	}
+
+	_, err = f.WriteString(s)
+
+	if err != nil {
+		fmt.Println("Couldn't write/append to",name,err)
+	}
+
+	f.Close()
+}
+
