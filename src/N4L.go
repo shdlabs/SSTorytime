@@ -291,8 +291,6 @@ func ClassifyConfigRole(token string) {
 
 		}
 
-	case "contexts":
-
 	default:
 		ParseError(ERR_ILLEGAL_CONFIGURATION+" "+SECTION_STATE)
 		os.Exit(-1)

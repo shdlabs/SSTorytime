@@ -117,13 +117,6 @@
  > (has subject)
 
 
-#########################################################
-
-
-- contexts  // rolling episodic time window
-
- shopping = { paying trying quality } 
-
 
 
 
