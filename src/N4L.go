@@ -47,6 +47,9 @@ const (
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	WARN_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
+	ERR_ANNOTATION_TOO_LONG = "Annotation marker should be a single non-alphnumeric character "
+	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
+	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
 )
 
 var ( 
@@ -60,6 +63,7 @@ var (
 
 	FWD_ARROW string
 	BWD_ARROW string
+	ANNOTATION = make(map[string]string)
 
 	CONTEXT_STATE = make(map[string]bool)
 	SECTION_STATE string
@@ -255,6 +259,37 @@ func ClassifyConfigRole(token string) {
 		}
 
 	case "annotations":
+
+		switch token[0] {
+
+		case '(':
+			if LINE_ITEM_STATE != HAVE_PLUS {
+				ParseError(ERR_ANNOTATION_MISSING)
+			}
+
+			FWD_ARROW = StripParen(token)
+			Verbose("Annotation marker",LAST_IN_SEQUENCE,"defined as arrow:",FWD_ARROW)
+			Diag("Annotation marker",LAST_IN_SEQUENCE,"defined as arrow:",FWD_ARROW)
+
+			value,defined := ANNOTATION[LAST_IN_SEQUENCE]
+
+			if defined && value != FWD_ARROW {
+				ParseError(ERR_ANNOTATION_REDEFINE)
+				os.Exit(-1)
+			}
+
+			ANNOTATION[LAST_IN_SEQUENCE] = FWD_ARROW
+			LINE_ITEM_STATE = ROLE_BLANK_LINE
+			
+		default:
+			if (len(token) > 1 || unicode.IsLetter(rune(token[0]))) {
+				ParseError(ERR_ANNOTATION_TOO_LONG)
+			}
+			Diag("Markup character defined in",SECTION_STATE, token)
+			LINE_ITEM_STATE = HAVE_PLUS
+			LAST_IN_SEQUENCE = token
+
+		}
 
 	case "contexts":
 
@@ -1040,6 +1075,23 @@ func AllCaps(s string) bool {
 	}
 
 	return true
+}
+
+//**************************************************************
+
+func StripParen(token string) string {
+
+	token =	strings.TrimSpace(token[1:])
+
+	if token[0] == '(' {
+		token =	strings.TrimSpace(token[1:])
+	}
+
+	if token[len(token)-1] == ')' {
+		token =	token[:len(token)-1]
+	}
+
+	return token
 }
 
 //**************************************************************

@@ -103,18 +103,17 @@
  associated with    	(ass)  # (loose coupling)
  near               	(nr)
 
-
-
 #########################################################
 
  - annotations
 
  // for marking up a text body: body (relation) annotation
+ // hyphen is illegal, as it's common in text and ambiguous to section grammar
 
  + (discusses)
  = (depends on)
  * (is a special case of)
- - (explains)
+ # - (explains) , this is illegal
  > (has subject)
 
 
