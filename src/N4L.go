@@ -111,14 +111,14 @@ const (
 	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
 	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
 	ERR_MISSING_ITEM_SOMEWHERE = "Missing item somewhere"
-
 	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
-
+	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	WARN_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
 	ERR_ANNOTATION_TOO_LONG = "Annotation marker should be a single non-alphnumeric character "
 	ERR_BAD_ABBRV = "abbreviation out of place"
+	ERR_BAD_ALIAS_REFERENCE = "Alias references start from $name.1"
 	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
 	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
 	ERR_SIMILAR_NO_SIGN = "Arrows for similarity do not have signs, they are directionless"
@@ -375,14 +375,6 @@ func ClassifyConfigRole(token string) {
 
 //**************************************************************
 
-func AssessConfigCompletions(token string, prior_state int) {
-
-	PVerbose("lost config:",token)
-
-}
-
-//**************************************************************
-
 func InsertArrowDirectory(sec,alias,name,pm string) {
 
 	PVerbose("In",sec,"short name",alias,"for",name,", direction",pm)
@@ -619,9 +611,12 @@ func ClassifyTokenRole(token string) {
 		LINE_ITEM_STATE = ROLE_LINE_ALIAS
 		token  = strings.TrimSpace(token)
 		LINE_ALIAS = token[1:]
+		CheckLineAlias(LINE_ALIAS)
 
 	case '$':
+		CheckLineAlias(token[1:])
 		actual := ResolveAliasedItem(token)
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],actual)
 		Verbose("fyi, line reference",token,"resolved to",actual)
 		AssessGrammarCompletions(actual,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_LOOKUP
@@ -647,6 +642,10 @@ func AssessGrammarCompletions(token string, prior_state int) {
 
 	if AllCaps(token) {
 		ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
+		return
+	}
+
+	if len(token) == 0 {
 		return
 	}
 
@@ -688,6 +687,17 @@ func AssessGrammarCompletions(token string, prior_state int) {
 }
 
 //**************************************************************
+
+func CheckLineAlias(s string) {
+
+	if strings.Contains(s,"$") || strings.Contains(s,"@") {
+		ParseError(ERR_BAD_LABEL_OR_REF+s)
+		os.Exit(-1)
+	}
+
+}
+
+//**************************************************************
 // Scan text input
 //**************************************************************
 
@@ -707,7 +717,7 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 		// sanitize small case at start of item
 		if stop == ALPHATEXT {
-			src[pos] = unicode.ToLower(src[pos])
+			//src[pos] = unicode.ToLower(src[pos])
 		}
 		cpy = append(cpy,src[pos])
 	}
@@ -989,6 +999,11 @@ func ResolveAliasedItem(token string) string {
 
 	var number int = 0
 	fmt.Sscanf(split[1],"%d",&number)
+
+	if number < 1 {
+		ParseError(ERR_BAD_ALIAS_REFERENCE)
+		os.Exit(-1)
+	}
 
 	return LookupAlias(name,number)
 }

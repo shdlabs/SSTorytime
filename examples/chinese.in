@@ -88,30 +88,30 @@ what do you do for a job  (eh)  你做什么工作 (hp) Nǐ zuò shénme gōngzu
 ::chinese.words:: 
 
  character (english for pinyin) hànzì
-           (english for hanzi)  汉字
+    "       (english for hanzi)  汉字
 
 
  most (english for pinyin) zuì 
-      (english for hanzi) 最 
+   "   (english for hanzi) 最 
 
  apple (pinyin) píngguǒ
-       (hanzi) 苹果 
+   "    (hanzi) 苹果 
 
   shuǐ (pinyin for english) water
-       (pinyin for hanzi) 水
+   "    (pinyin for hanzi) 水
 
   X (stands for) person
   Y (stands for) thing
 
   'X zuì xǐhuān de Y' (pinyin for english) 'X's most liked/favourite Y'
 
-     (uses) zuì
-     (uses) xǐhuān
+   "  (uses) zuì
+   "  (uses) xǐhuān
 
   ## Split by ' ' attach (uses)
 
    zhǐ (pinyin for english) only
-       (pinyin for hanzi) 只 
+    "   (pinyin for hanzi) 只 
 
    zao (looks like,0.2) zuo    # the number is an affinity, the {} are a matching set
 
@@ -123,9 +123,9 @@ what do you do for a job  (eh)  你做什么工作 (hp) Nǐ zuò shénme gōngzu
   # beautify curated ... and unnaturally stylised
 
   meat    (english for pinyin) ròu
-          (english for hanzi)  肉
+    "      (english for hanzi)  肉
   chicken (english for pinyin) jīròu
-          (english for hanzi)  鸡肉 
+    "      (english for hanzi)  鸡肉 
 
   lamb (english for pinyin) yángròu (pinyin for hanzi) 羊肉
   beef (english for pinyin) niúròu  (pinyin for hanzi) 牛肉
@@ -2200,7 +2200,7 @@ The older one is my mother 比较老的是我妈妈 Bǐjiào lǎo de shì wǒ m�
 street  (eh) 街道 (hp) Jiēdào
 road  (eh) 路 (hp) Lù
 
-(be) careful  (eh) 小心 (hp) Xiǎoxīn
+be careful  (eh) 小心 (hp) Xiǎoxīn
 
 Xiǎoxīnguò mǎlù 小心过马路 Cross the road carefully
 
@@ -2562,14 +2562,14 @@ What happened to him later? (eh) 他后来怎么了 (hp) Tā hòulái zěnmeliǎ
 
 :: rhyme, song, tiger ::
 
-@1 Liǎng zhī lǎohǔ, liǎng zhī lǎohǔ (ph) 两只老虎, 两只老虎 (he) two tigers, two tigers 
-@2 Pǎo dé kuài,Pǎo dé kuài (ph) 跑得快,跑得快  (he) running fast, running fast 
-@3 Yī zhǐ méiyǒu ěrduǒ (ph) 一只没有耳朵  (he) One has no ears 
-@4 Yī zhǐ méiyǒu wěibā (ph) 一只没有尾巴  (he) One has no tail 
-@5 Zhēn qíguài, Zhēn qíguài (ph) 真奇怪,真奇怪  (he) So weird, so weird! 
+@L1 Liǎng zhī lǎohǔ, liǎng zhī lǎohǔ (ph) 两只老虎, 两只老虎 (he) two tigers, two tigers 
+@L2 Pǎo dé kuài,Pǎo dé kuài (ph) 跑得快,跑得快  (he) running fast, running fast 
+@L3 Yī zhǐ méiyǒu ěrduǒ (ph) 一只没有耳朵  (he) One has no ears 
+@L4 Yī zhǐ méiyǒu wěibā (ph) 一只没有尾巴  (he) One has no tail 
+@L5 Zhēn qíguài, Zhēn qíguài (ph) 真奇怪,真奇怪  (he) So weird, so weird! 
 
 # Link the lines
-@1.$1 (then) @2.$1 (then) @3.$1 (then) @4.$1 (then) @5.$1
+ $L1.1 (then) $L2.1 (then) $L3.1 (then) $L4.1 (then) $L5.1
 
 
 
