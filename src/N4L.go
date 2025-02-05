@@ -423,8 +423,9 @@ func InsertArrowDirectory(sec,alias,name,pm string) {
 
 func SummarizeConfig() {
 
+	Box("Raw Summary")
 	fmt.Println("..\n")
-	fmt.Println(ANNOTATION)
+	fmt.Println("ANNOTATION MARKS", ANNOTATION)
 	fmt.Println("..\n")
 	fmt.Println("DIRECTORY", ARROW_DIRECTORY)
 	fmt.Println("..\n")
