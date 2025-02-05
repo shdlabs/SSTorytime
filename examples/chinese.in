@@ -94,8 +94,8 @@ what do you do for a job  (eh)  你做什么工作 (hp) Nǐ zuò shénme gōngzu
  most (english for pinyin) zuì 
    "   (english for hanzi) 最 
 
- apple (pinyin) píngguǒ
-   "    (hanzi) 苹果 
+ apple (english for pinyin) píngguǒ
+   "    (english for hanzi) 苹果 
 
   shuǐ (pinyin for english) water
    "    (pinyin for hanzi) 水
@@ -105,8 +105,8 @@ what do you do for a job  (eh)  你做什么工作 (hp) Nǐ zuò shénme gōngzu
 
   'X zuì xǐhuān de Y' (pinyin for english) 'X's most liked/favourite Y'
 
-   "  (uses) zuì
-   "  (uses) xǐhuān
+   "  (contains) zuì
+   "  (contains) xǐhuān
 
   ## Split by ' ' attach (uses)
 
@@ -325,8 +325,7 @@ Gānfàn (ph) 干饭 (he) cooked rice
 gàn fàn (ph) 干饭 (he) have a meal foodie
 foodie  (eh) 吃货 (hp)  Chīhuò
 
-
-drink(s)  (eh) 饮料 (hp)  Yǐnliào
+drink/s (eh) 饮料 (hp)  Yǐnliào
 to drink (eh)  喝  (hp) Hē
 to eat  (eh) 吃  (hp) Chī
 
@@ -340,7 +339,7 @@ knife  (eh) 刀  (hp) Dāo
 fork (eh)  叉  (hp) Chā
 chopstick  (eh) 筷子 (hp)  Kuàizi
  "  (eh) 勺子  (hp) Sháozi
-glass (of) (eh)  杯 (hp)  bēi
+glass/of (eh)  杯 (hp)  bēi
 
 alcohol  (eh) 酒  (hp) Jiǔ
 beer  (eh) 啤酒  (hp) Píjiǔ
@@ -496,7 +495,7 @@ then/next (eh) 然后  (hp) Ránhòu
 finally (eh) 最后  (hp) Zuìhòu
 
 zhè cì (ph) 这次 (he) this time/occasion
-cì  (ph) 次 (hr) occasion or episode or time
+cì  (ph) 次 (he) occasion or episode or time
 
 5th (eh) 第五 (hp) Dì wǔ ge
 Nth (eh) 第n个 (hp) Dì n gè
@@ -517,7 +516,7 @@ early  (eh) 早 (hp) Zǎo
 be late Chídào 迟到
 
 just/only  (eh) 只是 (hp) Zhǐshì
-just ((happened)) (eh)  刚 (hp) gāng
+just i.e. just happened (eh)  刚 (hp) gāng
 he just arrived  (eh) 他刚到 (hp) Tā gāng dào
 
 Xiànzài  (ph) 现在 (he) now 
@@ -535,7 +534,7 @@ Tā jīntiān zǎoshang liǎng diǎn cái huí jiā  (ph) 他今天早上两点�
 frequent/often  (eh)  Chángcháng (hp)  常常
 frequent/often  (eh) 经常  (hp) Jīngcháng
 
-Shāngchǎng (CF) Chángcháng # shopping mall
+Shāngchǎng (sl) Chángcháng # shopping mall
 
 
 on time  (eh) 准时 (hp) Zhǔnshí
@@ -549,24 +548,24 @@ hours  (eh) 小时  (hp) Xiǎoshí
 
 10 past 5 (eh)  五点过十分钟  (hp) Wǔ diǎnguò shí fēnzhōng
 10 to 5  (eh) 十分钟差五点  (hp) Shí fēnzhōng chà wǔ diǎn
-Jiǔ diǎn sān kè  (ph) 九点三刻 (he) 9.46
-Jiǔ diǎn yī kè  (ph) 九点一刻  (he) 9.15
+Jiǔ diǎn sān kè  (ph) 九点三刻 (he) "9.46"
+Jiǔ diǎn yī kè  (ph) 九点一刻  (he) "9.15"
 Wǔ diǎn yī kè  (ph) 五点一刻 (he) quarter past five
 yī kè Wǔ diǎn  (ph) 一刻五点   (he) quarter to five
 
 Wǒ měitiān yǒu bàn gè xiǎoshí de yòng  (ph) 我每天有半个小时的用  (he) I use it for half an hour every day
-Wǒ pǎole sānshí fēnzhōng ((de bù))  (ph) 我跑了三十分钟((的步))  (he) I ran for thirty minutes
+Wǒ pǎole sānshí fēnzhōng / de bù  (ph) 我跑了三十分钟 /的步  (he) I ran for thirty minutes
 
 
 
 free/ledig  (eh) 有空 (hp) yǒu kòng 
 time   (eh) 时间 (hp) Shíjiān
-time (episode/when) Shíhòu(hp)  时候
+time - episode/when (ep) Shíhòu (hp)  时候
 
 what time/occasion (eh) 什么时候 (hp) Shénme shíhòu 
 Gōngsī shénme shíhòu fā jiǎngjīn (ph) 公司什么时候发奖金  (he) When does the company pay bonuses?
 
-He sometimes goes to the mall 他有时候去商场 Tā yǒu shíhòu qù shāngchǎng
+He sometimes goes to the mall (eh) 他有时候去商场 (hp) Tā yǒu shíhòu qù shāngchǎng
 
 My friends drink beer when we meet on the weekends (eh)  我的朋友在周末见面的时候会喝啤酒 (hp) Wǒ de péngyǒu zài zhōumò jiànmiàn de shíhòu huì hē píjiǔ
 
@@ -696,7 +695,7 @@ Duōshǎo  (ph) 多少  (he) How many/what number of
 Jǐ X (ph) 几 (he) how many X
 
 什么  (hp) Shénme (pe) what 
-Shéi  (ph) 谁 (he) who(m) 
+Shéi  (ph) 谁 (he) who/whom
 
 
 
@@ -822,8 +821,8 @@ misunderstand (eh) 误解 (hp) Wùjiě
              "           (eh) 误会 (hp) Wùhuì
 
 
-知道  (ep) Zhīdào  (pe) know (fact)
-Rènshí  (ph) 认识  (he) know (person)
+知道  (ep) Zhīdào  (pe) know a fact
+Rènshí  (ph) 认识  (he) know a person
 
 
 
@@ -933,14 +932,14 @@ play tennis (eh) 打网球 (hp) Dǎ wǎngqiú
 Ài    (ph) 爱   (he) love
 Kě'ài (ph) 可爱 (he) cute
 
-Mèng (ph) 梦 (he) dream (cute slang)
+Mèng (ph) 梦 (he) dream - also slang for cute
 
 漂亮 (hp) Piàoliang (pe) beautiful/pretty
 clever/smart  (eh) 聪明  (hp) Cōngmíng 
 handsome  (eh) 帅  (hp) Shuài 
 
-diǎo sī 屌丝 (屌絲) ((internet slang/vulgar)) loser opposite of tallrichhandsome
-Gāofù shuài 高富帅 Tall, rich and handsome
+diǎo sī (ph) 屌丝 (he) internet slang/vulgar - "loser", i.e. opposite of tallrichhandsome
+Gāofù shuài (ph) 高富帅 (he) Tall, rich and handsome
 
 ::  characteristics, size ::
 
@@ -958,7 +957,7 @@ short height  (eh) 矮(hp)  ǎi
 tall  (eh) 高 (hp) Gāo
 Tall/height  (eh) 个子(hp)  Gèzi
 
-grow(n) up  (eh) 长大 (hp) Zhǎng dà
+grow/grown up  (eh) 长大 (hp) Zhǎng dà
 
 
 #######################################################
@@ -967,6 +966,10 @@ grow(n) up  (eh) 长大 (hp) Zhǎng dà
 
 的 (hp) de (pe) x's genitive
 let's particle (ep) ba (ph) 吧
+
+以 (has role) preposition 
+De (ph) 地 (has role) adverb binding particle 
+De (ph) 的 (has role) genitive/adjective binding particle 
 
 finally  (eh) 终于 (hp) Zhōngyú
 about/concerning  (eh) 为 (hp) wéi
@@ -1081,7 +1084,7 @@ disappointed (eh) 失望 (hp) Shīwàng
 
 are you happy  (eh) 你快乐吗  (hp) Nǐ kuàilè ma
 
-Come on! (eh)  加油  (hp) Jiāyóu (!)
+Come on! (eh)  加油  (hp) Jiāyóu !
 
 funny  (eh) 好笑 (hp) Hǎoxiào
 so humorous  (eh) 好幽默 (hp) Hǎo yōumò
@@ -1339,7 +1342,7 @@ Bēizǐ zài bīngxiāng pángbiān (ph) 杯子在冰箱旁边 (he) the cups are
 Yǎnjìng zài guìzǐ lǐ (ph)  眼镜在柜子里  (he) the glasses are in the cupboard
 
 后面  (hp) hòumiàn  (pe) behind at the back
-前面  (hp) Qiánmiàn  (pe) in front (of), ahead
+前面  (hp) Qiánmiàn  (pe) in front, ahead
 
 the luggage is in our room (eh) 行李在我们的房间里 (hp) xínglǐ zài wǒmen de fángjiān lǐ
 
@@ -1471,7 +1474,7 @@ wechat moments  (eh) 微信朋友圈 (hp)  Wēixìn péngyǒu quān
 chat  (eh) 聊天 (hp)  Liáotiān
 connect / keep in touch (eh)  联系 (hp)  Liánxì
 
-follow (social media)  (eh) 关注 (hp)  Guānzhù 
+follow on social media  (eh) 关注 (hp)  Guānzhù 
 
 scroll through/check  (eh) 刷  (hp) shuā
 comment (eh)  评论 (hp)  Pínglùn
@@ -1514,7 +1517,7 @@ use (eh)用 (hp)yòng
 Elementary school  (eh) 小学 (hp) Xiǎoxué
 middle school  (eh) 中学 (hp) Zhōngxué
 college/university  (eh) 大学 (hp) Dàxué
-school grade ((year))  (eh) 年级 (hp) Niánjí
+school grade i.e. year  (eh) 年级 (hp) Niánjí
 junior high school  (eh) 初中 (hp) Chūzhōng
 high school  (eh) 高中 (hp) Gāozhōng 
 high school diploma  (eh) 高中文凭 (hp) Gāozhōng wénpíng
@@ -1563,12 +1566,10 @@ there are 4 rules (eh)  有4条规则 Yǒu 4 tiáo guīzé
 geography  (eh) 地理 (hp) Dìlǐ
 
 Dì (ph) 地 (he) land
-De (ph) 地 (hanzi to role) adverb binding particle 
-De (ph) 的 (hanzi to role) genitive/adjective binding particle 
 
 history  (eh) 历史 (hp) Lìshǐ
-class ((occurrence))  (eh) 课 (hp) kè
-class ((the group))  (eh) 班 (hp) Bān
+class i.e. lesson  (eh) 课 (hp) kè
+class i.e. group of people  (eh) 班 (hp) Bān
 
  move house  (eh) 搬家 (hp) Bānjiā
  move to germany  (eh) 搬去德国 (hp) Bān qù déguó
@@ -1619,7 +1620,7 @@ what is today's assignment  (eh) 今天的作业是什么 (hp) Jīntiān de zuò
 
 pen  (eh) 笔 (hp) Bǐ
 pencil  (eh) 铅笔 (hp) Qiānbǐ
-note(s)  (eh) 笔记 (hp) Bǐjì
+note/notes  (eh) 笔记 (hp) Bǐjì
 paper  (eh) 纸 (hp) Zhǐ
 notebook  (eh) 笔记本 (hp) Bǐjìběn
 
@@ -1642,7 +1643,6 @@ scarf  (eh) 围巾  (hp) Wéijīn
 Gather / group (eh) 聚 (hp) Jù
 Kind/type (eh) 类 (hp) Lèi
 By/with (eh) 以 (hp) Yǐ
-以 (hanzi to role) preposition 
 qún (ph) 群 (he) group
 
 Things fall into groups, people divide into groups (eh)  物以类聚,人以群分 （hp）Wùyǐlèijù, rén yǐ qún fēn
@@ -1658,7 +1658,7 @@ lazy (eh) 懒 (hp) Lǎn
 放学  (hp) Fàngxué  (pe) get off school
 睡觉  (hp) Shuìjiào  (pe) sleep
 
-Qǐchuáng (ph) 起床 (he) get up ((out of bed))
+Qǐchuáng (ph) 起床 (he) get up / out of bed
 
 job/task/work  (eh) 工作  (hp) Gōngzuò 
 work overtime  (eh) 加班  (hp) Jiābān
@@ -1736,7 +1736,7 @@ Bǎnquán de wèntí nǐ yào wèn Lǜshī (ph) 版权的问题你要问律师  
 : work, activity ::
 
 performance  (eh) 表现 (hp) Biǎoxiàn 
-" 表演 (hp) Biǎoyǎn
+   "         (eh) 表演 (hp) Biǎoyǎn
 activity  (eh) 活动 (hp) Huódòng
 
 report  (eh) 报告 (hp) Bàogào
@@ -1807,7 +1807,7 @@ Fēnshǒu (ph) 分手 (he) break up
 Fēnkāi  (ph) 分开 (he) separate 
 Fēnlí   (ph) 分离 (he) separate
 
-Míngxīng (ph) 明星 (he) famous star ((celebrity))
+Míngxīng (ph) 明星 (he) famous star i.e. celebrity
 
 Which animal in China is the most famous?  (eh) 中国的什么动物最有名 (hp) Zhōngguó de shénme dòngwù zuì yǒumíng
 
@@ -1879,7 +1879,7 @@ grammar (eh) 语法 (hp) Yǔfǎ
 韩语 (hp) Hányǔ (pe) Korean language
 汉语 (hp) Hànyǔ (pe) Chinese language
 
-踢 (hp) Tī (pe) kick ((football))
+踢 (hp) Tī (pe) kick e.g. a football
 踢足球 (hp) Tī zúqiú (pe) play football 
 
 Bǐsài (ph) 比赛 (he) contest/race/competition
@@ -2211,7 +2211,7 @@ Xiǎoxīnguò mǎlù 小心过马路 Cross the road carefully
 Forget  (eh) 忘记 (hp) Wàngjì
 Remember  (eh) 记住 (hp) Jì zhù
 remember  (eh) 记 (hp) Jì 
-" 记住 (hp) Jì zhù
+   "      (eh) 记住 (hp) Jì zhù
 
 :: reasoning, reason, meaning ::
 
@@ -2289,7 +2289,7 @@ painting  (eh) 画 (hp) huà
 sofa  (eh) 沙发 (hp) Shāfā
 lift/elevator  (eh) 电梯 (hp) Diàntī
 escalator  (eh) 自动扶梯 (hp) Zìdòng fútī 
-" 电扶梯 (hp) Diàn fútī
+   "       (eh) 电扶梯 (hp) Diàn fútī
 by  (eh) 被 (hp) Bèi 
 clean  (eh) 干净 (hp) Gānjìng
 
@@ -2297,9 +2297,8 @@ to clean up  (eh) 打扫 (hp) Dǎsǎo
 
 house  (eh) 房子 (hp) Fángzi
 
-dirty
 bucket  (eh) 桶 (hp) Tǒng
-rubbish bin (eh) 
+rubbish bin (eh) 垃圾桶 (hp) Lèsè tǒng
 
 Will not disturb neighbors  (eh) 不会影响邻居(hp)  Bù huì yǐngxiǎng línjū
 
@@ -2507,7 +2506,7 @@ Wǒmen yīn gāi zěnme yàng hézuò  (ph)  我们因该怎么样合作  (he) H
 
 Nǐ yǒu shé me bànfǎ  (ph) 你有什么办法  (he) What can you do/what solutions do you have
 
-Shǒujī bèi wǒ de dìdì yòng huàile  (ph)  (he) 手机被我的弟弟用坏了 My brother broke the phone
+Shǒujī bèi wǒ de dìdì yòng huàile  (ph)  手机被我的弟弟用坏了  (he) My brother broke the phone
 
 Túrán xià yǔle  (ph) 突然下雨了  (he) It rained all of a suddenly
 Wǒ bù qīngchǔ  (ph) 我不清楚  (he) I don't know/understand/it's unclear

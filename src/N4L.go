@@ -110,7 +110,9 @@ const (
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
 	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
 	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
+	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
 	ERR_MISSING_ITEM_SOMEWHERE = "Missing item somewhere"
+	ERR_MISSING_ITEM_RELN = "Missing item or double relation"
 	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
 	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
@@ -301,7 +303,9 @@ func ClassifyConfigRole(token string) {
 			Diag("bwd arrow in",SECTION_STATE, token)
 
 		case '(':
-			reln := FindAssociation(token)
+			reln := token[1:len(token)-1]
+			reln = strings.TrimSpace(reln)
+
 			if LINE_ITEM_STATE == HAVE_MINUS {
 				InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
@@ -317,7 +321,9 @@ func ClassifyConfigRole(token string) {
 		switch token[0] {
 
 		case '(':
-			reln := FindAssociation(token)
+			reln := token[1:len(token)-1]
+			reln = strings.TrimSpace(reln)
+
 			if LINE_ITEM_STATE == HAVE_MINUS {
 				InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"both")
 			} else {
@@ -595,7 +601,11 @@ func ClassifyTokenRole(token string) {
 		// No quotes here in a string, we need to allow quoting in excerpts.
 
 	case '(':
-		reln := FindAssociation(token)
+		if LINE_ITEM_STATE == ROLE_RELATION {
+			ParseError(ERR_MISSING_ITEM_RELN)
+			os.Exit(-1)
+		}
+		reln,_ := FindAssociation(token)
 		LINE_ITEM_STATE = ROLE_RELATION
 		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],reln)
 		LINE_RELN_COUNTER++
@@ -964,13 +974,33 @@ func LinkSequence(this string) {
 
 //**************************************************************
 
-func FindAssociation(token string) string {
+func FindAssociation(token string) (string,[]string) {
+
+	var fullname string
+	var reln []string
 
 	name := token[1:len(token)-1]
+	name = strings.TrimSpace(name)
 
-	// lookup in the alias table
+	if strings.Contains(name,",") {
+		reln = strings.Split(name,",")
+		name = reln[0]
+	}
 
-	return strings.TrimSpace(name)
+	ptr, ok := ARROW_SHORT_DIR[name]
+
+	if !ok {
+		ptr, ok = ARROW_LONG_DIR[name]
+
+		if !ok {
+			ParseError(ERR_NO_SUCH_ARROW+name)
+			os.Exit(-1)
+		}
+	}
+
+	fullname = ARROW_DIRECTORY[ptr].Long
+
+	return fullname, reln
 }
 
 //**************************************************************
@@ -1216,7 +1246,7 @@ func AllCaps(s string) bool {
 	}
 
 	for _, r := range s {
-		if !unicode.IsUpper(r) && unicode.IsLetter(r) {
+		if !unicode.IsUpper(r) && unicode.IsLetter(r) || unicode.IsNumber(r) {
 			return false
 		}
 	}
@@ -1247,7 +1277,7 @@ func StripParen(token string) string {
 
 func ParseError(message string) {
 
-	const red = "\033[31;1;4m"
+	const red = "\033[31;1;1m"
 	const endred = "\033[0m"
 
 	fmt.Print("\n",LINE_NUM,":",red)
