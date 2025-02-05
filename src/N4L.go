@@ -16,13 +16,56 @@ import (
 )
 
 //**************************************************************
+// DATA structures
+//**************************************************************
 
-type Arrow struct {
+/* 1. We want every reusable text to be addressible by a pointer/index
+      in a simple lookup table. This includes
+        - item/event nodes
+        - arrows referenced by full text or a short alias in N4L
+        - context expressions
 
-	From   string
-	To     string
-	Weight float32
+   2. We want relations/arrows to be (Arrow ArrowPtr,To EventItemPtr,Context CtxPtr)
+      that are attached to a (From EventItemPtr) record as an array of lists,
+      indexed by SST types 0-3
+
+   3. For arrows, short aliases are often used, but longer names may be used too
+      A Directory maps names to ArrowPtr
+*/
+
+type EventItemPtr int   // EventItem index
+type ArrowPtr int       // ArrowDirectory index
+type CtxPtr int
+type TextPtr int
+
+const SSTtypes = 4
+
+type EventItem struct {
+
+	Name TextPtr
+	Links [SSTtypes][]ArrowPtr
 }
+
+type Text struct {
+	Len int
+	S   string
+}
+
+type ArrowDirectory struct { // used only to fill in output text
+
+	LFrom    string
+	LTo      string
+	SFrom    string
+	STo      string
+	SSTType  int
+}
+
+ // all fwd arrow types have a simple int representation > 0
+ // all bwd/inverse arrow readings have the negative int for fwd
+ // Hashed by long and short names
+
+var ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up int referene
+var ARROW_LONG_DIR = make(map[string]ArrowPtr) // Look up int referene
 
 //**************************************************************
 // Global state
@@ -60,6 +103,7 @@ const (
 	ERR_BAD_ABBRV = "abbreviation out of place"
 	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
 	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
+	ERR_SIMILAR_NO_SIGN = "Arrows for similarity do not have signs, they are directionless"
 )
 
 var ( 
@@ -86,11 +130,7 @@ var (
 	CURRENT_FILE string
 	TEST_DIAG_FILE string
 
-	// Long/short relation lookup
-	RELN_L2S = make(map[string]string)
-	RELN_S2L = make(map[string]string)
-
-	RELN_BY_SST [4][]Arrow
+	RELN_BY_SST [4][]ArrowPtr // From an EventItemNode
 )
 
 //**************************************************************
@@ -139,6 +179,8 @@ func NewFile(filename string) {
 
 	CURRENT_FILE = filename
 	TEST_DIAG_FILE = DiagnosticName(filename)
+
+	Box("Parsing new file",filename)
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
 	LINE_NUM = 1
@@ -241,9 +283,9 @@ func ClassifyConfigRole(token string) {
 		case '(':
 			reln := FindAssociation(token)
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				Diag(SECTION_STATE,"abbreviation",reln,"for",BWD_ARROW)
+				InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
-				Diag(SECTION_STATE,"abbreviation",reln,"for",FWD_ARROW)
+				InsertArrowDirectory(SECTION_STATE,reln,FWD_ARROW,"+")
 			} else {
 				ParseError(ERR_BAD_ABBRV)
 				os.Exit(-1)
@@ -257,17 +299,16 @@ func ClassifyConfigRole(token string) {
 		case '(':
 			reln := FindAssociation(token)
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				Diag(SECTION_STATE,"abbreviation",reln,"for",BWD_ARROW)
-			} else if LINE_ITEM_STATE == HAVE_PLUS {
-				Diag(SECTION_STATE,"abbreviation",reln,"for",FWD_ARROW)
+				InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"both")
 			} else {
-				Verbose(SECTION_STATE,"abbreviation out of place")
-				Diag(SECTION_STATE,"abbreviation out of place")
+				PVerbose(SECTION_STATE,"abbreviation out of place")
 			}
 
+		case '+','-':
+			ParseError(ERR_SIMILAR_NO_SIGN)
+			os.Exit(-1)
+
 		default:
-			Verbose(SECTION_STATE,"fwd/bwd",token)
-			Diag(SECTION_STATE,"fwd/bwd",token)
 			similarity := strings.TrimSpace(token)
 			FWD_ARROW = similarity
 			BWD_ARROW = similarity
@@ -284,8 +325,7 @@ func ClassifyConfigRole(token string) {
 			}
 
 			FWD_ARROW = StripParen(token)
-			Verbose("Annotation marker",LAST_IN_SEQUENCE,"defined as arrow:",FWD_ARROW)
-			Diag("Annotation marker",LAST_IN_SEQUENCE,"defined as arrow:",FWD_ARROW)
+			PVerbose("Annotation marker",LAST_IN_SEQUENCE,"defined as arrow:",FWD_ARROW)
 
 			value,defined := ANNOTATION[LAST_IN_SEQUENCE]
 
@@ -317,7 +357,15 @@ func ClassifyConfigRole(token string) {
 
 func AssessConfigCompletions(token string, prior_state int) {
 
-	Verbose("lost config:",token)
+	PVerbose("lost config:",token)
+
+}
+
+//**************************************************************
+
+func InsertArrowDirectory(sec,alias,arrow,pm string) {
+
+	PVerbose("In",sec,"short name",alias,"for",arrow,", direction",pm)
 
 }
 
@@ -497,7 +545,6 @@ func ClassifyTokenRole(token string) {
 	case '$':
 		actual := ResolveAliasedItem(token)
 		Verbose("fyi, line reference",token,"resolved to",actual)
-		Diag("fyi, line reference",token,"resolved to",actual)
 		AssessGrammarCompletions(actual,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_LOOKUP
 		LINE_ITEM_COUNTER++
@@ -536,32 +583,26 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		Verbose("Event/item:",this_item)
 		Verbose("... Relation:",last_item,"--",last_reln,"->",this_item)
-		Diag("Relation:",last_item,"--",last_reln,"->",this_item)
 		CheckSection()
 
 	case ROLE_CONTEXT:
 		Box("Reset context: ->",this_item)
-		Diag("Reset context: ->",this_item)
 		ContextEval(this_item,"=")
 
 	case ROLE_CONTEXT_ADD:
 		Verbose("Add to context:",this_item)
-		Diag("Add to context:",this_item)
 		ContextEval(this_item,"+")
 
 	case ROLE_CONTEXT_SUBTRACT:
 		Verbose("Remove from context:",this_item)
-		Diag("Remove from context:",this_item)
 		ContextEval(this_item,"-")
 
 	case ROLE_SECTION:
 		Box("Set chapter/section: ->",this_item)
-		Diag("Set chapter/section: ->",this_item)
 		SECTION_STATE = this_item
 
 	default:
 		Verbose("Event/item:",this_item)
-		Diag("Event/item:",this_item)
 		CheckSection()
 		LinkSequence(token)
 
@@ -828,7 +869,6 @@ func LinkSequence(this string) {
 	if SEQUENCE_MODE {
 		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
 			Verbose("... Append sequence:",SEQUENCE_RELN,"->",this)
-			Diag("Sequence:",LAST_IN_SEQUENCE,"--",SEQUENCE_RELN,"->",this)
 		}
 		LAST_IN_SEQUENCE = this
 	}
@@ -1116,8 +1156,6 @@ func ParseError(message string) {
 
 	const red = "\033[31;1;4m"
 	const endred = "\033[0m"
-	const green = "\x1b[36m"
-	const endgreen = "\x1b[0m\n"
 
 	fmt.Print("\n",LINE_NUM,":",red)
 	fmt.Println("N4L",CURRENT_FILE,message,"at line", LINE_NUM,endred)
@@ -1158,27 +1196,45 @@ func usage() {
 
 //**************************************************************
 
-func Verbose(a ...interface{}) (n int, err error) {
+func Verbose(a ...interface{}) {
 
 	if VERBOSE {
 		fmt.Print(LINE_NUM,":\t")
-		n, err = fmt.Println(a...)
+		fmt.Println(a...)
 	}
-	return
+
+	Diag(a...)
 }
 
 //**************************************************************
 
-func Box(a ...interface{}) (n int, err error) {
+func PVerbose(a ...interface{}) {
+
+	const green = "\x1b[36m"
+	const endgreen = "\x1b[0m"
+
+	if VERBOSE {
+		fmt.Print(LINE_NUM,":\t",green)
+		fmt.Println(a...)
+		fmt.Print(endgreen)
+	}
+
+	Diag(a...)
+}
+
+//**************************************************************
+
+func Box(a ...interface{}) {
 
 	if VERBOSE {
 
 		fmt.Println("\n------------------------------------")
-		fmt.Print(LINE_NUM,":")
+		//fmt.Print(LINE_NUM,":")
 		fmt.Println(a...)
 		fmt.Println("------------------------------------\n")
 	}
-	return
+
+	Diag(a...)
 }
 
 //**************************************************************

@@ -60,7 +60,7 @@
  + contains (cont)     - is an element of (el)
  + subsumes (sub)      - is subsumed by (subby)
  + swallows (sw)       - is swallowed by (swby)
- + consists of (cons   - is part of (pt)
+ + consists of (cons)  - is part of (pt)
 
  + occurs in the context of (occurs in)  - is a possible context for (ctxfor)
 
