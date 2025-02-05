@@ -161,13 +161,13 @@ func main() {
 	config := ReadFile(CURRENT_FILE)
 	ParseConfig(config)
 
-	SummarizeConfig()
+	//SummarizeAndTestConfig()
 
 	for input := 0; input < len(args); input++ {
 
 		NewFile(args[input])
-		//input := ReadFile(CURRENT_FILE)
-		//ParseN4L(input)
+		input := ReadFile(CURRENT_FILE)
+		ParseN4L(input)
 	}
 }
 
@@ -421,7 +421,7 @@ func InsertArrowDirectory(sec,alias,name,pm string) {
 
 //**************************************************************
 
-func SummarizeConfig() {
+func SummarizeAndTestConfig() {
 
 	Box("Raw Summary")
 	fmt.Println("..\n")
@@ -433,6 +433,18 @@ func SummarizeConfig() {
 	fmt.Println("..\n")
 	fmt.Println("LONG",ARROW_LONG_DIR)
 	
+	fmt.Println("..\n")
+	relation := "pe"
+	p := ARROW_SHORT_DIR[relation]
+	all := ARROW_DIRECTORY[p]
+
+	fmt.Println("Short form",relation,"with ptr",p,"means",all)
+
+	relation = "pinyin for english"
+	p = ARROW_LONG_DIR[relation]
+	all = ARROW_DIRECTORY[p]
+
+	fmt.Println("Long form",relation,"with ptr",p,"means",all)
 }
 
 //**************************************************************

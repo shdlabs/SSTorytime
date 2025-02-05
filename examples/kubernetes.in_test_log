@@ -2309,3 +2309,76 @@
 129:Parsing new file kubernetes.in
 129:Parsing new file kubernetes.in
 129:Parsing new file kubernetes.in
+129:Parsing new file kubernetes.in
+129:Parsing new file kubernetes.in
+129:Parsing new file kubernetes.in
+129:Parsing new file kubernetes.in
+129:Parsing new file kubernetes.in
+1:Set chapter/section: -> kubernetes notes
+3:Reset context: -> text
+5:Event/item: weak coupling
+6:Event/item: strong coupling
+8:Event/item: operator
+10:Event/item: crd
+10:Event/item: custom resource definitions
+10:... Relation: crd -- short for -> custom resource definitions
+11:Event/item: crd
+11:Event/item: a way to extend the api or add functionality and capabilities
+11:... Relation: crd -- implements -> a way to extend the api or add functionality and capabilities
+13:Event/item: custom resource definition
+15:Event/item: when you create a new custom resource definition
+15:Event/item: , the kubernetes api server creates a new restful resource path for each version you specify. the custom resource created from a crd object can be either namespaced or cluster-scoped, as specified in the crd's spec.
+15:... Relation: when you create a new custom resource definition -- CRD -> , the kubernetes api server creates a new restful resource path for each version you specify. the custom resource created from a crd object can be either namespaced or cluster-scoped, as specified in the crd's spec.
+17:Event/item: when you create a new custom resource definition
+17:Event/item: namespaces
+17:... Relation: when you create a new custom resource definition -- refers to -> namespaces
+18:Event/item: when you create a new custom resource definition
+18:Event/item: api
+18:... Relation: when you create a new custom resource definition -- refers to -> api
+21:Event/item: pod
+21:Event/item: the smallest deployable units of computing that you can create and manage in kubernetes
+21:... Relation: pod -- implements -> the smallest deployable units of computing that you can create and manage in kubernetes
+23:Event/item: pod
+23:Event/item: pod of whales or pea pod
+23:... Relation: pod -- named after -> pod of whales or pea pod
+26:Event/item: a +pod's contents are always co-located and co-scheduled, and run in a +"shared context". a pod models an application-specific +"logical host": it contains one or more +application +containers which are relatively +"tightly coupled". in +non-cloud contexts, applications executed on the same +physical or +virtual machine are analogous to cloud applications executed on the same +logical +host.
+28:Reset context: -> single container pod
+30:Event/item: the "one-container-per-pod" model is the most common kubernetes use case; in this case, you can think of a pod as a wrapper around a single container; kubernetes manages pods rather than managing the containers directly.
+32:Reset context: -> multiple container pods
+34:Event/item: a pod can encapsulate an application composed of multiple co-located containers that are tightly coupled and need to share resources. these co-located containers form a single cohesive unit.
+36:Event/item: grouping multiple co-located and co-managed containers in a single pod is a relatively advanced use case. you should use this pattern only in specific instances in which your containers are tightly coupled.
+38:Event/item: restarting a container in a pod should not be confused with restarting a pod. a pod is not a process, but an environment for running container
+38:Event/item: . a pod persists until it is deleted.
+38:... Relation: restarting a container in a pod should not be confused with restarting a pod. a pod is not a process, but an environment for running container -- s -> . a pod persists until it is deleted.
+40:Event/item: the name of a pod must be a valid dns subdomain value
+43:Event/item: as well as application containers, a pod can contain init containers that run during pod startup. you can also inject ephemeral containers for debugging a running pod
+45:Event/item: ci/cd pipelines
+45:Event/item: continuous integration/continuous deployment
+45:... Relation: ci/cd pipelines -- short for -> continuous integration/continuous deployment
+46:Event/item: enhance the software delivery process by automating key stages such as testing, security scanning, and deployment
+48:Event/item: controller
+48:Event/item: a control loop that regulates the state of a system.
+48:... Relation: controller -- implements -> a control loop that regulates the state of a system.
+50:Event/item: operators
+50:Event/item: software extensions to kubernetes that make use of custom resources to manage applications and their components.
+50:... Relation: operators -- implements -> software extensions to kubernetes that make use of custom resources to manage applications and their components.
+52:Event/item: storage
+53:Event/item: bare metal
+54:Event/item: self-hosted
+55:Event/item: managed kubernetes
+56:Event/item: docker
+59:Event/item: containers
+60:Event/item: containerd
+61:Event/item: kubectl
+62:Event/item: kubectl get pods -n kube-system
+63:Event/item: kubectl apply -f https:
+66:Event/item: Kubernetes has a 
+66:Event/item: api pattern. all api usage from nodes
+66:Event/item: terminates at the api server. none of the other control plane components are designed to expose remote services. the api server is configured to listen for remote connections on a secure https port
+66:... Relation: api pattern. all api usage from nodes -- or the pods they run -> terminates at the api server. none of the other control plane components are designed to expose remote services. the api server is configured to listen for remote connections on a secure https port
+66:Event/item: with one or more forms of client authentication enabled. one or more forms of authorization should be enabled, especially if anonymous requests or service account tokens are allowed."
+66:... Relation: terminates at the api server. none of the other control plane components are designed to expose remote services. the api server is configured to listen for remote connections on a secure https port -- typically 443 -> with one or more forms of client authentication enabled. one or more forms of authorization should be enabled, especially if anonymous requests or service account tokens are allowed."
+68:Event/item: Nodes should be provisioned with the public root certificate for the cluster such that they can connect securely to the API server along with valid client credentials. A good approach is that the client credentials provided to the kubelet are in the form of a client certificate. See kubelet TLS bootstrapping for automated provisioning of kubelet client certificates.
+70:Event/item: Pods that wish to connect to the API server can do so securely by leveraging a service account so that Kubernetes will automatically inject the public root certificate and a valid bearer token into the pod when it is instantiated. The kubernetes service (in default namespace) is configured with a virtual IP address that is redirected (via kube-proxy) to the HTTPS endpoint on the API server.
+73:Event/item: on linux, control groups constrain resources that are allocated to processes.
+75:Event/item: there are two versions of cgroups in linux: cgroup v1 and cgroup v2. cgroup v2 is the new generation of the cgroup api
