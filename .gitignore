@@ -1,5 +1,5 @@
 # intermediate / autogen
-
+*_test_log
 *.pdf
 *.la
 *.lo
