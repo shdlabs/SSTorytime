@@ -38,7 +38,13 @@ type ArrowPtr int       // ArrowDirectory index
 type CtxPtr int
 type TextPtr int
 
-const SSTtypes = 4
+const (
+	SSTtypes = 4
+	LEADSTO = 1
+	CONTAINS = 2
+	EXPRESS = 3
+	NEAR = 4
+)
 
 type EventItem struct {
 
@@ -51,7 +57,7 @@ type Text struct {
 	S   string
 }
 
-type ArrowDirectory struct { // used only to fill in output text
+type ArrowRelation struct { // used only to fill in output text
 
 	LFrom    string
 	LTo      string
@@ -60,12 +66,24 @@ type ArrowDirectory struct { // used only to fill in output text
 	SSTType  int
 }
 
+type ArrowDirectory struct {
+
+	STtype  int
+	Long    string
+	Short   string
+	Ptr     ArrowPtr
+}
+
  // all fwd arrow types have a simple int representation > 0
  // all bwd/inverse arrow readings have the negative int for fwd
  // Hashed by long and short names
 
-var ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up int referene
-var ARROW_LONG_DIR = make(map[string]ArrowPtr) // Look up int referene
+var ( 
+	ARROW_DIRECTORY []ArrowDirectory
+	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up int referene
+	ARROW_LONG_DIR = make(map[string]ArrowPtr) // Look up int referene
+	ARROW_DIRECTORY_TOP ArrowPtr = 0
+)
 
 //**************************************************************
 // Global state
@@ -143,11 +161,13 @@ func main() {
 	config := ReadFile(CURRENT_FILE)
 	ParseConfig(config)
 
+	SummarizeConfig()
+
 	for input := 0; input < len(args); input++ {
 
 		NewFile(args[input])
-		input := ReadFile(CURRENT_FILE)
-		ParseN4L(input)
+		//input := ReadFile(CURRENT_FILE)
+		//ParseN4L(input)
 	}
 }
 
@@ -363,10 +383,55 @@ func AssessConfigCompletions(token string, prior_state int) {
 
 //**************************************************************
 
-func InsertArrowDirectory(sec,alias,arrow,pm string) {
+func InsertArrowDirectory(sec,alias,name,pm string) {
 
-	PVerbose("In",sec,"short name",alias,"for",arrow,", direction",pm)
+	PVerbose("In",sec,"short name",alias,"for",name,", direction",pm)
 
+	var sign int
+
+	switch pm {
+	case "+":
+		sign = 1
+	case "-":
+		sign = -1
+	}
+
+	var newarrow ArrowDirectory
+
+	switch sec {
+	case "leadsto":
+		newarrow.STtype = LEADSTO * sign
+	case "contains":
+		newarrow.STtype = CONTAINS * sign
+	case "properties":
+		newarrow.STtype = EXPRESS * sign
+	case "similarity":
+		newarrow.STtype = NEAR
+	}
+
+	newarrow.Long = name
+	newarrow.Short = alias
+	newarrow.Ptr = ARROW_DIRECTORY_TOP
+
+	ARROW_DIRECTORY = append(ARROW_DIRECTORY,newarrow)
+	ARROW_SHORT_DIR[alias] = ARROW_DIRECTORY_TOP
+	ARROW_LONG_DIR[name] = ARROW_DIRECTORY_TOP
+	ARROW_DIRECTORY_TOP++
+}
+
+//**************************************************************
+
+func SummarizeConfig() {
+
+	fmt.Println("..\n")
+	fmt.Println(ANNOTATION)
+	fmt.Println("..\n")
+	fmt.Println("DIRECTORY", ARROW_DIRECTORY)
+	fmt.Println("..\n")
+	fmt.Println("SHORT",ARROW_SHORT_DIR)
+	fmt.Println("..\n")
+	fmt.Println("LONG",ARROW_LONG_DIR)
+	
 }
 
 //**************************************************************
