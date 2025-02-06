@@ -245,14 +245,19 @@ Object X is an instance of a class Square
 A Square is a special case (inheriting) the class of Rectangle
 etc.
 </pre>
-The trouble with this idea is that it attempts to assert an static or invariant truth
-about the role of something. But roles are typically context dependent.
+The trouble with this idea is that it attempts to assert an *static* or *invariant* truth
+about the role of something (the square). But squares, indeed any properties or
+roles, are typically context dependent. We use the same concept in different ways.
 <pre>
 In DIY: A hammer is a tool.
 In music: A hammer is a musical instrument
 In DIY: a drill is a tool for making holes.
 In operations, a drill is a practice episode.
 </pre>
+If we insist of having different types for each of these cases (a type polymorphic approach),
+we push the responsibilty of the technology back onto the person using it. Technology
+is supposed to work for humans, not the other way around.
+
 The example above of damaged delivery  is a good example of how this becomes
 problematic. Suppose we introduce an object for a delivery, is that
 "Delivery" or "Shoes"? Should we have a separate object for "Damaged delivery" or is
