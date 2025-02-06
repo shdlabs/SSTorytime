@@ -33,10 +33,14 @@ import (
       A Directory maps names to ArrowPtr
 */
 
+//**************************************************************
+
 type EventItemPtr int   // EventItem index
 type ArrowPtr int       // ArrowDirectory index
 type CtxPtr int
-type TextPtr int
+type NodeTextPtr int
+
+//**************************************************************
 
 const (
 	SSTtypes = 4
@@ -44,20 +48,34 @@ const (
 	CONTAINS = 2
 	EXPRESS = 3
 	NEAR = 4
+
+	N1GRAM = 1
+	N2GRAM = 2
+	N3GRAM = 3
+	LT128 = 4
+	LT1024 = 5
+	GT1024 = 6
 )
+
+//**************************************************************
 
 type EventItem struct {
 
-	Name TextPtr
+	Name NodeTextPtr               // use a reference to avoid loading a large object
 	Links [SSTtypes][]ArrowPtr
 }
 
+//**************************************************************
+
 type Text struct {
-	Len int
-	S   string
+	L  int
+	S  string
+	C int
 }
 
-type ArrowRelation struct { // used only to fill in output text
+//**************************************************************
+
+type ArrowRelation struct {       // used only to fill in output text
 
 	LFrom    string
 	LTo      string
@@ -65,6 +83,8 @@ type ArrowRelation struct { // used only to fill in output text
 	STo      string
 	SSTType  int
 }
+
+//**************************************************************
 
 type ArrowDirectory struct {
 
@@ -78,15 +98,47 @@ type ArrowDirectory struct {
  // all bwd/inverse arrow readings have the negative int for fwd
  // Hashed by long and short names
 
+//**************************************************************
+
+type NodeTextBlobs struct {
+
+	// Power law n-gram frequencies
+
+	N1grams map[string]NodeTextPtr
+	N1directory []Text
+	N1_top NodeTextPtr
+
+	N2grams map[string]NodeTextPtr
+	N2directory []Text
+	N2_top NodeTextPtr
+
+	N3grams map[string]NodeTextPtr
+	N3directory []Text
+	N3_top NodeTextPtr
+
+	// Use linear search on these exp fewer long strings
+
+	LT128 []Text
+	LT128_top NodeTextPtr
+	LT1024 []Text
+	LT1024_top NodeTextPtr
+	GT1024 []Text
+	GT1024_top NodeTextPtr
+}
+
+//**************************************************************
+
 var ( 
 	ARROW_DIRECTORY []ArrowDirectory
-	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up int referene
-	ARROW_LONG_DIR = make(map[string]ArrowPtr) // Look up int referene
+	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up short name int referene
+	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
+
+	TEXT_DIRECTORY NodeTextBlobs
 )
 
 //**************************************************************
-// Global state
+// Global parsing state
 //**************************************************************
 
 const (
@@ -172,6 +224,8 @@ func main() {
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
+
+	fmt.Println("\nTEXT\n\n",TEXT_DIRECTORY)
 }
 
 
@@ -192,6 +246,10 @@ func Init() []string {
 	if *verbosePtr {
 		VERBOSE = true
 	}
+
+	TEXT_DIRECTORY.N1grams = make(map[string]NodeTextPtr)
+	TEXT_DIRECTORY.N2grams = make(map[string]NodeTextPtr)
+	TEXT_DIRECTORY.N3grams = make(map[string]NodeTextPtr)
 
 	return args
 }
@@ -664,7 +722,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		CheckNonNegative(LINE_ITEM_COUNTER-2)
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
-		IdempAddNode(this_item)
+		IdempAddText(this_item)
 		IdempAddArrow(last_item,last_reln,this_item)
 		CheckSection()
 
@@ -690,7 +748,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 			return
 		}
 
-		Verbose("Event/item:",this_item)
+		IdempAddText(this_item)
 		CheckSection()
 		LinkSequence(token)
 
@@ -710,25 +768,161 @@ func CheckLineAlias(s string) {
 
 //**************************************************************
 
-func IdempAddNode(item string) {
-
-	Verbose("Event/item:",item)
-
-}
-
-//**************************************************************
-
-func IdempAddArrow(from,arrow,to string) {
+func IdempAddArrow(from,arrowptr,to string) {
 
 	if from == to {
 		ParseError(ERR_ARROW_SELFLOOP)
 		os.Exit(-1)
 	}
 
-	Verbose("... Relation:",from,"--",arrow,"->",to)
+	Verbose("... Relation:",from,"--",arrowptr,"->",to)
 
-// now check CONTEXT_STATE
+// NEW VARIABLE TO HOLD list of links
 
+// CONTEXT..
+}
+
+//**************************************************************
+
+func IdempAddText(s string) NodeTextPtr {
+
+	Verbose("Event/item:",s)
+
+	l := len(s)
+	c := ClassifyString(s,l)
+
+	var newtext Text
+	newtext.S = s
+	newtext.L = l
+	newtext.C = c
+
+	return AppendTextToDirectory(newtext)
+}
+
+//**************************************************************
+
+func ClassifyString(s string,l int) int {
+
+	var spaces int = 0
+
+	for i := 0; i < l; i++ {
+
+		if s[i] == ' ' {
+			spaces++
+		}
+
+		if spaces > 2 {
+			break
+		}
+	}
+
+	// Text usage tends to fall into a number of different roles, with a power law
+        // frequency of occurrence in a text, so let's classify in order of likely usage
+	// for small and many, we use a hashmap/btree
+
+	switch spaces {
+	case 0:
+		return N1GRAM
+	case 1:
+		return N2GRAM
+	case 2:
+		return N3GRAM
+	}
+
+	// For longer strings, a linear search is probably fine here
+        // (once it gets into a database, it's someone else's problem)
+
+	if l < 128 {
+		return LT128
+	}
+
+	if l < 1024 {
+		return LT1024
+	}
+
+	return GT1024
+
+}
+
+//**************************************************************
+
+func AppendTextToDirectory(txt Text) NodeTextPtr {
+
+	var ptr NodeTextPtr = -1
+	var ok bool = false
+
+	switch txt.C {
+	case N1GRAM:
+		ptr,ok = TEXT_DIRECTORY.N1grams[txt.S]
+	case N2GRAM:
+		ptr,ok = TEXT_DIRECTORY.N2grams[txt.S]
+	case N3GRAM:
+		ptr,ok = TEXT_DIRECTORY.N3grams[txt.S]
+	case LT128:
+		ptr,ok = LinearFindText(TEXT_DIRECTORY.LT128,txt)
+	case LT1024:
+		ptr,ok = LinearFindText(TEXT_DIRECTORY.LT1024,txt)
+	case GT1024:
+		ptr,ok = LinearFindText(TEXT_DIRECTORY.GT1024,txt)
+
+	}
+
+	if ok {
+		return ptr
+	}
+
+	switch txt.C {
+	case N1GRAM:
+		TEXT_DIRECTORY.N1directory = append(TEXT_DIRECTORY.N1directory,txt)
+		ptr = TEXT_DIRECTORY.N1_top
+		TEXT_DIRECTORY.N1grams[txt.S] = ptr
+		TEXT_DIRECTORY.N1_top++
+		return ptr
+	case N2GRAM:
+		TEXT_DIRECTORY.N2directory = append(TEXT_DIRECTORY.N2directory,txt)
+		ptr = TEXT_DIRECTORY.N2_top
+		TEXT_DIRECTORY.N2grams[txt.S] = ptr
+		TEXT_DIRECTORY.N2_top++
+		return ptr
+	case N3GRAM:
+		TEXT_DIRECTORY.N3directory = append(TEXT_DIRECTORY.N3directory,txt)
+		ptr = TEXT_DIRECTORY.N3_top
+		TEXT_DIRECTORY.N3grams[txt.S] = ptr
+		TEXT_DIRECTORY.N3_top++
+		return ptr
+	case LT128:
+		TEXT_DIRECTORY.LT128 = append(TEXT_DIRECTORY.LT128,txt)
+		TEXT_DIRECTORY.LT128_top++
+		return TEXT_DIRECTORY.LT128_top-1
+	case LT1024:
+		TEXT_DIRECTORY.LT1024 = append(TEXT_DIRECTORY.LT1024,txt)
+		TEXT_DIRECTORY.LT1024_top++
+		return TEXT_DIRECTORY.LT1024_top-1
+	case GT1024:
+		TEXT_DIRECTORY.GT1024 = append(TEXT_DIRECTORY.GT1024,txt)
+		TEXT_DIRECTORY.GT1024_top++
+		return TEXT_DIRECTORY.GT1024_top-1
+	}
+
+	return -1
+}
+
+//**************************************************************
+
+func LinearFindText(in []Text,txt Text) (NodeTextPtr,bool) {
+
+	for i := 0; i < len(in); i++ {
+
+		if txt.L != in[i].L {
+			continue
+		}
+
+		if in[i].S == txt.S {
+			return NodeTextPtr(i),true
+		}
+	}
+
+	return -1,false
 }
 
 //**************************************************************
