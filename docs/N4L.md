@@ -185,6 +185,8 @@ in Silicon Valley speak:
  I question your use of language ... with a question
  I expensed by trip ... as an expense
 </pre>
+Spend is a verb (expenditure or budget are nouns. Ask is a verb, question is
+a noun, but we now use both for both!
 We see that language is used and abused in fluid ways, so we need more
 discipline in thinking about what the functions of terms are.
 
