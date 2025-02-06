@@ -159,12 +159,14 @@ to some predefined relation.
 It turns out that every relationship basically falls into one of
 four basic types that help you to imagine sketching the items on a map.
 Here are the four types:
-* 1 **leadsto    / affects, causes** one thing follows from the other
-* 2 **contains   / contains** something is a part of something else
-* 3 **properties / express** something just has a name or an attribute
-* 4 **similarity / near, alike** something is close to something else
+* 1 **leadsto    / affects, causes** one thing follows from the other (sequences)
+* 2 **contains   / contains** something is a part of something else (boxes in boxes)
+* 3 **properties / express** something just has a name or an attribute (descriptive)
+* 4 **similarity / near, alike** something is close to something else (proximity,closeness)
 
-These four classes of association behave like placing items around
+These four classes of association can be literal or metaphorical (all language
+is an outgrowth of [metaphors for space and time](https://www.amazon.com/Smart-Spacetime-information-challenges-process/dp/B091F18Q8K/ref=tmm_hrd_swatch_0)).
+behave like placing items around
 each other in a mind-map on paper. Things that belong close together
 because they are aliases for one another are *similar*.  If one thing
 leads to another, e.g. because it causes it or because it precedes it
