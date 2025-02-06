@@ -11,8 +11,11 @@ structured format for uploading into a database or for use with other tools.
 
 The purpose of using a simple yet semi-formal language as a starting
 point is to avoid the "information model trap" that befalls many data
-representations, i.e. forcing users to put everything into a pre-approved,
-like filling out a form. Without any structure, it's only guesswork to
+representations, i.e. forcing users to put everything into a pre-approved model,
+like filling out a rigid form. This makes it hard to back out of decisions
+and change our minds. It makes modelling fragile and fraught with risk.
+
+Without any structure, it's only guesswork to
 understand intent. N4L is a compromise that allows you to use any kind of
 familiar editor to write notes in pure text (Unicode).
 
