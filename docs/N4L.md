@@ -197,9 +197,9 @@ Order applies to both processes and objects.
 
 
 We could imagine a supply-chain worker noting:
-
+<pre>
  delivery 123 (damaged) 2 boxes
-
+</pre>
 It's a fair thing to write in a moment of unexpected pressure. But which of the
 four relations is this? That's the same as asking: what could we use this note
 for later? The problem with it is that it's ambiguous.
