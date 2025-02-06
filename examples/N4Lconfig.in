@@ -15,8 +15,15 @@
         + is followed by (next) - is preceded by (prev)    
         + then the next is (then) - previous (prior)
 
- 	# these next two are mutually complementary interpretations
+        + intends (intt)    - is the intent of (iof)
+        + proposed (prop)    - proposed by (propby)
+        + decided (decide)    - decided by (decidby)
+        + spoke to (spoke)    - was spoken to by (talked)
 
+        + implements (impl) - was implemented by (implorg)        
+        + named after (named) - inspired the name (inspname)
+
+ 	# these next two are mutually complementary interpretations
  	+ succeeded by (succ) - preceded by (pre)
  	+ comes before (bfr)  - comes after (aft)
 
@@ -27,12 +34,15 @@
 
  	+ "positive (+)" (+) - "negative (-)" (-)
 
-
         # More examples to play with, semantics are always reversible
 
  	+ results in (res) - comes from (comfr)
  	+ depends on (dep) - drives (drv)
  	+ influences (infl) - is influenced by (isinfl)
+        + supports (support) - is supported by (suportby)
+
+        + wrote (wrote) - written by (written)
+        + invented (invent) - invented by (inventby)
 
         # Numbers can be interpreted either as set order (value) 
         # or by set containment (count), so be careful with semantics!
@@ -40,6 +50,14 @@
         # succeeds is more accurate in terms of order
         #
 	# + is less than (lt) - is greater than (gt)
+
+ :: construction, building, industry ::
+
+     + supplies (supply) - is supplied by (supplyby)
+     + delivered to (delivaddr) - delivery address for (delivgoods)
+
+     + handles (handles) - is handled by (handleyby)      // has dual meanings!
+     + coordinates (coord) - is coordinated by (coordby)
 
  :: chinese language ::
 
@@ -61,8 +79,16 @@
  + subsumes (sub)      - is subsumed by (subby)
  + swallows (sw)       - is swallowed by (swby)
  + consists of (cons)  - is part of (pt)
+ + has example (hasex) - example of (ex)
+
+ + owns (owns) - is owned by (ownby)
+ + rents (rents) - is rented by (rentby)
 
  + occurs in the context of (occurs in)  - is a possible context for (ctxfor)
+
+ + employer of (employs) - is employed at (workat)
+
+ + based in (org) - is the home of 
 
 #########################################################
 
@@ -76,8 +102,8 @@
  + expresses (expr)          - is expressed by  (exprby)
  + has property (prop)       - is a property of (propof)
  + means (means)             - is meant by (meansb)
- + intends (intt)            - is the intent of (iof)
  + is pronounced as (pronas) - is the pronunciation for (pronof)
+ + is short for (short for)  - can be shortened to (shorter)
 
  # Here we see type classifiers in action
 
@@ -87,9 +113,15 @@
  + may have value (hasX)    - is a possible value for (isX)
 
  + note/remark (note) - is a note or remark about (isnotefor)
+
  + stands for (sfor)  - is a case of (caseof)
  + refers to (ref)    - may be referred to as (refas)
  + has role (role)    - is the role of (isrole)
+ + has employment status (emplstatus) - employment status of (emplstatof)
+
+ :: delivery ::
+
+ + is in condition (condition) - condition of (condof)
 
 #########################################################
 
@@ -99,11 +131,14 @@
  sounds like        	(sl)
 
  equals             	(eq)
+ same as                (=)
  is not the same as 	(!eq)
 
  similar to         	(sim)
  associated with    	(ass)  # (loose coupling)
  near               	(nr)
+
+ met with               (met) // a mutual coincidence
 
 #########################################################
 

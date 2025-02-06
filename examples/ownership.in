@@ -13,9 +13,9 @@
 
  :: income ::
 
- mark  (work status) unemployed
- sarah (work status) full employment
-   "   (workplace)   "Wicked Finance" // quotes preserve caps
+ mark  (emplstatus) unemployed
+ sarah (emplstatus) full employment
+   "   (employs)   "Wicked Finance" // quotes preserve caps
 
 
 

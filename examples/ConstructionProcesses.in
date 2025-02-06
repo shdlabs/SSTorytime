@@ -1,11 +1,4 @@
 
-- arrows 
-
-     + supplies - is supplied by
-     + coordinates - is coordinated by
-
-     + based in (org) - is the home of 
-
 
 :: entrepreneurs ::
 
@@ -27,8 +20,8 @@
 
  ::: materials . recycling ::: 
 
- metal screws   (talk to) Sven F
- used concrete  (realk)  
+ metal screws   (decided by) Sven F
+
 
 :: landfill ::
 
@@ -37,6 +30,7 @@
 
 :: people ::
 
+   // Note handles is a poor choice of words. It could mean two different things
    Sven F (handles) sorting metals
 
 :: terms, terminology, roles ::
@@ -64,10 +58,14 @@
 
 :: 2024-06-12 delivery ::
 
-  shipment 1 (delivered) operagata 2 
+  shipment 1 (delivaddr) operagata 2 
      "       (contains)  type 40 air filters
-     "       (rem)   2 days late
-     "        (broken) 2 boxes damaged
+     "       (note)   2 days late
+#     "       (damaged) 2 boxes   // this is ambiguous and needs reworking
+      "  (contains) 2 damaged boxes
+
+   2 damaged boxes (condition) water damage
+
 
 
 

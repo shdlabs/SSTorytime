@@ -124,6 +124,7 @@ const (
 	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
 	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
 	ERR_SIMILAR_NO_SIGN = "Arrows for similarity do not have signs, they are directionless"
+	ERR_ARROW_SELFLOOP = "Arrow's origin points to itself"
 )
 
 var ( 
@@ -650,11 +651,6 @@ func ClassifyTokenRole(token string) {
 
 func AssessGrammarCompletions(token string, prior_state int) {
 
-	if AllCaps(token) {
-		ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
-		return
-	}
-
 	if len(token) == 0 {
 		return
 	}
@@ -668,8 +664,8 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		CheckNonNegative(LINE_ITEM_COUNTER-2)
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
-		Verbose("Event/item:",this_item)
-		Verbose("... Relation:",last_item,"--",last_reln,"->",this_item)
+		IdempAddNode(this_item)
+		IdempAddArrow(last_item,last_reln,this_item)
 		CheckSection()
 
 	case ROLE_CONTEXT:
@@ -689,6 +685,11 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		SECTION_STATE = this_item
 
 	default:
+		if AllCaps(token) {
+			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
+			return
+		}
+
 		Verbose("Event/item:",this_item)
 		CheckSection()
 		LinkSequence(token)
@@ -704,6 +705,29 @@ func CheckLineAlias(s string) {
 		ParseError(ERR_BAD_LABEL_OR_REF+s)
 		os.Exit(-1)
 	}
+
+}
+
+//**************************************************************
+
+func IdempAddNode(item string) {
+
+	Verbose("Event/item:",item)
+
+}
+
+//**************************************************************
+
+func IdempAddArrow(from,arrow,to string) {
+
+	if from == to {
+		ParseError(ERR_ARROW_SELFLOOP)
+		os.Exit(-1)
+	}
+
+	Verbose("... Relation:",from,"--",arrow,"->",to)
+
+// now check CONTEXT_STATE
 
 }
 
