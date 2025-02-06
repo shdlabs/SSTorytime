@@ -1,6 +1,11 @@
 
 # N4L - notes for loading utility
 
+*Notes for loading*<br>
+*Narrative for logic*<br>
+*Network for learning*<br>
+*Nourishment for life*
+
 N4L is a simple language parser for keeping notes and scanning into a
 structured format for uploading into a database or for use with other tools.
 
@@ -150,11 +155,11 @@ to some predefined relation.
 
 It turns out that every relationship basically falls into one of
 four basic types that help you to imagine sketching the items on a map.
-Here are the four types. 
-* **leadsto    / affects, causes** one thing follows from the other
-* **contains   / contains** something is a part of something else
-* **properties / express** something just has a name or an attribute
-* **similarity / near, alike** something is close to something else
+Here are the four types:
+* 1 **leadsto    / affects, causes** one thing follows from the other
+* 2 **contains   / contains** something is a part of something else
+* 3 **properties / express** something just has a name or an attribute
+* 4 **similarity / near, alike** something is close to something else
 
 These four classes of association behave like placing items around
 each other in a mind-map on paper. Things that belong close together
@@ -163,6 +168,103 @@ leads to another, e.g. because it causes it or because it precedes it
 in a history then we use *leadsto*. Some items are parts of other items,
 so we use *contains*. Finally, something that's purely descriptive
 or is expressed by an item, e.g. "is blue" or 
+
+Some authors who write about semantic networks have suggested that the
+way to think about arrows and nodes is as "nouns" (things) and "verbs"
+(actions). This is a simple idea, but it's not quite right. The catch lies
+in the way language semantics rely almost entirely on metaphors to express
+ideas. We frequently speak of "nouning verbs" and "verbing nouns", e.g.
+in Silicon Valley speak:
+<pre>
+ The company's spend is ...   (vs)    I need to spend .. an expenditure
+ I have a big ask ...         (vs)    I need to ask you .. a question
+
+ I question your use of language ... with a question
+ I expensed by trip ... as an expense
+</pre>
+We see that language is used and abused in fluid ways, so we need more
+discipline in thinking about what the functions of terms are.
+
+
+## Examples and pitfalls in modelling
+
+
+When we say that A follows B, this may apply to things or actions.
+* Space travel came after aircraft. 
+* Shopping is done after work.
+* Hammering is done after assembly.
+Order applies to both processes and objects.
+
+
+We could imagine a supply-chain worker noting:
+
+ delivery 123 (damaged) 2 boxes
+
+It's a fair thing to write in a moment of unexpected pressure. But which of the
+four relations is this? That's the same as asking: what could we use this note
+for later? The problem with it is that it's ambiguous.
+
+The left hand side "delivery 123" is clear enough. It represents some shipment
+and we could embellish this description like this
+<pre>
+ delivery 123 (contains) shoes
+     "        (came from) Italy
+     "        (received by) shift crew 12
+</pre>
+and so on. So no problem here. The relation "damaged" becomes an issue however
+because it's referring to the condition or state of the delivery. 
+A more flexible approach would be to rewrite this as
+<pre>
+ delivery 123 (condition) 2 boxes damaged
+</pre>
+because now
+* condition is a generic and reusable relation, which is a propery attribute (type 3) of the delivery
+* "2 boxes damaged" is an event that can be explained easily
+For instance, now we can explain the event further:
+<pre>
+  2 boxes damaged (condition) water damage
+         "        (contains) red stiletto box 1445
+         "        (contains) black stiletto box 1446
+</pre>
+
+### The "is a" fallacy
+
+During the OO-movement to sanctify Object Orientation as a software modelling approach, many
+superifical ideas were proposed. Object Orientation rubber stamps
+the idea that objects, i.e. "things" are the most important entities in a model, 
+leaving *processes* asking: what am I 
+then? (The answer was usually that processes should be thought of as methods that affect
+objects, which is extremely limiting.)
+Classification of objects into types was the goal of OO, because this is a way to simply
+map ideas into first order logic, and that makes programming easy to understand.
+Alas, squeezing processes into this isn't always easy.
+The answer commonly associated with this was to use the "is a" or "is an instance of" relation
+as the way of thinking about things.
+<pre>
+Object X is an instance of a class Square
+A Square is a special case (inheriting) the class of Rectangle
+etc.
+</pre>
+The trouble with this idea is that it attempts to assert an static or invariant truth
+about the role of something. But roles are typically context dependent.
+<pre>
+In DIY: A hammer is a tool.
+In music: A hammer is a musical instrument
+In DIY: a drill is a tool for making holes.
+In operations, a drill is a practice episode.
+</pre>
+The example above of damaged delivery  is a good example of how this becomes
+problematic. Suppose we introduce an object for a delivery, is that
+"Delivery" or "Shoes"? Should we have a separate object for "Damaged delivery" or is
+damage an attribute of the object. What could it mean? how would we explain it?
+
+The virtue of a semantic language is that we never have to shoe-horn
+(no pun intended) an idea into a rigid box, as we do when we try to
+lock down data types. This is an affectation of logical reasoning,
+but logic is highly restrictive (on purpose, as a matter of design).
+That makes it precise, but also extremely fragile to variability.
+
+### Belonging
 
 Some relationships can be tricky to fathom. The semantics of ownership,
 for example, are not completely unambiguous. Suppose you want to say
@@ -184,5 +286,12 @@ by being golden but this does not imply that Martin is golden!
 
 You might make the wrong choices about things initially, but it's easy to
 change your decision because the definition of the relationship is
-made independently of all the data where you use it. This is the usefulness
-of a language interface.
+made independently of all the data where you use it. You'll figure out
+the bugs in your wordings as you go, and it's precisely this reworking
+that is learning.
+
+The usefulness
+of a language interface becomes clear now. It's much easier to edit your notes than to maintain
+a database.
+
+

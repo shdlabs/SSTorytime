@@ -192,6 +192,9 @@ to seeing patterns. Some of the best knowledge comes from overcoming a misunders
 * It takes work (revising and rewriting, re-ordering, tidying, copying and eliminating, etc)
 to become familiar with materials. It's the start of a relationship, to making a new friend.
 
+* Rhymes, slogans, and catch phrases are useful for remembering ideas, because they draw on
+our affinity for pattern and motor skills.
+
 ## The goal
 
 We already have the trusty index to help us with random recall. An index offers a way into a body of
