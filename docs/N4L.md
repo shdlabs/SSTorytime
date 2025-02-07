@@ -6,8 +6,13 @@
 *Network for learning*<br>
 *Nourishment for life*
 
-N4L is a simple language parser for keeping notes and scanning into a
-structured format for uploading into a database or for use with other tools.
+N4L is an intentionally simple language, for keeping notes and
+scanning into a structured format for uploading into a database or for
+use with other tools.  The language is designed to encourage you to
+think about how you express and structure notes. That, in turn,
+encourages you to revisit, tidy and organise the notes again and again, while
+being able to quickly turn them into a searchable graphical database, from which
+and can reason through stories.
 
 The purpose of using a simple yet semi-formal language as a starting
 point is to avoid the "information model trap" that befalls many data
