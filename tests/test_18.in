@@ -14,3 +14,5 @@
  two (causes,0.3) three
 
  one (causes,4,nothing) three
+
+ three (near) two

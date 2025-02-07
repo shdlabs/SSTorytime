@@ -17,27 +17,91 @@ import (
 )
 
 //**************************************************************
-// DATA structures
+// Parsing state variables
 //**************************************************************
 
-/* 1. We want every reusable text to be addressible by a pointer/index
-      in a simple lookup table. This includes
-        - item/event nodes
-        - arrows referenced by full text or a short alias in N4L
-        - context expressions
+const (
+	ALPHATEXT = 'x'
 
-   2. We want relations/arrows to be (Arrow ArrowPtr,To NodeTextPtr,Context CtxPtr)
-      that are attached to a (From NodeTextPtr) record as an array of lists,
-      indexed by SST types 0-3
+        HAVE_PLUS = 11
+        HAVE_MINUS = 22
+	ROLE_ABBR = 33
 
-   3. For arrows, short aliases are often used, but longer names may be used too
-      A Directory maps names to ArrowPtr
-ink*/
+	ROLE_EVENT = 1
+	ROLE_RELATION = 2
+	ROLE_SECTION = 3
+	ROLE_CONTEXT = 4
+	ROLE_CONTEXT_ADD = 5
+	ROLE_CONTEXT_SUBTRACT = 6
+	ROLE_BLANK_LINE = 7
+	ROLE_LINE_ALIAS = 8
+	ROLE_LOOKUP = 9
+
+	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
+	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
+	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
+	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
+	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
+	ERR_MISSING_ITEM_SOMEWHERE = "Missing item somewhere"
+	ERR_MISSING_ITEM_RELN = "Missing item or double relation"
+	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
+	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
+	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
+	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
+	WARN_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
+	ERR_ANNOTATION_TOO_LONG = "Annotation marker should be a single non-alphnumeric character "
+	ERR_BAD_ABBRV = "abbreviation out of place"
+	ERR_BAD_ALIAS_REFERENCE = "Alias references start from $name.1"
+	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
+	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
+	ERR_SIMILAR_NO_SIGN = "Arrows for similarity do not have signs, they are directionless"
+	ERR_ARROW_SELFLOOP = "Arrow's origin points to itself"
+	ERR_NEGATIVE_WEIGHT = "Arrow relation has a negative weight, which is disallowed. Use a NOT relation if you want to signify inhibition: "
+	ERR_TOO_MANY_WEIGHTS = "More than one weight value in the arrow relation "
+
+)
+
+//**************************************************************
+
+var ( 
+	LINE_NUM int = 1
+	LINE_ITEM_CACHE = make(map[string][]string)  // contains current and labelled line elements
+	LINE_ITEM_REFS []NodeEventItemPtr            // contains current line integer references
+	LINE_RELN_CACHE = make(map[string][]Link)
+	LINE_ITEM_STATE int = ROLE_BLANK_LINE
+	LINE_ALIAS string = ""
+	LINE_ITEM_COUNTER int = 1
+	LINE_RELN_COUNTER int = 0
+
+	FWD_ARROW string
+	BWD_ARROW string
+	ANNOTATION = make(map[string]string)
+
+	CONTEXT_STATE = make(map[string]bool)
+	SECTION_STATE string
+
+	SEQUENCE_MODE bool = false
+	SEQUENCE_RELN string = "then" 
+	LAST_IN_SEQUENCE string = ""
+
+	VERBOSE bool = false
+	CURRENT_FILE string
+	TEST_DIAG_FILE string
+
+	RELN_BY_SST [4][]ArrowPtr // From an EventItemNode
+)
+
+//**************************************************************
+// DATA structures for input
+//**************************************************************
+
+// See the notes in README
 
 //**************************************************************
 
 const (
-	SSTtypes = 4
+	SSTtypes = 4+1
+
 	LEADSTO = 1
 	CONTAINS = 2
 	EXPRESS = 3
@@ -82,9 +146,9 @@ type Link struct {  // A link is a type of arrow, with context
 	D NodeEventItemPtr // adjacent event/item/node
 }
 
-//**************************************************************
+type LinkPtr int
 
-type ArrowPtr int // ArrowDirectory index
+//**************************************************************
 
 type ArrowDirectory struct {
 
@@ -93,6 +157,8 @@ type ArrowDirectory struct {
 	Short   string
 	Ptr     ArrowPtr
 }
+
+type ArrowPtr int // ArrowDirectory index
 
  // all fwd arrow types have a simple int representation > 0
  // all bwd/inverse arrow readings have the negative int for fwd
@@ -127,6 +193,8 @@ type NodeEventItemBlobs struct {
 }
 
 //**************************************************************
+// Lookup tables
+//**************************************************************
 
 var ( 
 	ARROW_DIRECTORY []ArrowDirectory
@@ -134,81 +202,8 @@ var (
 	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
 
-	TEXT_DIRECTORY NodeEventItemBlobs  // Internal histo-representations
+	NODE_DIRECTORY NodeEventItemBlobs  // Internal histo-representations
 	NO_NODE_PTR NodeEventItemPtr       // see Init()
-)
-
-//**************************************************************
-// Global parsing state
-//**************************************************************
-
-const (
-	ALPHATEXT = 'x'
-
-        HAVE_PLUS = 11
-        HAVE_MINUS = 22
-	ROLE_ABBR = 33
-
-	ROLE_EVENT = 1
-	ROLE_RELATION = 2
-	ROLE_SECTION = 3
-	ROLE_CONTEXT = 4
-	ROLE_CONTEXT_ADD = 5
-	ROLE_CONTEXT_SUBTRACT = 6
-	ROLE_BLANK_LINE = 7
-	ROLE_LINE_ALIAS = 8
-	ROLE_LOOKUP = 9
-
-	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
-	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
-	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
-	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
-	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
-	ERR_MISSING_ITEM_SOMEWHERE = "Missing item somewhere"
-	ERR_MISSING_ITEM_RELN = "Missing item or double relation"
-	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
-	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
-	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
-	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
-	WARN_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
-	ERR_ANNOTATION_TOO_LONG = "Annotation marker should be a single non-alphnumeric character "
-	ERR_BAD_ABBRV = "abbreviation out of place"
-	ERR_BAD_ALIAS_REFERENCE = "Alias references start from $name.1"
-	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
-	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
-	ERR_SIMILAR_NO_SIGN = "Arrows for similarity do not have signs, they are directionless"
-	ERR_ARROW_SELFLOOP = "Arrow's origin points to itself"
-	ERR_NEGATIVE_WEIGHT = "Arrow relation has a negative weight, which is disallowed. Use a NOT relation if you want to signify inhibition: "
-	ERR_TOO_MANY_WEIGHTS = "More than one weight value in the arrow relation "
-
-)
-
-var ( 
-	LINE_NUM int = 1
-	LINE_ITEM_CACHE = make(map[string][]string)  // contains current and labelled line elements
-	LINE_ITEM_REFS []NodeEventItemPtr                 // contains current line integer references
-	LINE_RELN_CACHE = make(map[string][]Link)
-	LINE_ITEM_STATE int = ROLE_BLANK_LINE
-	LINE_ALIAS string = ""
-	LINE_ITEM_COUNTER int = 1
-	LINE_RELN_COUNTER int = 0
-
-	FWD_ARROW string
-	BWD_ARROW string
-	ANNOTATION = make(map[string]string)
-
-	CONTEXT_STATE = make(map[string]bool)
-	SECTION_STATE string
-
-	SEQUENCE_MODE bool = false
-	SEQUENCE_RELN string = "then" 
-	LAST_IN_SEQUENCE string = ""
-
-	VERBOSE bool = false
-	CURRENT_FILE string
-	TEST_DIAG_FILE string
-
-	RELN_BY_SST [4][]ArrowPtr // From an EventItemNode
 )
 
 //**************************************************************
@@ -253,9 +248,9 @@ func Init() []string {
 	NO_NODE_PTR.Class = 0
 	NO_NODE_PTR.Ptr =  -1
 
-	TEXT_DIRECTORY.N1grams = make(map[string]CTextPtr)
-	TEXT_DIRECTORY.N2grams = make(map[string]CTextPtr)
-	TEXT_DIRECTORY.N3grams = make(map[string]CTextPtr)
+	NODE_DIRECTORY.N1grams = make(map[string]CTextPtr)
+	NODE_DIRECTORY.N2grams = make(map[string]CTextPtr)
+	NODE_DIRECTORY.N3grams = make(map[string]CTextPtr)
 
 	return args
 }
@@ -496,7 +491,7 @@ func SummarizeAndTestConfig() {
 	fmt.Println("SHORT",ARROW_SHORT_DIR)
 	fmt.Println("..\n")
 	fmt.Println("LONG",ARROW_LONG_DIR)
-	fmt.Println("\nTEXT\n\n",TEXT_DIRECTORY)
+	fmt.Println("\nTEXT\n\n",NODE_DIRECTORY)
 }
 
 //**************************************************************
@@ -810,17 +805,17 @@ func GetTextFromPtr(frptr NodeEventItemPtr) string {
 
 	switch class {
 	case N1GRAM:
-		txt = TEXT_DIRECTORY.N1directory[index]
+		txt = NODE_DIRECTORY.N1directory[index]
 	case N2GRAM:
-		txt = TEXT_DIRECTORY.N2directory[index]
+		txt = NODE_DIRECTORY.N2directory[index]
 	case N3GRAM:
-		txt = TEXT_DIRECTORY.N3directory[index]
+		txt = NODE_DIRECTORY.N3directory[index]
 	case LT128:
-		txt = TEXT_DIRECTORY.LT128[index]
+		txt = NODE_DIRECTORY.LT128[index]
 	case LT1024:
-		txt = TEXT_DIRECTORY.LT1024[index]
+		txt = NODE_DIRECTORY.LT1024[index]
 	case GT1024:
-		txt = TEXT_DIRECTORY.GT1024[index]
+		txt = NODE_DIRECTORY.GT1024[index]
 	}
 
 	return txt.S
@@ -880,17 +875,17 @@ func AppendTextToDirectory(txt NodeEventItem) NodeEventItemPtr {
 
 	switch txt.C {
 	case N1GRAM:
-		cptr,ok = TEXT_DIRECTORY.N1grams[txt.S]
+		cptr,ok = NODE_DIRECTORY.N1grams[txt.S]
 	case N2GRAM:
-		cptr,ok = TEXT_DIRECTORY.N2grams[txt.S]
+		cptr,ok = NODE_DIRECTORY.N2grams[txt.S]
 	case N3GRAM:
-		cptr,ok = TEXT_DIRECTORY.N3grams[txt.S]
+		cptr,ok = NODE_DIRECTORY.N3grams[txt.S]
 	case LT128:
-		cptr,ok = LinearFindText(TEXT_DIRECTORY.LT128,txt)
+		cptr,ok = LinearFindText(NODE_DIRECTORY.LT128,txt)
 	case LT1024:
-		cptr,ok = LinearFindText(TEXT_DIRECTORY.LT1024,txt)
+		cptr,ok = LinearFindText(NODE_DIRECTORY.LT1024,txt)
 	case GT1024:
-		cptr,ok = LinearFindText(TEXT_DIRECTORY.GT1024,txt)
+		cptr,ok = LinearFindText(NODE_DIRECTORY.GT1024,txt)
 	}
 
 	var ext_ptr NodeEventItemPtr
@@ -903,40 +898,40 @@ func AppendTextToDirectory(txt NodeEventItem) NodeEventItemPtr {
 
 	switch txt.C {
 	case N1GRAM:
-		TEXT_DIRECTORY.N1directory = append(TEXT_DIRECTORY.N1directory,txt)
-		cptr = TEXT_DIRECTORY.N1_top
-		TEXT_DIRECTORY.N1grams[txt.S] = cptr
-		TEXT_DIRECTORY.N1_top++
+		NODE_DIRECTORY.N1directory = append(NODE_DIRECTORY.N1directory,txt)
+		cptr = NODE_DIRECTORY.N1_top
+		NODE_DIRECTORY.N1grams[txt.S] = cptr
+		NODE_DIRECTORY.N1_top++
 		ext_ptr.Ptr = cptr
 		return ext_ptr
 	case N2GRAM:
-		TEXT_DIRECTORY.N2directory = append(TEXT_DIRECTORY.N2directory,txt)
-		cptr = TEXT_DIRECTORY.N2_top
-		TEXT_DIRECTORY.N2grams[txt.S] = cptr
-		TEXT_DIRECTORY.N2_top++
+		NODE_DIRECTORY.N2directory = append(NODE_DIRECTORY.N2directory,txt)
+		cptr = NODE_DIRECTORY.N2_top
+		NODE_DIRECTORY.N2grams[txt.S] = cptr
+		NODE_DIRECTORY.N2_top++
 		ext_ptr.Ptr = cptr
 		return ext_ptr
 	case N3GRAM:
-		TEXT_DIRECTORY.N3directory = append(TEXT_DIRECTORY.N3directory,txt)
-		cptr = TEXT_DIRECTORY.N3_top
-		TEXT_DIRECTORY.N3grams[txt.S] = cptr
-		TEXT_DIRECTORY.N3_top++
+		NODE_DIRECTORY.N3directory = append(NODE_DIRECTORY.N3directory,txt)
+		cptr = NODE_DIRECTORY.N3_top
+		NODE_DIRECTORY.N3grams[txt.S] = cptr
+		NODE_DIRECTORY.N3_top++
 		ext_ptr.Ptr = cptr
 		return ext_ptr
 	case LT128:
-		TEXT_DIRECTORY.LT128 = append(TEXT_DIRECTORY.LT128,txt)
-		TEXT_DIRECTORY.LT128_top++
-		ext_ptr.Ptr = TEXT_DIRECTORY.LT128_top-1
+		NODE_DIRECTORY.LT128 = append(NODE_DIRECTORY.LT128,txt)
+		NODE_DIRECTORY.LT128_top++
+		ext_ptr.Ptr = NODE_DIRECTORY.LT128_top-1
 		return ext_ptr
 	case LT1024:
-		TEXT_DIRECTORY.LT1024 = append(TEXT_DIRECTORY.LT1024,txt)
-		TEXT_DIRECTORY.LT1024_top++
-		ext_ptr.Ptr = TEXT_DIRECTORY.LT1024_top-1
+		NODE_DIRECTORY.LT1024 = append(NODE_DIRECTORY.LT1024,txt)
+		NODE_DIRECTORY.LT1024_top++
+		ext_ptr.Ptr = NODE_DIRECTORY.LT1024_top-1
 		return ext_ptr
 	case GT1024:
-		TEXT_DIRECTORY.GT1024 = append(TEXT_DIRECTORY.GT1024,txt)
-		TEXT_DIRECTORY.GT1024_top++
-		ext_ptr.Ptr = TEXT_DIRECTORY.GT1024_top-1
+		NODE_DIRECTORY.GT1024 = append(NODE_DIRECTORY.GT1024,txt)
+		NODE_DIRECTORY.GT1024_top++
+		ext_ptr.Ptr = NODE_DIRECTORY.GT1024_top-1
 		return ext_ptr
 	}
 
@@ -947,29 +942,30 @@ func AppendTextToDirectory(txt NodeEventItem) NodeEventItemPtr {
 
 func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
 
-	fmt.Println("Append-ptr to Node",frptr,link,toptr)
+	fmt.Println("Append-ptr to Node",frptr,"(",link,")",toptr)
 
-/*	class := frptr.Class
+	class := frptr.Class
 	index := frptr.Ptr
+	sttype := ARROW_DIRECTORY[link.A].STtype
 
-	// var txt NodeEventItem = TEXT_DIRECTORY.N1directory[index]
-
-	var link Link
+	//name := ARROW_DIRECTORY[link.A].Long
+	// var txt NodeEventItem = NODE_DIRECTORY.N1directory[index]
 
 	switch class {
+
 	case N1GRAM:
-		TEXT_DIRECTORY.N1directory[index].V = append(TEXT_DIRECTORY.N1directory[index].V,link)
+		NODE_DIRECTORY.N1directory[index].A[sttype] = append(NODE_DIRECTORY.N1directory[index].A[sttype],link)
 	case N2GRAM:
-		txt = TEXT_DIRECTORY.N2directory[index]
+		NODE_DIRECTORY.N2directory[index].A[sttype] = append(NODE_DIRECTORY.N2directory[index].A[sttype],link)
 	case N3GRAM:
-		txt = TEXT_DIRECTORY.N3directory[index]
+		NODE_DIRECTORY.N3directory[index].A[sttype] = append(NODE_DIRECTORY.N3directory[index].A[sttype],link)
 	case LT128:
-		txt = TEXT_DIRECTORY.LT128[index]
+		NODE_DIRECTORY.LT128[index].A[sttype] = append(NODE_DIRECTORY.LT128[index].A[sttype],link)
 	case LT1024:
-		txt = TEXT_DIRECTORY.LT1024[index]
+		NODE_DIRECTORY.LT1024[index].A[sttype] = append(NODE_DIRECTORY.LT1024[index].A[sttype],link)
 	case GT1024:
-		txt = TEXT_DIRECTORY.GT1024[index]
-	}*/
+		NODE_DIRECTORY.GT1024[index].A[sttype] = append(NODE_DIRECTORY.GT1024[index].A[sttype],link)
+	}
 }
 
 //**************************************************************
@@ -1262,7 +1258,6 @@ func FindLinkAssociation(token string) Link {
 
 	var reln []string
 	var weight float64 = 1
-	var err error
 	var weightcount int
 	var ctx []string
 
@@ -1276,7 +1271,7 @@ func FindLinkAssociation(token string) Link {
 		// look at any comma separated notes after the arrow name
 		for i := 1; i < len(reln); i++ {
 
-			weight, err = strconv.ParseFloat(reln[i], 64)
+			v, err := strconv.ParseFloat(reln[i], 64)
 
 			if err == nil {
 				if weight < 0 {
@@ -1287,6 +1282,7 @@ func FindLinkAssociation(token string) Link {
 					ParseError(ERR_TOO_MANY_WEIGHTS+token)
 					os.Exit(-1)
 				}
+				weight = v
 				weightcount++
 			} else {
 				ctx = append(ctx,reln[i])
