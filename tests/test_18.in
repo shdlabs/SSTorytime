@@ -1,0 +1,16 @@
+#
+# test weighted links
+#
+
+-weights
+
+ one
+ two
+ three
+
+
+ one (near,2) two
+
+ two (causes,0.3) three
+
+ one (causes,4,nothing) three

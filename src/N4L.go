@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 	"unicode"
 	"regexp"
+	"strconv"
 )
 
 //**************************************************************
@@ -25,20 +26,13 @@ import (
         - arrows referenced by full text or a short alias in N4L
         - context expressions
 
-   2. We want relations/arrows to be (Arrow ArrowPtr,To EventItemPtr,Context CtxPtr)
-      that are attached to a (From EventItemPtr) record as an array of lists,
+   2. We want relations/arrows to be (Arrow ArrowPtr,To NodeTextPtr,Context CtxPtr)
+      that are attached to a (From NodeTextPtr) record as an array of lists,
       indexed by SST types 0-3
 
    3. For arrows, short aliases are often used, but longer names may be used too
       A Directory maps names to ArrowPtr
-*/
-
-//**************************************************************
-
-type EventItemPtr int   // EventItem index
-type ArrowPtr int       // ArrowDirectory index
-type CtxPtr int
-type NodeTextPtr int
+ink*/
 
 //**************************************************************
 
@@ -59,32 +53,38 @@ const (
 
 //**************************************************************
 
-type EventItem struct {
+type NodeEventItem struct { // essentially the incidence matrix
 
-	Name NodeTextPtr               // use a reference to avoid loading a large object
-	Links [SSTtypes][]ArrowPtr
+	L int              // length of name string
+	S string           // name string itself
+	C int              // the string class: N1-N3, LT128, etc
+
+	A [SSTtypes][]Link // link incidence list, by arrow type
 }
 
 //**************************************************************
 
-type Text struct {
-	L  int
-	S  string
-	C int
+type NodeEventItemPtr struct {
+
+	Ptr   CTextPtr              // index of within name class lane
+	Class int                   // Text size-class
+}
+
+type CTextPtr int  // Internal pointer type of size-classified text
+
+//**************************************************************
+
+type Link struct {  // A link is a type of arrow, with context
+                    // and maybe with a weightfor package math
+	A ArrowPtr         // type of arrow, presorted
+	W float64          // numerical weight of this link
+	C []string         // context for this pathway
+	D NodeEventItemPtr // adjacent event/item/node
 }
 
 //**************************************************************
 
-type ArrowRelation struct {       // used only to fill in output text
-
-	LFrom    string
-	LTo      string
-	SFrom    string
-	STo      string
-	SSTType  int
-}
-
-//**************************************************************
+type ArrowPtr int // ArrowDirectory index
 
 type ArrowDirectory struct {
 
@@ -100,30 +100,30 @@ type ArrowDirectory struct {
 
 //**************************************************************
 
-type NodeTextBlobs struct {
+type NodeEventItemBlobs struct {
 
 	// Power law n-gram frequencies
 
-	N1grams map[string]NodeTextPtr
-	N1directory []Text
-	N1_top NodeTextPtr
+	N1grams map[string]CTextPtr
+	N1directory []NodeEventItem
+	N1_top CTextPtr
 
-	N2grams map[string]NodeTextPtr
-	N2directory []Text
-	N2_top NodeTextPtr
+	N2grams map[string]CTextPtr
+	N2directory []NodeEventItem
+	N2_top CTextPtr
 
-	N3grams map[string]NodeTextPtr
-	N3directory []Text
-	N3_top NodeTextPtr
+	N3grams map[string]CTextPtr
+	N3directory []NodeEventItem
+	N3_top CTextPtr
 
 	// Use linear search on these exp fewer long strings
 
-	LT128 []Text
-	LT128_top NodeTextPtr
-	LT1024 []Text
-	LT1024_top NodeTextPtr
-	GT1024 []Text
-	GT1024_top NodeTextPtr
+	LT128 []NodeEventItem
+	LT128_top CTextPtr
+	LT1024 []NodeEventItem
+	LT1024_top CTextPtr
+	GT1024 []NodeEventItem
+	GT1024_top CTextPtr
 }
 
 //**************************************************************
@@ -134,7 +134,8 @@ var (
 	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
 
-	TEXT_DIRECTORY NodeTextBlobs
+	TEXT_DIRECTORY NodeEventItemBlobs  // Internal histo-representations
+	NO_NODE_PTR NodeEventItemPtr       // see Init()
 )
 
 //**************************************************************
@@ -177,12 +178,16 @@ const (
 	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
 	ERR_SIMILAR_NO_SIGN = "Arrows for similarity do not have signs, they are directionless"
 	ERR_ARROW_SELFLOOP = "Arrow's origin points to itself"
+	ERR_NEGATIVE_WEIGHT = "Arrow relation has a negative weight, which is disallowed. Use a NOT relation if you want to signify inhibition: "
+	ERR_TOO_MANY_WEIGHTS = "More than one weight value in the arrow relation "
+
 )
 
 var ( 
 	LINE_NUM int = 1
-	LINE_ITEM_CACHE = make(map[string][]string)
-	LINE_RELN_CACHE = make(map[string][]string)
+	LINE_ITEM_CACHE = make(map[string][]string)  // contains current and labelled line elements
+	LINE_ITEM_REFS []NodeEventItemPtr                 // contains current line integer references
+	LINE_RELN_CACHE = make(map[string][]Link)
 	LINE_ITEM_STATE int = ROLE_BLANK_LINE
 	LINE_ALIAS string = ""
 	LINE_ITEM_COUNTER int = 1
@@ -224,8 +229,6 @@ func main() {
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
-
-	fmt.Println("\nTEXT\n\n",TEXT_DIRECTORY)
 }
 
 
@@ -247,9 +250,12 @@ func Init() []string {
 		VERBOSE = true
 	}
 
-	TEXT_DIRECTORY.N1grams = make(map[string]NodeTextPtr)
-	TEXT_DIRECTORY.N2grams = make(map[string]NodeTextPtr)
-	TEXT_DIRECTORY.N3grams = make(map[string]NodeTextPtr)
+	NO_NODE_PTR.Class = 0
+	NO_NODE_PTR.Ptr =  -1
+
+	TEXT_DIRECTORY.N1grams = make(map[string]CTextPtr)
+	TEXT_DIRECTORY.N2grams = make(map[string]CTextPtr)
+	TEXT_DIRECTORY.N3grams = make(map[string]CTextPtr)
 
 	return args
 }
@@ -267,6 +273,7 @@ func NewFile(filename string) {
 	LINE_NUM = 1
 	LINE_ITEM_CACHE["THIS"] = nil
 	LINE_RELN_CACHE["THIS"] = nil
+	LINE_ITEM_REFS = nil
 	LINE_ITEM_COUNTER = 1
 	LINE_RELN_COUNTER = 0
 	LINE_ALIAS = ""
@@ -489,19 +496,7 @@ func SummarizeAndTestConfig() {
 	fmt.Println("SHORT",ARROW_SHORT_DIR)
 	fmt.Println("..\n")
 	fmt.Println("LONG",ARROW_LONG_DIR)
-	
-	fmt.Println("..\n")
-	relation := "pe"
-	p := ARROW_SHORT_DIR[relation]
-	all := ARROW_DIRECTORY[p]
-
-	fmt.Println("Short form",relation,"with ptr",p,"means",all)
-
-	relation = "pinyin for english"
-	p = ARROW_LONG_DIR[relation]
-	all = ARROW_DIRECTORY[p]
-
-	fmt.Println("Long form",relation,"with ptr",p,"means",all)
+	fmt.Println("\nTEXT\n\n",TEXT_DIRECTORY)
 }
 
 //**************************************************************
@@ -664,9 +659,9 @@ func ClassifyTokenRole(token string) {
 			ParseError(ERR_MISSING_ITEM_RELN)
 			os.Exit(-1)
 		}
-		reln,_ := FindAssociation(token)
+		link := FindLinkAssociation(token)
 		LINE_ITEM_STATE = ROLE_RELATION
-		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],reln)
+		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],link)
 		LINE_RELN_COUNTER++
 
 	case '"': // prior reference
@@ -722,8 +717,9 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		CheckNonNegative(LINE_ITEM_COUNTER-2)
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
-		IdempAddText(this_item)
-		IdempAddArrow(last_item,last_reln,this_item)
+		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
+		this_iptr := IdempAddTextToNode(this_item)
+		IdempAddArrow(last_item,last_iptr,last_reln,this_item,this_iptr)
 		CheckSection()
 
 	case ROLE_CONTEXT:
@@ -748,7 +744,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 			return
 		}
 
-		IdempAddText(this_item)
+		IdempAddTextToNode(this_item)
 		CheckSection()
 		LinkSequence(token)
 
@@ -768,35 +764,66 @@ func CheckLineAlias(s string) {
 
 //**************************************************************
 
-func IdempAddArrow(from,arrowptr,to string) {
+func IdempAddArrow(from string, frptr NodeEventItemPtr, link Link,to string, toptr NodeEventItemPtr) {
 
 	if from == to {
 		ParseError(ERR_ARROW_SELFLOOP)
 		os.Exit(-1)
 	}
 
-	Verbose("... Relation:",from,"--",arrowptr,"->",to)
+	if link.W != 1 {
+		Verbose("... Relation:",from,"--(",ARROW_DIRECTORY[link.A].Long,",",link.W,")->",to,link.C)
+	} else {
+		Verbose("... Relation:",from,"--",ARROW_DIRECTORY[link.A].Long,"->",to,link.C)
+	}
 
-// NEW VARIABLE TO HOLD list of links
-
-// CONTEXT..
+	AppendLinkToNode(frptr,link,toptr)
 }
 
 //**************************************************************
 
-func IdempAddText(s string) NodeTextPtr {
+func IdempAddTextToNode(s string) NodeEventItemPtr {
 
-	Verbose("Event/item:",s)
+	Verbose("Event/item/node:",s)
 
 	l := len(s)
 	c := ClassifyString(s,l)
 
-	var newtext Text
-	newtext.S = s
-	newtext.L = l
-	newtext.C = c
+	var new_nodetext NodeEventItem
+	new_nodetext.S = s
+	new_nodetext.L = l
+	new_nodetext.C = c
 
-	return AppendTextToDirectory(newtext)
+	iptr := AppendTextToDirectory(new_nodetext)
+	LINE_ITEM_REFS = append(LINE_ITEM_REFS,iptr)
+	return iptr
+}
+
+//**************************************************************
+
+func GetTextFromPtr(frptr NodeEventItemPtr) string {
+
+	class := frptr.Class
+	index := frptr.Ptr
+
+	var txt NodeEventItem
+
+	switch class {
+	case N1GRAM:
+		txt = TEXT_DIRECTORY.N1directory[index]
+	case N2GRAM:
+		txt = TEXT_DIRECTORY.N2directory[index]
+	case N3GRAM:
+		txt = TEXT_DIRECTORY.N3directory[index]
+	case LT128:
+		txt = TEXT_DIRECTORY.LT128[index]
+	case LT1024:
+		txt = TEXT_DIRECTORY.LT1024[index]
+	case GT1024:
+		txt = TEXT_DIRECTORY.GT1024[index]
+	}
+
+	return txt.S
 }
 
 //**************************************************************
@@ -846,70 +873,108 @@ func ClassifyString(s string,l int) int {
 
 //**************************************************************
 
-func AppendTextToDirectory(txt Text) NodeTextPtr {
+func AppendTextToDirectory(txt NodeEventItem) NodeEventItemPtr {
 
-	var ptr NodeTextPtr = -1
+	var cptr CTextPtr = -1
 	var ok bool = false
 
 	switch txt.C {
 	case N1GRAM:
-		ptr,ok = TEXT_DIRECTORY.N1grams[txt.S]
+		cptr,ok = TEXT_DIRECTORY.N1grams[txt.S]
 	case N2GRAM:
-		ptr,ok = TEXT_DIRECTORY.N2grams[txt.S]
+		cptr,ok = TEXT_DIRECTORY.N2grams[txt.S]
 	case N3GRAM:
-		ptr,ok = TEXT_DIRECTORY.N3grams[txt.S]
+		cptr,ok = TEXT_DIRECTORY.N3grams[txt.S]
 	case LT128:
-		ptr,ok = LinearFindText(TEXT_DIRECTORY.LT128,txt)
+		cptr,ok = LinearFindText(TEXT_DIRECTORY.LT128,txt)
 	case LT1024:
-		ptr,ok = LinearFindText(TEXT_DIRECTORY.LT1024,txt)
+		cptr,ok = LinearFindText(TEXT_DIRECTORY.LT1024,txt)
 	case GT1024:
-		ptr,ok = LinearFindText(TEXT_DIRECTORY.GT1024,txt)
-
+		cptr,ok = LinearFindText(TEXT_DIRECTORY.GT1024,txt)
 	}
 
+	var ext_ptr NodeEventItemPtr
+	ext_ptr.Class = txt.C
+
 	if ok {
-		return ptr
+		ext_ptr.Ptr = cptr
+		return ext_ptr
 	}
 
 	switch txt.C {
 	case N1GRAM:
 		TEXT_DIRECTORY.N1directory = append(TEXT_DIRECTORY.N1directory,txt)
-		ptr = TEXT_DIRECTORY.N1_top
-		TEXT_DIRECTORY.N1grams[txt.S] = ptr
+		cptr = TEXT_DIRECTORY.N1_top
+		TEXT_DIRECTORY.N1grams[txt.S] = cptr
 		TEXT_DIRECTORY.N1_top++
-		return ptr
+		ext_ptr.Ptr = cptr
+		return ext_ptr
 	case N2GRAM:
 		TEXT_DIRECTORY.N2directory = append(TEXT_DIRECTORY.N2directory,txt)
-		ptr = TEXT_DIRECTORY.N2_top
-		TEXT_DIRECTORY.N2grams[txt.S] = ptr
+		cptr = TEXT_DIRECTORY.N2_top
+		TEXT_DIRECTORY.N2grams[txt.S] = cptr
 		TEXT_DIRECTORY.N2_top++
-		return ptr
+		ext_ptr.Ptr = cptr
+		return ext_ptr
 	case N3GRAM:
 		TEXT_DIRECTORY.N3directory = append(TEXT_DIRECTORY.N3directory,txt)
-		ptr = TEXT_DIRECTORY.N3_top
-		TEXT_DIRECTORY.N3grams[txt.S] = ptr
+		cptr = TEXT_DIRECTORY.N3_top
+		TEXT_DIRECTORY.N3grams[txt.S] = cptr
 		TEXT_DIRECTORY.N3_top++
-		return ptr
+		ext_ptr.Ptr = cptr
+		return ext_ptr
 	case LT128:
 		TEXT_DIRECTORY.LT128 = append(TEXT_DIRECTORY.LT128,txt)
 		TEXT_DIRECTORY.LT128_top++
-		return TEXT_DIRECTORY.LT128_top-1
+		ext_ptr.Ptr = TEXT_DIRECTORY.LT128_top-1
+		return ext_ptr
 	case LT1024:
 		TEXT_DIRECTORY.LT1024 = append(TEXT_DIRECTORY.LT1024,txt)
 		TEXT_DIRECTORY.LT1024_top++
-		return TEXT_DIRECTORY.LT1024_top-1
+		ext_ptr.Ptr = TEXT_DIRECTORY.LT1024_top-1
+		return ext_ptr
 	case GT1024:
 		TEXT_DIRECTORY.GT1024 = append(TEXT_DIRECTORY.GT1024,txt)
 		TEXT_DIRECTORY.GT1024_top++
-		return TEXT_DIRECTORY.GT1024_top-1
+		ext_ptr.Ptr = TEXT_DIRECTORY.GT1024_top-1
+		return ext_ptr
 	}
 
-	return -1
+	return NO_NODE_PTR
 }
 
 //**************************************************************
 
-func LinearFindText(in []Text,txt Text) (NodeTextPtr,bool) {
+func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
+
+	fmt.Println("Append-ptr to Node",frptr,link,toptr)
+
+/*	class := frptr.Class
+	index := frptr.Ptr
+
+	// var txt NodeEventItem = TEXT_DIRECTORY.N1directory[index]
+
+	var link Link
+
+	switch class {
+	case N1GRAM:
+		TEXT_DIRECTORY.N1directory[index].V = append(TEXT_DIRECTORY.N1directory[index].V,link)
+	case N2GRAM:
+		txt = TEXT_DIRECTORY.N2directory[index]
+	case N3GRAM:
+		txt = TEXT_DIRECTORY.N3directory[index]
+	case LT128:
+		txt = TEXT_DIRECTORY.LT128[index]
+	case LT1024:
+		txt = TEXT_DIRECTORY.LT1024[index]
+	case GT1024:
+		txt = TEXT_DIRECTORY.GT1024[index]
+	}*/
+}
+
+//**************************************************************
+
+func LinearFindText(in []NodeEventItem,txt NodeEventItem) (CTextPtr,bool) {
 
 	for i := 0; i < len(in); i++ {
 
@@ -918,7 +983,7 @@ func LinearFindText(in []Text,txt Text) (NodeTextPtr,bool) {
 		}
 
 		if in[i].S == txt.S {
-			return NodeTextPtr(i),true
+			return CTextPtr(i),true
 		}
 	}
 
@@ -1080,6 +1145,7 @@ func UpdateLastLineCache() {
 
 	LINE_ITEM_CACHE["THIS"] = nil
 	LINE_RELN_CACHE["THIS"] = nil
+	LINE_ITEM_REFS = nil
 	LINE_ITEM_COUNTER = 1
 	LINE_RELN_COUNTER = 0
 	LINE_ALIAS = ""
@@ -1192,10 +1258,13 @@ func LinkSequence(this string) {
 
 //**************************************************************
 
-func FindAssociation(token string) (string,[]string) {
+func FindLinkAssociation(token string) Link {
 
-	var fullname string
 	var reln []string
+	var weight float64 = 1
+	var err error
+	var weightcount int
+	var ctx []string
 
 	name := token[1:len(token)-1]
 	name = strings.TrimSpace(name)
@@ -1203,6 +1272,26 @@ func FindAssociation(token string) (string,[]string) {
 	if strings.Contains(name,",") {
 		reln = strings.Split(name,",")
 		name = reln[0]
+
+		// look at any comma separated notes after the arrow name
+		for i := 1; i < len(reln); i++ {
+
+			weight, err = strconv.ParseFloat(reln[i], 64)
+
+			if err == nil {
+				if weight < 0 {
+					ParseError(ERR_NEGATIVE_WEIGHT+token)
+					os.Exit(-1)
+				}
+				if weightcount > 1 {
+					ParseError(ERR_TOO_MANY_WEIGHTS+token)
+					os.Exit(-1)
+				}
+				weightcount++
+			} else {
+				ctx = append(ctx,reln[i])
+			}
+		}
 	}
 
 	ptr, ok := ARROW_SHORT_DIR[name]
@@ -1216,9 +1305,12 @@ func FindAssociation(token string) (string,[]string) {
 		}
 	}
 
-	fullname = ARROW_DIRECTORY[ptr].Long
+	var link Link
 
-	return fullname, reln
+	link.A = ptr
+	link.W = weight
+	link.C = GetContext(ctx)
+	return link
 }
 
 //**************************************************************
@@ -1282,7 +1374,15 @@ func ContextEval(s,op string) {
 	}
 }
 
-// ***********************************************************************
+//**************************************************************
+
+func GetContext(ctx []string) []string {
+
+	var c []string
+	return c
+}
+
+//**************************************************************
 
 func CleanExpression(s string) string {
 
