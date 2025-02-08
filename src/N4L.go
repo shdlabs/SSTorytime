@@ -1476,8 +1476,22 @@ func ContextEval(s,op string) {
 
 func GetContext(ctx []string) []string {
 
-	var c []string
-	return c
+	var merge = make(map[string]bool)
+	var clist []string
+
+	for c := range CONTEXT_STATE {
+		merge[c] = true
+	}
+
+	for c := range ctx {
+		merge[ctx[c]] = true
+	}
+
+	for c := range merge {
+		clist = append(clist,c)
+	}
+
+	return clist
 }
 
 //**************************************************************
