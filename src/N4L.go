@@ -287,6 +287,8 @@ func NewFile(filename string) {
 	LAST_IN_SEQUENCE = ""
 	FWD_ARROW = ""
 	BWD_ARROW = ""
+
+	CONTEXT_STATE = make(map[string]bool)
 }
 
 //**************************************************************
