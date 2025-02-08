@@ -32,8 +32,7 @@ and three words; short strings of less than 128 Unicode characters, longer strin
 given by their array keys and lengths. This text is kept in a number of swim lanes depending
 on the process used to manage them:
 
-`
- 
+<pre> 
 type NodeEventItemBlobs struct {
 
 	// Power law n-gram frequencies
@@ -60,7 +59,7 @@ type NodeEventItemBlobs struct {
 	GT1024_top CTextPtr
 }
  
-`
+</pre>
 
 
 Now, searching can be done in a way that is appropriate for a string of unknown length.
@@ -90,8 +89,9 @@ pointer shortcuts kept by short and long name (`ARROW_SHORT_DIR` and `ARROW_LONG
 
 * The `NodeEventItem` structure is the graph node, and a list of outgoing links with positive
 STtypes. Incoming links have negative STtypes. Thus each node acts as a multiway switch (a local
-index at each node) for immediate lookup. `
+index at each node) for immediate lookup.
 
+<pre>
 type NodeEventItem struct { // essentially the incidence matrix
 
 	L int              // length of name string
@@ -102,20 +102,30 @@ type NodeEventItem struct { // essentially the incidence matrix
   	                   // NOTE: carefully how offsets represent negative SSTtypes
 }
 
-`
+</pre>
 * A pointer to such an object `NodeEventItemPtr` is classified for quickly reference
 to which `swim lane` it belongs to.
-`
+
+<pre>
 type NodeEventItemPtr struct {
 
 	Ptr   CTextPtr              // index of within name class lane
 	Class int                   // Text size-class
 }
-`
+</pre>
 
 * The `CTextPtr` is an alias for an integer pointer to pre-classified text in a lookup table.
 We use this alias mainly to distinguish the kind of index, because several index
 roles are in use.
+
+## Finding nodes
+
+We don't expect to have to use a function to get a pointer from a node text. Instead
+we insist that string registration be transparently idempotent, so to get a pointer
+for some text, simply register it with `IdempAddTextToNode()`, this updates
+the node directory if necessary and returns a pointer, or it simply returns
+a pointer if the record already existst. The converse (finding the text
+pointed to by a text pointer) uses `GetTextFromPtr()`. 
 
 ## The long and short of arrows
 
@@ -127,11 +137,16 @@ described in the configuration file. Thus, every link has both a long and a shor
 and every inverse link has the a long and a short inverse, because the user
 doesn't want to have to think about semantic bureaucracy when making notes.
 
+* `ARROW_SHORT_DIR` and `ARROW_LONG_DIR` are hashmaps for quickly finding an integer pointer
+to an arrow.
+
+## Arrow semantics
+
 From a code perspective, the semantics are divided into four 
 meta-types called `STtype`s (actually seven with the inverses). The types
 determine the way the links will be searched.
 
-`
+<pre>
 	NEAR = 0      // no inverse 0 = -0
 	LEADSTO = 1   // +/-
 	CONTAINS = 2  // +/-
@@ -139,4 +154,4 @@ determine the way the links will be searched.
 
 	ST_OFFSET = EXPRESS // so that ST_OFFSET - EXPRESS == 0
 	ST_TOP = ST_OFFSET + EXPRESS + 1
-`
+</pre>
