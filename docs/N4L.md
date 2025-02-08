@@ -164,10 +164,14 @@ to some predefined relation.
 It turns out that every relationship basically falls into one of
 four basic types that help you to imagine sketching the items on a map.
 Here are the four types:
+* 0 **similarity / near, alike** something is close to something else (proximity,closeness)
 * 1 **leadsto    / affects, causes** one thing follows from the other (sequences)
 * 2 **contains   / contains** something is a part of something else (boxes in boxes)
 * 3 **properties / express** something just has a name or an attribute (descriptive)
-* 4 **similarity / near, alike** something is close to something else (proximity,closeness)
+
+*(Technical note the use of integers allows us to use signs for orientation.
+Similarity is directionless 0 = -0; for the others there is a difference between
+positive and negative inverses.)*
 
 These four classes of association can be literal or metaphorical (all language
 is an outgrowth of [metaphors for space and time](https://www.amazon.com/Smart-Spacetime-information-challenges-process/dp/B091F18Q8K/ref=tmm_hrd_swatch_0)).

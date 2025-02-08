@@ -85,6 +85,8 @@ var (
 	LAST_IN_SEQUENCE string = ""
 
 	VERBOSE bool = false
+	SUMMARIZE bool = false
+
 	CURRENT_FILE string
 	TEST_DIAG_FILE string
 
@@ -100,12 +102,13 @@ var (
 //**************************************************************
 
 const (
-	SSTtypes = 4+1
+	NEAR = 0
+	LEADSTO = 1   // +/-
+	CONTAINS = 2  // +/-
+	EXPRESS = 3   // +/-
 
-	LEADSTO = 1
-	CONTAINS = 2
-	EXPRESS = 3
-	NEAR = 4
+	ST_OFFSET = EXPRESS // so that ST_OFFSET - EXPRESS == 0
+	ST_TOP = ST_OFFSET + EXPRESS + 1
 
 	N1GRAM = 1
 	N2GRAM = 2
@@ -123,7 +126,8 @@ type NodeEventItem struct { // essentially the incidence matrix
 	S string           // name string itself
 	C int              // the string class: N1-N3, LT128, etc
 
-	A [SSTtypes][]Link // link incidence list, by arrow type
+	A [ST_TOP][]Link   // link incidence list, by arrow type
+  	                   // NOTE: carefully how offsets represent negative SSTtypes
 }
 
 //**************************************************************
@@ -224,25 +228,33 @@ func main() {
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
-}
 
+	if SUMMARIZE {
+		SummarizeGraph()
+	}
+}
 
 //**************************************************************
 
 func Init() []string {
 
-	flag.Usage = usage
+	flag.Usage = Usage
 	verbosePtr := flag.Bool("v", false,"verbose")
+	summaryPtr := flag.Bool("s", false,"summarize")
 	flag.Parse()
 	args := flag.Args()
 
 	if len(args) < 1 {
-		usage()
+		Usage()
 		os.Exit(1);
 	}
 
 	if *verbosePtr {
 		VERBOSE = true
+	}
+
+	if *summaryPtr {
+		SUMMARIZE = true
 	}
 
 	NO_NODE_PTR.Class = 0
@@ -272,6 +284,7 @@ func NewFile(filename string) {
 	LINE_ITEM_COUNTER = 1
 	LINE_RELN_COUNTER = 0
 	LINE_ALIAS = ""
+	LAST_IN_SEQUENCE = ""
 	FWD_ARROW = ""
 	BWD_ARROW = ""
 }
@@ -459,13 +472,13 @@ func InsertArrowDirectory(sec,alias,name,pm string) {
 
 	switch sec {
 	case "leadsto":
-		newarrow.STtype = LEADSTO * sign
+		newarrow.STtype = ST_OFFSET + LEADSTO * sign
 	case "contains":
-		newarrow.STtype = CONTAINS * sign
+		newarrow.STtype = ST_OFFSET + CONTAINS * sign
 	case "properties":
-		newarrow.STtype = EXPRESS * sign
+		newarrow.STtype = ST_OFFSET + EXPRESS * sign
 	case "similarity":
-		newarrow.STtype = NEAR
+		newarrow.STtype = ST_OFFSET + NEAR
 	}
 
 	newarrow.Long = name
@@ -492,6 +505,88 @@ func SummarizeAndTestConfig() {
 	fmt.Println("..\n")
 	fmt.Println("LONG",ARROW_LONG_DIR)
 	fmt.Println("\nTEXT\n\n",NODE_DIRECTORY)
+}
+
+//**************************************************************
+
+func SummarizeGraph() {
+
+	Box("SUMMARIZE GRAPH.....\n")
+
+	for class := N1GRAM; class <= GT1024; class++ {
+		switch class {
+		case N1GRAM:
+			for n := range NODE_DIRECTORY.N1directory {
+				fmt.Println(n,"\t",NODE_DIRECTORY.N1directory[n].S)
+				for adj := range NODE_DIRECTORY.N1directory[n].A {
+					for lnk := range NODE_DIRECTORY.N1directory[n].A[adj] {
+						PrintLink(NODE_DIRECTORY.N1directory[n].A[adj][lnk])
+					}
+				}
+				fmt.Println()
+			}
+		case N2GRAM:
+			for n := range NODE_DIRECTORY.N2directory {
+				fmt.Println(n,"\t",NODE_DIRECTORY.N2directory[n].S)
+				for adj := range NODE_DIRECTORY.N2directory[n].A {
+					for lnk := range NODE_DIRECTORY.N2directory[n].A[adj] {
+						PrintLink(NODE_DIRECTORY.N2directory[n].A[adj][lnk])
+					}
+
+				}
+				fmt.Println()
+			}
+		case N3GRAM:
+			for n := range NODE_DIRECTORY.N3directory {
+				fmt.Println(n,"\t",NODE_DIRECTORY.N3directory[n].S)
+				for adj := range NODE_DIRECTORY.N3directory[n].A {
+					for lnk := range NODE_DIRECTORY.N3directory[n].A[adj] {
+						PrintLink(NODE_DIRECTORY.N3directory[n].A[adj][lnk])
+					}
+				}
+				fmt.Println()
+			}
+		case LT128:
+			for n := range NODE_DIRECTORY.LT128 {
+				fmt.Println(n,"\t",NODE_DIRECTORY.LT128[n].S)
+				for adj := range NODE_DIRECTORY.LT128[n].A {
+					for lnk := range NODE_DIRECTORY.LT128[n].A[adj] {
+						PrintLink(NODE_DIRECTORY.LT128[n].A[adj][lnk])
+					}
+				}
+				fmt.Println()
+			}
+		case LT1024:
+			for n := range NODE_DIRECTORY.LT1024 {
+				fmt.Println(n,"\t",NODE_DIRECTORY.LT1024[n].S)
+				for adj := range NODE_DIRECTORY.LT1024[n].A {
+					for lnk := range NODE_DIRECTORY.LT1024[n].A[adj] {
+						PrintLink(NODE_DIRECTORY.LT1024[n].A[adj][lnk])
+					}
+				}
+				fmt.Println()
+			}
+
+		case GT1024:
+			for n := range NODE_DIRECTORY.GT1024 {
+				fmt.Println(n,"\t",NODE_DIRECTORY.GT1024[n].S)
+				for adj := range NODE_DIRECTORY.GT1024[n].A {
+					for lnk := range NODE_DIRECTORY.GT1024[n].A[adj] {
+						PrintLink(NODE_DIRECTORY.GT1024[n].A[adj][lnk])
+					}
+				}
+				fmt.Println()
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func PrintLink(l Link) {
+
+	to := GetTextFromPtr(l.D)
+	fmt.Println("\t ... --(",ARROW_DIRECTORY[l.A].Long,",",l.W,")->",to,l.C)
 }
 
 //**************************************************************
@@ -791,6 +886,7 @@ func IdempAddTextToNode(s string) NodeEventItemPtr {
 
 	iptr := AppendTextToDirectory(new_nodetext)
 	LINE_ITEM_REFS = append(LINE_ITEM_REFS,iptr)
+
 	return iptr
 }
 
@@ -942,29 +1038,26 @@ func AppendTextToDirectory(txt NodeEventItem) NodeEventItemPtr {
 
 func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
 
-	fmt.Println("Append-ptr to Node",frptr,"(",link,")",toptr)
-
-	class := frptr.Class
-	index := frptr.Ptr
+	frclass := frptr.Class
+	frm := frptr.Ptr
 	sttype := ARROW_DIRECTORY[link.A].STtype
 
-	//name := ARROW_DIRECTORY[link.A].Long
-	// var txt NodeEventItem = NODE_DIRECTORY.N1directory[index]
+	link.D = toptr // fill in the last part of the reference
 
-	switch class {
+	switch frclass {
 
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[index].A[sttype] = append(NODE_DIRECTORY.N1directory[index].A[sttype],link)
+		NODE_DIRECTORY.N1directory[frm].A[sttype] = append(NODE_DIRECTORY.N1directory[frm].A[sttype],link)
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[index].A[sttype] = append(NODE_DIRECTORY.N2directory[index].A[sttype],link)
+		NODE_DIRECTORY.N2directory[frm].A[sttype] = append(NODE_DIRECTORY.N2directory[frm].A[sttype],link)
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[index].A[sttype] = append(NODE_DIRECTORY.N3directory[index].A[sttype],link)
+		NODE_DIRECTORY.N3directory[frm].A[sttype] = append(NODE_DIRECTORY.N3directory[frm].A[sttype],link)
 	case LT128:
-		NODE_DIRECTORY.LT128[index].A[sttype] = append(NODE_DIRECTORY.LT128[index].A[sttype],link)
+		NODE_DIRECTORY.LT128[frm].A[sttype] = append(NODE_DIRECTORY.LT128[frm].A[sttype],link)
 	case LT1024:
-		NODE_DIRECTORY.LT1024[index].A[sttype] = append(NODE_DIRECTORY.LT1024[index].A[sttype],link)
+		NODE_DIRECTORY.LT1024[frm].A[sttype] = append(NODE_DIRECTORY.LT1024[frm].A[sttype],link)
 	case GT1024:
-		NODE_DIRECTORY.GT1024[index].A[sttype] = append(NODE_DIRECTORY.GT1024[index].A[sttype],link)
+		NODE_DIRECTORY.GT1024[frm].A[sttype] = append(NODE_DIRECTORY.GT1024[frm].A[sttype],link)
 	}
 }
 
@@ -1231,10 +1324,11 @@ func CheckSequenceMode(context string, mode rune) {
 		case '+':
 			Verbose("\nStart sequence mode for items")
 			SEQUENCE_MODE = true
+			LAST_IN_SEQUENCE = ""
+
 		case '-':
 			Verbose("End sequence mode for items\n")
 			SEQUENCE_MODE = false
-			LAST_IN_SEQUENCE = ""
 		}
 	}
 
@@ -1244,10 +1338,18 @@ func CheckSequenceMode(context string, mode rune) {
 
 func LinkSequence(this string) {
 
-	if SEQUENCE_MODE {
+	if SEQUENCE_MODE && this != LAST_IN_SEQUENCE {
+
 		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
-			Verbose("... Append sequence:",SEQUENCE_RELN,"->",this)
+			
+			Verbose("... Sequence addition:",LAST_IN_SEQUENCE,SEQUENCE_RELN,"->",this)
+			
+			last_iptr := IdempAddTextToNode(LAST_IN_SEQUENCE)
+			this_iptr := IdempAddTextToNode(this)
+			link := FindLinkAssociation("then")
+			AppendLinkToNode(last_iptr,link,this_iptr)
 		}
+		
 		LAST_IN_SEQUENCE = this
 	}
 }
@@ -1624,9 +1726,9 @@ func ReadTUF8File(filename string) []rune {
 
 //**************************************************************
 
-func usage() {
+func Usage() {
 	
-	fmt.Fprintf(os.Stderr, "usage: go run N4L.go [-v] [file].dat\n")
+	fmt.Printf("usage: go run N4L.go [-v] [-s] [file].dat\n")
 	flag.PrintDefaults()
 	os.Exit(2)
 }
