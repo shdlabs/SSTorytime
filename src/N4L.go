@@ -1346,7 +1346,7 @@ func LinkSequence(this string) {
 			
 			last_iptr := IdempAddTextToNode(LAST_IN_SEQUENCE)
 			this_iptr := IdempAddTextToNode(this)
-			link := FindLinkAssociation("then")
+			link := FindLinkAssociation("(then)")
 			AppendLinkToNode(last_iptr,link,this_iptr)
 		}
 		
