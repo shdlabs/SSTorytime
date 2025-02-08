@@ -90,8 +90,7 @@ pointer shortcuts kept by short and long name (`ARROW_SHORT_DIR` and `ARROW_LONG
 
 * The `NodeEventItem` structure is the graph node, and a list of outgoing links with positive
 STtypes. Incoming links have negative STtypes. Thus each node acts as a multiway switch (a local
-index at each node) for immediate lookup.
-`
+index at each node) for immediate lookup. `
 
 type NodeEventItem struct { // essentially the incidence matrix
 
@@ -132,7 +131,8 @@ From a code perspective, the semantics are divided into four
 meta-types called `STtype`s (actually seven with the inverses). The types
 determine the way the links will be searched.
 
-`	NEAR = 0      // no inverse 0 = -0
+`
+	NEAR = 0      // no inverse 0 = -0
 	LEADSTO = 1   // +/-
 	CONTAINS = 2  // +/-
 	EXPRESS = 3   // +/-
