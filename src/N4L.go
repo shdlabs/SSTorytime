@@ -1483,6 +1483,7 @@ func GetContext(ctx []string) []string {
 		merge[c] = true
 	}
 
+
 	for c := range ctx {
 		merge[ctx[c]] = true
 	}

@@ -47,6 +47,7 @@ cscope.*
 .*.swo
 
 # emacs
+.#*
 *~
 \#*#
 .dir-locals.el

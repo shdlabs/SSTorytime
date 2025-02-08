@@ -32,6 +32,7 @@ and three words; short strings of less than 128 unicode characters, longer strin
 given by their array keys and lengths.
 
 `
+
 type NodeEventItemBlobs struct {
 
 	// Power law n-gram frequencies
@@ -87,6 +88,7 @@ The `NodeEventItem` structure is the graph node, and a list of outgoing links wi
 STtypes. Incoming links have negative STtypes.
 
 `
+
 type NodeEventItem struct { // essentially the incidence matrix
 
 	L int              // length of name string
