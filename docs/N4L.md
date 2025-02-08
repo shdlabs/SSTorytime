@@ -1,9 +1,10 @@
 
-# N4L - notes for loading utility
+# N4L - Notes for Learning
+## A simple knowledge management language
 
-*Notes for loading*<br>
-*Narrative for logic*<br>
-*Network for learning*<br>
+*Notes for learning*<br>
+*Narrative for loading*<br>
+*Network for logical inference*<br>
 *Nourishment for life*
 
 N4L is an intentionally simple language, for keeping notes and
