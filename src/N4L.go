@@ -128,9 +128,9 @@ const (
 
 type NodeEventItem struct { // essentially the incidence matrix
 
-	L int                // length of name string
-	S string             // name string itself
-	C int                // the string class: N1-N3, LT128, etc
+	L int                 // length of name string
+	S string              // name string itself
+	C int                 // the string class: N1-N3, LT128, etc
 	NPtr NodeEventItemPtr // Pointer to self
 
 	A [ST_TOP][]Link   // link incidence list, by arrow type

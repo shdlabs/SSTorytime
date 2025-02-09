@@ -37,26 +37,26 @@ type NodeEventItemBlobs struct {
 
 	// Power law n-gram frequencies
 
-	N1grams map[string]CTextPtr
+	N1grams map[string]ClassedNodePtr
 	N1directory []NodeEventItem
-	N1_top CTextPtr
+	N1_top ClassedNodePtr
 
-	N2grams map[string]CTextPtr
+	N2grams map[string]ClassedNodePtr
 	N2directory []NodeEventItem
-	N2_top CTextPtr
+	N2_top ClassedNodePtr
 
-	N3grams map[string]CTextPtr
+	N3grams map[string]ClassedNodePtr
 	N3directory []NodeEventItem
-	N3_top CTextPtr
+	N3_top ClassedNodePtr
 
 	// Use linear search on these exp fewer long strings
 
 	LT128 []NodeEventItem
-	LT128_top CTextPtr
+	LT128_top ClassedNodePtr
 	LT1024 []NodeEventItem
-	LT1024_top CTextPtr
+	LT1024_top ClassedNodePtr
 	GT1024 []NodeEventItem
-	GT1024_top CTextPtr
+	GT1024_top ClassedNodePtr
 }
  
 </pre>
@@ -92,11 +92,12 @@ STtypes. Incoming links have negative STtypes. Thus each node acts as a multiway
 index at each node) for immediate lookup.
 
 <pre>
-type NodeEventItem struct { // essentially the incidence matrix
+type NodeEventItem struct {   // essentially the incidence matrix
 
-	L int              // length of name string
-	S string           // name string itself
-	C int              // the string class: N1-N3, LT128, etc
+	L int                 // length of name string
+	S string              // name string itself
+	C int                 // the string class: N1-N3, LT128, etc
+	NPtr NodeEventItemPtr // Pointer to self
 
 	A [ST_TOP][]Link   // link incidence list, by arrow type
   	                   // NOTE: carefully how offsets represent negative SSTtypes
@@ -109,12 +110,12 @@ to which `swim lane` it belongs to.
 <pre>
 type NodeEventItemPtr struct {
 
-	Ptr   CTextPtr              // index of within name class lane
+	CPtr  ClassedNodePtr        // index of within name class lane
 	Class int                   // Text size-class
 }
 </pre>
 
-* The `CTextPtr` is an alias for an integer pointer to pre-classified text in a lookup table.
+* The `ClassedNodePtr` is an alias for an integer pointer to pre-classified text in a lookup table.
 We use this alias mainly to distinguish the kind of index, because several index
 roles are in use.
 
