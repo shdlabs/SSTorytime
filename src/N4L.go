@@ -128,9 +128,10 @@ const (
 
 type NodeEventItem struct { // essentially the incidence matrix
 
-	L int              // length of name string
-	S string           // name string itself
-	C int              // the string class: N1-N3, LT128, etc
+	L int                // length of name string
+	S string             // name string itself
+	C int                // the string class: N1-N3, LT128, etc
+	NPtr NodeEventItemPtr // Pointer to self
 
 	A [ST_TOP][]Link   // link incidence list, by arrow type
   	                   // NOTE: carefully how offsets represent negative SSTtypes
@@ -140,11 +141,11 @@ type NodeEventItem struct { // essentially the incidence matrix
 
 type NodeEventItemPtr struct {
 
-	Ptr   CTextPtr              // index of within name class lane
-	Class int                   // Text size-class
+	CPtr  ClassedNodePtr    // index of within name class lane
+	Class int         // Text size-class
 }
 
-type CTextPtr int  // Internal pointer type of size-classified text
+type ClassedNodePtr int  // Internal pointer type of size-classified text
 
 //**************************************************************
 
@@ -180,26 +181,33 @@ type NodeEventItemBlobs struct {
 
 	// Power law n-gram frequencies
 
-	N1grams map[string]CTextPtr
+	N1grams map[string]ClassedNodePtr
 	N1directory []NodeEventItem
-	N1_top CTextPtr
+	N1_top ClassedNodePtr
 
-	N2grams map[string]CTextPtr
+	N2grams map[string]ClassedNodePtr
 	N2directory []NodeEventItem
-	N2_top CTextPtr
+	N2_top ClassedNodePtr
 
-	N3grams map[string]CTextPtr
+	N3grams map[string]ClassedNodePtr
 	N3directory []NodeEventItem
-	N3_top CTextPtr
+	N3_top ClassedNodePtr
 
 	// Use linear search on these exp fewer long strings
 
 	LT128 []NodeEventItem
-	LT128_top CTextPtr
+	LT128_top ClassedNodePtr
 	LT1024 []NodeEventItem
-	LT1024_top CTextPtr
+	LT1024_top ClassedNodePtr
 	GT1024 []NodeEventItem
-	GT1024_top CTextPtr
+	GT1024_top ClassedNodePtr
+}
+
+//**************************************************************
+
+type rc_type struct {   // row column matrix coordinates
+	r NodeEventItemPtr
+	c NodeEventItemPtr
 }
 
 //**************************************************************
@@ -215,6 +223,8 @@ var (
 
 	NODE_DIRECTORY NodeEventItemBlobs  // Internal histo-representations
 	NO_NODE_PTR NodeEventItemPtr       // see Init()
+
+	SPARSE_ADJ = make(map[rc_type]float64)
 )
 
 //**************************************************************
@@ -276,11 +286,11 @@ func Init() []string {
 	}
 
 	NO_NODE_PTR.Class = 0
-	NO_NODE_PTR.Ptr =  -1
+	NO_NODE_PTR.CPtr =  -1
 
-	NODE_DIRECTORY.N1grams = make(map[string]CTextPtr)
-	NODE_DIRECTORY.N2grams = make(map[string]CTextPtr)
-	NODE_DIRECTORY.N3grams = make(map[string]CTextPtr)
+	NODE_DIRECTORY.N1grams = make(map[string]ClassedNodePtr)
+	NODE_DIRECTORY.N2grams = make(map[string]ClassedNodePtr)
+	NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
 
 	SST_NAMES[NEAR] = "Near"
 	SST_NAMES[LEADSTO] = "LeadsTo"
@@ -653,8 +663,39 @@ func SummarizeGraph() {
 
 func CreateAdjacencyMatrix(s string) {
 
-	list := ValidateLinkArgs(s)
-	fmt.Println(list)
+	search_list := ValidateLinkArgs(s)
+
+	for class := N1GRAM; class <= GT1024; class++ {
+		switch class {
+		case N1GRAM:
+			for n := range NODE_DIRECTORY.N1directory {
+				BuildAdjRow(NODE_DIRECTORY.N1directory[n],search_list)
+			}
+
+		case N2GRAM:
+			for n := range NODE_DIRECTORY.N2directory {
+				BuildAdjRow(NODE_DIRECTORY.N2directory[n],search_list)
+			}
+		case N3GRAM:
+			for n := range NODE_DIRECTORY.N3directory {
+				BuildAdjRow(NODE_DIRECTORY.N3directory[n],search_list)
+			}
+		case LT128:
+			for n := range NODE_DIRECTORY.LT128 {
+				BuildAdjRow(NODE_DIRECTORY.LT128[n],search_list)
+			}
+		case LT1024:
+			for n := range NODE_DIRECTORY.LT1024 {
+				BuildAdjRow(NODE_DIRECTORY.LT1024[n],search_list)
+			}
+			
+		case GT1024:
+			for n := range NODE_DIRECTORY.GT1024 {
+				BuildAdjRow(NODE_DIRECTORY.GT1024[n],search_list)
+			}
+		}
+	}
+
 }
 
 //**************************************************************
@@ -709,6 +750,24 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 	}
 
 	return search_list
+}
+
+//**************************************************************
+
+func BuildAdjRow(node NodeEventItem, arrows []ArrowPtr) {
+
+	row := node.NPtr
+
+	for adj := range node.A {
+		for lnk := range node.A[adj] {
+			weight := node.A[adj][lnk].W
+			col := node.A[adj][lnk].D
+			var rc rc_type
+			rc.r = row
+			rc.c = col
+			SPARSE_ADJ[rc] = weight
+		}
+	}
 }
 
 //**************************************************************
@@ -1017,26 +1076,26 @@ func IdempAddTextToNode(s string) NodeEventItemPtr {
 func GetTextFromPtr(frptr NodeEventItemPtr) string {
 
 	class := frptr.Class
-	index := frptr.Ptr
+	index := frptr.CPtr
 
-	var txt NodeEventItem
+	var node NodeEventItem
 
 	switch class {
 	case N1GRAM:
-		txt = NODE_DIRECTORY.N1directory[index]
+		node = NODE_DIRECTORY.N1directory[index]
 	case N2GRAM:
-		txt = NODE_DIRECTORY.N2directory[index]
+		node = NODE_DIRECTORY.N2directory[index]
 	case N3GRAM:
-		txt = NODE_DIRECTORY.N3directory[index]
+		node = NODE_DIRECTORY.N3directory[index]
 	case LT128:
-		txt = NODE_DIRECTORY.LT128[index]
+		node = NODE_DIRECTORY.LT128[index]
 	case LT1024:
-		txt = NODE_DIRECTORY.LT1024[index]
+		node = NODE_DIRECTORY.LT1024[index]
 	case GT1024:
-		txt = NODE_DIRECTORY.GT1024[index]
+		node = NODE_DIRECTORY.GT1024[index]
 	}
 
-	return txt.S
+	return node.S
 }
 
 //**************************************************************
@@ -1086,71 +1145,80 @@ func ClassifyString(s string,l int) int {
 
 //**************************************************************
 
-func AppendTextToDirectory(txt NodeEventItem) NodeEventItemPtr {
+func AppendTextToDirectory(event NodeEventItem) NodeEventItemPtr {
 
-	var cptr CTextPtr = -1
+	var cnode_slot ClassedNodePtr = -1
 	var ok bool = false
+	var node_alloc_ptr NodeEventItemPtr
 
-	switch txt.C {
+	switch event.C {
 	case N1GRAM:
-		cptr,ok = NODE_DIRECTORY.N1grams[txt.S]
+		cnode_slot,ok = NODE_DIRECTORY.N1grams[event.S]
 	case N2GRAM:
-		cptr,ok = NODE_DIRECTORY.N2grams[txt.S]
+		cnode_slot,ok = NODE_DIRECTORY.N2grams[event.S]
 	case N3GRAM:
-		cptr,ok = NODE_DIRECTORY.N3grams[txt.S]
+		cnode_slot,ok = NODE_DIRECTORY.N3grams[event.S]
 	case LT128:
-		cptr,ok = LinearFindText(NODE_DIRECTORY.LT128,txt)
+		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT128,event)
 	case LT1024:
-		cptr,ok = LinearFindText(NODE_DIRECTORY.LT1024,txt)
+		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT1024,event)
 	case GT1024:
-		cptr,ok = LinearFindText(NODE_DIRECTORY.GT1024,txt)
+		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.GT1024,event)
 	}
 
-	var ext_ptr NodeEventItemPtr
-	ext_ptr.Class = txt.C
+	node_alloc_ptr.Class = event.C
 
 	if ok {
-		ext_ptr.Ptr = cptr
-		return ext_ptr
+		node_alloc_ptr.CPtr = cnode_slot
+		return node_alloc_ptr
 	}
 
-	switch txt.C {
+	switch event.C {
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory = append(NODE_DIRECTORY.N1directory,txt)
-		cptr = NODE_DIRECTORY.N1_top
-		NODE_DIRECTORY.N1grams[txt.S] = cptr
-		NODE_DIRECTORY.N1_top++
-		ext_ptr.Ptr = cptr
-		return ext_ptr
+		cnode_slot = NODE_DIRECTORY.N1_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.N1directory = append(NODE_DIRECTORY.N1directory,event)
+		NODE_DIRECTORY.N1grams[event.S] = cnode_slot
+		NODE_DIRECTORY.N1_top++ 
+		return node_alloc_ptr
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory = append(NODE_DIRECTORY.N2directory,txt)
-		cptr = NODE_DIRECTORY.N2_top
-		NODE_DIRECTORY.N2grams[txt.S] = cptr
+		cnode_slot = NODE_DIRECTORY.N2_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.N2directory = append(NODE_DIRECTORY.N2directory,event)
+		NODE_DIRECTORY.N2grams[event.S] = cnode_slot
 		NODE_DIRECTORY.N2_top++
-		ext_ptr.Ptr = cptr
-		return ext_ptr
+		return node_alloc_ptr
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory = append(NODE_DIRECTORY.N3directory,txt)
-		cptr = NODE_DIRECTORY.N3_top
-		NODE_DIRECTORY.N3grams[txt.S] = cptr
+		cnode_slot = NODE_DIRECTORY.N3_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.N3directory = append(NODE_DIRECTORY.N3directory,event)
+		NODE_DIRECTORY.N3grams[event.S] = cnode_slot
 		NODE_DIRECTORY.N3_top++
-		ext_ptr.Ptr = cptr
-		return ext_ptr
+		return node_alloc_ptr
 	case LT128:
-		NODE_DIRECTORY.LT128 = append(NODE_DIRECTORY.LT128,txt)
+		cnode_slot = NODE_DIRECTORY.LT128_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.LT128 = append(NODE_DIRECTORY.LT128,event)
 		NODE_DIRECTORY.LT128_top++
-		ext_ptr.Ptr = NODE_DIRECTORY.LT128_top-1
-		return ext_ptr
+		return node_alloc_ptr
 	case LT1024:
-		NODE_DIRECTORY.LT1024 = append(NODE_DIRECTORY.LT1024,txt)
+		cnode_slot = NODE_DIRECTORY.LT1024_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.LT1024 = append(NODE_DIRECTORY.LT1024,event)
 		NODE_DIRECTORY.LT1024_top++
-		ext_ptr.Ptr = NODE_DIRECTORY.LT1024_top-1
-		return ext_ptr
+		return node_alloc_ptr
 	case GT1024:
-		NODE_DIRECTORY.GT1024 = append(NODE_DIRECTORY.GT1024,txt)
+		cnode_slot = NODE_DIRECTORY.GT1024_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.GT1024 = append(NODE_DIRECTORY.GT1024,event)
 		NODE_DIRECTORY.GT1024_top++
-		ext_ptr.Ptr = NODE_DIRECTORY.GT1024_top-1
-		return ext_ptr
+		return node_alloc_ptr
 	}
 
 	return NO_NODE_PTR
@@ -1161,7 +1229,7 @@ func AppendTextToDirectory(txt NodeEventItem) NodeEventItemPtr {
 func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
 
 	frclass := frptr.Class
-	frm := frptr.Ptr
+	frm := frptr.CPtr
 	sttype := ARROW_DIRECTORY[link.A].STtype
 
 	link.D = toptr // fill in the last part of the reference
@@ -1185,16 +1253,16 @@ func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
 
 //**************************************************************
 
-func LinearFindText(in []NodeEventItem,txt NodeEventItem) (CTextPtr,bool) {
+func LinearFindText(in []NodeEventItem,event NodeEventItem) (ClassedNodePtr,bool) {
 
 	for i := 0; i < len(in); i++ {
 
-		if txt.L != in[i].L {
+		if event.L != in[i].L {
 			continue
 		}
 
-		if in[i].S == txt.S {
-			return CTextPtr(i),true
+		if in[i].S == event.S {
+			return ClassedNodePtr(i),true
 		}
 	}
 
