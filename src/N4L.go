@@ -75,7 +75,10 @@ var (
 
 	FWD_ARROW string
 	BWD_ARROW string
+	FWD_INDEX ArrowPtr
+	BWD_INDEX ArrowPtr
 	ANNOTATION = make(map[string]string)
+	INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
 
 	CONTEXT_STATE = make(map[string]bool)
 	SECTION_STATE string
@@ -86,11 +89,14 @@ var (
 
 	VERBOSE bool = false
 	SUMMARIZE bool = false
+	CREATE_ADJACENCY bool = false
+	ADJ_LIST string
 
 	CURRENT_FILE string
 	TEST_DIAG_FILE string
 
 	RELN_BY_SST [4][]ArrowPtr // From an EventItemNode
+	SST_NAMES[4] string
 )
 
 //**************************************************************
@@ -202,6 +208,7 @@ type NodeEventItemBlobs struct {
 
 var ( 
 	ARROW_DIRECTORY []ArrowDirectory
+	INVERSE_ARROW_DIRECTORY []ArrowDirectory
 	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up short name int referene
 	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
@@ -232,6 +239,10 @@ func main() {
 	if SUMMARIZE {
 		SummarizeGraph()
 	}
+
+	if CREATE_ADJACENCY {
+		CreateAdjacencyMatrix(ADJ_LIST)
+	}
 }
 
 //**************************************************************
@@ -240,7 +251,9 @@ func Init() []string {
 
 	flag.Usage = Usage
 	verbosePtr := flag.Bool("v", false,"verbose")
-	summaryPtr := flag.Bool("s", false,"summarize")
+	incidencePtr := flag.Bool("i", false,"incidence summary (node,links...)")
+	adjacencyPtr := flag.String("adj", "none", "a quoted, comma-separated list of short link names")
+
 	flag.Parse()
 	args := flag.Args()
 
@@ -253,8 +266,13 @@ func Init() []string {
 		VERBOSE = true
 	}
 
-	if *summaryPtr {
+	if *incidencePtr {
 		SUMMARIZE = true
+	}
+
+	if *adjacencyPtr != "none" {
+		CREATE_ADJACENCY = true
+		ADJ_LIST = *adjacencyPtr
 	}
 
 	NO_NODE_PTR.Class = 0
@@ -263,6 +281,11 @@ func Init() []string {
 	NODE_DIRECTORY.N1grams = make(map[string]CTextPtr)
 	NODE_DIRECTORY.N2grams = make(map[string]CTextPtr)
 	NODE_DIRECTORY.N3grams = make(map[string]CTextPtr)
+
+	SST_NAMES[NEAR] = "Near"
+	SST_NAMES[LEADSTO] = "LeadsTo"
+	SST_NAMES[CONTAINS] = "Contains"
+	SST_NAMES[EXPRESS] = "Express"
 
 	return args
 }
@@ -383,9 +406,10 @@ func ClassifyConfigRole(token string) {
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
+				BWD_INDEX = InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
+				InsertInverseArrowDirectory(FWD_INDEX,BWD_INDEX)
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
-				InsertArrowDirectory(SECTION_STATE,reln,FWD_ARROW,"+")
+				FWD_INDEX = InsertArrowDirectory(SECTION_STATE,reln,FWD_ARROW,"+")
 			} else {
 				ParseError(ERR_BAD_ABBRV)
 				os.Exit(-1)
@@ -457,7 +481,7 @@ func ClassifyConfigRole(token string) {
 
 //**************************************************************
 
-func InsertArrowDirectory(sec,alias,name,pm string) {
+func InsertArrowDirectory(sec,alias,name,pm string) ArrowPtr {
 
 	PVerbose("In",sec,"short name",alias,"for",name,", direction",pm)
 
@@ -491,6 +515,18 @@ func InsertArrowDirectory(sec,alias,name,pm string) {
 	ARROW_SHORT_DIR[alias] = ARROW_DIRECTORY_TOP
 	ARROW_LONG_DIR[name] = ARROW_DIRECTORY_TOP
 	ARROW_DIRECTORY_TOP++
+
+	return ARROW_DIRECTORY_TOP-1
+}
+
+//**************************************************************
+
+func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
+
+	// Lookup inverse by long name, only need this in search presentation
+
+	INVERSE_ARROWS[fwd] = bwd
+	INVERSE_ARROWS[bwd] = fwd
 }
 
 //**************************************************************
@@ -515,13 +551,19 @@ func SummarizeGraph() {
 
 	Box("SUMMARIZE GRAPH.....\n")
 
+	var count_nodes int = 0
+	var count_links [4]int
+	var total int
+
 	for class := N1GRAM; class <= GT1024; class++ {
 		switch class {
 		case N1GRAM:
 			for n := range NODE_DIRECTORY.N1directory {
 				fmt.Println(n,"\t",NODE_DIRECTORY.N1directory[n].S)
+				count_nodes++
 				for adj := range NODE_DIRECTORY.N1directory[n].A {
 					for lnk := range NODE_DIRECTORY.N1directory[n].A[adj] {
+						count_links[Agg(adj)]++
 						PrintLink(NODE_DIRECTORY.N1directory[n].A[adj][lnk])
 					}
 				}
@@ -530,8 +572,10 @@ func SummarizeGraph() {
 		case N2GRAM:
 			for n := range NODE_DIRECTORY.N2directory {
 				fmt.Println(n,"\t",NODE_DIRECTORY.N2directory[n].S)
+				count_nodes++
 				for adj := range NODE_DIRECTORY.N2directory[n].A {
 					for lnk := range NODE_DIRECTORY.N2directory[n].A[adj] {
+						count_links[Agg(adj)]++
 						PrintLink(NODE_DIRECTORY.N2directory[n].A[adj][lnk])
 					}
 
@@ -541,8 +585,10 @@ func SummarizeGraph() {
 		case N3GRAM:
 			for n := range NODE_DIRECTORY.N3directory {
 				fmt.Println(n,"\t",NODE_DIRECTORY.N3directory[n].S)
+				count_nodes++
 				for adj := range NODE_DIRECTORY.N3directory[n].A {
 					for lnk := range NODE_DIRECTORY.N3directory[n].A[adj] {
+						count_links[Agg(adj)]++
 						PrintLink(NODE_DIRECTORY.N3directory[n].A[adj][lnk])
 					}
 				}
@@ -551,8 +597,10 @@ func SummarizeGraph() {
 		case LT128:
 			for n := range NODE_DIRECTORY.LT128 {
 				fmt.Println(n,"\t",NODE_DIRECTORY.LT128[n].S)
+				count_nodes++
 				for adj := range NODE_DIRECTORY.LT128[n].A {
 					for lnk := range NODE_DIRECTORY.LT128[n].A[adj] {
+						count_links[Agg(adj)]++
 						PrintLink(NODE_DIRECTORY.LT128[n].A[adj][lnk])
 					}
 				}
@@ -561,8 +609,10 @@ func SummarizeGraph() {
 		case LT1024:
 			for n := range NODE_DIRECTORY.LT1024 {
 				fmt.Println(n,"\t",NODE_DIRECTORY.LT1024[n].S)
+				count_nodes++
 				for adj := range NODE_DIRECTORY.LT1024[n].A {
 					for lnk := range NODE_DIRECTORY.LT1024[n].A[adj] {
+						count_links[Agg(adj)]++
 						PrintLink(NODE_DIRECTORY.LT1024[n].A[adj][lnk])
 					}
 				}
@@ -572,8 +622,10 @@ func SummarizeGraph() {
 		case GT1024:
 			for n := range NODE_DIRECTORY.GT1024 {
 				fmt.Println(n,"\t",NODE_DIRECTORY.GT1024[n].S)
+				count_nodes++
 				for adj := range NODE_DIRECTORY.GT1024[n].A {
 					for lnk := range NODE_DIRECTORY.GT1024[n].A[adj] {
+						count_links[Agg(adj)]++
 						PrintLink(NODE_DIRECTORY.GT1024[n].A[adj][lnk])
 					}
 				}
@@ -581,6 +633,40 @@ func SummarizeGraph() {
 			}
 		}
 	}
+
+	fmt.Println("-------------------------------------")
+	fmt.Println("Incidence summary of raw declarations")
+	fmt.Println("-------------------------------------")
+
+	fmt.Println("Total nodes",count_nodes)
+
+	for st := 0; st < 4; st++ {
+		total += count_links[st]
+		fmt.Println("Total directed links of type",SST_NAMES[st],count_links[st])
+	}
+
+	complete := count_nodes * (count_nodes-1)
+	fmt.Println("Total links",total,"sparseness (fraction of completeness)",float64(total)/float64(complete))
+}
+
+//**************************************************************
+
+func CreateAdjacencyMatrix(s string) {
+
+	list := ValidateLinkArgs(s)
+	fmt.Println(list)
+}
+
+//**************************************************************
+
+func Agg(i int) int {
+
+	n := i - ST_OFFSET
+	if n < 0 {
+		n = -n
+	}
+
+	return n
 }
 
 //**************************************************************
@@ -589,6 +675,40 @@ func PrintLink(l Link) {
 
 	to := GetTextFromPtr(l.D)
 	fmt.Println("\t ... --(",ARROW_DIRECTORY[l.A].Long,",",l.W,")->",to,l.C)
+}
+
+//**************************************************************
+
+func ValidateLinkArgs(s string) []ArrowPtr {
+
+	list := strings.Split(s,",")
+	var search_list []ArrowPtr
+
+	for i := range list {
+		v,ok := ARROW_SHORT_DIR[list[i]]
+		if ok {
+			typ := ARROW_DIRECTORY[v].STtype-ST_OFFSET
+			if typ < 0 {
+				typ = -typ
+			}
+
+			name := ARROW_DIRECTORY[v].Long
+			ptr := ARROW_DIRECTORY[v].Ptr
+
+			fmt.Println(" - including STtype",SST_NAMES[typ],"->",name)
+			search_list = append(search_list,ptr)
+
+			if typ != NEAR {
+				inverse := INVERSE_ARROWS[ptr]
+				fmt.Println("   including inverse meaning",ARROW_DIRECTORY[inverse].Long)
+				search_list = append(search_list,inverse)
+			}
+		} else {
+			fmt.Println("There is no link abbreviation called ",list[i])
+		}
+	}
+
+	return search_list
 }
 
 //**************************************************************
