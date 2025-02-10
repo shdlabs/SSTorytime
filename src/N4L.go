@@ -133,7 +133,7 @@ type NodeEventItem struct { // essentially the incidence matrix
 	C int                 // the string class: N1-N3, LT128, etc
 	NPtr NodeEventItemPtr // Pointer to self
 
-	A [ST_TOP][]Link   // link incidence list, by arrow type
+	I [ST_TOP][]Link   // link incidence list, by arrow type
   	                   // NOTE: carefully how offsets represent negative SSTtypes
 }
 
@@ -141,8 +141,8 @@ type NodeEventItem struct { // essentially the incidence matrix
 
 type NodeEventItemPtr struct {
 
-	CPtr  ClassedNodePtr    // index of within name class lane
-	Class int         // Text size-class
+	CPtr  ClassedNodePtr // index of within name class lane
+	Class int            // Text size-class
 }
 
 type ClassedNodePtr int  // Internal pointer type of size-classified text
@@ -204,13 +204,6 @@ type NodeEventItemBlobs struct {
 }
 
 //**************************************************************
-
-type rc_type struct {   // row column matrix coordinates
-	r NodeEventItemPtr
-	c NodeEventItemPtr
-}
-
-//**************************************************************
 // Lookup tables
 //**************************************************************
 
@@ -223,8 +216,6 @@ var (
 
 	NODE_DIRECTORY NodeEventItemBlobs  // Internal histo-representations
 	NO_NODE_PTR NodeEventItemPtr       // see Init()
-
-	SPARSE_ADJ = make(map[rc_type]float64)
 )
 
 //**************************************************************
@@ -571,10 +562,10 @@ func SummarizeGraph() {
 			for n := range NODE_DIRECTORY.N1directory {
 				fmt.Println(n,"\t",NODE_DIRECTORY.N1directory[n].S)
 				count_nodes++
-				for adj := range NODE_DIRECTORY.N1directory[n].A {
-					for lnk := range NODE_DIRECTORY.N1directory[n].A[adj] {
-						count_links[Agg(adj)]++
-						PrintLink(NODE_DIRECTORY.N1directory[n].A[adj][lnk])
+				for sttype := range NODE_DIRECTORY.N1directory[n].I {
+					for lnk := range NODE_DIRECTORY.N1directory[n].I[sttype] {
+						count_links[Agg(sttype)]++
+						PrintLink(NODE_DIRECTORY.N1directory[n].I[sttype][lnk])
 					}
 				}
 				fmt.Println()
@@ -583,10 +574,10 @@ func SummarizeGraph() {
 			for n := range NODE_DIRECTORY.N2directory {
 				fmt.Println(n,"\t",NODE_DIRECTORY.N2directory[n].S)
 				count_nodes++
-				for adj := range NODE_DIRECTORY.N2directory[n].A {
-					for lnk := range NODE_DIRECTORY.N2directory[n].A[adj] {
-						count_links[Agg(adj)]++
-						PrintLink(NODE_DIRECTORY.N2directory[n].A[adj][lnk])
+				for sttype := range NODE_DIRECTORY.N2directory[n].I {
+					for lnk := range NODE_DIRECTORY.N2directory[n].I[sttype] {
+						count_links[Agg(sttype)]++
+						PrintLink(NODE_DIRECTORY.N2directory[n].I[sttype][lnk])
 					}
 
 				}
@@ -596,10 +587,10 @@ func SummarizeGraph() {
 			for n := range NODE_DIRECTORY.N3directory {
 				fmt.Println(n,"\t",NODE_DIRECTORY.N3directory[n].S)
 				count_nodes++
-				for adj := range NODE_DIRECTORY.N3directory[n].A {
-					for lnk := range NODE_DIRECTORY.N3directory[n].A[adj] {
-						count_links[Agg(adj)]++
-						PrintLink(NODE_DIRECTORY.N3directory[n].A[adj][lnk])
+				for sttype := range NODE_DIRECTORY.N3directory[n].I {
+					for lnk := range NODE_DIRECTORY.N3directory[n].I[sttype] {
+						count_links[Agg(sttype)]++
+						PrintLink(NODE_DIRECTORY.N3directory[n].I[sttype][lnk])
 					}
 				}
 				fmt.Println()
@@ -608,10 +599,10 @@ func SummarizeGraph() {
 			for n := range NODE_DIRECTORY.LT128 {
 				fmt.Println(n,"\t",NODE_DIRECTORY.LT128[n].S)
 				count_nodes++
-				for adj := range NODE_DIRECTORY.LT128[n].A {
-					for lnk := range NODE_DIRECTORY.LT128[n].A[adj] {
-						count_links[Agg(adj)]++
-						PrintLink(NODE_DIRECTORY.LT128[n].A[adj][lnk])
+				for sttype := range NODE_DIRECTORY.LT128[n].I {
+					for lnk := range NODE_DIRECTORY.LT128[n].I[sttype] {
+						count_links[Agg(sttype)]++
+						PrintLink(NODE_DIRECTORY.LT128[n].I[sttype][lnk])
 					}
 				}
 				fmt.Println()
@@ -620,10 +611,10 @@ func SummarizeGraph() {
 			for n := range NODE_DIRECTORY.LT1024 {
 				fmt.Println(n,"\t",NODE_DIRECTORY.LT1024[n].S)
 				count_nodes++
-				for adj := range NODE_DIRECTORY.LT1024[n].A {
-					for lnk := range NODE_DIRECTORY.LT1024[n].A[adj] {
-						count_links[Agg(adj)]++
-						PrintLink(NODE_DIRECTORY.LT1024[n].A[adj][lnk])
+				for sttype := range NODE_DIRECTORY.LT1024[n].I {
+					for lnk := range NODE_DIRECTORY.LT1024[n].I[sttype] {
+						count_links[Agg(sttype)]++
+						PrintLink(NODE_DIRECTORY.LT1024[n].I[sttype][lnk])
 					}
 				}
 				fmt.Println()
@@ -633,10 +624,10 @@ func SummarizeGraph() {
 			for n := range NODE_DIRECTORY.GT1024 {
 				fmt.Println(n,"\t",NODE_DIRECTORY.GT1024[n].S)
 				count_nodes++
-				for adj := range NODE_DIRECTORY.GT1024[n].A {
-					for lnk := range NODE_DIRECTORY.GT1024[n].A[adj] {
-						count_links[Agg(adj)]++
-						PrintLink(NODE_DIRECTORY.GT1024[n].A[adj][lnk])
+				for sttype := range NODE_DIRECTORY.GT1024[n].I {
+					for lnk := range NODE_DIRECTORY.GT1024[n].I[sttype] {
+						count_links[Agg(sttype)]++
+						PrintLink(NODE_DIRECTORY.GT1024[n].I[sttype][lnk])
 					}
 				}
 				fmt.Println()
@@ -661,41 +652,14 @@ func SummarizeGraph() {
 
 //**************************************************************
 
-func CreateAdjacencyMatrix(s string) {
+func CreateAdjacencyMatrix(searchlist string) {
 
-	search_list := ValidateLinkArgs(s)
+	search_list := ValidateLinkArgs(searchlist)
 
-	for class := N1GRAM; class <= GT1024; class++ {
-		switch class {
-		case N1GRAM:
-			for n := range NODE_DIRECTORY.N1directory {
-				BuildAdjRow(NODE_DIRECTORY.N1directory[n],search_list)
-			}
+	// the matrix is dim x dim
 
-		case N2GRAM:
-			for n := range NODE_DIRECTORY.N2directory {
-				BuildAdjRow(NODE_DIRECTORY.N2directory[n],search_list)
-			}
-		case N3GRAM:
-			for n := range NODE_DIRECTORY.N3directory {
-				BuildAdjRow(NODE_DIRECTORY.N3directory[n],search_list)
-			}
-		case LT128:
-			for n := range NODE_DIRECTORY.LT128 {
-				BuildAdjRow(NODE_DIRECTORY.LT128[n],search_list)
-			}
-		case LT1024:
-			for n := range NODE_DIRECTORY.LT1024 {
-				BuildAdjRow(NODE_DIRECTORY.LT1024[n],search_list)
-			}
-			
-		case GT1024:
-			for n := range NODE_DIRECTORY.GT1024 {
-				BuildAdjRow(NODE_DIRECTORY.GT1024[n],search_list)
-			}
-		}
-	}
-
+	filtered_node_list := AssembleInvolvedNodes(search_list)
+	fmt.Println("INVOLVED",filtered_node_list)
 }
 
 //**************************************************************
@@ -754,20 +718,71 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 
 //**************************************************************
 
-func BuildAdjRow(node NodeEventItem, arrows []ArrowPtr) {
+func AssembleInvolvedNodes(search_list []ArrowPtr) []NodeEventItemPtr {
 
-	row := node.NPtr
+	var node_list []NodeEventItemPtr
 
-	for adj := range node.A {
-		for lnk := range node.A[adj] {
-			weight := node.A[adj][lnk].W
-			col := node.A[adj][lnk].D
-			var rc rc_type
-			rc.r = row
-			rc.c = col
-			SPARSE_ADJ[rc] = weight
+	for class := N1GRAM; class <= GT1024; class++ {
+		switch class {
+		case N1GRAM:
+			for n := range NODE_DIRECTORY.N1directory {
+				node_list = BuildAdjRow(NODE_DIRECTORY.N1directory[n],search_list,node_list)
+			}
+
+		case N2GRAM:
+			for n := range NODE_DIRECTORY.N2directory {
+				node_list = BuildAdjRow(NODE_DIRECTORY.N2directory[n],search_list,node_list)
+			}
+		case N3GRAM:
+			for n := range NODE_DIRECTORY.N3directory {
+				node_list = BuildAdjRow(NODE_DIRECTORY.N3directory[n],search_list,node_list)
+			}
+		case LT128:
+			for n := range NODE_DIRECTORY.LT128 {
+				node_list = BuildAdjRow(NODE_DIRECTORY.LT128[n],search_list,node_list)
+			}
+		case LT1024:
+			for n := range NODE_DIRECTORY.LT1024 {
+				node_list = BuildAdjRow(NODE_DIRECTORY.LT1024[n],search_list,node_list)
+			}
+			
+		case GT1024:
+			for n := range NODE_DIRECTORY.GT1024 {
+				node_list = BuildAdjRow(NODE_DIRECTORY.GT1024[n],search_list,node_list)
+			}
 		}
 	}
+
+	return node_list
+}
+
+//**************************************************************
+
+func BuildAdjRow(node NodeEventItem, searcharrows []ArrowPtr,node_list []NodeEventItemPtr) []NodeEventItemPtr {
+
+	var row_nodes []NodeEventItemPtr
+
+	for sttype := range node.I {
+		for lnk := range node.I[sttype] {
+
+			arrowptr := node.I[sttype][lnk].A
+
+			for lnk := range node.I[sttype] {
+				for l := range searcharrows {
+					if arrowptr == searcharrows[l] {
+						fmt.Println("MATCHED A LINK")
+						row_nodes = append(row_nodes,node.I[sttype][lnk].D)
+					}
+				}
+			}
+		}
+	}
+
+	if row_nodes != nil { // Add the parent if it has children
+		row_nodes = append(row_nodes,node.NPtr)
+	}
+
+	return append(node_list,row_nodes...)
 }
 
 //**************************************************************
@@ -1237,17 +1252,17 @@ func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
 	switch frclass {
 
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[frm].A[sttype] = append(NODE_DIRECTORY.N1directory[frm].A[sttype],link)
+		NODE_DIRECTORY.N1directory[frm].I[sttype] = append(NODE_DIRECTORY.N1directory[frm].I[sttype],link)
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[frm].A[sttype] = append(NODE_DIRECTORY.N2directory[frm].A[sttype],link)
+		NODE_DIRECTORY.N2directory[frm].I[sttype] = append(NODE_DIRECTORY.N2directory[frm].I[sttype],link)
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[frm].A[sttype] = append(NODE_DIRECTORY.N3directory[frm].A[sttype],link)
+		NODE_DIRECTORY.N3directory[frm].I[sttype] = append(NODE_DIRECTORY.N3directory[frm].I[sttype],link)
 	case LT128:
-		NODE_DIRECTORY.LT128[frm].A[sttype] = append(NODE_DIRECTORY.LT128[frm].A[sttype],link)
+		NODE_DIRECTORY.LT128[frm].I[sttype] = append(NODE_DIRECTORY.LT128[frm].I[sttype],link)
 	case LT1024:
-		NODE_DIRECTORY.LT1024[frm].A[sttype] = append(NODE_DIRECTORY.LT1024[frm].A[sttype],link)
+		NODE_DIRECTORY.LT1024[frm].I[sttype] = append(NODE_DIRECTORY.LT1024[frm].I[sttype],link)
 	case GT1024:
-		NODE_DIRECTORY.GT1024[frm].A[sttype] = append(NODE_DIRECTORY.GT1024[frm].A[sttype],link)
+		NODE_DIRECTORY.GT1024[frm].I[sttype] = append(NODE_DIRECTORY.GT1024[frm].I[sttype],link)
 	}
 }
 
