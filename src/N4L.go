@@ -255,7 +255,8 @@ func main() {
 		dim, key, d_adj, u_adj := CreateAdjacencyMatrix(ADJ_LIST)
 		PrintMatrix("directed adjacency sub-matrix",dim,key,d_adj)
 		PrintMatrix("undirected adjacency sub-matrix",dim,key,u_adj)
-		ComputeEVC(dim,d_adj)
+		evc := ComputeEVC(dim,u_adj)
+		PrintNZVector("Eigenvector centrality score for symmetrized graph",dim,key,evc)
 	}
 }
 
@@ -731,7 +732,7 @@ func PrintMatrix(name string, dim int, key []NodeEventItemPtr, matrix [][]float6
 					fmt.Print("\t...")
 					break
 				} else {
-					fmt.Print("\t",matrix[row][col])
+					fmt.Printf("  %4.1f",matrix[row][col])
 				}
 				
 			}
@@ -742,7 +743,117 @@ func PrintMatrix(name string, dim int, key []NodeEventItemPtr, matrix [][]float6
 
 //**************************************************************
 
-func ComputeEVC(dim int,adj [][]float64) {
+func PrintNZVector(name string, dim int, key []NodeEventItemPtr, vector[]float64) {
+
+	if VERBOSE {
+
+		fmt.Println("\n",name,"...\n")
+		
+		for row := 0; row < dim; row++ {
+			if vector[row] > 0.1 {
+				fmt.Printf("%20.15s ..\r\t\t\t(",GetNodeFromPtr(key[row]))			
+				fmt.Printf("  %4.1f",vector[row])
+				fmt.Println(")")
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func ComputeEVC(dim int,adj [][]float64) []float64 {
+
+	v := MakeInitVector(dim,1.0)
+	vlast := v
+
+	const several = 6
+
+	for i := 0; i < several; i++ {
+
+		v = MatrixOpVector(dim,adj,vlast)
+		maxval := GetVecMax(v)
+		v = NormalizeVec(v,maxval)
+
+		if CompareVec(v,vlast) < 0.1 {
+			break
+		}
+		vlast = v
+	}
+	return v
+}
+
+//**************************************************************
+
+func MakeInitVector(dim int, init_value float64) []float64 {
+
+	var v = make([]float64,dim)
+
+	for r := 0; r < dim; r++ {
+		v[r] = init_value
+	}
+
+	return v
+}
+
+//**************************************************************
+
+func MatrixOpVector(dim int,m [][]float64, v []float64) []float64 {
+
+	var vp = make([]float64,dim)
+
+	for r := 0; r < dim; r++ {
+		for c := 0; c < dim; c++ {
+			vp[r] += m[r][c] * v[c]
+		}
+	}
+	return vp
+}
+
+//**************************************************************
+
+func GetVecMax(v []float64) float64 {
+
+	var max float64 = -1
+
+	for r := range v {
+		if v[r] > max {
+			max = v[r]
+		}
+	}
+
+	return max
+}
+
+//**************************************************************
+
+func NormalizeVec(v []float64, div float64) []float64 {
+
+	for r := range v {
+		v[r] = v[r] / div
+	}
+
+	return v
+}
+
+//**************************************************************
+
+func CompareVec(v1,v2 []float64) float64 {
+
+	var max float64 = -1
+
+	for r := range v1 {
+		diff := v1[r]-v2[r]
+
+		if diff < 0 {
+			diff = -diff
+		}
+
+		if diff > max {
+			max = diff
+		}
+	}
+
+	return max
 }
 
 //**************************************************************
