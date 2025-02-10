@@ -684,7 +684,10 @@ func CreateAdjacencyMatrix(searchlist string) {
 	for row := 0; row < dim; row++ {
 
 		subadj_matrix [row] = make([]float64,dim)
-		fmt.Printf("%15.10s (",GetNodeFromPtr(filtered_node_list[row]))
+
+		if VERBOSE {
+			fmt.Printf("%15.10s (",GetNodeFromPtr(filtered_node_list[row]))
+		}
 
 		for col := 0; col < dim; col++ {
 
@@ -694,9 +697,11 @@ func CreateAdjacencyMatrix(searchlist string) {
 
 			subadj_matrix[row][col] = path_weights[rc]
 
-			fmt.Print("\t",subadj_matrix[row][col])
+			if VERBOSE {
+				fmt.Print("\t",subadj_matrix[row][col])
+			}
 		}
-		fmt.Println(")")
+		Verbose(")")
 	}
 }
 
@@ -816,9 +821,11 @@ func SearchIncidentRowClass(node NodeEventItem, searcharrows []ArrowPtr,node_lis
 			arrowptr := node.I[sttype][lnk].A
 
 			for lnk := range node.I[sttype] {
-				if searcharrows == nil {
-					match := node.I[sttype][lnk].Dst
-					row_nodes[match] = true
+				if len(searcharrows) == 0 {
+					match := node.I[sttype][lnk]
+					row_nodes[match.Dst] = true
+					rc.Col = match.Dst
+					ret_weights[rc] += match.W
 				} else {
 					for l := range searcharrows {
 						if arrowptr == searcharrows[l] {
