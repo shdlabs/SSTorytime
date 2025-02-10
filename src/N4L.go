@@ -662,8 +662,8 @@ func CreateAdjacencyMatrix(searchlist string) {
 
 	subadj_matrix_dimension := len(filtered_node_list)
 
-	for f := range {
-		fmt.Println("INVOLVED",GetNodeFromPtr(filtered_node_list[f]))
+	for f := range filtered_node_list {
+		fmt.Println("INVOLVED",GetNodeFromPtr(filtered_node_list[f]),"of",subadj_matrix_dimension)
 	}
 }
 
@@ -694,8 +694,13 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 	list := strings.Split(s,",")
 	var search_list []ArrowPtr
 
+	if s == "" || s == "all" {
+		return nil
+	}
+
 	for i := range list {
 		v,ok := ARROW_SHORT_DIR[list[i]]
+
 		if ok {
 			typ := ARROW_DIRECTORY[v].STtype-ST_OFFSET
 			if typ < 0 {
@@ -773,10 +778,15 @@ func BuildAdjRow(node NodeEventItem, searcharrows []ArrowPtr,node_list []NodeEve
 			arrowptr := node.I[sttype][lnk].A
 
 			for lnk := range node.I[sttype] {
-				for l := range searcharrows {
-					if arrowptr == searcharrows[l] {
-						match := node.I[sttype][lnk].D
-						row_nodes[match] = true
+				if searcharrows == nil {
+					match := node.I[sttype][lnk].D
+					row_nodes[match] = true
+				} else {
+					for l := range searcharrows {
+						if arrowptr == searcharrows[l] {
+							match := node.I[sttype][lnk].D
+							row_nodes[match] = true
+						}
 					}
 				}
 			}
