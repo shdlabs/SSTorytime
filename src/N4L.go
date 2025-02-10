@@ -251,7 +251,11 @@ func main() {
 	}
 
 	if CREATE_ADJACENCY {
-		CreateAdjacencyMatrix(ADJ_LIST)
+
+		dim, key, d_adj, u_adj := CreateAdjacencyMatrix(ADJ_LIST)
+		PrintMatrix("directed adjacency sub-matrix",dim,key,d_adj)
+		PrintMatrix("undirected adjacency sub-matrix",dim,key,u_adj)
+		ComputeEVC(dim,d_adj)
 	}
 }
 
@@ -661,7 +665,7 @@ func SummarizeGraph() {
 
 //**************************************************************
 
-func CreateAdjacencyMatrix(searchlist string) {
+func CreateAdjacencyMatrix(searchlist string) (int,[]NodeEventItemPtr,[][]float64,[][]float64) {
 
 	search_list := ValidateLinkArgs(searchlist)
 
@@ -680,29 +684,65 @@ func CreateAdjacencyMatrix(searchlist string) {
 	}
 
 	var subadj_matrix [][]float64 = make([][]float64,dim)
+	var symadj_matrix [][]float64 = make([][]float64,dim)
 
 	for row := 0; row < dim; row++ {
-
 		subadj_matrix [row] = make([]float64,dim)
+		symadj_matrix [row] = make([]float64,dim)
+	}
 
-		if VERBOSE {
-			fmt.Printf("%15.10s (",GetNodeFromPtr(filtered_node_list[row]))
-		}
-
+	for row := 0; row < dim; row++ {
 		for col := 0; col < dim; col++ {
 
-			var rc RCtype
+			var rc, rcT RCtype
 			rc.Row = filtered_node_list[row]
 			rc.Col = filtered_node_list[col]
 
+			rcT.Row = filtered_node_list[col]
+			rcT.Col = filtered_node_list[row]
+
 			subadj_matrix[row][col] = path_weights[rc]
 
-			if VERBOSE {
-				fmt.Print("\t",subadj_matrix[row][col])
-			}
+			symadj_matrix[row][col] = path_weights[rc] + path_weights[rcT]
+			symadj_matrix[col][row] = path_weights[rc] + path_weights[rcT]
 		}
-		Verbose(")")
 	}
+
+	return dim, filtered_node_list, subadj_matrix, symadj_matrix
+}
+
+//**************************************************************
+
+func PrintMatrix(name string, dim int, key []NodeEventItemPtr, matrix [][]float64) {
+
+	if VERBOSE {
+
+		fmt.Println("\n",name,"...\n")
+		
+		for row := 0; row < dim; row++ {
+			
+			fmt.Printf("%20.15s ..\r\t\t\t(",GetNodeFromPtr(key[row]))
+			
+			for col := 0; col < dim; col++ {
+				
+				const screenwidth = 12
+				
+				if col > screenwidth {
+					fmt.Print("\t...")
+					break
+				} else {
+					fmt.Print("\t",matrix[row][col])
+				}
+				
+			}
+			fmt.Println(")")
+		}
+	}
+}
+
+//**************************************************************
+
+func ComputeEVC(dim int,adj [][]float64) {
 }
 
 //**************************************************************
