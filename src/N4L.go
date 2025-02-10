@@ -130,6 +130,8 @@ type NodeEventItem struct { // essentially the incidence matrix
 
 	L int                 // length of name string
 	S string              // name string itself
+	Chap string           // section/chapter in which this was added
+
 	C int                 // the string class: N1-N3, LT128, etc
 	NPtr NodeEventItemPtr // Pointer to self
 
@@ -149,12 +151,19 @@ type ClassedNodePtr int  // Internal pointer type of size-classified text
 
 //**************************************************************
 
+type RCtype struct {
+	Row NodeEventItemPtr
+	Col NodeEventItemPtr
+}
+
+//**************************************************************
+
 type Link struct {  // A link is a type of arrow, with context
                     // and maybe with a weightfor package math
 	A ArrowPtr         // type of arrow, presorted
 	W float64          // numerical weight of this link
-	C []string         // context for this pathway
-	D NodeEventItemPtr // adjacent event/item/node
+	Ctx []string         // context for this pathway
+	Dst NodeEventItemPtr // adjacent event/item/node
 }
 
 type LinkPtr int
@@ -658,12 +667,36 @@ func CreateAdjacencyMatrix(searchlist string) {
 
 	// the matrix is dim x dim
 
-	filtered_node_list := AssembleInvolvedNodes(search_list)
+	filtered_node_list,path_weights := AssembleInvolvedNodes(search_list)
 
-	subadj_matrix_dimension := len(filtered_node_list)
+	dim := len(filtered_node_list)
 
-	for f := range filtered_node_list {
-		fmt.Println("INVOLVED",GetNodeFromPtr(filtered_node_list[f]),"of",subadj_matrix_dimension)
+	for f := 0; f < len(filtered_node_list); f++ {
+		Verbose("    - row/col key [",f,"]",GetNodeFromPtr(filtered_node_list[f]),"of",dim)
+	}
+
+	for f := range path_weights {
+		Verbose("    - path weight",path_weights[f],"from",GetNodeFromPtr(f.Row),"to",GetNodeFromPtr(f.Col))
+	}
+
+	var subadj_matrix [][]float64 = make([][]float64,dim)
+
+	for row := 0; row < dim; row++ {
+
+		subadj_matrix [row] = make([]float64,dim)
+		fmt.Printf("%15.10s (",GetNodeFromPtr(filtered_node_list[row]))
+
+		for col := 0; col < dim; col++ {
+
+			var rc RCtype
+			rc.Row = filtered_node_list[row]
+			rc.Col = filtered_node_list[col]
+
+			subadj_matrix[row][col] = path_weights[rc]
+
+			fmt.Print("\t",subadj_matrix[row][col])
+		}
+		fmt.Println(")")
 	}
 }
 
@@ -683,8 +716,8 @@ func Agg(i int) int {
 
 func PrintLink(l Link) {
 
-	to := GetNodeFromPtr(l.D)
-	fmt.Println("\t ... --(",ARROW_DIRECTORY[l.A].Long,",",l.W,")->",to,l.C)
+	to := GetNodeFromPtr(l.Dst)
+	fmt.Println("\t ... --(",ARROW_DIRECTORY[l.A].Long,",",l.W,")->",to,l.Ctx)
 }
 
 //**************************************************************
@@ -710,7 +743,7 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 			name := ARROW_DIRECTORY[v].Long
 			ptr := ARROW_DIRECTORY[v].Ptr
 
-			fmt.Println(" - including STtype",SST_NAMES[typ],"->",name)
+			fmt.Println(" - including search pathway STtype",SST_NAMES[typ],"->",name)
 			search_list = append(search_list,ptr)
 
 			if typ != NEAR {
@@ -719,7 +752,8 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 				search_list = append(search_list,inverse)
 			}
 		} else {
-			fmt.Println("There is no link abbreviation called ",list[i])
+			fmt.Println("\nThere is no link abbreviation called ",list[i])
+			os.Exit(-1)
 		}
 	}
 
@@ -728,49 +762,53 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 
 //**************************************************************
 
-func AssembleInvolvedNodes(search_list []ArrowPtr) []NodeEventItemPtr {
+func AssembleInvolvedNodes(search_list []ArrowPtr) ([]NodeEventItemPtr,map[RCtype]float64) {
 
 	var node_list []NodeEventItemPtr
+	var weights = make(map[RCtype]float64)
 
 	for class := N1GRAM; class <= GT1024; class++ {
 
 		switch class {
 		case N1GRAM:
 			for n := range NODE_DIRECTORY.N1directory {
-				node_list = BuildAdjRow(NODE_DIRECTORY.N1directory[n],search_list,node_list)
+				node_list = SearchIncidentRowClass(NODE_DIRECTORY.N1directory[n],search_list,node_list,weights)
 			}
 		case N2GRAM:
 			for n := range NODE_DIRECTORY.N2directory {
-				node_list = BuildAdjRow(NODE_DIRECTORY.N2directory[n],search_list,node_list)
+				node_list = SearchIncidentRowClass(NODE_DIRECTORY.N2directory[n],search_list,node_list,weights)
 			}
 		case N3GRAM:
 			for n := range NODE_DIRECTORY.N3directory {
-				node_list = BuildAdjRow(NODE_DIRECTORY.N3directory[n],search_list,node_list)
+				node_list = SearchIncidentRowClass(NODE_DIRECTORY.N3directory[n],search_list,node_list,weights)
 			}
 		case LT128:
 			for n := range NODE_DIRECTORY.LT128 {
-				node_list = BuildAdjRow(NODE_DIRECTORY.LT128[n],search_list,node_list)
+				node_list = SearchIncidentRowClass(NODE_DIRECTORY.LT128[n],search_list,node_list,weights)
 			}
 		case LT1024:
 			for n := range NODE_DIRECTORY.LT1024 {
-				node_list = BuildAdjRow(NODE_DIRECTORY.LT1024[n],search_list,node_list)
+				node_list = SearchIncidentRowClass(NODE_DIRECTORY.LT1024[n],search_list,node_list,weights)
 			}
 		case GT1024:
 			for n := range NODE_DIRECTORY.GT1024 {
-				node_list = BuildAdjRow(NODE_DIRECTORY.GT1024[n],search_list,node_list)
+				node_list = SearchIncidentRowClass(NODE_DIRECTORY.GT1024[n],search_list,node_list,weights)
 			}
 		}
 	}
 
-	return node_list
+	return node_list,weights
 }
 
 //**************************************************************
 
-func BuildAdjRow(node NodeEventItem, searcharrows []ArrowPtr,node_list []NodeEventItemPtr) []NodeEventItemPtr {
+func SearchIncidentRowClass(node NodeEventItem, searcharrows []ArrowPtr,node_list []NodeEventItemPtr,ret_weights map[RCtype]float64) []NodeEventItemPtr {
 
 	var row_nodes = make(map[NodeEventItemPtr]bool)
-	var appended []NodeEventItemPtr
+	var ret_nodes []NodeEventItemPtr
+	var rc RCtype
+
+	rc.Row = node.NPtr
 
 	for sttype := range node.I {
 		for lnk := range node.I[sttype] {
@@ -779,13 +817,16 @@ func BuildAdjRow(node NodeEventItem, searcharrows []ArrowPtr,node_list []NodeEve
 
 			for lnk := range node.I[sttype] {
 				if searcharrows == nil {
-					match := node.I[sttype][lnk].D
+					match := node.I[sttype][lnk].Dst
 					row_nodes[match] = true
 				} else {
 					for l := range searcharrows {
 						if arrowptr == searcharrows[l] {
-							match := node.I[sttype][lnk].D
-							row_nodes[match] = true
+
+							match := node.I[sttype][lnk]
+							row_nodes[match.Dst] = true
+							rc.Col = match.Dst
+							ret_weights[rc] += match.W
 						}
 					}
 				}
@@ -804,10 +845,10 @@ func BuildAdjRow(node NodeEventItem, searcharrows []ArrowPtr,node_list []NodeEve
 	// Merge idempotently
 	
 	for nptr := range row_nodes {
-		appended = append(appended,nptr)
+		ret_nodes = append(ret_nodes,nptr)
 	}
 
-	return appended
+	return ret_nodes
 }
 
 //**************************************************************
@@ -1083,9 +1124,9 @@ func IdempAddArrow(from string, frptr NodeEventItemPtr, link Link,to string, top
 	}
 
 	if link.W != 1 {
-		Verbose("... Relation:",from,"--(",ARROW_DIRECTORY[link.A].Long,",",link.W,")->",to,link.C)
+		Verbose("... Relation:",from,"--(",ARROW_DIRECTORY[link.A].Long,",",link.W,")->",to,link.Ctx)
 	} else {
-		Verbose("... Relation:",from,"--",ARROW_DIRECTORY[link.A].Long,"->",to,link.C)
+		Verbose("... Relation:",from,"--",ARROW_DIRECTORY[link.A].Long,"->",to,link.Ctx)
 	}
 
 	AppendLinkToNode(frptr,link,toptr)
@@ -1103,6 +1144,7 @@ func IdempAddTextToNode(s string) NodeEventItemPtr {
 	var new_nodetext NodeEventItem
 	new_nodetext.S = s
 	new_nodetext.L = l
+	new_nodetext.Chap = SECTION_STATE
 	new_nodetext.C = c
 
 	iptr := AppendTextToDirectory(new_nodetext)
@@ -1272,7 +1314,7 @@ func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
 	frm := frptr.CPtr
 	sttype := ARROW_DIRECTORY[link.A].STtype
 
-	link.D = toptr // fill in the last part of the reference
+	link.Dst = toptr // fill in the last part of the reference
 
 	switch frclass {
 
@@ -1637,7 +1679,7 @@ func FindLinkAssociation(token string) Link {
 
 	link.A = ptr
 	link.W = weight
-	link.C = GetContext(ctx)
+	link.Ctx = GetContext(ctx)
 	return link
 }
 
@@ -1983,7 +2025,7 @@ func Usage() {
 func Verbose(a ...interface{}) {
 
 	if VERBOSE {
-		fmt.Print(LINE_NUM,":\t")
+		//fmt.Print(LINE_NUM,":\t")
 		fmt.Println(a...)
 	}
 
@@ -2013,7 +2055,6 @@ func Box(a ...interface{}) {
 	if VERBOSE {
 
 		fmt.Println("\n------------------------------------")
-		//fmt.Print(LINE_NUM,":")
 		fmt.Println(a...)
 		fmt.Println("------------------------------------\n")
 	}
