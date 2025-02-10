@@ -659,7 +659,12 @@ func CreateAdjacencyMatrix(searchlist string) {
 	// the matrix is dim x dim
 
 	filtered_node_list := AssembleInvolvedNodes(search_list)
-	fmt.Println("INVOLVED",filtered_node_list)
+
+	subadj_matrix_dimension := len(filtered_node_list)
+
+	for f := range {
+		fmt.Println("INVOLVED",GetNodeFromPtr(filtered_node_list[f]))
+	}
 }
 
 //**************************************************************
@@ -678,7 +683,7 @@ func Agg(i int) int {
 
 func PrintLink(l Link) {
 
-	to := GetTextFromPtr(l.D)
+	to := GetNodeFromPtr(l.D)
 	fmt.Println("\t ... --(",ARROW_DIRECTORY[l.A].Long,",",l.W,")->",to,l.C)
 }
 
@@ -723,12 +728,12 @@ func AssembleInvolvedNodes(search_list []ArrowPtr) []NodeEventItemPtr {
 	var node_list []NodeEventItemPtr
 
 	for class := N1GRAM; class <= GT1024; class++ {
+
 		switch class {
 		case N1GRAM:
 			for n := range NODE_DIRECTORY.N1directory {
 				node_list = BuildAdjRow(NODE_DIRECTORY.N1directory[n],search_list,node_list)
 			}
-
 		case N2GRAM:
 			for n := range NODE_DIRECTORY.N2directory {
 				node_list = BuildAdjRow(NODE_DIRECTORY.N2directory[n],search_list,node_list)
@@ -745,7 +750,6 @@ func AssembleInvolvedNodes(search_list []ArrowPtr) []NodeEventItemPtr {
 			for n := range NODE_DIRECTORY.LT1024 {
 				node_list = BuildAdjRow(NODE_DIRECTORY.LT1024[n],search_list,node_list)
 			}
-			
 		case GT1024:
 			for n := range NODE_DIRECTORY.GT1024 {
 				node_list = BuildAdjRow(NODE_DIRECTORY.GT1024[n],search_list,node_list)
@@ -760,7 +764,8 @@ func AssembleInvolvedNodes(search_list []ArrowPtr) []NodeEventItemPtr {
 
 func BuildAdjRow(node NodeEventItem, searcharrows []ArrowPtr,node_list []NodeEventItemPtr) []NodeEventItemPtr {
 
-	var row_nodes []NodeEventItemPtr
+	var row_nodes = make(map[NodeEventItemPtr]bool)
+	var appended []NodeEventItemPtr
 
 	for sttype := range node.I {
 		for lnk := range node.I[sttype] {
@@ -770,19 +775,29 @@ func BuildAdjRow(node NodeEventItem, searcharrows []ArrowPtr,node_list []NodeEve
 			for lnk := range node.I[sttype] {
 				for l := range searcharrows {
 					if arrowptr == searcharrows[l] {
-						fmt.Println("MATCHED A LINK")
-						row_nodes = append(row_nodes,node.I[sttype][lnk].D)
+						match := node.I[sttype][lnk].D
+						row_nodes[match] = true
 					}
 				}
 			}
 		}
 	}
 
-	if row_nodes != nil { // Add the parent if it has children
-		row_nodes = append(row_nodes,node.NPtr)
+	if len(row_nodes) > 0 {
+		row_nodes[node.NPtr] = true // Add the parent if it has children
 	}
 
-	return append(node_list,row_nodes...)
+	for nptr := range node_list {
+		row_nodes[node_list[nptr]] = true
+	}
+	
+	// Merge idempotently
+	
+	for nptr := range row_nodes {
+		appended = append(appended,nptr)
+	}
+
+	return appended
 }
 
 //**************************************************************
@@ -1088,7 +1103,7 @@ func IdempAddTextToNode(s string) NodeEventItemPtr {
 
 //**************************************************************
 
-func GetTextFromPtr(frptr NodeEventItemPtr) string {
+func GetNodeFromPtr(frptr NodeEventItemPtr) string {
 
 	class := frptr.Class
 	index := frptr.CPtr
