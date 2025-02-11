@@ -27,7 +27,7 @@ what we have today.
 * [SSTorytelling](docs/Storytelling.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
 
-One of the goals of this project is t better understand what we call "reasoning".
+One of the goals of this project is to better understand what we call "reasoning".
 One used to think of reasoning, philosophically, as logical argumentation. As computers
 entered society we replaced this idea with actual first order logic. But, if you ask
 a teacher (and if we've learned anything from the Artificial Intelligence journey)
