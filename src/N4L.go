@@ -131,9 +131,9 @@ type NodeEventItem struct { // essentially the incidence matrix
 
 	L int                 // length of name string
 	S string              // name string itself
-	Chap string           // section/chapter in which this was added
 
-	C int                 // the string class: N1-N3, LT128, etc
+	Chap string           // section/chapter in which this was added
+	SizeClass int         // the string class: N1-N3, LT128, etc
 	NPtr NodeEventItemPtr // Pointer to self
 
 	I [ST_TOP][]Link   // link incidence list, by arrow type
@@ -161,8 +161,8 @@ type RCtype struct {
 
 type Link struct {  // A link is a type of arrow, with context
                     // and maybe with a weightfor package math
-	A ArrowPtr         // type of arrow, presorted
-	W float64          // numerical weight of this link
+	Arr ArrowPtr         // type of arrow, presorted
+	Wgt float64          // numerical weight of this link
 	Ctx []string         // context for this pathway
 	Dst NodeEventItemPtr // adjacent event/item/node
 }
@@ -880,7 +880,7 @@ func Agg(i int) int {
 func PrintLink(l Link) {
 
 	to := GetNodeFromPtr(l.Dst)
-	fmt.Println("\t ... --(",ARROW_DIRECTORY[l.A].Long,",",l.W,")->",to,l.Ctx)
+	fmt.Println("\t ... --(",ARROW_DIRECTORY[l.Arr].Long,",",l.Wgt,")->",to,l.Ctx)
 }
 
 //**************************************************************
@@ -976,14 +976,14 @@ func SearchIncidentRowClass(node NodeEventItem, searcharrows []ArrowPtr,node_lis
 	for sttype := range node.I {
 		for lnk := range node.I[sttype] {
 
-			arrowptr := node.I[sttype][lnk].A
+			arrowptr := node.I[sttype][lnk].Arr
 
 			for lnk := range node.I[sttype] {
 				if len(searcharrows) == 0 {
 					match := node.I[sttype][lnk]
 					row_nodes[match.Dst] = true
 					rc.Col = match.Dst
-					ret_weights[rc] += match.W
+					ret_weights[rc] += match.Wgt
 				} else {
 					for l := range searcharrows {
 						if arrowptr == searcharrows[l] {
@@ -991,7 +991,7 @@ func SearchIncidentRowClass(node NodeEventItem, searcharrows []ArrowPtr,node_lis
 							match := node.I[sttype][lnk]
 							row_nodes[match.Dst] = true
 							rc.Col = match.Dst
-							ret_weights[rc] += match.W
+							ret_weights[rc] += match.Wgt
 						}
 					}
 				}
@@ -1288,10 +1288,10 @@ func IdempAddArrow(from string, frptr NodeEventItemPtr, link Link,to string, top
 		os.Exit(-1)
 	}
 
-	if link.W != 1 {
-		Verbose("... Relation:",from,"--(",ARROW_DIRECTORY[link.A].Long,",",link.W,")->",to,link.Ctx)
+	if link.Wgt != 1 {
+		Verbose("... Relation:",from,"--(",ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")->",to,link.Ctx)
 	} else {
-		Verbose("... Relation:",from,"--",ARROW_DIRECTORY[link.A].Long,"->",to,link.Ctx)
+		Verbose("... Relation:",from,"--",ARROW_DIRECTORY[link.Arr].Long,"->",to,link.Ctx)
 	}
 
 	AppendLinkToNode(frptr,link,toptr)
@@ -1310,7 +1310,7 @@ func IdempAddTextToNode(s string) NodeEventItemPtr {
 	new_nodetext.S = s
 	new_nodetext.L = l
 	new_nodetext.Chap = SECTION_STATE
-	new_nodetext.C = c
+	new_nodetext.SizeClass = c
 
 	iptr := AppendTextToDirectory(new_nodetext)
 	LINE_ITEM_REFS = append(LINE_ITEM_REFS,iptr)
@@ -1398,7 +1398,7 @@ func AppendTextToDirectory(event NodeEventItem) NodeEventItemPtr {
 	var ok bool = false
 	var node_alloc_ptr NodeEventItemPtr
 
-	switch event.C {
+	switch event.SizeClass {
 	case N1GRAM:
 		cnode_slot,ok = NODE_DIRECTORY.N1grams[event.S]
 	case N2GRAM:
@@ -1413,14 +1413,14 @@ func AppendTextToDirectory(event NodeEventItem) NodeEventItemPtr {
 		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.GT1024,event)
 	}
 
-	node_alloc_ptr.Class = event.C
+	node_alloc_ptr.Class = event.SizeClass
 
 	if ok {
 		node_alloc_ptr.CPtr = cnode_slot
 		return node_alloc_ptr
 	}
 
-	switch event.C {
+	switch event.SizeClass {
 	case N1GRAM:
 		cnode_slot = NODE_DIRECTORY.N1_top
 		node_alloc_ptr.CPtr = cnode_slot
@@ -1477,7 +1477,7 @@ func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
 
 	frclass := frptr.Class
 	frm := frptr.CPtr
-	sttype := ARROW_DIRECTORY[link.A].STtype
+	sttype := ARROW_DIRECTORY[link.Arr].STtype
 
 	link.Dst = toptr // fill in the last part of the reference
 
@@ -1842,8 +1842,8 @@ func FindLinkAssociation(token string) Link {
 
 	var link Link
 
-	link.A = ptr
-	link.W = weight
+	link.Arr = ptr
+	link.Wgt = weight
 	link.Ctx = GetContext(ctx)
 	return link
 }
