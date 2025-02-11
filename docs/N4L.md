@@ -44,6 +44,7 @@ usage: go run N4L.go [-v] [-u] [-s] [file].dat
 For example, to parse and validate a file of notes, one can simply type:
 <pre>
 $ N4L chinese.in
+$ N4L chinese.in Mary.in kubernetes.in
 </pre>
 Any errors will be flagged for correction. Using verbose mode gives extensive
 commentary on the file, line by line:
@@ -237,18 +238,30 @@ of a quoted string.
 ## Sequence mode ##
 
 Sometimes it's useful to link items together into a chain or sequence.
-By adding the sequence directive to a context
+By adding the sequence directive to a context. From the example of the Mary had a little lamb above:
 <pre>
+
+$ more Mary.in
+
+-poetry
+
+ :: cutting edge, high brow ::
 
  +:: _sequence_ , poem ::   // starting sequence mode
 
- Mary had a little lamb         (note) Had means possessed not gave birth to
- Whose fleece was white as snow
- And everywhere that Mary went
+@title Mary had a little lamb  (note) Had means possessed not gave birth to
+              "                (written by) Mary's mum
 
- The lamb was sure to go        (note) SatNav invented later
+       Whose fleece was white as snow
+       And everywhere that Mary went
+
+       // no need to be contiguous
+
+       The lamb was sure to go        (note) SatNav invented later
 
  -:: _sequence_ ::          // ending sequence mode
+
+ $title.1 (example of) Nursery rhyme
 
 </pre>
 This results is a sequence of lines linked by `then' arrows, until the context is removed.
