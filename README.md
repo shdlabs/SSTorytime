@@ -27,10 +27,18 @@ what we have today.
 * [SSTorytelling](docs/Storytelling.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
 
+One of the goals of this project is t better understand what we call "reasoning".
+One used to think of reasoning, philosophically, as logical argumentation. As computers
+entered society we replaced this idea with actual first order logic. But, if you ask
+a teacher (and if we've learned anything from the Artificial Intelligence journey)
+then we realize that the way humans arrive at conclusions has a more complicated
+relationship to logic. We first decide emotionally, narrowly or expansively depending
+on our context, and then we try to formulate a "logical" story to support that.
+This is why we strive to study the role of stories in learning and understanding for this project.
 
 ## The tools
 
-The tool-set consistent of several components.
+The tool-set consistent of several components, starting with:
 
 * [N4L](docs/N4L.md) - a Unicode text based note taking language for jotting down notes in a way
         that can be parsed and loaded into a semantic database. 
