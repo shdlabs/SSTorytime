@@ -88,6 +88,7 @@ var (
 	LAST_IN_SEQUENCE string = ""
 
 	VERBOSE bool = false
+	DIAGNOSTIC bool = false
 	UPLOAD bool = false
 	SUMMARIZE bool = false
 	CREATE_ADJACENCY bool = false
@@ -267,6 +268,7 @@ func Init() []string {
 
 	flag.Usage = Usage
 	verbosePtr := flag.Bool("v", false,"verbose")
+	diagPtr := flag.Bool("d", false,"diagnostic mode")
 	uploadPtr := flag.Bool("u", false,"upload")
 	incidencePtr := flag.Bool("i", false,"incidence summary (node,links...)")
 	adjacencyPtr := flag.String("adj", "none", "a quoted, comma-separated list of short link names")
@@ -281,6 +283,11 @@ func Init() []string {
 
 	if *verbosePtr {
 		VERBOSE = true
+	}
+
+	if *diagPtr {
+		VERBOSE = true
+		DIAGNOSTIC = true
 	}
 
 	if *uploadPtr {
@@ -723,28 +730,28 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]NodeEventItemPtr,[][]float6
 
 func PrintMatrix(name string, dim int, key []NodeEventItemPtr, matrix [][]float64) {
 
-	if VERBOSE {
 
-		fmt.Println("\n",name,"...\n")
+	s := fmt.Sprintln("\n",name,"...\n")
+	Verbose(s)
+
+	for row := 0; row < dim; row++ {
 		
-		for row := 0; row < dim; row++ {
+		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",GetNodeFromPtr(key[row]))
+		
+		for col := 0; col < dim; col++ {
 			
-			fmt.Printf("%20.15s ..\r\t\t\t(",GetNodeFromPtr(key[row]))
+			const screenwidth = 12
 			
-			for col := 0; col < dim; col++ {
-				
-				const screenwidth = 12
-				
-				if col > screenwidth {
-					fmt.Print("\t...")
-					break
-				} else {
-					fmt.Printf("  %4.1f",matrix[row][col])
-				}
-				
+			if col > screenwidth {
+				s += fmt.Sprint("\t...")
+				break
+			} else {
+				s += fmt.Sprintf("  %4.1f",matrix[row][col])
 			}
-			fmt.Println(")")
+			
 		}
+		s += fmt.Sprint(")")
+		Verbose(s)
 	}
 }
 
@@ -752,16 +759,15 @@ func PrintMatrix(name string, dim int, key []NodeEventItemPtr, matrix [][]float6
 
 func PrintNZVector(name string, dim int, key []NodeEventItemPtr, vector[]float64) {
 
-	if VERBOSE {
+	s := fmt.Sprintln("\n",name,"...\n")
+	Verbose(s)
 
-		fmt.Println("\n",name,"...\n")
-		
-		for row := 0; row < dim; row++ {
-			if vector[row] > 0.1 {
-				fmt.Printf("%20.15s ..\r\t\t\t(",GetNodeFromPtr(key[row]))			
-				fmt.Printf("  %4.1f",vector[row])
-				fmt.Println(")")
-			}
+	for row := 0; row < dim; row++ {
+		if vector[row] > 0.1 {
+			s = fmt.Sprintf("%20.15s ..\r\t\t\t(",GetNodeFromPtr(key[row]))			
+			s += fmt.Sprintf("  %4.1f",vector[row])
+			s += fmt.Sprint(")")
+			Verbose(s)
 		}
 	}
 }
@@ -880,7 +886,7 @@ func Agg(i int) int {
 func PrintLink(l Link) {
 
 	to := GetNodeFromPtr(l.Dst)
-	fmt.Println("\t ... --(",ARROW_DIRECTORY[l.Arr].Long,",",l.Wgt,")->",to,l.Ctx)
+	Verbose("\t ... --(",ARROW_DIRECTORY[l.Arr].Long,",",l.Wgt,")->",to,l.Ctx)
 }
 
 //**************************************************************
@@ -1198,7 +1204,7 @@ func ClassifyTokenRole(token string) {
 		CheckLineAlias(token[1:])
 		actual := ResolveAliasedItem(token)
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],actual)
-		Verbose("fyi, line reference",token,"resolved to",actual)
+		PVerbose("fyi, line reference",token,"resolved to",actual)
 		AssessGrammarCompletions(actual,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_LOOKUP
 		LINE_ITEM_COUNTER++
@@ -1244,11 +1250,11 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		ContextEval(this_item,"=")
 
 	case ROLE_CONTEXT_ADD:
-		Verbose("Add to context:",this_item)
+		PVerbose("Add to context:",this_item)
 		ContextEval(this_item,"+")
 
 	case ROLE_CONTEXT_SUBTRACT:
-		Verbose("Remove from context:",this_item)
+		PVerbose("Remove from context:",this_item)
 		ContextEval(this_item,"-")
 
 	case ROLE_SECTION:
@@ -1289,9 +1295,9 @@ func IdempAddArrow(from string, frptr NodeEventItemPtr, link Link,to string, top
 	}
 
 	if link.Wgt != 1 {
-		Verbose("... Relation:",from,"--(",ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")->",to,link.Ctx)
+		PVerbose("... Relation:",from,"--(",ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")->",to,link.Ctx)
 	} else {
-		Verbose("... Relation:",from,"--",ARROW_DIRECTORY[link.Arr].Long,"->",to,link.Ctx)
+		PVerbose("... Relation:",from,"--",ARROW_DIRECTORY[link.Arr].Long,"->",to,link.Ctx)
 	}
 
 	AppendLinkToNode(frptr,link,toptr)
@@ -1301,7 +1307,7 @@ func IdempAddArrow(from string, frptr NodeEventItemPtr, link Link,to string, top
 
 func IdempAddTextToNode(s string) NodeEventItemPtr {
 
-	Verbose("Event/item/node:",s)
+	PVerbose("Event/item/node:",s)
 
 	l := len(s)
 	c := ClassifyString(s,l)
@@ -1759,12 +1765,12 @@ func CheckSequenceMode(context string, mode rune) {
 
 		switch mode {
 		case '+':
-			Verbose("\nStart sequence mode for items")
+			PVerbose("\nStart sequence mode for items")
 			SEQUENCE_MODE = true
 			LAST_IN_SEQUENCE = ""
 
 		case '-':
-			Verbose("End sequence mode for items\n")
+			PVerbose("End sequence mode for items\n")
 			SEQUENCE_MODE = false
 		}
 	}
@@ -1779,7 +1785,7 @@ func LinkSequence(this string) {
 
 		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
 			
-			Verbose("... Sequence addition:",LAST_IN_SEQUENCE,SEQUENCE_RELN,"->",this)
+			PVerbose("... Sequence addition:",LAST_IN_SEQUENCE,SEQUENCE_RELN,"->",this)
 			
 			last_iptr := IdempAddTextToNode(LAST_IN_SEQUENCE)
 			this_iptr := IdempAddTextToNode(this)
@@ -2189,8 +2195,15 @@ func Usage() {
 
 func Verbose(a ...interface{}) {
 
+	line := fmt.Sprintln(a...)
+	
+	if DIAGNOSTIC {
+		AppendStringToFile(TEST_DIAG_FILE,line)
+	}
+
+
 	if VERBOSE {
-		fmt.Println(a...)
+		fmt.Print(line)
 	}
 }
 
@@ -2206,8 +2219,6 @@ func PVerbose(a ...interface{}) {
 		fmt.Println(a...)
 		fmt.Print(endgreen)
 	}
-
-	Diag(a...)
 }
 
 //**************************************************************
@@ -2226,7 +2237,7 @@ func Box(a ...interface{}) {
 
 func DiagnosticName(filename string) string {
 
-	return filename+"_test_log"
+	return "test_output/"+filename+"_test_log"
 
 }
 
@@ -2236,14 +2247,20 @@ func Diag(a ...interface{}) {
 
 	// Log diagnostic output for self-diagnostic tests
 
-	prefix := fmt.Sprint(LINE_NUM,":")
-	s := fmt.Sprintln(a...)
-	AppendStringToFile(TEST_DIAG_FILE,prefix+s)
+	if DIAGNOSTIC {
+		s := fmt.Sprintln(a...)
+		prefix := fmt.Sprint(LINE_NUM,":")
+		AppendStringToFile(TEST_DIAG_FILE,prefix+s)
+	}
 }
 
 //**************************************************************
 
 func AppendStringToFile(name string, s string) {
+
+	// strip out \r that mess up the file format but are useful for term
+
+	san := strings.Replace(s,"\r","",-1)
 
 	f, err := os.OpenFile(name,os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 
@@ -2252,7 +2269,7 @@ func AppendStringToFile(name string, s string) {
 		return
 	}
 
-	_, err = f.WriteString(s)
+	_, err = f.WriteString(san)
 
 	if err != nil {
 		fmt.Println("Couldn't write/append to",name,err)
