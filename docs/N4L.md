@@ -388,13 +388,90 @@ discipline in thinking about what the functions of terms are.
 
 ## Examples and pitfalls in modelling
 
+Not all relation types are as obvious as we may think:
+Look at the example of friendship, which has inverse like this:
+<pre>
+
+ + has friend (frnd) - is a friend of (isfrnd)
+
+</pre>
+What type is this? Is friendship a mutual property (friends with) or is it a
+personal judgement that might not be receiprocated (considers a friend)?
+If we don't assume mutual friendship, we have a more powerful abiility to
+encode individual beliefs:
+<pre>
+- properties   # NOT similarity/proximity
+
+ + has friend (frnd) - is a friend of (isfrnd)
+
+</pre>
+If we want to enocde mutual friendship, we simply declare the relation
+both ways, but we don't have to assume that:
+<pre>
+
+-friends
+
+ John (wrote) Mary had a little lamb
+
+ Mary (frnd) Little Lamb
+
+ Little Lamb (frnd) Shawn
+ Shawn Little (frnd) Lamb
+
+ Shawn (is a friend of) Team Wallace and Gromit
+
+ Team Wallace and Gromit (has member) Wallace
+           "             (memb) Gromit
+
+</pre>
+If we parse this, we now see
+<pre>
+- including search pathway STtype Express -> has friend
+   including inverse meaning is a friend of
+    - row/col key [ 0 / 6 ] Shawn Little
+    - row/col key [ 1 / 6 ] Little Lamb
+    - row/col key [ 2 / 6 ] Mary
+    - row/col key [ 3 / 6 ] Team Wallace and Gromit
+    - row/col key [ 4 / 6 ] Shawn
+    - row/col key [ 5 / 6 ] Lamb
+
+ directed adjacency sub-matrix ...
+
+        Shawn Little .. (   0.0   0.0   0.0   0.0   0.0   1.0)
+         Little Lamb .. (   0.0   0.0   0.0   0.0   1.0   0.0)
+                Mary .. (   0.0   1.0   0.0   0.0   0.0   0.0)
+     Team Wallace an .. (   0.0   0.0   0.0   0.0   0.0   0.0)
+               Shawn .. (   0.0   0.0   0.0   1.0   0.0   0.0)
+                Lamb .. (   0.0   0.0   0.0   0.0   0.0   0.0)
+
+ undirected adjacency sub-matrix ...
+
+        Shawn Little .. (   0.0   0.0   0.0   0.0   0.0   1.0)
+         Little Lamb .. (   0.0   0.0   1.0   0.0   1.0   0.0)
+                Mary .. (   0.0   1.0   0.0   0.0   0.0   0.0)
+     Team Wallace an .. (   0.0   0.0   0.0   0.0   1.0   0.0)
+               Shawn .. (   0.0   1.0   0.0   1.0   0.0   0.0)
+                Lamb .. (   1.0   0.0   0.0   0.0   0.0   0.0)
+
+ Eigenvector centrality score for symmetrized graph ...
+
+        Shawn Little .. (   0.1)
+         Little Lamb .. (   1.0)
+                Mary .. (   0.6)
+     Team Wallace an .. (   0.6)
+               Shawn .. (   1.0)
+                Lamb .. (   0.1)
+
+</pre>
+By computing both directed and undirected matrices automatically, N4L allows us to
+compare the effects of this modelling difference. In general, it's best not to assume
+mutual relationships, as these can easily be symmetrized but undoing mutuality is hard.
 
 When we say that A follows B, this may apply to things or actions.
 * Space travel came after aircraft. 
 * Shopping is done after work.
 * Hammering is done after assembly.
 Order applies to both processes and objects.
-
 
 We could imagine a supply-chain worker noting:
 <pre>

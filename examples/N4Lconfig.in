@@ -80,6 +80,7 @@
  + swallows (sw)       - is swallowed by (swby)
  + consists of (cons)  - is part of (pt)
  + has example (hasex) - example of (ex)
+ + has member (memb) - belongs to (belong)
 
  + owns (owns) - is owned by (ownby)
  + rents (rents) - is rented by (rentby)
@@ -104,6 +105,7 @@
  + means (means)             - is meant by (meansb)
  + is pronounced as (pronas) - is the pronunciation for (pronof)
  + is short for (short for)  - can be shortened to (shorter)
+ + has friend (frnd) - is a friend of (isfrnd)
 
  # Here we see type classifiers in action
 
