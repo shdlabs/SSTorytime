@@ -1,15 +1,15 @@
 
 # Source code for the N4L knowledge representation
 
-Some notes on the source code
+Some notes on the source code:
 
 ## `N4L.go` 
 
 This program promises:
 
--To parse a configuration file in the current directory to define some reusable terms
--To parse a knowledge file of "notes" and convert into a graph
--To output the summary as text or upload data to a Postgres database
+* To parse a configuration file in the current directory to define some reusable terms
+* To parse a knowledge file of "notes" and convert into a graph
+* To output the summary as text or upload data to a Postgres database
 
 The nodes (or vertices) of the graph are blobs of text, which might be
 anything from a single word to a long passage pasted in from
