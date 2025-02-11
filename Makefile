@@ -6,8 +6,8 @@ test: src/N4L
 	(cd src; make)
 	(cd tests; make)
 clean:
-	(cd src;	rm N4L)
-	(cd examples; rm *_test_log *~)
+	(cd src; make clean)
+	(cd examples; make clean)
 
 % : %.go
 	go build $<

@@ -1,4 +1,4 @@
 
 clean:
-	rm *_test_log
+	rm -f *_test_log
 

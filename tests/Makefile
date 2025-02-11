@@ -3,4 +3,6 @@ all:
 	/bin/sh ./run_tests
 
 clean:
-	rm *_test_log
+	rm -f *_test_log
+	rm -f *~
+
