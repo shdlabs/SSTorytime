@@ -683,12 +683,13 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]NodeEventItemPtr,[][]float6
 	dim := len(filtered_node_list)
 
 	for f := 0; f < len(filtered_node_list); f++ {
-		Verbose("    - row/col key [",f,"]",GetNodeFromPtr(filtered_node_list[f]),"of",dim)
+		Verbose("    - row/col key [",f,"/",dim,"]",GetNodeFromPtr(filtered_node_list[f]))
 	}
 
-	for f := range path_weights {
-		Verbose("    - path weight",path_weights[f],"from",GetNodeFromPtr(f.Row),"to",GetNodeFromPtr(f.Col))
-	}
+	// Debugging mainly
+	//for f := range path_weights {
+	//	Verbose("    - path weight",path_weights[f],"from",GetNodeFromPtr(f.Row),"to",GetNodeFromPtr(f.Col))
+	//}
 
 	var subadj_matrix [][]float64 = make([][]float64,dim)
 	var symadj_matrix [][]float64 = make([][]float64,dim)

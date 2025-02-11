@@ -74,6 +74,121 @@ This extracts a sub-graph from the total graph. It can be quite effective,
 because most knowledge graphs are only sparsely linked (which is why logical
 searches tend to yield nothing of interest).
 
+In verbose mode, the standard output shows a summary of the text (events or items, etc)
+and an excerpt of the adjacency matrix.
+<pre>
+
+$ N4L -v -i -adj="" Mary.in
+
+
+------------------------------------
+SUMMARIZE GRAPH.....
+
+------------------------------------
+
+0        Mary's mum
+
+1        Nursery rhyme
+
+0        SatNav invented later
+
+0        Mary had a little lamb
+         ... --( example of , 1 )-> Nursery rhyme [cutting edge high brow poem]
+         ... --( written by , 1 )-> Mary's mum [poem cutting edge high brow _sequence_]
+         ... --( then the next is , 1 )-> Whose fleece was white as snow [poem cutting edge high brow _sequence_]
+         ... --( note/remark , 1 )-> Had means possessed not gave birth to [_sequence_ poem cutting edge high brow]
+
+1        Had means possessed not gave birth to
+
+2        Whose fleece was white as snow
+         ... --( then the next is , 1 )-> And everywhere that Mary went [poem cutting edge high brow _sequence_]
+
+3        And everywhere that Mary went
+         ... --( then the next is , 1 )-> The lamb was sure to go [cutting edge high brow _sequence_ poem]
+
+4        The lamb was sure to go
+         ... --( note/remark , 1 )-> SatNav invented later [cutting edge high brow _sequence_ poem]
+
+-------------------------------------
+Incidence summary of raw declarations
+-------------------------------------
+Total nodes 8
+Total directed links of type Near 0
+Total directed links of type LeadsTo 4
+Total directed links of type Contains 1
+Total directed links of type Express 2
+Total links 7 sparseness (fraction of completeness) 0.125
+    - row/col key [ 0 / 8 ] Had means possessed not gave birth to
+    - row/col key [ 1 / 8 ] SatNav invented later
+    - row/col key [ 2 / 8 ] The lamb was sure to go
+    - row/col key [ 3 / 8 ] Mary had a little lamb
+    - row/col key [ 4 / 8 ] Whose fleece was white as snow
+    - row/col key [ 5 / 8 ] Nursery rhyme
+    - row/col key [ 6 / 8 ] And everywhere that Mary went
+    - row/col key [ 7 / 8 ] Mary's mum
+
+ directed adjacency sub-matrix ...
+
+     Had means posse .. (   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+     SatNav invented .. (   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+     The lamb was su .. (   0.0   1.0   0.0   0.0   0.0   0.0   0.0   0.0)
+     Mary had a litt .. (   1.0   0.0   0.0   0.0   1.0   1.0   0.0   1.0)
+     Whose fleece wa .. (   0.0   0.0   0.0   0.0   0.0   0.0   1.0   0.0)
+       Nursery rhyme .. (   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+     And everywhere  .. (   0.0   0.0   1.0   0.0   0.0   0.0   0.0   0.0)
+          Mary's mum .. (   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+
+ undirected adjacency sub-matrix ...
+
+     Had means posse .. (   0.0   0.0   0.0   1.0   0.0   0.0   0.0   0.0)
+     SatNav invented .. (   0.0   0.0   1.0   0.0   0.0   0.0   0.0   0.0)
+     The lamb was su .. (   0.0   1.0   0.0   0.0   0.0   0.0   1.0   0.0)
+     Mary had a litt .. (   1.0   0.0   0.0   0.0   1.0   1.0   0.0   1.0)
+     Whose fleece wa .. (   0.0   0.0   0.0   1.0   0.0   0.0   1.0   0.0)
+       Nursery rhyme .. (   0.0   0.0   0.0   1.0   0.0   0.0   0.0   0.0)
+     And everywhere  .. (   0.0   0.0   1.0   0.0   1.0   0.0   0.0   0.0)
+          Mary's mum .. (   0.0   0.0   0.0   1.0   0.0   0.0   0.0   0.0)
+
+ Eigenvector centrality score for symmetrized graph ...
+
+     Had means posse .. (   0.7)
+     SatNav invented .. (   0.2)
+     The lamb was su .. (   0.4)
+     Mary had a litt .. (   0.9)
+     Whose fleece wa .. (   1.0)
+       Nursery rhyme .. (   0.7)
+     And everywhere  .. (   0.5)
+          Mary's mum .. (   0.7)
+
+</pre>
+A useful ranking of nodes (known as EVC, or Eigenvector Centrality, which is something like Google's PageRank) 
+can be calculated from the weighted graph matrix (see below). The higher the score number, the more
+interconnected or "important" a term of text is, e.g.
+<pre>
+$ ../src/N4L -v -i -adj="" chinese.in
+
+  ...
+
+ Eigenvector centrality score for symmetrized graph ...
+
+            Fángjiān .. (   0.3)
+             jiàoshì .. (   0.8)
+              Kètáng .. (   0.2)
+                   教室 .(   0.2)
+     place/area/dist .. (   0.1)
+                   表现 .(   0.7)
+            Biǎoxiàn .. (  0.6)
+                   课堂 .(   0.8)
+         performance .. (   0.5)
+                   房间 .(   0.3)
+                   地方 .(   0.2)
+                   表演 .(   0.1)
+           classroom .. (   1.0)
+                room .. (   0.2)
+              Dìfāng .. (   0.3)
+
+</pre>
+
 ## Language syntax
 
 <pre>
