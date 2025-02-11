@@ -506,9 +506,9 @@ For instance, now we can explain the event further:
 
 ### The "is a" fallacy
 
-During the OO-movement to sanctify Object Orientation as a software modelling approach, many
-superifical ideas were proposed. Object Orientation rubber stamps
-the idea that objects, i.e. "things" are the most important entities in a model, 
+During the OO-movement to sanctify Object Orientation as a software modelling approach, 
+Object Orientation rubber stamped
+the idea that objects, i.e. "things" (rather than processes or activities) are the most important concept in a model, 
 leaving *processes* asking: what am I 
 then? (The answer was usually that processes should be thought of as methods that affect
 objects, which is extremely limiting.)
