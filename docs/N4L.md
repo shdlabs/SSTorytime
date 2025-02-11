@@ -347,6 +347,12 @@ Here are the four types:
 * 2 **contains   / contains** something is a part of something else (boxes in boxes)
 * 3 **properties / express** something just has a name or an attribute (descriptive)
 
+For example:
+* 0 - A (sounds like) B, or B (sounds like) A
+* 1 - A (causes) B , or B (is caused by) A
+* 2 - A (is the boss of) B, or B (has boss) A
+* 3 - A (has a degree in) B, B (is a qualification of) A
+
 *(Technical note the use of integers allows us to use signs for orientation.
 Similarity is directionless 0 = -0; for the others there is a difference between
 positive and negative inverses.)*
