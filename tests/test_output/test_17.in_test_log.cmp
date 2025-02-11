@@ -1,0 +1,47 @@
+    - row/col key [ 0 / 10 ] Team Wallace and Gromit
+    - row/col key [ 1 / 10 ] John
+    - row/col key [ 2 / 10 ] Shawn
+    - row/col key [ 3 / 10 ] Wallace
+    - row/col key [ 4 / 10 ] Gromit
+    - row/col key [ 5 / 10 ] Lamb
+    - row/col key [ 6 / 10 ] Shawn Little
+    - row/col key [ 7 / 10 ] Mary
+    - row/col key [ 8 / 10 ] Mary had a little lamb
+    - row/col key [ 9 / 10 ] Little Lamb
+
+ directed adjacency sub-matrix ...
+
+
+     Team Wallace an ..			(   0.0   0.0   0.0   2.0   2.0   0.0   0.0   0.0   0.0   0.0)
+                John ..			(   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   1.0   0.0)
+               Shawn ..			(   1.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+             Wallace ..			(   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+              Gromit ..			(   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+                Lamb ..			(   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+        Shawn Little ..			(   0.0   0.0   0.0   0.0   0.0   1.0   0.0   0.0   0.0   0.0)
+                Mary ..			(   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   1.0)
+     Mary had a litt ..			(   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+         Little Lamb ..			(   0.0   0.0   1.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+
+ undirected adjacency sub-matrix ...
+
+
+     Team Wallace an ..			(   0.0   0.0   1.0   2.0   2.0   0.0   0.0   0.0   0.0   0.0)
+                John ..			(   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   1.0   0.0)
+               Shawn ..			(   1.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   1.0)
+             Wallace ..			(   2.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+              Gromit ..			(   2.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+                Lamb ..			(   0.0   0.0   0.0   0.0   0.0   0.0   1.0   0.0   0.0   0.0)
+        Shawn Little ..			(   0.0   0.0   0.0   0.0   0.0   1.0   0.0   0.0   0.0   0.0)
+                Mary ..			(   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   1.0)
+     Mary had a litt ..			(   0.0   1.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0)
+         Little Lamb ..			(   0.0   0.0   1.0   0.0   0.0   0.0   0.0   1.0   0.0   0.0)
+
+ Eigenvector centrality score for symmetrized graph ...
+
+
+     Team Wallace an ..			(   1.0)
+               Shawn ..			(   0.6)
+             Wallace ..			(   1.0)
+              Gromit ..			(   1.0)
+         Little Lamb ..			(   0.1)

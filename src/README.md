@@ -92,14 +92,17 @@ STtypes. Incoming links have negative STtypes. Thus each node acts as a multiway
 index at each node) for immediate lookup.
 
 <pre>
-type NodeEventItem struct {   // essentially the incidence matrix
+
+type NodeEventItem struct { // essentially the incidence matrix
 
 	L int                 // length of name string
 	S string              // name string itself
-	C int                 // the string class: N1-N3, LT128, etc
+
+	Chap string           // section/chapter in which this was added
+	SizeClass int         // the string class: N1-N3, LT128, etc
 	NPtr NodeEventItemPtr // Pointer to self
 
-	A [ST_TOP][]Link   // link incidence list, by arrow type
+	I [ST_TOP][]Link   // link incidence list, by arrow type
   	                   // NOTE: carefully how offsets represent negative SSTtypes
 }
 

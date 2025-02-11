@@ -1,0 +1,122 @@
+11:fwd arrow in leadsto + forwards
+11:bwd arrow in leadsto - backwards
+12:fwd arrow in leadsto + affects
+12:bwd arrow in leadsto - affected by
+13:fwd arrow in leadsto + causes
+13:bwd arrow in leadsto - is caused by
+14:fwd arrow in leadsto + leads to
+14:bwd arrow in leadsto - comes from
+15:fwd arrow in leadsto + is followed by
+15:bwd arrow in leadsto - is preceded by
+16:fwd arrow in leadsto + then the next is
+16:bwd arrow in leadsto - previous
+18:fwd arrow in leadsto + intends
+18:bwd arrow in leadsto - is the intent of
+19:fwd arrow in leadsto + proposed
+19:bwd arrow in leadsto - proposed by
+20:fwd arrow in leadsto + decided
+20:bwd arrow in leadsto - decided by
+21:fwd arrow in leadsto + spoke to
+21:bwd arrow in leadsto - was spoken to by
+23:fwd arrow in leadsto + implements
+23:bwd arrow in leadsto - was implemented by
+24:fwd arrow in leadsto + named after
+24:bwd arrow in leadsto - inspired the name
+27:fwd arrow in leadsto + succeeded by
+27:bwd arrow in leadsto - preceded by
+28:fwd arrow in leadsto + comes before
+28:bwd arrow in leadsto - comes after
+35:fwd arrow in leadsto + "positive
+35:bwd arrow in leadsto - "negative
+39:fwd arrow in leadsto + results in
+39:bwd arrow in leadsto - comes from
+40:fwd arrow in leadsto + depends on
+40:bwd arrow in leadsto - drives
+41:fwd arrow in leadsto + influences
+41:bwd arrow in leadsto - is influenced by
+42:fwd arrow in leadsto + supports
+42:bwd arrow in leadsto - is supported by
+44:fwd arrow in leadsto + wrote
+44:bwd arrow in leadsto - written by
+45:fwd arrow in leadsto + invented
+45:bwd arrow in leadsto - invented by
+56:fwd arrow in leadsto + supplies
+56:bwd arrow in leadsto - is supplied by
+57:fwd arrow in leadsto + delivered to
+57:bwd arrow in leadsto - delivery address for
+59:fwd arrow in leadsto + handles
+59:bwd arrow in leadsto - is handled by
+60:fwd arrow in leadsto + coordinates
+60:bwd arrow in leadsto - is coordinated by
+64:fwd arrow in leadsto + english for pinyin
+64:bwd arrow in leadsto - pinyin for english
+65:fwd arrow in leadsto + pinyin for hanzi
+65:bwd arrow in leadsto - hanzi for pinyin
+66:fwd arrow in leadsto + hanzi for english
+66:bwd arrow in leadsto - english for hanzi
+67:fwd arrow in leadsto + english for Norwegian
+67:bwd arrow in leadsto - Norwegian for english
+68:fwd arrow in leadsto + english to norsk
+68:bwd arrow in leadsto - norsk to english
+75:fwd arrow in contains + has component
+75:bwd arrow in contains - is component of
+76:fwd arrow in contains + contains
+76:bwd arrow in contains - is within
+77:fwd arrow in contains + is a set of
+77:bwd arrow in contains - is part of set
+78:fwd arrow in contains + contains
+78:bwd arrow in contains - is an element of
+79:fwd arrow in contains + subsumes
+79:bwd arrow in contains - is subsumed by
+80:fwd arrow in contains + swallows
+80:bwd arrow in contains - is swallowed by
+81:fwd arrow in contains + consists of
+81:bwd arrow in contains - is part of
+82:fwd arrow in contains + has example
+82:bwd arrow in contains - example of
+83:fwd arrow in contains + has member
+83:bwd arrow in contains - belongs to
+85:fwd arrow in contains + owns
+85:bwd arrow in contains - is owned by
+86:fwd arrow in contains + rents
+86:bwd arrow in contains - is rented by
+88:fwd arrow in contains + occurs in the context of
+88:bwd arrow in contains - is a possible context for
+90:fwd arrow in contains + employer of
+90:bwd arrow in contains - is employed at
+92:fwd arrow in contains + based in
+92:bwd arrow in contains - is the home of
+103:fwd arrow in properties + expresses
+103:bwd arrow in properties - is expressed by
+104:fwd arrow in properties + has property
+104:bwd arrow in properties - is a property of
+105:fwd arrow in properties + means
+105:bwd arrow in properties - is meant by
+106:fwd arrow in properties + is pronounced as
+106:bwd arrow in properties - is the pronunciation for
+107:fwd arrow in properties + is short for
+107:bwd arrow in properties - can be shortened to
+108:fwd arrow in properties + has friend
+108:bwd arrow in properties - is a friend of
+112:fwd arrow in properties + is called
+112:bwd arrow in properties - name of
+114:fwd arrow in properties + may have state
+114:bwd arrow in properties - is a possible state of
+115:fwd arrow in properties + may have value
+115:bwd arrow in properties - is a possible value for
+117:fwd arrow in properties + note/remark
+117:bwd arrow in properties - is a note or remark about
+119:fwd arrow in properties + stands for
+119:bwd arrow in properties - is a case of
+120:fwd arrow in properties + refers to
+120:bwd arrow in properties - may be referred to as
+121:fwd arrow in properties + has role
+121:bwd arrow in properties - is the role of
+122:fwd arrow in properties + has employment status
+122:bwd arrow in properties - employment status of
+126:fwd arrow in properties + is in condition
+126:bwd arrow in properties - condition of
+152:Markup character defined in annotations +
+153:Markup character defined in annotations =
+154:Markup character defined in annotations *
+156:Markup character defined in annotations >

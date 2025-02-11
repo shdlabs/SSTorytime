@@ -5,11 +5,13 @@
 # For now, as things are changing, tests need to be run manually
 #
 
-PROG="../src/N4L -v"
+PROG="../src/N4L -v -d -adj=all"
+
+rm -f test_outputs/*
 
 # test_1 no section error - fail
 
-if $PROG test_1.in > test_1.out; 
+if $PROG test_1.in > test_output/test_1.out; 
 then 
 delta="`diff test_1.out test_1.cmp`"
 if [$delta -eq ""]; then
