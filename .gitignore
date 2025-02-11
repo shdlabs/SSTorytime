@@ -7,8 +7,6 @@
 *.bak
 .deps
 .libs
-Makefile
-Makefile.in
 stamp-h1
 
 /aclocal.m4
