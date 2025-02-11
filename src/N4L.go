@@ -88,6 +88,7 @@ var (
 	LAST_IN_SEQUENCE string = ""
 
 	VERBOSE bool = false
+	UPLOAD bool = false
 	SUMMARIZE bool = false
 	CREATE_ADJACENCY bool = false
 	ADJ_LIST string
@@ -266,6 +267,7 @@ func Init() []string {
 
 	flag.Usage = Usage
 	verbosePtr := flag.Bool("v", false,"verbose")
+	uploadPtr := flag.Bool("u", false,"upload")
 	incidencePtr := flag.Bool("i", false,"incidence summary (node,links...)")
 	adjacencyPtr := flag.String("adj", "none", "a quoted, comma-separated list of short link names")
 
@@ -279,6 +281,10 @@ func Init() []string {
 
 	if *verbosePtr {
 		VERBOSE = true
+	}
+
+	if *uploadPtr {
+		UPLOAD = true
 	}
 
 	if *incidencePtr {
@@ -2173,7 +2179,7 @@ func ReadTUF8File(filename string) []rune {
 
 func Usage() {
 	
-	fmt.Printf("usage: go run N4L.go [-v] [-s] [file].dat\n")
+	fmt.Printf("usage: go run N4L.go [-v] [-u] [-s] [file].dat\n")
 	flag.PrintDefaults()
 	os.Exit(2)
 }

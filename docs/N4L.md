@@ -25,6 +25,55 @@ Without any structure, it's only guesswork to
 understand intent. N4L is a compromise that allows you to use any kind of
 familiar editor to write notes in pure text (Unicode).
 
+## Command line tool
+
+The N4L tool ingests a file of "notes" written in a simple language
+and turns it into a machine representation in the form of a "Semantic Spacetime" graph
+ (a form of knowledge graph). This format is only tangentially related to the
+ usual Resource Description Framework (RDF)), so we shall not use of
+ refer to RDF in what follows, except to occasionally clarify the distinction. 
+The command options currently include:
+<pre>
+usage: go run N4L.go [-v] [-u] [-s] [file].dat
+  -adj string
+        a quoted, comma-separated list of short link names (default "none")
+  -i    incidence summary (node,links...)
+  -u    upload
+  -v    verbose
+</pre>
+For example, to parse and validate a file of notes, one can simply type:
+<pre>
+$ N4L chinese.in
+</pre>
+Any errors will be flagged for correction. Using verbose mode gives extensive
+commentary on the file, line by line:
+<pre>
+$ N4L -v chinese.in
+</pre>
+The final goal will normally be to upload the contents of the file to a database:
+<pre>
+$ N4L -u chinese.in
+</pre>
+However, before that, there are several operations than can be performed more efficiently
+just from the command line for many data sets. This is because most knowledge input
+is quite small in size, and quick feedback is very useful for ironing out flaws
+and improving your source note material.
+
+We can look at the subset of notes that are related by
+a certain kind of relation, using abbreviated labels for relations. 
+For example, to look for items linked by relation "(pe)" (which stands
+for Pinyin to Hanzi translation) in a file of Chinese language, we could write:
+<pre>
+$ N4L -v -i -adj="pe" chinese.in
+</pre>
+We can add other kinds of relation too to expand the set:
+<pre>
+$ N4L -v -i -adj="pe,he" chinese.in
+</pre>
+This extracts a sub-graph from the total graph. It can be quite effective,
+because most knowledge graphs are only sparsely linked (which is why logical
+searches tend to yield nothing of interest).
+
 ## Language syntax
 
 <pre>
