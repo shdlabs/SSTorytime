@@ -22,7 +22,8 @@ import (
 
 const (
 	ALPHATEXT = 'x'
-
+	NON_ASCII_LQUOTE = '“'
+	NON_ASCII_RQUOTE = '”'
         HAVE_PLUS = 11
         HAVE_MINUS = 22
 	ROLE_ABBR = 33
@@ -48,7 +49,7 @@ const (
 	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
-	WARN_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
+	ERR_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
 	ERR_ANNOTATION_TOO_LONG = "Annotation marker should be a single non-alphnumeric character "
 	ERR_BAD_ABBRV = "abbreviation out of place"
 	ERR_BAD_ALIAS_REFERENCE = "Alias references start from $name.1"
@@ -1107,14 +1108,17 @@ func GetToken(src []rune, pos int) (string,int) {
 	case '(':
 		token,pos = ReadToLast(src,pos,')')
 
-        case '"','\'':
+        case '"':
+
 		quote := src[pos]
-		if quote == '"' && IsBackReference(src,pos) {
+
+		if IsQuote(quote) && IsBackReference(src,pos) {
 			token = "\""
 			pos++
 		} else {
 			if pos+2 < len(src) && IsWhiteSpace(src[pos+1],src[pos+2]) {
-				ParseError(WARN_ILLEGAL_QUOTED_STRING_OR_REF)
+				ParseError(ERR_ILLEGAL_QUOTED_STRING_OR_REF)
+				os.Exit(-1)
 			}
 			token,pos = ReadToLast(src,pos,quote)
 			strip := strings.Split(token,string(quote))
@@ -1532,7 +1536,18 @@ func LinearFindText(in []NodeEventItem,event NodeEventItem) (ClassedNodePtr,bool
 
 func ReadFile(filename string) []rune {
 
-	return ReadTUF8File(filename)
+	text := ReadTUF8File(filename)
+
+	// clean unicode nonsense
+
+	for r := range text {
+		switch text[r] {
+		case NON_ASCII_LQUOTE,NON_ASCII_RQUOTE:
+			text[r] = '"'
+		}
+	}
+
+	return text
 }
 
 
@@ -1566,7 +1581,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 
 	// Quoted strings are tricky
 
-	if stop == '"' || stop == '\'' {
+	if IsQuote(stop) {
 		var is_end bool
 
 		if pos+1 >= len(src) {
@@ -1592,7 +1607,7 @@ func Collect(src []rune,pos int, stop rune,cpy []rune) bool {
 	} else {
 		// a ::: cluster is special, we don't care how many
 
-		if stop != ':' && stop != '"' { 
+		if stop != ':' && !IsQuote(stop) { 
 			return !LastSpecialChar(src,pos,stop)
 		} else {
 			var groups int = 0
@@ -1637,6 +1652,41 @@ func IsGeneralString(src []rune,pos int) bool {
 	}
 
 	return true
+}
+
+//**************************************************************
+
+func IsQuote(r rune) bool {
+
+	switch r {
+	case '"','\'',NON_ASCII_LQUOTE,NON_ASCII_RQUOTE:
+		return true
+	}
+
+	return false
+}
+
+//**************************************************************
+
+func MatchingQuote(r,s rune) rune {
+
+	// Eliminate non-asci quotes
+
+	switch r {
+
+	case '"',NON_ASCII_LQUOTE,NON_ASCII_RQUOTE:
+		if s == '"' || s == NON_ASCII_LQUOTE || s == NON_ASCII_RQUOTE {
+			return '"'
+		}
+
+	case '\'':
+		if s == '\'' {
+			return s
+		}
+
+	}
+
+	return s
 }
 
 //**************************************************************
@@ -2109,7 +2159,6 @@ func CheckNonNegative(i int) {
 
 func CheckSection() {
 
-	fmt.Println("CCCCCCCCCCCCCCCCCCCCCC",SECTION_STATE)
 	if len(SECTION_STATE) == 0 {
 		ParseError(ERR_MISSING_SECTION)
 		os.Exit(-1)
