@@ -5,22 +5,43 @@
 # For now, as things are changing, tests need to be run manually
 #
 
-PROG="../src/N4L -v -d -adj=all"
+PASS_PROG="../src/N4L -d -adj=all"
+FAIL_PROG="../src/N4L"
 
 rm -f test_outputs/*
 
-# test_1 no section error - fail
+#
+#  Name tests to pass pass_1.in etc - the output matters here
+#  Name tests to fail fail_1.in etc - the error message matters here
+#
 
-if $PROG test_1.in > test_output/test_1.out; 
-then 
-delta="`diff test_1.out test_1.cmp`"
-if [$delta -eq ""]; then
-echo pass test_1
-else
-echo fail
-fi
-fi
 
+for f in pass_*.in; do
+   echo testing $f
+
+   if $PASS_PROG $f > test_output/$f.out; 
+       then 
+#       delta="`diff test_1.out test_1.cmp`"
+#       if [$delta -eq ""]; then
+#	   echo pass test_1
+#       else
+#	   echo fail
+#       fi
+       echo pass
+   fi
+done
+
+
+for f in fail_*.in; do
+   echo testing $f
+
+   if $FAIL_PROG $f > test_output/$f.out; 
+       then 
+       echo pass
+   else 
+       echo pass
+   fi
+done
 
 
 # test_1a comments

@@ -1,0 +1,206 @@
+
+------------------------------------
+Parsing new file N4Lconfig.in
+------------------------------------
+
+
+------------------------------------
+Configuration of leadsto
+------------------------------------
+
+11:	[36mIn leadsto short name fwd for forwards , direction +
+[0m11:	[36mIn leadsto short name bwd for backwards , direction -
+[0m12:	[36mIn leadsto short name af for affects , direction +
+[0m12:	[36mIn leadsto short name baf for affected by , direction -
+[0m13:	[36mIn leadsto short name cf for causes , direction +
+[0m13:	[36mIn leadsto short name cb for is caused by , direction -
+[0m14:	[36mIn leadsto short name to for leads to , direction +
+[0m14:	[36mIn leadsto short name fr for comes from , direction -
+[0m15:	[36mIn leadsto short name next for is followed by , direction +
+[0m15:	[36mIn leadsto short name prev for is preceded by , direction -
+[0m16:	[36mIn leadsto short name then for then the next is , direction +
+[0m16:	[36mIn leadsto short name prior for previous , direction -
+[0m18:	[36mIn leadsto short name intt for intends , direction +
+[0m18:	[36mIn leadsto short name iof for is the intent of , direction -
+[0m19:	[36mIn leadsto short name prop for proposed , direction +
+[0m19:	[36mIn leadsto short name propby for proposed by , direction -
+[0m20:	[36mIn leadsto short name decide for decided , direction +
+[0m20:	[36mIn leadsto short name decidby for decided by , direction -
+[0m21:	[36mIn leadsto short name spoke for spoke to , direction +
+[0m21:	[36mIn leadsto short name talked for was spoken to by , direction -
+[0m23:	[36mIn leadsto short name impl for implements , direction +
+[0m23:	[36mIn leadsto short name implorg for was implemented by , direction -
+[0m24:	[36mIn leadsto short name named for named after , direction +
+[0m24:	[36mIn leadsto short name inspname for inspired the name , direction -
+[0m27:	[36mIn leadsto short name succ for succeeded by , direction +
+[0m27:	[36mIn leadsto short name pre for preceded by , direction -
+[0m28:	[36mIn leadsto short name bfr for comes before , direction +
+[0m28:	[36mIn leadsto short name aft for comes after , direction -
+[0m35:	[36mIn leadsto short name + for "positive , direction +
+[0m35:	[36mIn leadsto short name + for "positive , direction +
+[0m35:	[36mIn leadsto short name - for "negative , direction -
+[0m35:	[36mIn leadsto short name - for "negative , direction -
+[0m39:	[36mIn leadsto short name res for results in , direction +
+[0m39:	[36mIn leadsto short name comfr for comes from , direction -
+[0m40:	[36mIn leadsto short name dep for depends on , direction +
+[0m40:	[36mIn leadsto short name drv for drives , direction -
+[0m41:	[36mIn leadsto short name infl for influences , direction +
+[0m41:	[36mIn leadsto short name isinfl for is influenced by , direction -
+[0m42:	[36mIn leadsto short name support for supports , direction +
+[0m42:	[36mIn leadsto short name suportby for is supported by , direction -
+[0m44:	[36mIn leadsto short name wrote for wrote , direction +
+[0m44:	[36mIn leadsto short name written for written by , direction -
+[0m45:	[36mIn leadsto short name invent for invented , direction +
+[0m45:	[36mIn leadsto short name inventby for invented by , direction -
+[0m56:	[36mIn leadsto short name supply for supplies , direction +
+[0m56:	[36mIn leadsto short name supplyby for is supplied by , direction -
+[0m57:	[36mIn leadsto short name delivaddr for delivered to , direction +
+[0m57:	[36mIn leadsto short name delivgoods for delivery address for , direction -
+[0m59:	[36mIn leadsto short name handles for handles , direction +
+[0m59:	[36mIn leadsto short name handleyby for is handled by , direction -
+[0m60:	[36mIn leadsto short name coord for coordinates , direction +
+[0m60:	[36mIn leadsto short name coordby for is coordinated by , direction -
+[0m64:	[36mIn leadsto short name ep for english for pinyin , direction +
+[0m64:	[36mIn leadsto short name pe for pinyin for english , direction -
+[0m65:	[36mIn leadsto short name ph for pinyin for hanzi , direction +
+[0m65:	[36mIn leadsto short name hp for hanzi for pinyin , direction -
+[0m66:	[36mIn leadsto short name he for hanzi for english , direction +
+[0m66:	[36mIn leadsto short name eh for english for hanzi , direction -
+[0m67:	[36mIn leadsto short name en for english for Norwegian , direction +
+[0m67:	[36mIn leadsto short name ne for Norwegian for english , direction -
+[0m68:	[36mIn leadsto short name en for english to norsk , direction +
+[0m68:	[36mIn leadsto short name ne for norsk to english , direction -
+[0m
+------------------------------------
+Configuration of contains
+------------------------------------
+
+75:	[36mIn contains short name has for has component , direction +
+[0m75:	[36mIn contains short name part for is component of , direction -
+[0m76:	[36mIn contains short name c for contains , direction +
+[0m76:	[36mIn contains short name in for is within , direction -
+[0m77:	[36mIn contains short name setof for is a set of , direction +
+[0m77:	[36mIn contains short name inset for is part of set , direction -
+[0m78:	[36mIn contains short name cont for contains , direction +
+[0m78:	[36mIn contains short name el for is an element of , direction -
+[0m79:	[36mIn contains short name sub for subsumes , direction +
+[0m79:	[36mIn contains short name subby for is subsumed by , direction -
+[0m80:	[36mIn contains short name sw for swallows , direction +
+[0m80:	[36mIn contains short name swby for is swallowed by , direction -
+[0m81:	[36mIn contains short name cons for consists of , direction +
+[0m81:	[36mIn contains short name pt for is part of , direction -
+[0m82:	[36mIn contains short name hasex for has example , direction +
+[0m82:	[36mIn contains short name ex for example of , direction -
+[0m83:	[36mIn contains short name memb for has member , direction +
+[0m83:	[36mIn contains short name belong for belongs to , direction -
+[0m85:	[36mIn contains short name owns for owns , direction +
+[0m85:	[36mIn contains short name ownby for is owned by , direction -
+[0m86:	[36mIn contains short name rents for rents , direction +
+[0m86:	[36mIn contains short name rentby for is rented by , direction -
+[0m88:	[36mIn contains short name occurs in for occurs in the context of , direction +
+[0m88:	[36mIn contains short name ctxfor for is a possible context for , direction -
+[0m90:	[36mIn contains short name employs for employer of , direction +
+[0m90:	[36mIn contains short name workat for is employed at , direction -
+[0m92:	[36mIn contains short name org for based in , direction +
+[0m
+------------------------------------
+Configuration of properties
+------------------------------------
+
+103:	[36mIn properties short name expr for expresses , direction +
+[0m103:	[36mIn properties short name exprby for is expressed by , direction -
+[0m104:	[36mIn properties short name prop for has property , direction +
+[0m104:	[36mIn properties short name propof for is a property of , direction -
+[0m105:	[36mIn properties short name means for means , direction +
+[0m105:	[36mIn properties short name meansb for is meant by , direction -
+[0m106:	[36mIn properties short name pronas for is pronounced as , direction +
+[0m106:	[36mIn properties short name pronof for is the pronunciation for , direction -
+[0m107:	[36mIn properties short name short for for is short for , direction +
+[0m107:	[36mIn properties short name shorter for can be shortened to , direction -
+[0m108:	[36mIn properties short name frnd for has friend , direction +
+[0m108:	[36mIn properties short name isfrnd for is a friend of , direction -
+[0m112:	[36mIn properties short name called for is called , direction +
+[0m112:	[36mIn properties short name pname for name of , direction -
+[0m114:	[36mIn properties short name instate for may have state , direction +
+[0m114:	[36mIn properties short name stateof for is a possible state of , direction -
+[0m115:	[36mIn properties short name hasX for may have value , direction +
+[0m115:	[36mIn properties short name isX for is a possible value for , direction -
+[0m117:	[36mIn properties short name note for note/remark , direction +
+[0m117:	[36mIn properties short name isnotefor for is a note or remark about , direction -
+[0m119:	[36mIn properties short name sfor for stands for , direction +
+[0m119:	[36mIn properties short name caseof for is a case of , direction -
+[0m120:	[36mIn properties short name ref for refers to , direction +
+[0m120:	[36mIn properties short name refas for may be referred to as , direction -
+[0m121:	[36mIn properties short name role for has role , direction +
+[0m121:	[36mIn properties short name isrole for is the role of , direction -
+[0m122:	[36mIn properties short name emplstatus for has employment status , direction +
+[0m122:	[36mIn properties short name emplstatof for employment status of , direction -
+[0m126:	[36mIn properties short name condition for is in condition , direction +
+[0m126:	[36mIn properties short name condof for condition of , direction -
+[0m
+------------------------------------
+Configuration of similarity
+------------------------------------
+
+132:	[36mIn similarity short name ll for looks like , direction both
+[0m133:	[36mIn similarity short name sl for sounds like , direction both
+[0m135:	[36mIn similarity short name eq for equals , direction both
+[0m136:	[36mIn similarity short name = for same as , direction both
+[0m137:	[36mIn similarity short name !eq for is not the same as , direction both
+[0m139:	[36mIn similarity short name sim for similar to , direction both
+[0m140:	[36mIn similarity short name ass for associated with , direction both
+[0m141:	[36mIn similarity short name nr for near , direction both
+[0m143:	[36mIn similarity short name met for met with , direction both
+[0m
+------------------------------------
+Configuration of annotations
+------------------------------------
+
+152:	[36mAnnotation marker + defined as arrow: discusses
+[0m153:	[36mAnnotation marker = defined as arrow: depends on
+[0m154:	[36mAnnotation marker * defined as arrow: is a special case of
+[0m156:	[36mAnnotation marker > defined as arrow: has subject
+[0m
+------------------------------------
+Parsing new file pass_2.in
+------------------------------------
+
+
+------------------------------------
+Set chapter/section: -> sectioname
+------------------------------------
+
+
+------------------------------------
+Reset context: -> chinese, doctor's appointment
+------------------------------------
+
+6:	[36mEvent/item/node: Wǒ de shēntǐ bùcuò
+[0m6:	[36mEvent/item/node: 我的身体不错
+[0m6:	[36m... Relation: Wǒ de shēntǐ bùcuò -- pinyin for hanzi -> 我的身体不错 [chinese doctor's appointment]
+[0m6:	[36mEvent/item/node: my body/health is in a not bad condition
+[0m6:	[36m... Relation: 我的身体不错 -- hanzi for english -> my body/health is in a not bad condition [chinese doctor's appointment]
+[0m    - row/col key [ 0 / 3 ] 我的身体不错
+    - row/col key [ 1 / 3 ] Wǒ de shēntǐ bùcuò
+    - row/col key [ 2 / 3 ] my body/health is in a not bad condition
+
+ directed adjacency sub-matrix ...
+
+
+              我的身体不错 ..			(   0.0   0.0   1.0)
+     Wǒ de shēntǐ bù ..			(   1.0   0.0   0.0)
+     my body/health  ..			(   0.0   0.0   0.0)
+
+ undirected adjacency sub-matrix ...
+
+
+              我的身体不错 ..			(   0.0   1.0   1.0)
+     Wǒ de shēntǐ bù ..			(   1.0   0.0   0.0)
+     my body/health  ..			(   1.0   0.0   0.0)
+
+ Eigenvector centrality score for symmetrized graph ...
+
+
+              我的身体不错 ..			(   1.0)
+     Wǒ de shēntǐ bù ..			(   1.0)
+     my body/health  ..			(   1.0)

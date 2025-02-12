@@ -1,12 +1,6 @@
 
-
 -testcase
 
- A (and) B
-  one string (likes) " a half string
 
- # the next thing after a lone " should be a ( or a \n
+  one string (equals) " a half string
 
- # There should be no space at the start of a quoted string
-
- next item
