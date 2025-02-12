@@ -3,7 +3,7 @@
 *.pdf
 *.la
 *.lo
-*.o
+*.out
 *.cmp
 *.bak
 .deps

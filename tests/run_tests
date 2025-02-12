@@ -7,6 +7,10 @@
 
 PASS_PROG="../src/N4L -d -adj=all"
 FAIL_PROG="../src/N4L"
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+END='\033[0m' # No Color
+OUT="test_output"
 
 rm -f test_outputs/*
 
@@ -17,31 +21,27 @@ rm -f test_outputs/*
 
 
 for f in pass_*.in; do
-   echo testing $f
+   echo -n testing $f
+   rm -f test_outputs/N4L*.log
 
-   if $PASS_PROG $f > test_output/$f.out; 
+   if $PASS_PROG $f > /dev/null; 
        then 
-#       delta="`diff test_1.out test_1.cmp`"
-#       if [$delta -eq ""]; then
-#	   echo pass test_1
-#       else
-#	   echo fail
-#       fi
-       echo pass
+       echo -e "${GREEN} ok ${END}"
    else 
-       echo fail
+       echo -e "${RED} NOT ok ${END}"
    fi
 done
 
 
 for f in fail_*.in; do
-   echo testing $f
+   rm -f test_outputs/N4L*.log
+   echo -n testing $f
 
-   if $FAIL_PROG $f > test_output/$f.out; 
+   if $FAIL_PROG $f > $OUT/$f.$MODE; 
        then 
-       echo fail
+       echo -e "${RED} NOT ok ${END}"
    else 
-       echo pass
+       echo -e "${GREEN} ok ${END}"
    fi
 done
 
