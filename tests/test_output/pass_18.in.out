@@ -166,31 +166,50 @@ Configuration of annotations
 [0m162:	[36mAnnotation marker > defined as arrow: has subject
 [0m
 ------------------------------------
-Parsing new file pass_5.in
+Parsing new file pass_18.in
 ------------------------------------
 
 
 ------------------------------------
-Set chapter/section: -> sectioname
+Set chapter/section: -> weights
 ------------------------------------
 
+7:	[36mEvent/item/node: one
+[0m8:	[36mEvent/item/node: two
+[0m9:	[36mEvent/item/node: three
+[0m12:	[36mEvent/item/node: one
+[0m12:	[36mEvent/item/node: two
+[0m12:	[36m... Relation: one --( near , 2 )-> two []
+[0m14:	[36mEvent/item/node: two
+[0m14:	[36mEvent/item/node: three
+[0m14:	[36m... Relation: two --( causes , 0.3 )-> three []
+[0m16:	[36mEvent/item/node: one
+[0m16:	[36mEvent/item/node: three
+[0m16:	[36m... Relation: one --( causes , 4 )-> three [nothing]
+[0m18:	[36mEvent/item/node: three
+[0m18:	[36mEvent/item/node: two
+[0m18:	[36m... Relation: three -- near -> two []
+[0m    - row/col key [ 0 / 3 ] two
+    - row/col key [ 1 / 3 ] three
+    - row/col key [ 2 / 3 ] one
 
-------------------------------------
-Reset context: -> context, context2, context3, context4
-------------------------------------
-
-7:	[36mEvent/item/node: item1
-[0m9:	[36mRemove from context: context2,context4
-[0m11:	[36mEvent/item/node: item2
-[0m
  directed adjacency sub-matrix ...
 
 
+                 two ..			(   0.0   0.3   0.0)
+               three ..			(   1.0   0.0   0.0)
+                 one ..			(   2.0   4.0   0.0)
 
  undirected adjacency sub-matrix ...
 
 
+                 two ..			(   0.0   1.3   2.0)
+               three ..			(   1.3   0.0   4.0)
+                 one ..			(   2.0   4.0   0.0)
 
  Eigenvector centrality score for symmetrized graph ...
 
 
+                 two ..			(   0.7)
+               three ..			(   1.0)
+                 one ..			(   1.0)

@@ -28,6 +28,8 @@ for f in pass_*.in; do
 #	   echo fail
 #       fi
        echo pass
+   else 
+       echo fail
    fi
 done
 
@@ -37,7 +39,7 @@ for f in fail_*.in; do
 
    if $FAIL_PROG $f > test_output/$f.out; 
        then 
-       echo pass
+       echo fail
    else 
        echo pass
    fi

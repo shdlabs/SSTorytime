@@ -135,42 +135,84 @@ Configuration of properties
 [0m121:	[36mIn properties short name isrole for is the role of , direction -
 [0m122:	[36mIn properties short name emplstatus for has employment status , direction +
 [0m122:	[36mIn properties short name emplstatof for employment status of , direction -
-[0m126:	[36mIn properties short name condition for is in condition , direction +
-[0m126:	[36mIn properties short name condof for condition of , direction -
+[0m124:	[36mIn properties short name lk for likes , direction +
+[0m124:	[36mIn properties short name lkby for is liked by , direction -
+[0m128:	[36mIn properties short name condition for is in condition , direction +
+[0m128:	[36mIn properties short name condof for condition of , direction -
 [0m
 ------------------------------------
 Configuration of similarity
 ------------------------------------
 
-132:	[36mIn similarity short name ll for looks like , direction both
-[0m133:	[36mIn similarity short name sl for sounds like , direction both
-[0m135:	[36mIn similarity short name eq for equals , direction both
-[0m136:	[36mIn similarity short name = for same as , direction both
-[0m137:	[36mIn similarity short name !eq for is not the same as , direction both
-[0m139:	[36mIn similarity short name sim for similar to , direction both
-[0m140:	[36mIn similarity short name ass for associated with , direction both
-[0m141:	[36mIn similarity short name nr for near , direction both
-[0m143:	[36mIn similarity short name met for met with , direction both
+134:	[36mIn similarity short name ll for looks like , direction both
+[0m135:	[36mIn similarity short name sl for sounds like , direction both
+[0m137:	[36mIn similarity short name eq for equals , direction both
+[0m138:	[36mIn similarity short name = for same as , direction both
+[0m139:	[36mIn similarity short name !eq for is not the same as , direction both
+[0m140:	[36mIn similarity short name not for is not , direction both
+[0m142:	[36mIn similarity short name sim for similar to , direction both
+[0m143:	[36mIn similarity short name ass for associated with , direction both
+[0m144:	[36mIn similarity short name nr for near , direction both
+[0m146:	[36mIn similarity short name met for met with , direction both
+[0m148:	[36mIn similarity short name and for comes together with , direction both
 [0m
 ------------------------------------
 Configuration of annotations
 ------------------------------------
 
-152:	[36mAnnotation marker + defined as arrow: discusses
-[0m153:	[36mAnnotation marker = defined as arrow: depends on
-[0m154:	[36mAnnotation marker * defined as arrow: is a special case of
-[0m156:	[36mAnnotation marker > defined as arrow: has subject
+158:	[36mAnnotation marker + defined as arrow: discusses
+[0m159:	[36mAnnotation marker = defined as arrow: depends on
+[0m160:	[36mAnnotation marker * defined as arrow: is a special case of
+[0m162:	[36mAnnotation marker > defined as arrow: has subject
 [0m
 ------------------------------------
-Parsing new file pass_20.in
+Parsing new file pass_16.in
 ------------------------------------
 
 
 ------------------------------------
-Reset context: -> context, , a list of things
+Set chapter/section: -> testcase
 ------------------------------------
 
-4:	[36mAdd to context: context2, !context3, context5.context6
-[0m6:	[36mEvent/item/node: alpha
-[0m
-6:[31;1;1mN4L pass_20.in No such arrow has been declared in the configuration: beta at line 6 [0m
+5:	[36mEvent/item/node: A
+[0m5:	[36mEvent/item/node: B
+[0m5:	[36m... Relation: A -- comes together with -> B []
+[0m6:	[36mEvent/item/node: one string
+[0m6:	[36mEvent/item/node: B
+[0m6:	[36m... Relation: one string -- likes -> B []
+[0m8:	[36mEvent/item/node: something
+[0m9:	[36mEvent/item/node: something else
+[0m9:	[36mEvent/item/node: a third thing
+[0m9:	[36m... Relation: something else -- is not -> a third thing []
+[0m    - row/col key [ 0 / 5 ] something else
+    - row/col key [ 1 / 5 ] B
+    - row/col key [ 2 / 5 ] one string
+    - row/col key [ 3 / 5 ] A
+    - row/col key [ 4 / 5 ] a third thing
+
+ directed adjacency sub-matrix ...
+
+
+      something else ..			(   0.0   0.0   0.0   0.0   1.0)
+                   B ..			(   0.0   0.0   0.0   0.0   0.0)
+          one string ..			(   0.0   1.0   0.0   0.0   0.0)
+                   A ..			(   0.0   1.0   0.0   0.0   0.0)
+       a third thing ..			(   0.0   0.0   0.0   0.0   0.0)
+
+ undirected adjacency sub-matrix ...
+
+
+      something else ..			(   0.0   0.0   0.0   0.0   1.0)
+                   B ..			(   0.0   0.0   1.0   1.0   0.0)
+          one string ..			(   0.0   1.0   0.0   0.0   0.0)
+                   A ..			(   0.0   1.0   0.0   0.0   0.0)
+       a third thing ..			(   1.0   0.0   0.0   0.0   0.0)
+
+ Eigenvector centrality score for symmetrized graph ...
+
+
+      something else ..			(   0.1)
+                   B ..			(   1.0)
+          one string ..			(   1.0)
+                   A ..			(   1.0)
+       a third thing ..			(   0.1)

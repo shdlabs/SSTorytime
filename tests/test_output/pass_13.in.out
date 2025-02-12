@@ -166,31 +166,57 @@ Configuration of annotations
 [0m162:	[36mAnnotation marker > defined as arrow: has subject
 [0m
 ------------------------------------
-Parsing new file pass_5.in
+Parsing new file pass_13.in
 ------------------------------------
 
 
 ------------------------------------
-Set chapter/section: -> sectioname
+Set chapter/section: -> section
 ------------------------------------
 
+5:	[36mEvent/item/node: Zuò
+[0m5:	[36mEvent/item/node: 做
+[0m5:	[36m... Relation: Zuò -- pinyin for hanzi -> 做 []
+[0m5:	[36mEvent/item/node: do - northern standard, more flexible usage
+[0m5:	[36m... Relation: 做 -- hanzi for english -> do - northern standard, more flexible usage []
+[0m9:	[36mEvent/item/node: gàn
+[0m9:	[36mEvent/item/node: 干
+[0m9:	[36m... Relation: gàn -- pinyin for hanzi -> 干 []
+[0m9:	[36mEvent/item/node: do - also "do someone", fuck!, more specific usage
+[0m9:	[36m... Relation: 干 -- hanzi for english -> do - also "do someone", fuck!, more specific usage []
+[0m    - row/col key [ 0 / 6 ] 干
+    - row/col key [ 1 / 6 ] gàn
+    - row/col key [ 2 / 6 ] Zuò
+    - row/col key [ 3 / 6 ] do - northern standard, more flexible usage
+    - row/col key [ 4 / 6 ] 做
+    - row/col key [ 5 / 6 ] do - also "do someone", fuck!, more specific usage
 
-------------------------------------
-Reset context: -> context, context2, context3, context4
-------------------------------------
-
-7:	[36mEvent/item/node: item1
-[0m9:	[36mRemove from context: context2,context4
-[0m11:	[36mEvent/item/node: item2
-[0m
  directed adjacency sub-matrix ...
 
 
+                   干 ..			(   0.0   0.0   0.0   0.0   0.0   1.0)
+                 gàn ..			(   1.0   0.0   0.0   0.0   0.0   0.0)
+                 Zuò ..			(   0.0   0.0   0.0   0.0   1.0   0.0)
+     do - northern s ..			(   0.0   0.0   0.0   0.0   0.0   0.0)
+                   做 ..			(   0.0   0.0   0.0   1.0   0.0   0.0)
+     do - also "do s ..			(   0.0   0.0   0.0   0.0   0.0   0.0)
 
  undirected adjacency sub-matrix ...
 
 
+                   干 ..			(   0.0   1.0   0.0   0.0   0.0   1.0)
+                 gàn ..			(   1.0   0.0   0.0   0.0   0.0   0.0)
+                 Zuò ..			(   0.0   0.0   0.0   0.0   1.0   0.0)
+     do - northern s ..			(   0.0   0.0   0.0   0.0   1.0   0.0)
+                   做 ..			(   0.0   0.0   1.0   1.0   0.0   0.0)
+     do - also "do s ..			(   1.0   0.0   0.0   0.0   0.0   0.0)
 
  Eigenvector centrality score for symmetrized graph ...
 
 
+                   干 ..			(   1.0)
+                 gàn ..			(   1.0)
+                 Zuò ..			(   1.0)
+     do - northern s ..			(   1.0)
+                   做 ..			(   1.0)
+     do - also "do s ..			(   1.0)

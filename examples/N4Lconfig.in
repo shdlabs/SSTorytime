@@ -121,6 +121,8 @@
  + has role (role)    - is the role of (isrole)
  + has employment status (emplstatus) - employment status of (emplstatof)
 
+ + likes (lk) - is liked by (lkby)
+
  :: delivery ::
 
  + is in condition (condition) - condition of (condof)
@@ -135,12 +137,16 @@
  equals             	(eq)
  same as                (=)
  is not the same as 	(!eq)
+ is not                 (not)
 
  similar to         	(sim)
  associated with    	(ass)  # (loose coupling)
  near               	(nr)
 
  met with               (met) // a mutual coincidence
+
+ comes together with    (and)
+
 
 #########################################################
 

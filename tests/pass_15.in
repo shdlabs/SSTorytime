@@ -1,16 +1,10 @@
 
 
--testcase
+-section
 
- A (and) B
-  one string (likes) " an illegal string
- something
- something else (is not) a third thing
+# surrounding double quotes -  non-ASCI APPLE-MS quote
 
+“do someone” (means) explicit usage
 
+"do other" (means) something else 
 
-
-
- # the next thing after a lone " should be a ( or a \n
-
- # There should be no space at the start of a quoted string

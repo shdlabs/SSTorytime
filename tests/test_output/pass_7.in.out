@@ -166,23 +166,10 @@ Configuration of annotations
 [0m162:	[36mAnnotation marker > defined as arrow: has subject
 [0m
 ------------------------------------
-Parsing new file pass_5.in
+Parsing new file pass_7.in
 ------------------------------------
 
 
-------------------------------------
-Set chapter/section: -> sectioname
-------------------------------------
-
-
-------------------------------------
-Reset context: -> context, context2, context3, context4
-------------------------------------
-
-7:	[36mEvent/item/node: item1
-[0m9:	[36mRemove from context: context2,context4
-[0m11:	[36mEvent/item/node: item2
-[0m
  directed adjacency sub-matrix ...
 
 

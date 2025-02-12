@@ -135,31 +135,35 @@ Configuration of properties
 [0m121:	[36mIn properties short name isrole for is the role of , direction -
 [0m122:	[36mIn properties short name emplstatus for has employment status , direction +
 [0m122:	[36mIn properties short name emplstatof for employment status of , direction -
-[0m126:	[36mIn properties short name condition for is in condition , direction +
-[0m126:	[36mIn properties short name condof for condition of , direction -
+[0m124:	[36mIn properties short name lk for likes , direction +
+[0m124:	[36mIn properties short name lkby for is liked by , direction -
+[0m128:	[36mIn properties short name condition for is in condition , direction +
+[0m128:	[36mIn properties short name condof for condition of , direction -
 [0m
 ------------------------------------
 Configuration of similarity
 ------------------------------------
 
-132:	[36mIn similarity short name ll for looks like , direction both
-[0m133:	[36mIn similarity short name sl for sounds like , direction both
-[0m135:	[36mIn similarity short name eq for equals , direction both
-[0m136:	[36mIn similarity short name = for same as , direction both
-[0m137:	[36mIn similarity short name !eq for is not the same as , direction both
-[0m139:	[36mIn similarity short name sim for similar to , direction both
-[0m140:	[36mIn similarity short name ass for associated with , direction both
-[0m141:	[36mIn similarity short name nr for near , direction both
-[0m143:	[36mIn similarity short name met for met with , direction both
+134:	[36mIn similarity short name ll for looks like , direction both
+[0m135:	[36mIn similarity short name sl for sounds like , direction both
+[0m137:	[36mIn similarity short name eq for equals , direction both
+[0m138:	[36mIn similarity short name = for same as , direction both
+[0m139:	[36mIn similarity short name !eq for is not the same as , direction both
+[0m140:	[36mIn similarity short name not for is not , direction both
+[0m142:	[36mIn similarity short name sim for similar to , direction both
+[0m143:	[36mIn similarity short name ass for associated with , direction both
+[0m144:	[36mIn similarity short name nr for near , direction both
+[0m146:	[36mIn similarity short name met for met with , direction both
+[0m148:	[36mIn similarity short name and for comes together with , direction both
 [0m
 ------------------------------------
 Configuration of annotations
 ------------------------------------
 
-152:	[36mAnnotation marker + defined as arrow: discusses
-[0m153:	[36mAnnotation marker = defined as arrow: depends on
-[0m154:	[36mAnnotation marker * defined as arrow: is a special case of
-[0m156:	[36mAnnotation marker > defined as arrow: has subject
+158:	[36mAnnotation marker + defined as arrow: discusses
+[0m159:	[36mAnnotation marker = defined as arrow: depends on
+[0m160:	[36mAnnotation marker * defined as arrow: is a special case of
+[0m162:	[36mAnnotation marker > defined as arrow: has subject
 [0m
 ------------------------------------
 Parsing new file pass_2.in
@@ -170,37 +174,16 @@ Parsing new file pass_2.in
 Set chapter/section: -> sectioname
 ------------------------------------
 
-
-------------------------------------
-Reset context: -> chinese, doctor's appointment
-------------------------------------
-
-6:	[36mEvent/item/node: Wǒ de shēntǐ bùcuò
-[0m6:	[36mEvent/item/node: 我的身体不错
-[0m6:	[36m... Relation: Wǒ de shēntǐ bùcuò -- pinyin for hanzi -> 我的身体不错 [chinese doctor's appointment]
-[0m6:	[36mEvent/item/node: my body/health is in a not bad condition
-[0m6:	[36m... Relation: 我的身体不错 -- hanzi for english -> my body/health is in a not bad condition [chinese doctor's appointment]
-[0m    - row/col key [ 0 / 3 ] 我的身体不错
-    - row/col key [ 1 / 3 ] Wǒ de shēntǐ bùcuò
-    - row/col key [ 2 / 3 ] my body/health is in a not bad condition
-
+4:	[36mEvent/item/node: one
+[0m
  directed adjacency sub-matrix ...
 
 
-              我的身体不错 ..			(   0.0   0.0   1.0)
-     Wǒ de shēntǐ bù ..			(   1.0   0.0   0.0)
-     my body/health  ..			(   0.0   0.0   0.0)
 
  undirected adjacency sub-matrix ...
 
 
-              我的身体不错 ..			(   0.0   1.0   1.0)
-     Wǒ de shēntǐ bù ..			(   1.0   0.0   0.0)
-     my body/health  ..			(   1.0   0.0   0.0)
 
  Eigenvector centrality score for symmetrized graph ...
 
 
-              我的身体不错 ..			(   1.0)
-     Wǒ de shēntǐ bù ..			(   1.0)
-     my body/health  ..			(   1.0)
