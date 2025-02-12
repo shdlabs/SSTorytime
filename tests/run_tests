@@ -5,7 +5,7 @@
 # For now, as things are changing, tests need to be run manually
 #
 
-PASS_PROG="../src/N4L -d -adj=all"
+PASS_PROG="../src/N4L -adj=all"
 FAIL_PROG="../src/N4L"
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -23,9 +23,7 @@ rm -f test_outputs/*
 for f in pass_*.in; do
    echo -n testing $f
    rm -f test_outputs/N4L*.log
-
-   if $PASS_PROG $f > /dev/null; 
-       then 
+   if $PASS_PROG $f > /dev/null; then 
        echo -e "${GREEN} ok ${END}"
    else 
        echo -e "${RED} NOT ok ${END}"
@@ -37,7 +35,7 @@ for f in fail_*.in; do
    rm -f test_outputs/N4L*.log
    echo -n testing $f
 
-   if $FAIL_PROG $f > $OUT/$f.$MODE; 
+   if $FAIL_PROG $f > test_output/$f.out; 
        then 
        echo -e "${RED} NOT ok ${END}"
    else 

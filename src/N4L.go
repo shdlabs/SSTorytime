@@ -14,6 +14,7 @@ import (
 	"unicode"
 	"regexp"
 	"strconv"
+	"sort"
 )
 
 //**************************************************************
@@ -259,7 +260,7 @@ func main() {
 		PrintMatrix("directed adjacency sub-matrix",dim,key,d_adj)
 		PrintMatrix("undirected adjacency sub-matrix",dim,key,u_adj)
 		evc := ComputeEVC(dim,u_adj)
-		PrintNZVector("Eigenvector centrality score for symmetrized graph",dim,key,evc)
+		PrintNZVector("Eigenvector centrality (EVC) score for symmetrized graph",dim,key,evc)
 	}
 }
 
@@ -763,11 +764,26 @@ func PrintNZVector(name string, dim int, key []NodeEventItemPtr, vector[]float64
 	s := fmt.Sprintln("\n",name,"...\n")
 	Verbose(s)
 
+	type KV struct {
+		Key string
+		Value float64
+	}
+
+	var vec []KV = make([]KV,dim)
+
 	for row := 0; row < dim; row++ {
-		if vector[row] > 0.1 {
-			s = fmt.Sprintf("%20.15s ..\r\t\t\t(",GetNodeFromPtr(key[row]))			
-			s += fmt.Sprintf("  %4.1f",vector[row])
-			s += fmt.Sprint(")")
+		vec[row].Key = GetNodeFromPtr(key[row])
+		vec[row].Value = vector[row]
+	}
+
+	sort.SliceStable(vec, func(i, j int) bool {
+		return vec[i].Value > vec[j].Value
+	})
+
+	for row := 0; row < dim; row++ {
+		if vec[row].Value > 0.1 {
+			s = fmt.Sprintf("ordered by EVC:  (%4.1f)  ",vec[row].Value)
+			s += fmt.Sprintf("%-80.79s",vec[row].Key)
 			Verbose(s)
 		}
 	}
