@@ -338,7 +338,7 @@ func NewFile(filename string) {
 	LAST_IN_SEQUENCE = ""
 	FWD_ARROW = ""
 	BWD_ARROW = ""
-
+	SECTION_STATE = ""
 	CONTEXT_STATE = make(map[string]bool)
 }
 
@@ -1248,27 +1248,31 @@ func AssessGrammarCompletions(token string, prior_state int) {
 	case ROLE_CONTEXT:
 		Box("Reset context: ->",this_item)
 		ContextEval(this_item,"=")
+		CheckSection()
 
 	case ROLE_CONTEXT_ADD:
 		PVerbose("Add to context:",this_item)
 		ContextEval(this_item,"+")
+		CheckSection()
 
 	case ROLE_CONTEXT_SUBTRACT:
 		PVerbose("Remove from context:",this_item)
 		ContextEval(this_item,"-")
+		CheckSection()
 
 	case ROLE_SECTION:
 		Box("Set chapter/section: ->",this_item)
 		SECTION_STATE = this_item
 
 	default:
+		CheckSection()
+
 		if AllCaps(token) {
 			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
 			return
 		}
 
 		IdempAddTextToNode(this_item)
-		CheckSection()
 		LinkSequence(token)
 
 	}
@@ -2105,6 +2109,7 @@ func CheckNonNegative(i int) {
 
 func CheckSection() {
 
+	fmt.Println("CCCCCCCCCCCCCCCCCCCCCC",SECTION_STATE)
 	if len(SECTION_STATE) == 0 {
 		ParseError(ERR_MISSING_SECTION)
 		os.Exit(-1)
