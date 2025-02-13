@@ -159,3 +159,19 @@ determine the way the links will be searched.
 	ST_OFFSET = EXPRESS // so that ST_OFFSET - EXPRESS == 0
 	ST_TOP = ST_OFFSET + EXPRESS + 1
 </pre>
+
+
+## Representing data structures in SQL
+
+There are several issues around storing the data from N4L in a database. Apart from the
+issue of speed and efficiency, we need to
+* Represent lists of links, which are triplets of primary keys (a,b,c).
+* Deal with unicode strings for storage and searching.
+
+The key thing about saving data structured by N4L in SQL is that SQL is not traditionally
+compatible with the datatypes and encapsulation mechanisms of Go. Traditional SQL
+doesn't have a way of encapsulating tables of a particular type to primary key ranges that
+are private to a particular parent node. Postgres, however, has internal array types
+that do support this. We can only hope that these are efficient for lookup, otherwise
+one is faced with searching for records that match a particular key in a potentially
+lengthy and inefficient search. Even graph databases (at least some) force users to do this.
