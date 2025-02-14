@@ -295,7 +295,6 @@ func Init() []string {
 	if *uploadPtr {
 		UPLOAD = true
 	}
-
 	if *incidencePtr {
 		SUMMARIZE = true
 	}
@@ -992,36 +991,52 @@ func SearchIncidentRowClass(node NodeEventItem, searcharrows []ArrowPtr,node_lis
 
 	var row_nodes = make(map[NodeEventItemPtr]bool)
 	var ret_nodes []NodeEventItemPtr
-	var rc RCtype
 
-	rc.Row = node.NPtr
+        var rc,cr RCtype
 
-	for sttype := range node.I {
+	rc.Row = node.NPtr // transposes
+        cr.Col = node.NPtr
+
+	// flip backward facing arrows
+	const inverse_flip_arrow = ST_OFFSET
+
+        // Only sum over outgoing (+) links
+	
+	for sttype := 0; sttype < len(node.I); sttype++ {
+		
 		for lnk := range node.I[sttype] {
-
 			arrowptr := node.I[sttype][lnk].Arr
+			
+			if len(searcharrows) == 0 {
+				match := node.I[sttype][lnk]
+				row_nodes[match.Dst] = true
+				rc.Col = match.Dst
+				cr.Row = match.Dst
 
-			for lnk := range node.I[sttype] {
-				if len(searcharrows) == 0 {
-					match := node.I[sttype][lnk]
-					row_nodes[match.Dst] = true
-					rc.Col = match.Dst
-					ret_weights[rc] += match.Wgt
+				if sttype < inverse_flip_arrow {
+					ret_weights[cr] += match.Wgt  // flip arrow
 				} else {
-					for l := range searcharrows {
-						if arrowptr == searcharrows[l] {
-
-							match := node.I[sttype][lnk]
-							row_nodes[match.Dst] = true
-							rc.Col = match.Dst
+					ret_weights[rc] += match.Wgt
+				}
+			} else {
+				for l := range searcharrows {
+					if arrowptr == searcharrows[l] {
+						match := node.I[sttype][lnk]
+						row_nodes[match.Dst] = true
+						rc.Col = match.Dst
+						cr.Row = match.Dst
+						if sttype < ST_OFFSET {
+							ret_weights[cr] += match.Wgt  // flip arrow
+						} else {
 							ret_weights[rc] += match.Wgt
 						}
+						
 					}
 				}
 			}
 		}
 	}
-
+	
 	if len(row_nodes) > 0 {
 		row_nodes[node.NPtr] = true // Add the parent if it has children
 	}
