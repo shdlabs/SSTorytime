@@ -60,7 +60,7 @@ const (
 	ERR_ARROW_SELFLOOP = "Arrow's origin points to itself"
 	ERR_NEGATIVE_WEIGHT = "Arrow relation has a negative weight, which is disallowed. Use a NOT relation if you want to signify inhibition: "
 	ERR_TOO_MANY_WEIGHTS = "More than one weight value in the arrow relation "
-
+        ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
 )
 
 //**************************************************************
@@ -1654,6 +1654,9 @@ func IsGeneralString(src []rune,pos int) bool {
 
 	switch src[pos] {
 
+        case ')':
+	        ParseError(ERR_STRAY_PAREN)
+		os.Exit(-1)
 	case '(':
 		return false
 	case '#':
