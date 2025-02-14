@@ -161,17 +161,57 @@ determine the way the links will be searched.
 </pre>
 
 
+Incoming and outgoing arrows are treated distinct. The order in which
+they are entered is retained while parsing so that users see what they
+have typed. However, when summing adjacencies for the graph we need to
+be careful not to count arrows twice. We also need to be able to
+search for both the incoming and outgoing arrows from a single
+node. If we had simply created a table for all nodes-link triplets
+(all_from,link,all_to), it would easy to search for links incoming and
+and outgoing, but this is not very efficient for normal usage and would involve
+a lot of redundant work for the usual use-cases.
+
+This issues comes back to concern us when translating a graph model into SQL. SQL was designed
+to work with normalized data models, which were (in turn) optimized for human entry in a random
+access pattern. Here, on the
+other hand, there is never any human entry into the database, and the APIs we provide here can
+manage duplicated records easily (not least because data almost never change). We can make use
+of the invariances of the data to separate data structures into different blocks, linked by pointers.
+
 ## Representing data structures in SQL
 
 There are several issues around storing the data from N4L in a database. Apart from the
 issue of speed and efficiency, we need to
+
 * Represent lists of links, which are triplets of primary keys (a,b,c).
 * Deal with unicode strings for storage and searching.
 
-The key thing about saving data structured by N4L in SQL is that SQL is not traditionally
-compatible with the datatypes and encapsulation mechanisms of Go. Traditional SQL
-doesn't have a way of encapsulating tables of a particular type to primary key ranges that
-are private to a particular parent node. Postgres, however, has internal array types
-that do support this. We can only hope that these are efficient for lookup, otherwise
-one is faced with searching for records that match a particular key in a potentially
-lengthy and inefficient search. Even graph databases (at least some) force users to do this.
+In Go(lang), links are represented as array slices, but databases do not typically support arrays
+directly, and the normal thing to do would be to create another entity relation. This is possible, but
+again would lead to adding redundant work during common searches. Call me old-fashioned, but I hate
+waste sot he argument that modern CPUs will make it fast doesn't stop me from trying to optimize for the
+actual processes involved in searching.
+
+The key thing about saving data structured by N4L in SQL is that SQL
+is not traditionally compatible with the datatypes and encapsulation
+mechanisms used by Go (associative arrays or maps, etc). Although one
+could simulate private arrays with a table restricted by a field
+matching a primary key, this is wasteful and untidy. Its efficiency
+becomes noticable as potentially the square of the number of nodes we
+add.
+
+So, traditional SQL doesn't have a way of encapsulating tables of a
+particular type to primary key ranges that are private to a particular
+parent node. Postgres, however, does have internal array types that
+support this. Using this feature would make the database model non-portable,
+but that was already foregone in the project proposal.
+
+Ideally, we can hope that postgres arrays are efficient for lookup.
+In the interests of science, I therefore commit to performing some
+experiments and tests on these two alternatives.
+
+
+
+
+
+
