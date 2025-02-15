@@ -600,7 +600,7 @@ not think of context as logical (Boolean) variables.
 *Technical note: N4L's context model is based on the contextual decision-making from the software called CFEngine,
 which is an agent based language for describing maintenance policy in computers.
 If you know CFEngine, you might be confused about how to use context in N4L--that's because it's logically
-`backwards' compared to the CFEngine policy language. In CFEngine, the sensory feed from a computer comes
+'backwards' compared to the CFEngine policy language. In CFEngine, the sensory feed from a computer comes
 from the agents that observe and inspect the state of the computer, and the context class expressions
 in the CFEngine language are effectively search criteria to select when to activate, given the set of
 states or classes observed. In N4L the computer under observation is the set of notes you read into it.
