@@ -15,6 +15,19 @@ encourages you to revisit, tidy and organise the notes again and again, while
 being able to quickly turn them into a searchable graphical database, from which
 and can reason through stories.
 
+*One of the important ways we make notes is to draw pictures and place concepts
+on maps, in which things are close together or laid out in a logical manner,
+In the future, N4L should be able to support simple sketches too, but that's
+for future development.*
+
+## Why do we need a language?
+
+These days there are too many software engineers and we tend to make
+systems for them. So people are simply expected to learn how to use
+computer code, and "APIs" do enter data.  This is not intuitive
+(actually to anyone). Computers are a tool, and tools are supposed to
+do the work for humans, not the other way around! So we want to try to make data entry easy.
+
 The purpose of using a simple yet semi-formal language as a starting
 point is to avoid the "information model trap" that befalls many data
 representations, i.e. forcing users to put everything into a pre-approved model,
@@ -599,6 +612,14 @@ according to these `states of being'.
 * Although we will later show how to apply logical thinking to focus and sharpen searches, you should
 not think of context as logical (Boolean) variables.
 
+That said, you are free to write collections of contexts either with commas or "OR" bars, as you like:
+<pre>
+
+:: position, location , directions | orientation | configuration ::
+
+ compass (has direction) north
+   "     (has direction) south
+</pre>
 *Technical note: N4L's context model is based on the contextual decision-making from the software called CFEngine,
 which is an agent based language for describing maintenance policy in computers.
 If you know CFEngine, you might be confused about how to use context in N4L--that's because it's logically
