@@ -591,9 +591,11 @@ for phrasse in a foreign language that have to do with a restaurant visit, you w
 organize and tag certain phrases with `restaurant, eating, cafe, pay the bill', etc.
 The way context is used is still an area of development, but there are two things to remember:
 
-* The keywords are sensory stream, describing what's going on in the mind of the user: is it hot, cold, are
-you busy, relaxed, angry, etc. You imagine classifying things you want to remember or know about
+* The keywords are something like a sensory stream, describing what might be
+going on in the mind of the user when they are looking for the relevant information: is it hot, cold, are
+you busy, relaxed, angry, in a restaurant, on the bus, etc. You imagine classifying things you want to remember or know about
 according to these `states of being'.
+* Contexts are 'lookup' keys, acting like an index or table of contents.
 * Although we will later show how to apply logical thinking to focus and sharpen searches, you should
 not think of context as logical (Boolean) variables.
 
