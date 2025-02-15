@@ -91,6 +91,8 @@
 
  + based in (org) - is the home of 
 
+ + right word? (word?) - right usage? (usage?)
+
 #########################################################
 
 - properties
@@ -141,6 +143,7 @@
 
  similar to         	(sim)
  associated with    	(ass)  # (loose coupling)
+ see also               (see)
  near               	(nr)
 
  met with               (met) // a mutual coincidence
