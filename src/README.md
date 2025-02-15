@@ -1,5 +1,5 @@
 
-# Source code for the N4L knowledge representation
+# Source code and design for the N4L knowledge representation
 
 Some notes on the source code:
 

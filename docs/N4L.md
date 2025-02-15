@@ -504,7 +504,7 @@ For instance, now we can explain the event further:
          "        (contains) black stiletto box 1446
 </pre>
 
-### The "is a" fallacy
+### Example: The "is a" fallacy
 
 During the OO-movement to sanctify Object Orientation as a software modelling approach, 
 Object Orientation rubber stamped
@@ -546,7 +546,7 @@ lock down data types. This is an affectation of logical reasoning,
 but logic is highly restrictive (on purpose, as a matter of design).
 That makes it precise, but also extremely fragile to variability.
 
-### Belonging
+### Example: Belonging
 
 Some relationships can be tricky to fathom. The semantics of ownership,
 for example, are not completely unambiguous. Suppose you want to say
@@ -575,5 +575,38 @@ that is learning.
 The usefulness
 of a language interface becomes clear now. It's much easier to edit your notes than to maintain
 a database.
+
+
+## Context - what is it?
+
+You add "context" to knowledge by adding keywords and phrases to describe the circumstances
+in which your notes apply. Think of these like the "tags" that you are often asked to
+add to articles and posts on social media. But context can be much extensive than keywords; and you
+are not limited to five items!
+
+When searching for knowledge later, you will typically start by entering a context: what are
+you looking for. Context can be a subject heading, a topic, etc. The items under this heading
+are related to that, but might not actually contain that keyword. For example, if you are looking
+for phrasse in a foreign language that have to do with a restaurant visit, you would arrange to
+organize and tag certain phrases with `restaurant, eating, cafe, pay the bill', etc.
+The way context is used is still an area of development, but there are two things to remember:
+
+* The keywords are sensory stream, describing what's going on in the mind of the user: is it hot, cold, are
+you busy, relaxed, angry, etc. You imagine classifying things you want to remember or know about
+according to these `states of being'.
+* Although we will later show how to apply logical thinking to focus and sharpen searches, you should
+not think of context as logical (Boolean) variables.
+
+*Technical note: N4L's context model is based on the contextual decision-making from the software called CFEngine,
+which is an agent based language for describing maintenance policy in computers.
+If you know CFEngine, you might be confused about how to use context in N4L--that's because it's logically
+`backwards' compared to the CFEngine policy language. In CFEngine, the sensory feed from a computer comes
+from the agents that observe and inspect the state of the computer, and the context class expressions
+in the CFEngine language are effectively search criteria to select when to activate, given the set of
+states or classes observed. In N4L the computer under observation is the set of notes you read into it.
+So the contexts are terms that provide the sensory data, not the selection criteria. The user will later
+be the `policy engine', deciding what is relevant. So, you will never need to type logical expressions in
+your notes, except for highly skilled and specialized notes that we'll come back to later.*
+
 
 
