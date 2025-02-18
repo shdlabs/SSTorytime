@@ -82,6 +82,8 @@
  + has example (hasex) - example of (ex)
  + has member (memb) - belongs to (belong)
 
+ + has friend (fr) - is considered a friend of (isfrof)
+
  + owns (owns) - is owned by (ownby)
  + rents (rents) - is rented by (rentby)
 

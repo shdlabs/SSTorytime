@@ -171,12 +171,14 @@ node. If we had simply created a table for all nodes-link triplets
 and outgoing, but this is not very efficient for normal usage and would involve
 a lot of redundant work for the usual use-cases.
 
-This issues comes back to concern us when translating a graph model into SQL. SQL was designed
-to work with normalized data models, which were (in turn) optimized for human entry in a random
-access pattern. Here, on the
-other hand, there is never any human entry into the database, and the APIs we provide here can
-manage duplicated records easily (not least because data almost never change). We can make use
-of the invariances of the data to separate data structures into different blocks, linked by pointers.
+This issues comes back to concern us when translating a graph model
+into SQL. SQL was designed to work with normalized data models, which
+were (in turn) optimized for human entry in a random access
+pattern. Here, on the other hand, there is never any human entry into
+the database, and the APIs we provide here can manage duplicated
+records easily (not least because data almost never change). We can
+make use of the invariances of the data to separate data structures
+into different blocks, linked by pointers.
 
 ## Representing data structures in SQL
 
@@ -185,6 +187,10 @@ issue of speed and efficiency, we need to
 
 * Represent lists of links, which are triplets of primary keys (a,b,c).
 * Deal with unicode strings for storage and searching.
+* The directed nature of arrows is important, and is sometimes glossed over in modelling.
+Saying that A has a friend called B, does not mean that B claims to have a friend in A.
+Assuming mutuality is potentially harmful to results and wipes out potentially
+important information.
 
 In Go(lang), links are represented as array slices, but databases do not typically support arrays
 directly, and the normal thing to do would be to create another entity relation. This is possible, but
