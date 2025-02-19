@@ -227,16 +227,16 @@ func GetLinksFromNode(db *sql.DB, key string) []string {
 
 func CalculatePureBall(db *sql.DB, centre string, radius int) {
 
-	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,x,radius) " +
+	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,friends,radius) " +
                 "AS ( " +
                 //  -- anchor member
-                " SELECT name,unnest(hasfriend) x,1 FROM entity WHERE name='%s' " +
+                " SELECT name,unnest(hasfriend) friends,1 FROM entity WHERE name='%s' " +
                 " UNION " +
                 // -- recursive term
                 " SELECT e.name,unnest(e.hasfriend),radius+1 " +
-                " FROM entity e JOIN templist t ON e.name = t.x where radius < %d " +
+                " FROM entity e JOIN templist ON e.name = friends where radius < %d " +
                 ")" +
-                "SELECT DISTINCT x FROM templist",centre,radius)
+                "SELECT DISTINCT friends FROM templist",centre,radius)
 
 	row, err := db.Query(qstr)
 
@@ -280,18 +280,18 @@ func CalculatePureBall(db *sql.DB, centre string, radius int) {
 
 func CalculateHybridBall(db *sql.DB, centre string, radius int) {
 
-	// We use x as a running list/set to be appended, and radius as a counter
+	// We use friends as a running list/set to be appended, and radius as a counter
 
-	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,x,radius) " +
+	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,friends,radius) " +
                 "AS ( " +
                 //  -- anchor member
-                " SELECT name,unnest(array_cat(hasfriend,employs)) x,1 FROM entity WHERE name='%s' " +
+                " SELECT name,unnest(array_cat(hasfriend,employs)),1 FROM entity WHERE name='%s' " +
                 " UNION " +
                 // -- recursive term
                 " SELECT e.name,unnest(array_cat(e.hasfriend,e.employs)),radius+1 " +
-                " FROM entity e JOIN templist t ON e.name = t.x where radius < %d " +
+                " FROM entity e JOIN templist t ON e.name = t.friends where radius < %d " +
                 ")" +
-                "SELECT DISTINCT x FROM templist",centre,radius)
+                "SELECT DISTINCT friends FROM templist",centre,radius)
 
 	row, err := db.Query(qstr)
 

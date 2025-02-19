@@ -30,82 +30,6 @@ const (
 
 //******************************************************************
 
-const NODE_TABLE = "Node as ("
-
-        "key int," +	
-	"L int," +
-	"S text," +
-	"Chap text," + 
-
-	"primary key(S)," +
-
-        "I_mexp Link[]," +
-	"I_mcon Link[]," +
-	"I_mfol Link[]," +
-	"I_near Link[]," +
-	"I_pfol Link[]," +
-	"I_pcon Link[]," +
-	"I_pexp Link[]," +
-	")"
-
-type NodeEventItem struct { // essentially the incidence matrix
-
-	L int                 // length of name string
-	S string              // name string itself
-
-	Chap string           // section/chapter in which this was added
-	SizeClass int         // the string class: N1-N3, LT128, etc
-	NPtr NodeEventItemPtr // Pointer to self
-
-	I [ST_TOP][]Link   // link incidence list, by arrow type
-  	                   // NOTE: carefully how offsets represent negative SSTtypes
-}
-
-//**************************************************************
-
-const LINK_TABLE = "Link as ("
-        "weight real," + 
-        "arrow int," +
-	"dest int" +
-	"primary key(dest,arrow)" +
-")"
-
-type Link struct {  // A link is a type of arrow, with context
-                    // and maybe with a weightfor package math
-	Arr ArrowPtr         // type of arrow, presorted
-	Wgt float64          // numerical weight of this link
-	Ctx []string         // context for this pathway
-	Dst NodeEventItemPtr // adjacent event/item/node
-}
-
-type LinkPtr int
-
-//**************************************************************
-
-const ARROW_TABLE = "ArrowDir as ("
-        "sttype int," + 
-        "long text," +
-        "short text," +
-        "arrowptr int," +
-        "primary key(short,arrowptr)," +
-")"
-
-type ArrowDirectory struct {
-
-	STtype  int
-	Long    string
-	Short   string
-	Ptr     ArrowPtr
-}
-
-type ArrowPtr int // ArrowDirectory index
-
- // all fwd arrow types have a simple int representation > 0
- // all bwd/inverse arrow readings have the negative int for fwd
- // Hashed by long and short names
-
-//******************************************************************
-
 func main() {
 
         connStr := "user="+user+" dbname="+dbname+" password="+password+" sslmode=disable"
@@ -128,22 +52,58 @@ func main() {
 
 	fmt.Println("Successfully connected to PostgreSQL!")
 
-	if !CreateTable(db,NODE_TABLE) {
+	if !CreateTable(db,"Person(name text, hasfriend text[], employs text[], primary key(name))") {
 	   os.Exit(-1)
 	}
 
-	if !CreateTable(db,LINK_TABLE) {
-	   os.Exit(-1)
+	var friends = make(map[string][]string)
+	var employees = make(map[string][]string)
+	var everyone= make(map[string]int)
+
+	friends["Mark"] = []string{ "Silvy","Mandy","Brent"}
+	friends["Mike"] = []string{"Mark","Jane1","Jane2","Jan","Alfie","Jungi","Peter","Paul"}
+	friends["Jan"] = []string{"Adam","Jane1","Jane"}
+	friends["Adam"] = []string{"Company of Friends","Paul","Matt","Billie","Chirpy Cheep Cheep","Taylor Swallow"}
+	friends["Mandy"] = []string{"Zhao","Doug","Tore","Joyce","Mike","Carol","Ali","Matt","Bjørn","Tamar","Kat","Hans"}
+	friends["Company of Friends"] = []string{"Matt","Jane1"}
+	employees["Company of Friends"] = []string{"Robo1","Robo2","Bot1","Bot2","Bot3","Bot4","Rob1Bot21"}
+
+
+	for entity := range friends {
+		CreateNode(db, entity)
+		everyone[entity]++
+		for fr := range friends[entity] {
+			CreateNode(db, friends[entity][fr])
+			everyone[friends[entity][fr]]++
+			AppendLink(db,"hasfriend",entity,friends[entity][fr])
+		}
 	}
 
-	if !CreateTable(db,NODE_TABLE) {
-	   os.Exit(-1)
+	for entity := range employees {
+		CreateNode(db, entity)
+		everyone[entity]++
+		for fr := range employees[entity] {
+			CreateNode(db, employees[entity][fr])
+			everyone[employees[entity][fr]]++
+			AppendLink(db,"employs",entity,employees[entity][fr])
+		}
 	}
 
-	if !CreateTable(db,ARROW_TABLE) {
-	   os.Exit(-1)
+	//ReadNodes(db)
+
+	fmt.Println("From a total space of",len(everyone))
+
+	centre := "Mark"
+
+	for radius := 1; radius < 7; radius++ {
+		CalculatePureBall(db,centre,radius)
 	}
 
+	fmt.Println("----------------------------------------")
+
+	for radius := 1; radius < 7; radius++ {
+		CalculateHybridBall(db,centre,radius)
+	}
 }
 
 // **************************************************************************
@@ -174,7 +134,7 @@ func CreateNode(db *sql.DB, key string) bool {
 
 	var qstr string
 
-	qstr = fmt.Sprintf("INSERT INTO Node(name) VALUES ( '%s' ) RETURNING name",key)
+	qstr = fmt.Sprintf("INSERT INTO Person(name) VALUES ( '%s' ) RETURNING name",key)
 
 	_,err := db.Query(qstr)
 
@@ -263,7 +223,112 @@ func GetLinksFromNode(db *sql.DB, key string) []string {
 	return ParseLinkArray(whole_array)
 }
 
+// **************************************************************************
 
+func CalculatePureBall(db *sql.DB, centre string, radius int) {
+
+	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,x,radius) " +
+                "AS ( " +
+                //  -- anchor member
+                " SELECT name,unnest(hasfriend) x,1 FROM entity WHERE name='%s' " +
+                " UNION " +
+                // -- recursive term
+                " SELECT e.name,unnest(e.hasfriend),radius+1 " +
+                " FROM entity e JOIN templist t ON e.name = t.x where radius < %d " +
+                ")" +
+                "SELECT DISTINCT x FROM templist",centre,radius)
+
+	row, err := db.Query(qstr)
+
+	if err != nil {
+		fmt.Println("Error executing query:",qstr,err)
+	}
+
+	var v string
+	var ball []string
+
+	for row.Next() {
+
+		err = row.Scan(&v)
+
+		if err != nil {
+			fmt.Println("Error scanning row:",qstr,err)
+		} else {
+			ball = append(ball,v)
+		}
+	}
+
+	fmt.Println("\nPURE Ball around ",centre,"radius",radius,": volume", len(ball))
+
+	var cols int
+	sort.Strings(ball)
+
+	for r := range ball {
+
+		if cols % 5 == 0 {
+			fmt.Print("\n     ")
+		}
+
+		fmt.Printf(" %s,",ball[r])
+		cols++
+	}
+
+	fmt.Println()
+}
+
+// **************************************************************************
+
+func CalculateHybridBall(db *sql.DB, centre string, radius int) {
+
+	// We use x as a running list/set to be appended, and radius as a counter
+
+	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,x,radius) " +
+                "AS ( " +
+                //  -- anchor member
+                " SELECT name,unnest(array_cat(hasfriend,employs)) x,1 FROM entity WHERE name='%s' " +
+                " UNION " +
+                // -- recursive term
+                " SELECT e.name,unnest(array_cat(e.hasfriend,e.employs)),radius+1 " +
+                " FROM entity e JOIN templist t ON e.name = t.x where radius < %d " +
+                ")" +
+                "SELECT DISTINCT x FROM templist",centre,radius)
+
+	row, err := db.Query(qstr)
+
+	if err != nil {
+		fmt.Println("Error executing query:",qstr,err)
+	}
+
+	var v string
+	var ball []string
+
+	for row.Next() {
+
+		err = row.Scan(&v)
+
+		if err != nil {
+			fmt.Println("Error scanning row:",qstr,err)
+		} else {
+			ball = append(ball,v)
+		}
+	}
+
+	fmt.Println("\nMIXED Ball around ",centre,"radius",radius,": volume", len(ball))
+
+	var cols int
+	sort.Strings(ball)
+
+	for r := range ball {
+
+		if cols % 5 == 0 {
+			fmt.Print("\n     ")
+		}
+
+		fmt.Printf(" %s,",ball[r])
+		cols++
+	}
+	fmt.Println()
+}
 
 // **************************************************************************
 // Tools
