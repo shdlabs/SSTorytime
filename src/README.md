@@ -218,6 +218,52 @@ experiments and tests on these two alternatives.
 
 
 
+## How to understand the Node Link tables
+
+In order to have an automatic and immediate index of the links
+emanating from a graph, we keep an array of types '[st]Link' from each
+source node to all neighbours. This is quick when depth searching but
+it doesn't make inverse lookups easy. For generel graph connectivity,
+we want the adficency matrix which is dvected in the form...
+<pre>
+(from, arrous, to)...
+</pre>
+This is easily searched forwards and backwards.
+
+Users will possibly define connections, using either forwards or
+badewards arrous however. The simplest thing to do for storage would
+be to flip arrows, so that we always have 'outgoing arrous aligned -
+avoiding the reed to search inverse slots too.  However, if we do
+this, we lose the information about how the user of N4L thought
+about the problem, which could be interesting for certain
+searches/quenes.
+
+Regardess of that problem, there's another way we need to look up data
+by arrow type: *tell me everyone on the end of arrow A*. A good reason for
+this is that arrow types define "effective roles" for things. This is 
+the flexible semantic sustitute we use in place of formal datatyping here,
+as data types are too rigid for reasoning.
+
+For depth searches, path construction, the adjacency table is cumbersome
+to use however, as it leads to a possibly O(N^2) search instead of an O(1)
+index search. So we definitely don't want to invoke a normal form on the
+adjacency relation alone. For generality, we can keep both of these.
+
+For generality then, we heep both forms: positive AND negative in tables.
+
+NOTE: a link A -> B does not imply the existence of another link
+B. These are different representations (interpretations) of the same
+link.  Even though this is how one would read the formar link, storing
+both of these is a double counting of the graph. The question is:
+would this be useful? Semantically, in order to collect all of the
+neighbor links in and out, we can indeed profit from double counting
+was long as we we careful NOT to mix positive and negative
+directions. This makes depth searches easy.
+
+So, in the N4L function `SearchIncidentRowClass`, we do flip arrows when constructing
+the adjacency matrix, and search all categories, but for other purposes than assembling,
+it is useful to maintain this denormalization.
+
 
 
 
