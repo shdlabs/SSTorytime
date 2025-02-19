@@ -1025,7 +1025,7 @@ func SearchIncidentRowClass(node NodeEventItem, searcharrows []ArrowPtr,node_lis
 						row_nodes[match.Dst] = true
 						rc.Col = match.Dst
 						cr.Row = match.Dst
-						if sttype < ST_OFFSET {
+						if sttype < inverse_flip_arrow {
 							ret_weights[cr] += match.Wgt  // flip arrow
 						} else {
 							ret_weights[rc] += match.Wgt
