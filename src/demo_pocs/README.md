@@ -130,29 +130,20 @@ for tmp := range templist.{friends}
     }
 
 </pre>
-
-The intial values are set by the "anchor line"
- 
- SELECT name,unnest(hasfriend), 1 FROM entity WHERE name='Mark'
-
+In SQL language,
+* The intial values are set by the "anchor line" (line 4)
+`SELECT name,unnest(hasfriend), 1 FROM entity WHERE name='Mark'`
 Notice that this is the line that contains the "boundary conditions" or invariant constant 'Mark' and unit value 1.
 
-The formal parameters behave in the same way. The values assigned in the body of the function
-are passed as the formal parameters into the next recursion. So name is set from line 4:
+* The templist is not the actually the name of a function, but its resulting output formal parameter, i.e. a selection of rows that is appended by a join on each iteration.
 
-  SELECT name, ...
-
-friend is set by line 9:
-
-  SELECT 
-
-and friend
-
-Meanwhile templist itself is not merely the function name but also its resulting output, a selection of rows that is appended by a join on each iteration.
-
-
+## SQL aliasing
 
 In a select statement (although it's not commonly known), one can define an alias for the
 items and columns by suffixing the search part with alias identifiers, which can then
-be used like struct variables to refer to column members  e.g. 
-
+be used like struct variables to refer to column members  e.g. in line 7
+<pre>
+SELECT e.name,unnest(e.hasfriend),radius+1 FROM Entity e JOIN templist ON e.name = friends where radius < 2
+</pre>
+Notice how "e" is used after the table-name or datatype Entity as the current instance of that value
+in order to distinguish it from friends, whose source is the iteration algorithm.
