@@ -46,6 +46,7 @@ const (
 	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
 	ERR_MISSING_ITEM_SOMEWHERE = "Missing item somewhere"
 	ERR_MISSING_ITEM_RELN = "Missing item or double relation"
+	ERR_MISMATCH_QUOTE = "Apparent missing or mismatch in ', \" or ( )"
 	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
 	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
@@ -222,7 +223,6 @@ type NodeEventItemBlobs struct {
 
 var ( 
 	ARROW_DIRECTORY []ArrowDirectory
-	INVERSE_ARROW_DIRECTORY []ArrowDirectory
 	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up short name int referene
 	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
@@ -1002,7 +1002,7 @@ func SearchIncidentRowClass(node NodeEventItem, searcharrows []ArrowPtr,node_lis
 
         // Only sum over outgoing (+) links
 	
-	for sttype := 0; sttype < len(node.I); sttype++ {
+	for sttype := ST_OFFSET; sttype < len(node.I); sttype++ {
 		
 		for lnk := range node.I[sttype] {
 			arrowptr := node.I[sttype][lnk].Arr
@@ -1139,8 +1139,7 @@ func GetToken(src []rune, pos int) (string,int) {
 	case '(':
 		token,pos = ReadToLast(src,pos,')')
 
-        case '"':
-
+        case '"','\'':
 		quote := src[pos]
 
 		if IsQuote(quote) && IsBackReference(src,pos) {
@@ -1340,6 +1339,14 @@ func IdempAddArrow(from string, frptr NodeEventItemPtr, link Link,to string, top
 	}
 
 	AppendLinkToNode(frptr,link,toptr)
+
+	// Double up for indexing
+
+	invlink := FindLinkAssociation(ARROW_DIRECTORY[INVERSE_ARROWS[link.Arr]].Short)
+
+	AppendLinkToNode(toptr,invlink,frptr)
+
+
 }
 
 //**************************************************************
@@ -1588,13 +1595,16 @@ func ReadToLast(src []rune,pos int, stop rune) (string,int) {
 
 	var cpy []rune
 
-	for ; Collect(src,pos,stop,cpy); pos++ {
+	var starting_at = LINE_NUM
 
-		// sanitize small case at start of item
-		if stop == ALPHATEXT {
-			//src[pos] = unicode.ToLower(src[pos])
-		}
+	for ; Collect(src,pos,stop,cpy) && pos < len(src); pos++ {
 		cpy = append(cpy,src[pos])
+	}
+
+	if IsQuote(stop) && src[pos-1] != stop {
+		e := fmt.Sprintf("%s starting at line %d (found token %s)",ERR_MISMATCH_QUOTE,starting_at,string(cpy))
+		ParseError(e)
+		os.Exit(-1)
 	}
 
 	token := string(cpy)
@@ -1698,29 +1708,6 @@ func IsQuote(r rune) bool {
 	}
 
 	return false
-}
-
-//**************************************************************
-
-func MatchingQuote(r,s rune) rune {
-
-	// Eliminate non-asci quotes
-
-	switch r {
-
-	case '"',NON_ASCII_LQUOTE,NON_ASCII_RQUOTE:
-		if s == '"' || s == NON_ASCII_LQUOTE || s == NON_ASCII_RQUOTE {
-			return '"'
-		}
-
-	case '\'':
-		if s == '\'' {
-			return s
-		}
-
-	}
-
-	return s
 }
 
 //**************************************************************
@@ -1893,8 +1880,14 @@ func FindLinkAssociation(token string) Link {
 	var weight float64 = 1
 	var weightcount int
 	var ctx []string
+	var name string
 
-	name := token[1:len(token)-1]
+	if token[0] == '(' {
+		name = token[1:len(token)-1]
+	} else {
+		name = token
+	}
+
 	name = strings.TrimSpace(name)
 
 	if strings.Contains(name,",") {
