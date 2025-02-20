@@ -234,7 +234,9 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 				cone[l] = make([]string,1)
 			}
 
-			cone[l] = append(cone[l],v)
+			if !Already(v,cone) {
+				cone[l] = append(cone[l],v)
+			}
 		}
 	}
 
@@ -243,6 +245,21 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 	}
 
 	fmt.Println()
+}
+
+// **************************************************************************
+
+func Already (s string, cone map[int][]string) bool {
+
+	for l := range cone {
+		for n := 0; n < len(cone[l]); n++ {
+			if s == cone[l][n] {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // **************************************************************************
