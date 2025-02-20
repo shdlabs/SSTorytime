@@ -90,7 +90,7 @@ func main() {
 
 	centre := "Mark"
 
-	for radius := 1; radius < 7; radius++ {
+	for radius := 1; radius < 10; radius++ {
 		GetFutureCone(db,centre,radius)
 	}
 
@@ -192,7 +192,9 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 
 	fmt.Println("--- Future cone by layers --- from ",centre,"depth",radius)
 
-	row, err := db.Query("drop table output")
+	row, err := db.Query("drop table output") // No error check, if output exists next will fail
+
+	/* We group SQL commands by starting BEGIN ... COMMIT */
 
 	qstr := fmt.Sprintf("BEGIN;" +
 		"WITH RECURSIVE FutureCone(name,member,depth) "+
