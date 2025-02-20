@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"sort"
 
 	_ "github.com/lib/pq"
 
@@ -52,7 +51,7 @@ func main() {
 
 	fmt.Println("Successfully connected to PostgreSQL!")
 
-	if !CreateTable(db,"Person(name text, hasfriend text[], employs text[], primary key(name))") {
+	if !CreateTable(db,"Entity(name text, hasfriend text[], employs text[], primary key(name))") {
 	   os.Exit(-1)
 	}
 
@@ -66,8 +65,8 @@ func main() {
 	friends["Adam"] = []string{"Company of Friends","Paul","Matt","Billie","Chirpy Cheep Cheep","Taylor Swallow"}
 	friends["Mandy"] = []string{"Zhao","Doug","Tore","Joyce","Mike","Carol","Ali","Matt","Bjørn","Tamar","Kat","Hans"}
 	friends["Company of Friends"] = []string{"Matt","Jane1"}
-	employees["Company of Friends"] = []string{"Robo1","Robo2","Bot1","Bot2","Bot3","Bot4","Rob1Bot21"}
 
+	employees["Company of Friends"] = []string{"Robo1","Robo2","Bot1","Bot2","Bot3","Bot4","Rob1Bot21"}
 
 	for entity := range friends {
 		CreateNode(db, entity)
@@ -89,10 +88,6 @@ func main() {
 		}
 	}
 
-	//ReadNodes(db)
-
-	fmt.Println("From a total space of",len(everyone))
-
 	centre := "Mark"
 
 	for radius := 1; radius < 7; radius++ {
@@ -110,7 +105,7 @@ func CreateTable(db *sql.DB,defn string) bool {
 	_,err := db.Query("CREATE TABLE IF NOT EXISTS "+defn)
 	
 	if err != nil {
-		s := fmt.Sprintln("Failed to create a table of type PGLink ",err)
+		s := fmt.Sprintln("Failed to create a table ",err)
 		
 		if strings.Contains(s,"already exists") {
 			return true
@@ -129,7 +124,7 @@ func CreateNode(db *sql.DB, key string) bool {
 
 	var qstr string
 
-	qstr = fmt.Sprintf("INSERT INTO Person(name) VALUES ( '%s' ) RETURNING name",key)
+	qstr = fmt.Sprintf("INSERT INTO Entity(name) VALUES ( '%s' ) RETURNING name",key)
 
 	_,err := db.Query(qstr)
 
@@ -153,7 +148,7 @@ func AppendLink(db *sql.DB, arrow,name,fr string) bool {
 
 	// Want to make this idempotent, because SQL is not (and not clause)
 
-	qstr := fmt.Sprintf("update person set %s = array_append(%s,'%s') where name = '%s' and (%s is null or not '%s' = ANY(%s))",arrow,arrow,fr,name,arrow,fr,arrow)
+	qstr := fmt.Sprintf("update Entity set %s = array_append(%s,'%s') where name = '%s' and (%s is null or not '%s' = ANY(%s))",arrow,arrow,fr,name,arrow,fr,arrow)
 
 	_,err := db.Query(qstr)
 
@@ -169,7 +164,7 @@ func AppendLink(db *sql.DB, arrow,name,fr string) bool {
 
 func GetLinksFromNode(db *sql.DB, key string) []string {
 
-	qstr := fmt.Sprintf("select hasfriend from Person where name='%s'",key)
+	qstr := fmt.Sprintf("select hasfriend from Entity where name='%s'",key)
 
 	row, err := db.Query(qstr)
 
@@ -195,106 +190,56 @@ func GetLinksFromNode(db *sql.DB, key string) []string {
 
 func GetFutureCone(db *sql.DB, centre string, radius int) {
 
-	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,x,radius) " +
-                "AS ( " +
-                //  -- anchor member
-                " SELECT name,unnest(hasfriend) x,1 FROM entity WHERE name='%s' " +
-                " UNION " +
-                // -- recursive term
-                " SELECT e.name,unnest(e.hasfriend),radius+1 " +
-                " FROM entity e JOIN templist t ON e.name = t.x where radius < %d " +
-                ")" +
-                "SELECT DISTINCT x FROM templist",centre,radius)
+	fmt.Println("--- Future cone by layers --- from ",centre,"depth",radius)
 
-	row, err := db.Query(qstr)
+	row, err := db.Query("drop table output")
 
-	if err != nil {
-		fmt.Println("Error executing query:",qstr,err)
-	}
+	qstr := fmt.Sprintf("BEGIN;" +
+		"WITH RECURSIVE FutureCone(name,member,depth) "+
+		"AS ( " +
+		"SELECT name,unnest(hasfriend), 1 FROM entity WHERE name='%s' "+
+		"UNION "+
+		"SELECT e.name,unnest(e.hasfriend),depth+1 FROM entity e JOIN FutureCone ON e.name = member where depth < %d"+
+		") "+
+		"SELECT member,depth into output FROM FutureCone where not member='%s' order by depth; "+
+		"select * from output; "+
+		"commit;",centre,radius,centre)
 
-	var v string
-	var ball []string
-
-	for row.Next() {
-
-		err = row.Scan(&v)
-
-		if err != nil {
-			fmt.Println("Error scanning row:",qstr,err)
-		} else {
-			ball = append(ball,v)
-		}
-	}
-
-	fmt.Println("\nPURE Ball around ",centre,"radius",radius,": volume", len(ball))
-
-	var cols int
-	sort.Strings(ball)
-
-	for r := range ball {
-
-		if cols % 5 == 0 {
-			fmt.Print("\n     ")
-		}
-
-		fmt.Printf(" %s,",ball[r])
-		cols++
-	}
-
-	fmt.Println()
-}
-
-// **************************************************************************
-
-func CalculateHybridBall(db *sql.DB, centre string, radius int) {
-
-	// We use x as a running list/set to be appended, and radius as a counter
-
-	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,x,radius) " +
-                "AS ( " +
-                //  -- anchor member
-                " SELECT name,unnest(array_cat(hasfriend,employs)) x,1 FROM entity WHERE name='%s' " +
-                " UNION " +
-                // -- recursive term
-                " SELECT e.name,unnest(array_cat(e.hasfriend,e.employs)),radius+1 " +
-                " FROM entity e JOIN templist t ON e.name = t.x where radius < %d " +
-                ")" +
-                "SELECT DISTINCT x FROM templist",centre,radius)
-
-	row, err := db.Query(qstr)
+	row, err = db.Query(qstr)
 
 	if err != nil {
 		fmt.Println("Error executing query:",qstr,err)
 	}
 
+	const maxdepth = 10
+
 	var v string
-	var ball []string
+	var l int
+	var cone = make(map[int][]string,1)
+
+	cone[0] = append(cone[0],centre)
 
 	for row.Next() {
 
-		err = row.Scan(&v)
+		err = row.Scan(&v,&l)
 
 		if err != nil {
 			fmt.Println("Error scanning row:",qstr,err)
 		} else {
-			ball = append(ball,v)
+			_,ok := cone[l]
+
+			if !ok {
+				cone[l] = make([]string,1)
+			}
+
+			cone[l] = append(cone[l],v)
 		}
 	}
 
-	fmt.Println("\nMIXED Ball around ",centre,"radius",radius,": volume", len(ball))
-
-	var cols int
-	sort.Strings(ball)
-
-	for r := range ball {
-
-		if cols % 5 == 0 {
-			fmt.Print("\n     ")
-		}
-
-		fmt.Printf(" %s,",ball[r])
-		cols++
+	for l := 0; l < len(cone); l++ {
+		fmt.Println(l,cone[l])
 	}
+
 	fmt.Println()
 }
 
