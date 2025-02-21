@@ -902,7 +902,8 @@ func Agg(i int) int {
 func PrintLink(l Link) {
 
 	to := GetNodeFromPtr(l.Dst)
-	Verbose("\t ... --(",ARROW_DIRECTORY[l.Arr].Long,",",l.Wgt,")->",to,l.Ctx)
+	arrow := ARROW_DIRECTORY[l.Arr]
+	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",STtype(arrow.STtype))
 }
 
 //**************************************************************
@@ -2267,7 +2268,7 @@ func ReadTUF8File(filename string) []rune {
 
 func Usage() {
 	
-	fmt.Printf("usage: go run N4L.go [-v] [-u] [-s] [file].dat\n")
+	fmt.Printf("usage: N4L [-v] [-u] [-s] [file].dat\n")
 	flag.PrintDefaults()
 	os.Exit(2)
 }
@@ -2333,6 +2334,38 @@ func Diag(a ...interface{}) {
 		prefix := fmt.Sprint(LINE_NUM,":")
 		AppendStringToFile(TEST_DIAG_FILE,prefix+s)
 	}
+}
+
+//**************************************************************
+
+func STtype(st int) string {
+
+	st = st - ST_ZERO
+	var ty string
+
+	switch st {
+	case -EXPRESS:
+		ty = "-(expressed by)"
+	case -CONTAINS:
+		ty = "-(part of)"
+	case -LEADSTO:
+		ty = "-(arriving from)"
+	case NEAR:
+		ty = "(close to)"
+	case LEADSTO:
+		ty = "+(leading to)"
+	case CONTAINS:
+		ty = "+(containing)"
+	case EXPRESS:
+		ty = "+(expressing)"
+	default:
+		ty = "unknown relation!"
+	}
+
+	const green = "\x1b[36m"
+	const endgreen = "\x1b[0m"
+
+	return green + ty + endgreen
 }
 
 //**************************************************************

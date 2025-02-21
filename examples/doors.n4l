@@ -1,0 +1,43 @@
+
+-multi slit interference
+
+start  (lt) door
+    "  (lt) port
+    "  (lt) hole
+    "  (lt) gate
+
+door (lt) passage
+  "  (lt) road
+  "  (lt) river
+
+port (lt) river
+  "  (lt) tram
+
+hole (lt) tram
+
+gate (lt) tram
+  "  (lt) bike
+
+passage (lt) target 1
+road    (lt) target 2
+
+river  (lt) target 3
+tram   (lt)  "
+bike   (lt)   "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

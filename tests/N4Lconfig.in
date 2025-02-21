@@ -6,10 +6,12 @@
  	# Define arrow causal directions ... left to right
  	# what does A -----> B mean, and what is its opposite?
 
+        + leads to (lt) - arriving from (af)
+
  	# causal order, preconditions, succession
 
  	+ forwards (fwd) - backwards (bwd)      # A (forwards)	B,  B (backwards) A
- 	+ affects  (af)  - affected by (baf)  	# A (affects) 	B,  B (affected by) A
+ 	+ affects  (aff)  - affected by (baff)  	# A (affects) 	B,  B (affected by) A
  	+ causes   (cf)  - is caused by (cb)
  	+ leads to (to)  - comes from (fr)
         + is followed by (next) - is preceded by (prev)    
@@ -49,7 +51,7 @@
 
         # succeeds is more accurate in terms of order
         #
-	# + is less than (lt) - is greater than (gt)
+	# + is less than (lth) - is greater than (gth)
 
  :: construction, building, industry ::
 
@@ -81,6 +83,8 @@
  + consists of (cons)  - is part of (pt)
  + has example (hasex) - example of (ex)
  + has member (memb) - belongs to (belong)
+
+ + has friend (fr) - is considered a friend of (isfrof)
 
  + owns (owns) - is owned by (ownby)
  + rents (rents) - is rented by (rentby)
@@ -143,6 +147,7 @@
 
  similar to         	(sim)
  associated with    	(ass)  # (loose coupling)
+ see also               (see)
  near               	(nr)
 
  met with               (met) // a mutual coincidence
