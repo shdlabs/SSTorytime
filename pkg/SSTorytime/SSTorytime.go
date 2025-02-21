@@ -20,8 +20,8 @@ const (
 	CONTAINS = 2  // +/-
 	EXPRESS = 3   // +/-
 
-	ST_OFFSET = EXPRESS
-	ST_TOP = ST_OFFSET + EXPRESS + 1
+	ST_ZERO = EXPRESS
+	ST_TOP = ST_ZERO + EXPRESS + 1
 
 	N1GRAM = 1
 	N2GRAM = 2
@@ -45,6 +45,20 @@ type NodeEventItem struct { // essentially the incidence matrix
 	I [ST_TOP][]Link   // link incidence list, by arrow type
   	                   // NOTE: carefully how offsets represent negative SSTtypes
 }
+
+/*
+
+CREATE TABLE IF NOT EXISTS Node
+(
+NPtr      int primary key,
+L         int,
+S         text,
+Chap      text,
+SizeClass int,
+I         Link[7][]
+);
+
+*/
 
 //**************************************************************
 
@@ -74,6 +88,19 @@ type Link struct {  // A link is a type of arrow, with context
 }
 
 type LinkPtr int
+type ArrowPtr int // ArrowDirectory index
+
+
+/*
+
+CREATE TYPE Link AS
+(
+ArrowPtr int,
+Wgt      real,
+Ctx      text[],
+Dst      int
+);
+*/
 
 //******************************************************************
 
@@ -130,10 +157,8 @@ func Close(ctx PoSST) {
 
 // **************************************************************************
 
-func CreateType(ctx PoSST, defn string) bool {
+func CreateTypes(ctx PoSST, defn string) bool {
 
-        fmt.Println("Create type ...")
-	
 	_,err := ctx.DB.Query("CREATE TYPE "+defn)
 
 	if err != nil {
