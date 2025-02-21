@@ -118,8 +118,8 @@ const (
 	CONTAINS = 2  // +/-
 	EXPRESS = 3   // +/-
 
-	ST_OFFSET = EXPRESS // so that ST_OFFSET - EXPRESS == 0
-	ST_TOP = ST_OFFSET + EXPRESS + 1
+	ST_ZERO = EXPRESS // so that ST_ZERO - EXPRESS == 0
+	ST_TOP = ST_ZERO + EXPRESS + 1
 
 	N1GRAM = 1
 	N2GRAM = 2
@@ -527,13 +527,13 @@ func InsertArrowDirectory(sec,alias,name,pm string) ArrowPtr {
 
 	switch sec {
 	case "leadsto":
-		newarrow.STtype = ST_OFFSET + LEADSTO * sign
+		newarrow.STtype = ST_ZERO + LEADSTO * sign
 	case "contains":
-		newarrow.STtype = ST_OFFSET + CONTAINS * sign
+		newarrow.STtype = ST_ZERO + CONTAINS * sign
 	case "properties":
-		newarrow.STtype = ST_OFFSET + EXPRESS * sign
+		newarrow.STtype = ST_ZERO + EXPRESS * sign
 	case "similarity":
-		newarrow.STtype = ST_OFFSET + NEAR
+		newarrow.STtype = ST_ZERO + NEAR
 	}
 
 	newarrow.Long = name
@@ -889,7 +889,7 @@ func CompareVec(v1,v2 []float64) float64 {
 
 func Agg(i int) int {
 
-	n := i - ST_OFFSET
+	n := i - ST_ZERO
 	if n < 0 {
 		n = -n
 	}
@@ -920,7 +920,7 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 		v,ok := ARROW_SHORT_DIR[list[i]]
 
 		if ok {
-			typ := ARROW_DIRECTORY[v].STtype-ST_OFFSET
+			typ := ARROW_DIRECTORY[v].STtype-ST_ZERO
 			if typ < 0 {
 				typ = -typ
 			}
@@ -998,11 +998,11 @@ func SearchIncidentRowClass(node NodeEventItem, searcharrows []ArrowPtr,node_lis
         cr.Col = node.NPtr
 
 	// flip backward facing arrows
-	const inverse_flip_arrow = ST_OFFSET
+	const inverse_flip_arrow = ST_ZERO
 
         // Only sum over outgoing (+) links
 	
-	for sttype := ST_OFFSET; sttype < len(node.I); sttype++ {
+	for sttype := ST_ZERO; sttype < len(node.I); sttype++ {
 		
 		for lnk := range node.I[sttype] {
 			arrowptr := node.I[sttype][lnk].Arr

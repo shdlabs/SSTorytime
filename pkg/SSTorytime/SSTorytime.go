@@ -12,6 +12,69 @@ import (
 
 )
 
+//**************************************************************
+
+const (
+	NEAR = 0
+	LEADSTO = 1   // +/-
+	CONTAINS = 2  // +/-
+	EXPRESS = 3   // +/-
+
+	ST_OFFSET = EXPRESS
+	ST_TOP = ST_OFFSET + EXPRESS + 1
+
+	N1GRAM = 1
+	N2GRAM = 2
+	N3GRAM = 3
+	LT128 = 4
+	LT1024 = 5
+	GT1024 = 6
+)
+
+//**************************************************************
+
+type NodeEventItem struct { // essentially the incidence matrix
+
+	L int                 // length of name string
+	S string              // name string itself
+
+	Chap string           // section/chapter in which this was added
+	SizeClass int         // the string class: N1-N3, LT128, etc
+	NPtr NodeEventItemPtr // Pointer to self
+
+	I [ST_TOP][]Link   // link incidence list, by arrow type
+  	                   // NOTE: carefully how offsets represent negative SSTtypes
+}
+
+//**************************************************************
+
+type NodeEventItemPtr struct {
+
+	CPtr  ClassedNodePtr // index of within name class lane
+	Class int            // Text size-class
+}
+
+type ClassedNodePtr int  // Internal pointer type of size-classified text
+
+//**************************************************************
+
+type RCtype struct {
+	Row NodeEventItemPtr
+	Col NodeEventItemPtr
+}
+
+//**************************************************************
+
+type Link struct {  // A link is a type of arrow, with context
+                    // and maybe with a weightfor package math
+	Arr ArrowPtr         // type of arrow, presorted
+	Wgt float64          // numerical weight of this link
+	Ctx []string         // context for this pathway
+	Dst NodeEventItemPtr // adjacent event/item/node
+}
+
+type LinkPtr int
+
 //******************************************************************
 
 const (
@@ -52,6 +115,10 @@ func Open() PoSST {
 		os.Exit(-1)
 	}
 
+	if !CreateType(db,"PGLink AS (weight real, arrow int,dest int)") {
+	   os.Exit(-1)
+	}
+
 	return ctx
 }
 
@@ -59,6 +126,29 @@ func Open() PoSST {
 
 func Close(ctx PoSST) {
 	ctx.DB.Close()
+}
+
+// **************************************************************************
+
+func CreateType(ctx PoSST, defn string) bool {
+
+        fmt.Println("Create type ...")
+	
+	_,err := ctx.DB.Query("CREATE TYPE "+defn)
+
+	if err != nil {
+		s := fmt.Sprintln("Failed to create datatype PGLink ",err)
+		
+		if strings.Contains(s,"already exists") {
+			return true
+		} else {
+			fmt.Println("X",s)
+			return false
+		}
+
+	}
+
+	return true
 }
 
 // **************************************************************************
