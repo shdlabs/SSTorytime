@@ -197,15 +197,15 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 	/* We group SQL commands by starting BEGIN ... COMMIT */
 
 	qstr := fmt.Sprintf("BEGIN;" +
-		"WITH RECURSIVE FutureCone(name,member,depth) "+
-		"AS ( " +
-		"SELECT name,unnest(hasfriend), 1 FROM entity WHERE name='%s' "+
-		"UNION "+
-		"SELECT e.name,unnest(e.hasfriend),depth+1 FROM entity e JOIN FutureCone ON e.name = member where depth < %d"+
-		") "+
-		"SELECT member,depth into output FROM FutureCone where not member='%s' order by depth; "+
+             "WITH RECURSIVE cone (name,member,past,depth)"+
+	     " AS ("+
+    	     "SELECT name,unnest(hasfriend), Array['%s']::text[], 1 FROM entity WHERE name='%s'"+
+  	       " UNION "+
+    	       "SELECT e.name,unnest(e.hasfriend),member||past,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < %d and not e.name = ANY(past))"+
+	       ")"+
+	       " SELECT member,depth into output FROM cone;"+
 		"select * from output; "+
-		"commit;",centre,radius,centre)
+		"commit;",centre,centre,radius)
 
 	row, err = db.Query(qstr)
 
@@ -251,6 +251,7 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 
 func Already (s string, cone map[int][]string) bool {
 
+return false
 	for l := range cone {
 		for n := 0; n < len(cone[l]); n++ {
 			if s == cone[l][n] {
