@@ -8,14 +8,10 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"os"
-	"strings"
 	"sort"
 
-	_ "github.com/lib/pq"
-
+        SST "SSTorytime"
 )
 
 //******************************************************************
@@ -32,29 +28,7 @@ const (
 
 func main() {
 
-        connStr := "user="+user+" dbname="+dbname+" password="+password+" sslmode=disable"
-
-        db, err := sql.Open("postgres", connStr)
-
-	if err != nil {
-	   	fmt.Println("Error connecting to the database: ", err)
-		os.Exit(-1)
-	}
-	
-	defer db.Close()
-	
-	err = db.Ping()
-	
-	if err != nil {
-		fmt.Println("Error pinging the database: ", err)
-		os.Exit(-1)
-	}
-
-	fmt.Println("Successfully connected to PostgreSQL!")
-
-	if !CreateTable(db,"Person(name text, hasfriend text[], employs text[], primary key(name))") {
-	   os.Exit(-1)
-	}
+        ctx := SST.Open()
 
 	var friends = make(map[string][]string)
 	var employees = make(map[string][]string)
@@ -70,22 +44,22 @@ func main() {
 
 
 	for entity := range friends {
-		CreateNode(db, entity)
+		SST.CreateNode(ctx, entity)
 		everyone[entity]++
 		for fr := range friends[entity] {
-			CreateNode(db, friends[entity][fr])
+			SST.CreateNode(ctx, friends[entity][fr])
 			everyone[friends[entity][fr]]++
-			AppendLink(db,"hasfriend",entity,friends[entity][fr])
+			SST.AppendLink(ctx,"hasfriend",entity,friends[entity][fr])
 		}
 	}
 
 	for entity := range employees {
-		CreateNode(db, entity)
+		SST.CreateNode(ctx, entity)
 		everyone[entity]++
 		for fr := range employees[entity] {
-			CreateNode(db, employees[entity][fr])
+			SST.CreateNode(ctx, employees[entity][fr])
 			everyone[employees[entity][fr]]++
-			AppendLink(db,"employs",entity,employees[entity][fr])
+			SST.AppendLink(ctx,"employs",entity,employees[entity][fr])
 		}
 	}
 
@@ -96,117 +70,28 @@ func main() {
 	centre := "Mark"
 
 	for radius := 1; radius < 7; radius++ {
-		GetFutureCone(db,centre,radius)
+		CalculatePureBall(ctx,centre,radius)
 	}
 
+	SST.Close(ctx)
 }
 
 // **************************************************************************
 
-func CreateTable(db *sql.DB,defn string) bool {
+func CalculatePureBall(ctx SST.PoSST, centre string, radius int) {
 
-        fmt.Println("Create table from type...")
-	
-	_,err := db.Query("CREATE TABLE IF NOT EXISTS "+defn)
-	
-	if err != nil {
-		s := fmt.Sprintln("Failed to create a table of type PGLink ",err)
-		
-		if strings.Contains(s,"already exists") {
-			return true
-		} else {
-			fmt.Println("Y",s)
-			return false
-		}
-	}
-
-	return true
-}
-
-// **************************************************************************
-
-func CreateNode(db *sql.DB, key string) bool {
-
-	var qstr string
-
-	qstr = fmt.Sprintf("INSERT INTO Person(name) VALUES ( '%s' ) RETURNING name",key)
-
-	_,err := db.Query(qstr)
-
-	if err != nil {
-		s := fmt.Sprint("Failed to insert",key,err)
-		
-		if strings.Contains(s,"duplicate key") {
-			return true
-		} else {
-			fmt.Println(s,"\n",qstr,err)
-			return false
-		}
-	}
-	
-	return true
-}
-
-// **************************************************************************
-
-func AppendLink(db *sql.DB, arrow,name,fr string) bool {
-
-	// Want to make this idempotent, because SQL is not (and not clause)
-
-	qstr := fmt.Sprintf("update person set %s = array_append(%s,'%s') where name = '%s' and (%s is null or not '%s' = ANY(%s))",arrow,arrow,fr,name,arrow,fr,arrow)
-
-	_,err := db.Query(qstr)
-
-	if err != nil {
-		fmt.Println("Failed to append",err)
-	       return false
-	}
-
-	return true
-}
-
-// **************************************************************************
-
-func GetLinksFromNode(db *sql.DB, key string) []string {
-
-	qstr := fmt.Sprintf("select hasfriend from Person where name='%s'",key)
-
-	row, err := db.Query(qstr)
-
-	if err != nil {
-		fmt.Println("Error executing query:",qstr,err)
-	}
-
-	var whole_array string
-
-	for row.Next() {
-
-		err = row.Scan(&whole_array)
-
-		if err != nil {
-			fmt.Println("Error scanning row:",qstr,err)
-		}
-	}
-
-	return ParseLinkArray(whole_array)
-}
-
-// **************************************************************************
-
-func GetFutureCone(db *sql.DB, centre string, radius int) {
-
-	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,x,radius) " +
+	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,friends,radius) " +
                 "AS ( " +
                 //  -- anchor member
-                " SELECT name,unnest(hasfriend) x,1 FROM entity WHERE name='%s' " +
+                " SELECT name,unnest(hasfriend) friends,1 FROM entity WHERE name='%s' " +
                 " UNION " +
                 // -- recursive term
                 " SELECT e.name,unnest(e.hasfriend),radius+1 " +
-                " FROM entity e JOIN templist t ON e.name = t.x where radius < %d " +
+                " FROM entity e JOIN templist ON e.name = friends where radius < %d " +
                 ")" +
-                "SELECT DISTINCT x FROM templist",centre,radius)
+                "SELECT DISTINCT friends FROM templist",centre,radius)
 
-	row, err := db.Query(qstr)
+	row, err := ctx.DB.Query(qstr)
 
 	if err != nil {
 		fmt.Println("Error executing query:",qstr,err)
@@ -244,86 +129,7 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 	fmt.Println()
 }
 
-// **************************************************************************
 
-func CalculateHybridBall(db *sql.DB, centre string, radius int) {
-
-	// We use x as a running list/set to be appended, and radius as a counter
-
-	qstr := fmt.Sprintf("WITH RECURSIVE templist (name,x,radius) " +
-                "AS ( " +
-                //  -- anchor member
-                " SELECT name,unnest(array_cat(hasfriend,employs)) x,1 FROM entity WHERE name='%s' " +
-                " UNION " +
-                // -- recursive term
-                " SELECT e.name,unnest(array_cat(e.hasfriend,e.employs)),radius+1 " +
-                " FROM entity e JOIN templist t ON e.name = t.x where radius < %d " +
-                ")" +
-                "SELECT DISTINCT x FROM templist",centre,radius)
-
-	row, err := db.Query(qstr)
-
-	if err != nil {
-		fmt.Println("Error executing query:",qstr,err)
-	}
-
-	var v string
-	var ball []string
-
-	for row.Next() {
-
-		err = row.Scan(&v)
-
-		if err != nil {
-			fmt.Println("Error scanning row:",qstr,err)
-		} else {
-			ball = append(ball,v)
-		}
-	}
-
-	fmt.Println("\nMIXED Ball around ",centre,"radius",radius,": volume", len(ball))
-
-	var cols int
-	sort.Strings(ball)
-
-	for r := range ball {
-
-		if cols % 5 == 0 {
-			fmt.Print("\n     ")
-		}
-
-		fmt.Printf(" %s,",ball[r])
-		cols++
-	}
-	fmt.Println()
-}
-
-// **************************************************************************
-// Tools
-// **************************************************************************
-
-func ParseLinkArray(whole_array string) []string {
-
-   // array as {"(1,2,3)","(4,5,6)"}
-
-      	var l []string
-
-    	whole_array = strings.Replace(whole_array,"{","",-1)
-    	whole_array = strings.Replace(whole_array,"}","",-1)
-	whole_array = strings.Replace(whole_array,"\",\"",";",-1)
-	whole_array = strings.Replace(whole_array,"\"","",-1)
-	
-        items := strings.Split(whole_array,";")
-
-	for i := range items {
-	    var v string
-	    s := strings.TrimSpace(items[i])
-	    fmt.Sscanf(s,"%s",&v)
-	    l = append(l,v)
-	    }
-
-	return l
-}
 
 
 
