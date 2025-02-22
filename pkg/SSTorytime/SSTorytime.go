@@ -89,6 +89,37 @@ const NODEPTR_TABLE = "CREATE TABLE IF NOT EXISTS NodePtr " +
 
 //**************************************************************
 
+type NodeDirectory struct {
+
+	// Power law n-gram frequencies
+
+	N1grams map[string]ClassedNodePtr
+	N1directory []Node
+	N1_top ClassedNodePtr
+
+	N2grams map[string]ClassedNodePtr
+	N2directory []Node
+	N2_top ClassedNodePtr
+
+	N3grams map[string]ClassedNodePtr
+	N3directory []Node
+	N3_top ClassedNodePtr
+
+	// Use linear search on these exp fewer long strings
+
+	LT128 []Node
+	LT128_top ClassedNodePtr
+	LT1024 []Node
+	LT1024_top ClassedNodePtr
+	GT1024 []Node
+	GT1024_top ClassedNodePtr
+}
+
+// This is better represented as separate tables in SQL, one for each class
+
+
+//**************************************************************
+
 type NodePtr struct {
 
 	CPtr  ClassedNodePtr // index of within name class lane
