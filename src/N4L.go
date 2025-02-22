@@ -69,7 +69,7 @@ const (
 var ( 
 	LINE_NUM int = 1
 	LINE_ITEM_CACHE = make(map[string][]string)  // contains current and labelled line elements
-	LINE_ITEM_REFS []NodeEventItemPtr            // contains current line integer references
+	LINE_ITEM_REFS []NodePtr                     // contains current line integer references
 	LINE_RELN_CACHE = make(map[string][]Link)
 	LINE_ITEM_STATE int = ROLE_BLANK_LINE
 	LINE_ALIAS string = ""
@@ -131,14 +131,14 @@ const (
 
 //**************************************************************
 
-type NodeEventItem struct { // essentially the incidence matrix
+type Node struct { // essentially the incidence matrix
 
 	L int                 // length of name string
 	S string              // name string itself
 
 	Chap string           // section/chapter in which this was added
 	SizeClass int         // the string class: N1-N3, LT128, etc
-	NPtr NodeEventItemPtr // Pointer to self
+	NPtr NodePtr          // Pointer to self
 
 	I [ST_TOP][]Link   // link incidence list, by arrow type
   	                   // NOTE: carefully how offsets represent negative SSTtypes
@@ -146,7 +146,7 @@ type NodeEventItem struct { // essentially the incidence matrix
 
 //**************************************************************
 
-type NodeEventItemPtr struct {
+type NodePtr struct {
 
 	CPtr  ClassedNodePtr // index of within name class lane
 	Class int            // Text size-class
@@ -157,8 +157,8 @@ type ClassedNodePtr int  // Internal pointer type of size-classified text
 //**************************************************************
 
 type RCtype struct {
-	Row NodeEventItemPtr
-	Col NodeEventItemPtr
+	Row NodePtr
+	Col NodePtr
 }
 
 //**************************************************************
@@ -168,7 +168,7 @@ type Link struct {  // A link is a type of arrow, with context
 	Arr ArrowPtr         // type of arrow, presorted
 	Wgt float64          // numerical weight of this link
 	Ctx []string         // context for this pathway
-	Dst NodeEventItemPtr // adjacent event/item/node
+	Dst NodePtr // adjacent event/item/node
 }
 
 //**************************************************************
@@ -189,29 +189,29 @@ type ArrowPtr int // ArrowDirectory index
 
 //**************************************************************
 
-type NodeEventItemBlobs struct {
+type NodeBlobs struct {
 
 	// Power law n-gram frequencies
 
 	N1grams map[string]ClassedNodePtr
-	N1directory []NodeEventItem
+	N1directory []Node
 	N1_top ClassedNodePtr
 
 	N2grams map[string]ClassedNodePtr
-	N2directory []NodeEventItem
+	N2directory []Node
 	N2_top ClassedNodePtr
 
 	N3grams map[string]ClassedNodePtr
-	N3directory []NodeEventItem
+	N3directory []Node
 	N3_top ClassedNodePtr
 
 	// Use linear search on these exp fewer long strings
 
-	LT128 []NodeEventItem
+	LT128 []Node
 	LT128_top ClassedNodePtr
-	LT1024 []NodeEventItem
+	LT1024 []Node
 	LT1024_top ClassedNodePtr
-	GT1024 []NodeEventItem
+	GT1024 []Node
 	GT1024_top ClassedNodePtr
 }
 
@@ -225,8 +225,8 @@ var (
 	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
 
-	NODE_DIRECTORY NodeEventItemBlobs  // Internal histo-representations
-	NO_NODE_PTR NodeEventItemPtr       // see Init()
+	NODE_DIRECTORY NodeBlobs  // Internal histo-representations
+	NO_NODE_PTR NodePtr       // see Init()
 )
 
 //**************************************************************
@@ -678,7 +678,7 @@ func SummarizeGraph() {
 
 //**************************************************************
 
-func CreateAdjacencyMatrix(searchlist string) (int,[]NodeEventItemPtr,[][]float64,[][]float64) {
+func CreateAdjacencyMatrix(searchlist string) (int,[]NodePtr,[][]float64,[][]float64) {
 
 	search_list := ValidateLinkArgs(searchlist)
 
@@ -727,7 +727,7 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]NodeEventItemPtr,[][]float6
 
 //**************************************************************
 
-func PrintMatrix(name string, dim int, key []NodeEventItemPtr, matrix [][]float64) {
+func PrintMatrix(name string, dim int, key []NodePtr, matrix [][]float64) {
 
 
 	s := fmt.Sprintln("\n",name,"...\n")
@@ -756,7 +756,7 @@ func PrintMatrix(name string, dim int, key []NodeEventItemPtr, matrix [][]float6
 
 //**************************************************************
 
-func PrintNZVector(name string, dim int, key []NodeEventItemPtr, vector[]float64) {
+func PrintNZVector(name string, dim int, key []NodePtr, vector[]float64) {
 
 	s := fmt.Sprintln("\n",name,"...\n")
 	Verbose(s)
@@ -946,9 +946,9 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 
 //**************************************************************
 
-func AssembleInvolvedNodes(search_list []ArrowPtr) ([]NodeEventItemPtr,map[RCtype]float64) {
+func AssembleInvolvedNodes(search_list []ArrowPtr) ([]NodePtr,map[RCtype]float64) {
 
-	var node_list []NodeEventItemPtr
+	var node_list []NodePtr
 	var weights = make(map[RCtype]float64)
 
 	for class := N1GRAM; class <= GT1024; class++ {
@@ -986,10 +986,10 @@ func AssembleInvolvedNodes(search_list []ArrowPtr) ([]NodeEventItemPtr,map[RCtyp
 
 //**************************************************************
 
-func SearchIncidentRowClass(node NodeEventItem, searcharrows []ArrowPtr,node_list []NodeEventItemPtr,ret_weights map[RCtype]float64) []NodeEventItemPtr {
+func SearchIncidentRowClass(node Node, searcharrows []ArrowPtr,node_list []NodePtr,ret_weights map[RCtype]float64) []NodePtr {
 
-	var row_nodes = make(map[NodeEventItemPtr]bool)
-	var ret_nodes []NodeEventItemPtr
+	var row_nodes = make(map[NodePtr]bool)
+	var ret_nodes []NodePtr
 
         var rc,cr RCtype
 
@@ -1324,7 +1324,7 @@ func CheckLineAlias(s string) {
 
 //**************************************************************
 
-func IdempAddArrow(from string, frptr NodeEventItemPtr, link Link,to string, toptr NodeEventItemPtr) {
+func IdempAddArrow(from string, frptr NodePtr, link Link,to string, toptr NodePtr) {
 
 	if from == to {
 		ParseError(ERR_ARROW_SELFLOOP)
@@ -1350,14 +1350,14 @@ func IdempAddArrow(from string, frptr NodeEventItemPtr, link Link,to string, top
 
 //**************************************************************
 
-func IdempAddTextToNode(s string) NodeEventItemPtr {
+func IdempAddTextToNode(s string) NodePtr {
 
 	PVerbose("Event/item/node:",s)
 
 	l := len(s)
 	c := ClassifyString(s,l)
 
-	var new_nodetext NodeEventItem
+	var new_nodetext Node
 	new_nodetext.S = s
 	new_nodetext.L = l
 	new_nodetext.Chap = SECTION_STATE
@@ -1371,12 +1371,12 @@ func IdempAddTextToNode(s string) NodeEventItemPtr {
 
 //**************************************************************
 
-func GetNodeFromPtr(frptr NodeEventItemPtr) string {
+func GetNodeFromPtr(frptr NodePtr) string {
 
 	class := frptr.Class
 	index := frptr.CPtr
 
-	var node NodeEventItem
+	var node Node
 
 	switch class {
 	case N1GRAM:
@@ -1443,11 +1443,11 @@ func ClassifyString(s string,l int) int {
 
 //**************************************************************
 
-func AppendTextToDirectory(event NodeEventItem) NodeEventItemPtr {
+func AppendTextToDirectory(event Node) NodePtr {
 
 	var cnode_slot ClassedNodePtr = -1
 	var ok bool = false
-	var node_alloc_ptr NodeEventItemPtr
+	var node_alloc_ptr NodePtr
 
 	switch event.SizeClass {
 	case N1GRAM:
@@ -1524,7 +1524,7 @@ func AppendTextToDirectory(event NodeEventItem) NodeEventItemPtr {
 
 //**************************************************************
 
-func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
+func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 
 	frclass := frptr.Class
 	frm := frptr.CPtr
@@ -1551,7 +1551,7 @@ func AppendLinkToNode(frptr NodeEventItemPtr,link Link,toptr NodeEventItemPtr) {
 
 //**************************************************************
 
-func LinearFindText(in []NodeEventItem,event NodeEventItem) (ClassedNodePtr,bool) {
+func LinearFindText(in []Node,event Node) (ClassedNodePtr,bool) {
 
 	for i := 0; i < len(in); i++ {
 
