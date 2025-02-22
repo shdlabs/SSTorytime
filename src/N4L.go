@@ -171,8 +171,6 @@ type Link struct {  // A link is a type of arrow, with context
 	Dst NodeEventItemPtr // adjacent event/item/node
 }
 
-type LinkPtr int
-
 //**************************************************************
 
 type ArrowDirectory struct {

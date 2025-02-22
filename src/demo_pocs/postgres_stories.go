@@ -1,7 +1,7 @@
 //******************************************************************
 //
 // Demo of accessing postgres with custom data structures and arrays
-// ( for graphs )
+// converting to the package library format
 //
 //******************************************************************
 

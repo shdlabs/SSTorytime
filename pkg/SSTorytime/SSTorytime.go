@@ -1,3 +1,8 @@
+//**************************************************************
+//
+// An interface for postgres for graph analytics and semantics
+//
+//**************************************************************
 
 package SSTorytime
 
@@ -46,19 +51,39 @@ type NodeEventItem struct { // essentially the incidence matrix
   	                   // NOTE: carefully how offsets represent negative SSTtypes
 }
 
-/*
+//**************************************************************
 
-CREATE TABLE IF NOT EXISTS Node
-(
-NPtr      int primary key,
-L         int,
-S         text,
-Chap      text,
-SizeClass int,
-I         Link[7][]
-);
+type Link struct {  // A link is a type of arrow, with context
+                    // and maybe with a weightfor package math
+	Arr ArrowPtr         // type of arrow, presorted
+	Wgt float64          // numerical weight of this link
+	Ctx []string         // context for this pathway
+	Dst NodeEventItemPtr // adjacent event/item/node
+}
 
-*/
+type LinkPtr int
+type ArrowPtr int // ArrowDirectory index
+
+
+
+const LINK_TYPE = "CREATE TYPE Link AS  " +
+	"(                    " +
+	"ArrowPtr int,        " +
+	"Wgt      real,       " +
+	"Ctx      text[],     " +
+	"Dst      int         " +
+	")"
+
+const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
+	"( " +
+	"NPtr      int primary key," +
+	"L         int,            " +
+	"S         text,           " +
+	"Chap      text,           " +
+	"SizeClass int,            " +
+	"I         Link[7][]       " +
+	")"
+
 
 //**************************************************************
 
@@ -76,31 +101,6 @@ type RCtype struct {
 	Row NodeEventItemPtr
 	Col NodeEventItemPtr
 }
-
-//**************************************************************
-
-type Link struct {  // A link is a type of arrow, with context
-                    // and maybe with a weightfor package math
-	Arr ArrowPtr         // type of arrow, presorted
-	Wgt float64          // numerical weight of this link
-	Ctx []string         // context for this pathway
-	Dst NodeEventItemPtr // adjacent event/item/node
-}
-
-type LinkPtr int
-type ArrowPtr int // ArrowDirectory index
-
-
-/*
-
-CREATE TYPE Link AS
-(
-ArrowPtr int,
-Wgt      real,
-Ctx      text[],
-Dst      int
-);
-*/
 
 //******************************************************************
 
@@ -142,7 +142,7 @@ func Open() PoSST {
 		os.Exit(-1)
 	}
 
-	if !CreateType(db,"PGLink AS (weight real, arrow int,dest int)") {
+	if !CreateType(db,LINK_TABLE) {
 	   os.Exit(-1)
 	}
 
@@ -159,7 +159,7 @@ func Close(ctx PoSST) {
 
 func CreateTypes(ctx PoSST, defn string) bool {
 
-	_,err := ctx.DB.Query("CREATE TYPE "+defn)
+	_,err := ctx.DB.Query(defn)
 
 	if err != nil {
 		s := fmt.Sprintln("Failed to create datatype PGLink ",err)

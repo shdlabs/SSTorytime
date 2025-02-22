@@ -137,9 +137,9 @@ Notice that this is the line that contains the "boundary conditions" or invarian
 
 * The templist is not the actually the name of a function, but its resulting output formal parameter, i.e. a selection of rows that is appended by a join on each iteration.
 
-## SQL aliasing
+## Remark - SQL aliasing (missing AS)
 
-In a select statement (although it's not commonly known), one can define an alias for the
+In a select statement (although it's perhaps not the first thing one learns), one can define an alias for the
 items and columns by suffixing the search part with alias identifiers, which can then
 be used like struct variables to refer to column members  e.g. in line 7
 <pre>
@@ -147,3 +147,68 @@ SELECT e.name,unnest(e.hasfriend),radius+1 FROM Entity e JOIN templist ON e.name
 </pre>
 Notice how "e" is used after the table-name or datatype Entity as the current instance of that value
 in order to distinguish it from friends, whose source is the iteration algorithm.
+
+This is essentially the keyword AS in SQL that's implicit. One is free to omit it though that leads to some confusion.
+
+## Coaxing SQL to do what it doesn't want to
+
+As Mick Jagger taught us, you caint always get wha' yooo wan'. This is so with domain specific
+languages that are always designed to make limited cases easy. The downfall is that they can laso make
+difficult cases hard. SQL is a language that has been grown unwillingly to handle things that were never intended,
+but we're stuck with the imperfect results.
+
+It would be nice to prune a list of layers in a graph explosion, from some starting point, so that each user
+only appeared once. This could save much transfer time for large datasets. However, the limitations of recursive
+or iterative evaluation make this impossible.
+<pre>
+
+WITH RECURSIVE cone (name,member,past,depth)
+AS (
+    SELECT name,unnest(hasfriend), Array['Mark']::text[], 1 FROM entity WHERE name='Mark'
+    UNION
+   SELECT e.name,unnest(e.hasfriend),e.name||past,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < 7 and not member = ANY(past))
+)
+SELECT member,depth,past FROM cone order by depth ;
+
+</pre>
+This query results in something like this:
+<pre>
+       member       | depth |                      past                       
+--------------------+-------+-------------------------------------------------
+ Silvy              |     1 | {Mark}
+ Mandy              |     1 | {Mark}
+ Brent              |     1 | {Mark}
+ Zhao               |     2 | {Mark,Mandy}
+ Doug               |     2 | {Mark,Mandy}
+ Tore               |     2 | {Mark,Mandy}
+ Joyce              |     2 | {Mark,Mandy}
+ Mike               |     2 | {Mark,Mandy}
+ Carol              |     2 | {Mark,Mandy}
+ Ali                |     2 | {Mark,Mandy}
+ Matt               |     2 | {Mark,Mandy}
+ Bjørn              |     2 | {Mark,Mandy}
+ Tamar              |     2 | {Mark,Mandy}
+ Kat                |     2 | {Mark,Mandy}
+ Hans               |     2 | {Mark,Mandy}
+ Mark               |     3 | {Mark,Mandy,Mike}
+ Jane1              |     3 | {Mark,Mandy,Mike}
+ Jane2              |     3 | {Mark,Mandy,Mike}
+ Jan                |     3 | {Mark,Mandy,Mike}
+ Alfie              |     3 | {Mark,Mandy,Mike}
+ Jungi              |     3 | {Mark,Mandy,Mike}
+ Peter              |     3 | {Mark,Mandy,Mike}
+ Paul               |     3 | {Mark,Mandy,Mike}
+ Adam               |     4 | {Mark,Mandy,Mike,Jan}
+ Jane1              |     4 | {Mark,Mandy,Mike,Jan}
+ Jane               |     4 | {Mark,Mandy,Mike,Jan}
+ Company of Friends |     5 | {Mark,Mandy,Mike,Jan,Adam}
+ Paul               |     5 | {Mark,Mandy,Mike,Jan,Adam}
+ Matt               |     5 | {Mark,Mandy,Mike,Jan,Adam}
+ Billie             |     5 | {Mark,Mandy,Mike,Jan,Adam}
+ Chirpy Cheep Cheep |     5 | {Mark,Mandy,Mike,Jan,Adam}
+ Taylor Swallow     |     5 | {Mark,Mandy,Mike,Jan,Adam}
+ Matt               |     6 | {Mark,Mandy,Mike,Jan,Adam,"Company of Friends"}
+ Jane1              |     6 | {Mark,Mandy,Mike,Jan,Adam,"Company of Friends"}
+(34 rows)
+</pre>
+What we'd like is for the left column to avoid looping around.
