@@ -14,6 +14,14 @@ This project aims to make knowledge capture, querying, and dissemination easy fo
 for general use. AI can only capture knowledge from humans, so even if we
 want to use AI, we'd better get the knowledge representations right.
 
+The roots of this project go back almost 20 years for me, when I was working in configuration
+management (with the CFEngine project) and realized that the main problem there was not
+fixing machinery but rather understanding the monster you've created! Knowledge Management
+was built into CFEngine 3, but later removed again when `the market wasn't ready'. Over those
+20 years, I've studied and learned how to approach the problem in better ways. I've implemented
+the concepts using a variaety of technologies, including my own. In this latest version, I'm
+combining those lessons to make a version that builds on standard Postgres.
+
 Knowledge capture requires tools for collecting factual notes, data
 relationships, and structures for representing and organizing them, so
 that they can be found easily. Many mistakes have been made around
