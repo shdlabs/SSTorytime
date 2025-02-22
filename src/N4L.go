@@ -189,7 +189,7 @@ type ArrowPtr int // ArrowDirectory index
 
 //**************************************************************
 
-type NodeBlobs struct {
+type NodeDirectory struct {
 
 	// Power law n-gram frequencies
 
@@ -225,8 +225,8 @@ var (
 	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
 
-	NODE_DIRECTORY NodeBlobs  // Internal histo-representations
-	NO_NODE_PTR NodePtr       // see Init()
+	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
+	NO_NODE_PTR NodePtr           // see Init()
 )
 
 //**************************************************************
