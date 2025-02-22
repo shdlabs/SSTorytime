@@ -7,4 +7,5 @@ N4L: N4L.go
 
 clean:
 	rm -f N4L
-	rm -f *~
+	rm -f *~ demo_pocs/*~
+
