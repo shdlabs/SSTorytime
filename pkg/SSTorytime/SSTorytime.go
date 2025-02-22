@@ -38,14 +38,14 @@ const (
 
 //**************************************************************
 
-type NodeEventItem struct { // essentially the incidence matrix
+type Node struct { // essentially the incidence matrix
 
 	L int                 // length of name string
 	S string              // name string itself
 
 	Chap string           // section/chapter in which this was added
 	SizeClass int         // the string class: N1-N3, LT128, etc
-	NPtr NodeEventItemPtr // Pointer to self
+	NPtr NodePtr // Pointer to self
 
 	I [ST_TOP][]Link   // link incidence list, by arrow type
   	                   // NOTE: carefully how offsets represent negative SSTtypes
@@ -58,12 +58,8 @@ type Link struct {  // A link is a type of arrow, with context
 	Arr ArrowPtr         // type of arrow, presorted
 	Wgt float64          // numerical weight of this link
 	Ctx []string         // context for this pathway
-	Dst NodeEventItemPtr // adjacent event/item/node
+	Dst NodePtr // adjacent event/item/node
 }
-
-type LinkPtr int
-type ArrowPtr int // ArrowDirectory index
-
 
 
 const LINK_TYPE = "CREATE TYPE Link AS  " +
@@ -84,10 +80,16 @@ const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
 	"I         Link[7][]       " +
 	")"
 
+const NODEPTR_TABLE = "CREATE TABLE IF NOT EXISTS NodePtr " +
+	"( " +
+	"CPtr int,               " +
+	"Class int,              " +
+	"primary key(Cptr,Class) " +
+	")"
 
 //**************************************************************
 
-type NodeEventItemPtr struct {
+type NodePtr struct {
 
 	CPtr  ClassedNodePtr // index of within name class lane
 	Class int            // Text size-class
@@ -97,20 +99,31 @@ type ClassedNodePtr int  // Internal pointer type of size-classified text
 
 //**************************************************************
 
-type RCtype struct {
-	Row NodeEventItemPtr
-	Col NodeEventItemPtr
+type ArrowDirectory struct {
+
+	STtype  int
+	Long    string
+	Short   string
+	Ptr     ArrowPtr
 }
 
-//******************************************************************
+type ArrowPtr int // ArrowDirectory index
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "sstoryline"
-	password = "sst_1234"
-	dbname   = "newdb"
-)
+
+const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS Arrow_Directory " +
+	"(    " +
+	"STtype int,             " +
+	"Long text,              " +
+	"Short text,             " +
+	"ArrPtr int primary key  " +
+	")"
+
+//**************************************************************
+
+type RCtype struct {
+	Row NodePtr
+	Col NodePtr
+}
 
 //******************************************************************
 
@@ -125,6 +138,14 @@ func Open() PoSST {
 
 	var ctx PoSST
 	var err error
+
+	const (
+		host     = "localhost"
+		port     = 5432
+		user     = "sstoryline"
+		password = "sst_1234"
+		dbname   = "newdb"
+	)
 
         connStr := "user="+user+" dbname="+dbname+" password="+password+" sslmode=disable"
 
