@@ -18,7 +18,7 @@ Qǐng kàn yīxià       (ph) 请看一下 (he) please take a look
 Qǐng děng yīxià      (ph) 请等一下 (he) please wait a bit
 Qǐng zuò             (ph) 请坐    (hex) please sit
 
-:: yes, no, ngative :: 
+:: yes, no, negative :: 
 
 yes       (eh) 是的 (hp) Shì de
   "      (note) There is no simple one to one translation for yes and no
@@ -42,8 +42,6 @@ using 不/bù versus  没有/méiyǒu (rule) 不/bù Negates in the Present and 
 Wǒ jīntiān méiyǒu qù xuéxiào (ph) 我今天没有去学校 (he) I didn't go to school today
      " (has example) $mei.1
 
-
-
 @bu I did not meet with him last weekend (eh)  上周末我没有见到他 (hp) Shàng zhōumò wǒ méiyǒu jiàn dào tā 
       " (prop) WRONG: Wǒ shàng gè zhōumò *bù* gēn tā jiànmiàn (ph) XXX: 我 上个 周末 *不* 跟 他 见面 (see) $bu.2
 
@@ -54,6 +52,19 @@ Wǒ méi qùguò (ph) 我没去过 (he) I haven't been ..
 Wǒ méi qù nà jiā fànguǎn    (ph) 我没去那家饭馆  (he) I didn't go to that restaurant
 Wǒ méi qùguò nà jiā fànguǎn (ph) 我没去过那家饭馆 (he) I've never been to that restaurant
 
+
+:: and , or ::
+
+and (eh) 和 (hp) hé
+or, when giving options (eh) 或者 (hp) huòzhě
+or, when asking question (eh) 还是 (hp) háishì 
+
+háishì (pe) still, yet
+Háishì zuò fēijī kuài (ph) 还是坐飞机快 (he) it's still faster to fly
+
+Bùlùn dàshì huòzhě xiǎoshì .. () 不论大事或者小事.. () Whether big or small ..
+
+Bùlùn (ph) 不论 (he) whether
 
 :: idioms, phrases ::
 
@@ -108,7 +119,6 @@ my surname is Li  (eh) 我姓李 (hp) Wǒ xìng lǐ
 although  (eh) 虽然 (hp) Suīrán
 
 but (eh) 但是  (hp) Dànshì 
-
 but also/ also/furthermore/and (eh)  而且 (hp) Érqiě
 
 not only  (eh) 不仅 (hp) bùjǐn
@@ -116,7 +126,7 @@ not only  (eh) 不但 (hp) bùdàn
 
 actually  (eh) 其实 (hp) Qíshí
 probably  (eh) 大概 (hp) Dàgài
-Should (eh) 应该 (hp) Yīnggāi
+should (eh) 应该 (hp) yīnggāi
 Suddenly (eh) 突然 (hp) tūrán
 perhaps  (eh) 也许  (hp) Yěxǔ
 
@@ -125,6 +135,10 @@ yīzhí (ph) 一直 (he)  keep on/continuously/i.e.always
 
 
 +:: example ::
+
+Nǐ yīnggāi huí jiā xiūxí  (ph) 你应该回家休息  (he) you should go home and rest
+Wǒmen yīn gāi zěnme yàng hézuò  (ph)  我们因该怎么样合作  (he) How should we cooperate/collaborate?
+
 He is not only handsome but also smart  (eh) 他不但帅而且聪明 (hp) Tā bùdàn shuài érqiě cōngmíng
 Why are you always in school? (eh)  为什么你一直哦在校  (hp) Wèishéme nǐ yīzhí ó zài xiào
 why you keep laughing  (eh) 为什么你一直在笑 (hp) Wèishéme nǐ yīzhí zài xiào
@@ -137,15 +151,32 @@ Wèishéme nǐ zǒng shì kàn shǒujī (ph) 为什么你总是看手机 (he) wh
 happen/occur  (eh) 发生 (hp) Fāshēng
 anything  (eh) 事 (hp) shì
 
-:: verbs, tenses  ::
+:: hui, keyi, neng , can , able to , might ::
 
 Huì (ph) 会 (he) see, will, can do
 huí (ph) 回 (he) reply/go back to/return to/call back
-悔 (hp) huǐ (pe) regret
+huǐ (ph) 悔 (he) regret
+
+ 会 (sl)  回 (sl)  悔
+
+huì  (ph)   会  (he) can, know how to
+Néng (ph)  能 (he) can/be able to
+Kěyǐ (ph) 可以 (he) can , have permission to
+Kěnéng (ph) 可能 (he) might/may/possibly
 
 
-能 (hp) Néng (pe) can/could 
-Kěyǐ (ph) 可以 (he) can
+:: conditions, conditionals ::
+
+Rúguǒ (ph) 如果 (he) if 
+Dì yī (ph) 第一 (he) First
+
+other  (eh) 其他 (hp) Qítā
+
+except for  (eh) 除了 (hp) chú le
+In order to / for the purpose 为了 wèile
+
+Yíng (ph) 赢 (he) win
+Shū (ph) 输 (he) lose
 
 
 :: about self ::
@@ -1687,7 +1718,6 @@ principal  (eh) 校长 (hp) xiàozhǎng
 
 Why is there no one in the classroom?  (eh) 为什么 教室 里 没有人 (hp) Wèishéme jiàoshì lǐ méiyǒu rén
 
-
 Zhège wèntí néng jiějué ma (ph) 这个问题能解决吗 (he) Can this problem be solved?
 
 classmate  (eh) 同学 (hp) Tóngxué
@@ -2279,26 +2309,6 @@ friend  (eh) 朋友 (hp) Péngyǒu
 Meet someone  (eh) 见面(hp)  Jiànmiàn
 chat  (eh) 聊天 (hp) Liáotiān
 
-:: conditions, conditionals ::
-
-Rúguǒ (ph) 如果 (he) if 
-Dì yī (ph) 第一 (he) First
-
-other  (eh) 其他 (hp) Qítā
-
-Yīnggāi (ph) 应该 (he) should     # modal verb
-
-
-except for  (eh) 除了 (hp) chú le
-In order to / for the purpose 为了 wèile
-
-Yíng (ph) 赢 (he) win
-Shū (ph) 输 (he) lose
-
-Néng (ph)  能 (he) can/be able to
-Kěyǐ (ph) 可以 (he) can 
-Kěnéng (ph) 可能 (he) might/may/possibly
-
 dream 梦 (hp) Mèng
 story 故事 (hp) Gùshì
 
@@ -2570,7 +2580,7 @@ Diànnǎo li yǒu wǒ de zhàopiàn  (ph) 电脑里有我的照片  (he) My phot
 Qǐng wǎng yòubiān zǒu  (ph) 请往右边走  (he) Please go to the right
 
 Wǒ bù tài shūfú  (ph) 我不太舒服  (he) I'm not feeling well
-Nǐ yīnggāi huí jiā xiūxí  (ph) 你应该回家休息  (he) you should go home and rest
+
 
 Nǐ láiguò zhè jiā shāngdiàn  (ph) 你来过这家商店  (he) have you been to this store?
 
@@ -2617,7 +2627,7 @@ Wǒ rènshí tā hěn jiǔ le  (ph) 我认识他很久了  (he) I've known him f
 
 Wǒ jīntiān bìxū yào liú zàijiā  (ph) 我今天必须要留在家  (he) I have to stay home today
 Wǒ méiyǒu tīng qīngchǔ  (ph) 我没有听清楚  (he) I didn't hear clearly
-Wǒmen yīn gāi zěnme yàng hézuò  (ph)  我们因该怎么样合作  (he) How should we cooperate/collaborate?
+
 
 Nǐ yǒu shé me bànfǎ  (ph) 你有什么办法  (he) What can you do/what solutions do you have
 
