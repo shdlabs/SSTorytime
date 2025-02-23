@@ -6,7 +6,14 @@
 
 -notes on chinese
 
-:: yes, no, please, thank you, thankyou ::
+
+:: please, thank you, thankyou ::
+
+please (eh) 请 (hp) qǐng
+thankyou (eh) 谢谢 (hp) xièxiè
+
+
+:: yes, no, ngative :: 
 
 yes       (eh) 是的 (hp) Shì de
   "      (note) There is no simple one to one translation for yes and no
@@ -16,17 +23,31 @@ no        (eh) 不   (hp) Bù
 no        (eh) 没有  (hp) Méiyǒu
   "      (note) There is no simple one to one translation for yes and no
 
-no/ I don't need it (eh) 不要 (hp) Bù yào
+no/no thanks i.e.I don't need it (eh) 不要 (hp) Bù yào
 
-
-
-please () 请 () qǐng
-
-thankyou () 谢谢 () xièxiè
-
-:: did, didn't ::
+using 不/bù versus  没有/méiyǒu (rule) 不/bù Negates in the Present and Future
+   " (rule) 不/bù Negates Habitual Actions (hasex) 我 不 吃 肉 (hp) Wǒ bù chī ròu (pe) I don't eat meat
+   " (rule) 不/bù Is Normally Used with Adjectives (hasex) 我 家 不 远 (hp) Wǒ jiā bù yuǎn (pe) my home is not far
+   " (rule) 不/bù Is for Asking Questions (hasex) 她 想 不 想 来？ (hp) Tā xiǎng bu xiǎnglái? (pe) Does she want to come?
+@mei   " (rule) 没/méi Negates Past Actions (hasex) 你 没 去 上班 吗 ？ (hp) Nǐ méi qù shàngbān ma? (pe) Did you not go to work?
+   " (rule) Only 没/méi Negates 有/yǒu
+   " (rule) 没 méi Is for Making Comparisons
+   " (rule) 不 bù Is Used Almost Exclusively with Certain Verbs
 
 Wǒ jīntiān méiyǒu qù xuéxiào (ph) 我今天没有去学校 (he) I didn't go to school today
+     " (has example) $mei.1
+
+
+
+@bu I did not meet with him last weekend (eh)  上周末我没有见到他 (hp) Shàng zhōumò wǒ méiyǒu jiàn dào tā 
+      " (prop) WRONG: Wǒ shàng gè zhōumò *bù* gēn tā jiànmiàn (ph) XXX: 我 上个 周末 *不* 跟 他 见面 (see) $bu.2
+
++:: imperfect, perfect tense ::
+
+Wǒ méi qù    (ph) 我没去  (he) I didn't go ..
+Wǒ méi qùguò (ph) 我没去过 (he) I haven't been ..
+Wǒ méi qù nà jiā fànguǎn    (ph) 我没去那家饭馆  (he) I didn't go to that restaurant
+Wǒ méi qùguò nà jiā fànguǎn (ph) 我没去过那家饭馆 (he) I've never been to that restaurant
 
 
 :: idioms, phrases ::
@@ -607,11 +628,14 @@ yī kè Wǔ diǎn  (ph) 一刻五点   (he) quarter to five
 Wǒ měitiān yǒu bàn gè xiǎoshí de yòng  (ph) 我每天有半个小时的用  (he) I use it for half an hour every day
 Wǒ pǎole sānshí fēnzhōng / de bù  (ph) 我跑了三十分钟 /的步  (he) I ran for thirty minutes
 
-
++:: have time, having time ::
 
 free/ledig  (eh) 有空 (hp) yǒu kòng 
 time   (eh) 时间 (hp) Shíjiān
 time - episode/when (ep) Shíhòu (hp)  时候
+
+I don't have time (eh) 我没有时间 (hp) Wǒ méiyǒu shíjiān
+I'm not free / don't have time (eh) 我没有空 (hp) Wǒ méiyǒu kòng
 
 what time/occasion (eh) 什么时候 (hp) Shénme shíhòu 
 Gōngsī shénme shíhòu fā jiǎngjīn (ph) 公司什么时候发奖金  (he) When does the company pay bonuses?
@@ -619,8 +643,6 @@ Gōngsī shénme shíhòu fā jiǎngjīn (ph) 公司什么时候发奖金  (he) 
 He sometimes goes to the mall (eh) 他有时候去商场 (hp) Tā yǒu shíhòu qù shāngchǎng
 
 My friends drink beer when we meet on the weekends (eh)  我的朋友在周末见面的时候会喝啤酒 (hp) Wǒ de péngyǒu zài zhōumò jiànmiàn de shíhòu huì hē píjiǔ
-
-
 
 do you have time to play basketball  (eh) 你有时间打篮球吗 (hp) Nǐ yǒu shíjiān dǎ lánqiú ma
 
