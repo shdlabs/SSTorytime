@@ -9,8 +9,6 @@ package main
 
 import (
 	"fmt"
-
-
         SST "SSTorytime"
 )
 
@@ -39,7 +37,7 @@ func main() {
 	var lnk SST.Link
 	
 	SST.CreateDBNode(ctx, node)
-	SST.AppendDBLinkToNode(ctx,nodeptr,lnk)
+	SST.AppendDBLinkToNode(ctx,nodeptr,lnk,sttype)
 
 	SST.Close(ctx)
 }

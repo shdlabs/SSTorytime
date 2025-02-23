@@ -18,6 +18,14 @@ import (
 )
 
 //**************************************************************
+// Errors
+//**************************************************************
+
+const (
+	ERR_ST_OUT_OF_BOUNDS="Link STtype is out of bounds - "
+)
+
+//**************************************************************
 
 const (
 	NEAR = 0
@@ -27,6 +35,18 @@ const (
 
 	ST_ZERO = EXPRESS
 	ST_TOP = ST_ZERO + EXPRESS + 1
+
+	// For the SQL table, as 2d arrays not good
+
+	I_MEXPR = "Im3"
+	I_MCONT = "Im2"
+	I_MLEAD = "Im1"
+	I_NEAR = "In0"
+	I_PLEAD = "Il1"
+	I_PCONT = "Ic2"
+	I_PEXPR = "Ie3"
+
+	// For separating text types
 
 	N1GRAM = 1
 	N2GRAM = 2
@@ -40,15 +60,16 @@ const (
 
 type Node struct { // essentially the incidence matrix
 
-	L int                 // length of name string
-	S string              // name string itself
+	L         int     // length of text string
+	S         string  // text string itself
 
-	Chap string           // section/chapter in which this was added
-	SizeClass int         // the string class: N1-N3, LT128, etc
-	NPtr NodePtr // Pointer to self
+	Chap      string  // section/chapter name in which this was added
+	SizeClass int     // the string class: N1-N3, LT128, etc for separating types
 
-	I [ST_TOP][]Link   // link incidence list, by arrow type
-  	                   // NOTE: carefully how offsets represent negative SSTtypes
+	NPtr      NodePtr // Pointer to self index
+
+	I [ST_TOP][]Link  // link incidence list, by arrow type
+  	                  // NOTE: carefully how offsets represent negative SSTtypes
 }
 
 //**************************************************************
@@ -70,15 +91,28 @@ const LINK_TYPE = "CREATE TYPE Link AS  " +
 	"Dst      int         " +
 	")"
 
-const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
+const NODE_DEF = "" +
 	"( " +
 	"NPtr      int primary key," +
 	"L         int,            " +
 	"S         text,           " +
 	"Chap      text,           " +
 	"SizeClass int,            " +
-	"I         Link[7][]       " +
+	I_MEXPR+"  Link[],         " +
+	I_MCONT+"  Link[],         " +
+	I_MLEAD+"  Link[],         " +
+	I_NEAR +"  Link[],         " +
+	I_PLEAD+"  Link[],         " +
+	I_PCONT+"  Link[],         " +
+	I_PEXPR+"  Link[]          " +
 	")"
+
+const N1_TABLE = "CREATE TABLE IF NOT EXISTS N1GRAM " + NODE_DEF
+const N2_TABLE = "CREATE TABLE IF NOT EXISTS N2GRAM " + NODE_DEF
+const N3_TABLE = "CREATE TABLE IF NOT EXISTS N3GRAM " + NODE_DEF
+const N4_TABLE = "CREATE TABLE IF NOT EXISTS LT128 " + NODE_DEF
+const N5_TABLE = "CREATE TABLE IF NOT EXISTS LT1024 " + NODE_DEF
+const N6_TABLE = "CREATE TABLE IF NOT EXISTS GT1024 " + NODE_DEF
 
 const NODEPTR_TABLE = "CREATE TABLE IF NOT EXISTS NodePtr " +
 	"( " +
@@ -156,7 +190,6 @@ const ARROW_INVERSES_TABLE = "CREATE TABLE IF NOT EXISTS Arrow_Inverses " +
 	"Primary Key(Plus,Minus)," +
 	")"
 
-
 //******************************************************************
 // LIBRARY
 //******************************************************************
@@ -211,7 +244,31 @@ func Configure(ctx PoSST) {
 	// There is no separate link table, as links are an array under nodes
 	// There is an adjacency table, however
 
-	if !CreateTable(ctx,NODE_TABLE) {
+	if !CreateTable(ctx,N1_TABLE) {
+		os.Exit(-1)
+	}
+
+	if !CreateTable(ctx,N2_TABLE) {
+		os.Exit(-1)
+	}
+
+	if !CreateTable(ctx,N3_TABLE) {
+		os.Exit(-1)
+	}
+
+	if !CreateTable(ctx,N4_TABLE) {
+		os.Exit(-1)
+	}
+
+	if !CreateTable(ctx,N5_TABLE) {
+		os.Exit(-1)
+	}
+
+	if !CreateTable(ctx,N6_TABLE) {
+		os.Exit(-1)
+	}
+
+	if !CreateTable(ctx,NODEPTR_TABLE) {
 		os.Exit(-1)
 	}
 
@@ -270,7 +327,7 @@ func CreateDBNode(ctx PoSST, n Node) bool {
 
 	var qstr string
 
-	qstr = fmt.Sprintf("INSERT INTO Node(L,S,Chap,SizeClass) VALUES (  ) RETURNING name")
+	qstr = fmt.Sprintf("INSERT INTO Node(Nptr,L,S,Chap,SizeClass) VALUES (%d,%d,'%s','%s',%d)",n.Nptr,n.L,n.S,n.Chap,n.SizeClass)
 
 	_,err := ctx.DB.Query(qstr)
 
@@ -290,11 +347,36 @@ func CreateDBNode(ctx PoSST, n Node) bool {
 
 // **************************************************************************
 
-func AppendDBLinkToNode(ctx PoSST, nodeptr NodePtr, lnk Link) bool {
+func AppendDBLinkToNode(ctx PoSST, nodeptr NodePtr, lnk Link, sttype int) bool {
 
 	// Want to make this idempotent, because SQL is not (and not clause)
 
-	qstr := fmt.Sprintf("update person set %s = array_append(%s,'%s') where name = '%s' and (%s is null or not '%s' = ANY(%s))")
+	if sttype < 0 || sttype > ST_ZERO+EXPRESS {
+		fmt.Println(ERR_ST_OUT_OF_BOUNDS,sttype)
+		os.Exit(-1)
+	}
+
+	var link_channel string
+
+	switch sttype {
+
+	case NEAR:
+		link_channel = I_NEAR
+	case LEADSTO:
+		link_channel = I_PLEAD
+	case CONTAINS:
+		link_channel = I_PCONT
+	case EXPRESS:
+		link_channel = I_PEXPR
+	case -LEADSTO:
+		link_channel = I_MLEAD
+	case -CONTAINS:
+		link_channel = I_MCONT
+	case -EXPRESS:
+		link_channel = I_MEXPR
+	}
+
+	qstr := fmt.Sprintf("update person set %s = array_append(%s,'%s') where Nptr = '%d' and (%s is null or not '%s' = ANY(%s))")
 
 	_,err := ctx.DB.Query(qstr)
 
