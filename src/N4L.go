@@ -1165,7 +1165,6 @@ func GetToken(src []rune, pos int) (string,int) {
 	case '@':
 		token,pos = ReadToLast(src,pos,' ')
 
-
 	default: // a text item that could end with any of the above
 		token,pos = ReadToLast(src,pos,ALPHATEXT)
 
@@ -1223,6 +1222,7 @@ func ClassifyTokenRole(token string) {
 	case '"': // prior reference
 		result := LookupAlias("PREV",LINE_ITEM_COUNTER)
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
+		StoreAlias(result)
 		AssessGrammarCompletions(result,LINE_ITEM_STATE)
 		LINE_ITEM_STATE = ROLE_EVENT
 		LINE_ITEM_COUNTER++
@@ -1244,11 +1244,7 @@ func ClassifyTokenRole(token string) {
 
 	default:
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
-
-		if LINE_ALIAS != "" {
-			LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS],token)
-		}
-
+		StoreAlias(token)
 		AssessGrammarCompletions(token,LINE_ITEM_STATE)
 
 		LINE_ITEM_STATE = ROLE_EVENT
@@ -1320,6 +1316,16 @@ func CheckLineAlias(s string) {
 		os.Exit(-1)
 	}
 
+}
+
+//**************************************************************
+
+func StoreAlias(name string) {
+
+	if LINE_ALIAS != "" {
+		PVerbose("-- Storing alias",LINE_ITEM_CACHE[LINE_ALIAS],name,"as",LINE_ALIAS)
+		LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS],name)
+	}
 }
 
 //**************************************************************
@@ -1717,6 +1723,12 @@ func LastSpecialChar(src []rune,pos int, stop rune) bool {
 		if stop != '"' {
 			return true
 		}
+	}
+
+	// Special case, but still don't understand why?!
+
+	if src[pos] == '@' {
+		return false
 	}
 
 	if pos > 0 && src[pos-1] == stop && src[pos] != stop {
