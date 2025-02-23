@@ -448,6 +448,7 @@ anxious/in a hurry  (eh) 着急 (hp) Zhāojí
 fat (eh) 胖 (hp) Pàng
 
 healthy (ep) Jiànkāng (ph) 健康
+wish you good health  (eh) 祝您身体健康  (hp) Zhù nín shēntǐ jiànkāng
 
 Pàng (hp) 胖  (he) fat
 
@@ -456,8 +457,9 @@ smoke (eh) 抽烟 (hp) Chōuyān
 body (ep) Shēntǐ (ph) 身体 
 Wǒ de shēntǐ bùcuò (ph) 我的身体不错 (he) my body/health is in a not bad condition 
 
-Please pay attention to your health (eh) 请注意健康 (hp) Qǐng zhùyì jiànkāng 
+Please pay attention to your health (eh) 请注意健康  (hp) Qǐng zhùyì jiànkāng 
 
+I lost 5 kilos                      (eh) 我瘦了五公斤 (hp) Wǒ shòule wǔ gōngjīn
 
 cough  (eh) 咳嗽 (hp) Késòu
 fever  (eh) 发烧 (hp) Fāshāo
@@ -555,13 +557,11 @@ Jǐ suì  (ph) 几岁  (he) how old
 Jǐ gè  (ph) 几个  (he) how many
 Jǐ wèi  (ph) 几位 (he) several people/how many people
 
-::: question :::
-
 Jǐ nián  (ph) 几年 (he) what year
 
 ###############################################################
 
-+::  order, ordering::
++:: time,  order, ordering::
 
 
 first/to start with (eh) 先  (hp)  Xiān
@@ -573,8 +573,6 @@ cì  (ph) 次 (he) occasion or episode or time
 
 5th (eh) 第五 (hp) Dì wǔ ge
 Nth (eh) 第n个 (hp) Dì n gè
-
-
 
 this is the fifth time/occasion (eh) 这是第五次 (hp) Zhè shì dì wǔ cì
 
@@ -928,39 +926,13 @@ Rènshí  (ph) 认识  (he) know a person
 apologies (eh) 抱歉  (hp) bàoqiàn
 
 sorry  (eh) 对不起 (hp) Duìbùqǐ
+
++:: answer, question, query, ask ::
+
 answer respond  (eh) 回答 (hp)  Huídá
 answer (eh) 答 Dá
 
 
-
-
-::talking, conversation, lecture, speech::
-
-
-talk  (eh) 讲话  (hp) Jiǎng huà
-discuss/talk about  (eh) 谈  (hp) tán
-
-说话  (hp) Shuō huà (pe) speak, talk
-说  (hp) Shuō  (pe) say
-手  (hp) Shǒu  (pe) hand
-Shuō (sl) Shǒu 
-
-We are going to review math today(eh) 我们今天要复习数学 (hp) Wǒmen jīntiān yào fùxí shùxué
-Talk (eh) 讲 (hp) Jiǎng
-
-while speaking 在讲的时候 Zài jiǎng de shíhòu
-
-during the lecture you should take notes (eh) 在讲座期间你应该做笔记 (hp) Zài jiǎngzuò qíjiān nǐ yīnggāi zuò bǐjì
-
-lecture  (eh)演讲  (hp) Yǎnjiǎng
-tell stories  (eh) 讲故事  (hp) Jiǎng gùshì
-Jiǎng (eh) 讲  (hp) speak/speech/lecture
-
-what's your university major (eh) 你大学的专业是什么 (hp)  Nǐ dàxué de zhuānyè shì shénme
-
-I'm worried about the Chinese exam (eh) 我对中文考试担心  (hp) Wǒ duì zhōngwén kǎoshì dānxīn
-
-don't talk in class  (eh) 课堂上不要说话  (hp) Kètáng shàng bùyào shuōhuà
 
 
 ###########################################################
@@ -1212,8 +1184,6 @@ Wǒ zhāojí sǐle (ph) 我着急死了  (he) I'm worried to death
 
 I'm worried about the Chinese exam  (eh) 我为中文考试担心 (hp) Wǒ wéi zhōngwén kǎoshì dānxīn
 
-:: thinking | feeling , emotion  ::
-
 tired (ep) lèi (ph) 累
 
 feel (ep) Juédé (ph)觉得
@@ -1274,7 +1244,7 @@ Huá chuán (ph) 划船 (he) rowing boats/boating
 
 wish you  (eh) 祝你  (hp) Zhù nǐ
 wish you happy birthday  (eh) 祝你生日快乐  (hp) Zhù nǐ shēngrì kuàilè
-wish you good health  (eh) 祝您身体健康  (hp) Zhù nín shēntǐ jiànkāng
+
 
 gift  (eh) 礼物  (hp) Lǐwù
 give/send something  (eh) 送  (hp) sòng
@@ -1746,6 +1716,33 @@ clear  (eh) 清除 (hp) Qīngchú
 
 what is today's assignment  (eh) 今天的作业是什么 (hp) Jīntiān de zuòyè shì shénme
 
+::talking, conversation, lecture, class, speech::
+
+
+talk  (eh) 讲话  (hp) Jiǎng huà
+discuss/talk about  (eh) 谈  (hp) tán
+
+说话  (hp) Shuō huà (pe) speak, talk
+说  (hp) Shuō  (pe) say
+手  (hp) Shǒu  (pe) hand
+Shuō (sl) Shǒu 
+
+We are going to review math today(eh) 我们今天要复习数学 (hp) Wǒmen jīntiān yào fùxí shùxué
+Talk (eh) 讲 (hp) Jiǎng
+
+while speaking 在讲的时候 Zài jiǎng de shíhòu
+
+during the lecture you should take notes (eh) 在讲座期间你应该做笔记 (hp) Zài jiǎngzuò qíjiān nǐ yīnggāi zuò bǐjì
+
+lecture  (eh)演讲  (hp) Yǎnjiǎng
+tell stories  (eh) 讲故事  (hp) Jiǎng gùshì
+Jiǎng (eh) 讲  (hp) speak/speech/lecture
+
+what's your university major (eh) 你大学的专业是什么 (hp)  Nǐ dàxué de zhuānyè shì shénme
+I'm worried about the Chinese exam (eh) 我对中文考试担心  (hp) Wǒ duì zhōngwén kǎoshì dānxīn
+don't talk in class  (eh) 课堂上不要说话  (hp) Kètáng shàng bùyào shuōhuà
+
+
 :: work, writing ::
 
 pen  (eh) 笔 (hp) Bǐ
@@ -2144,6 +2141,10 @@ Are you ready?  (eh) 你准备好了吗(hp)  Nǐ zhǔnbèi hǎole ma
 
 say/speak  (eh) 说话  (hp) Shuōhuà 
 introduce  (eh) 介绍 (hp) Jièshào
+
+:: books, reading ::
+
+This book is boring, I don't want to read it anymore  (eh) 这本书很闷 , 我不想看了 (hp) Zhè běn shū hěn mèn, wǒ bùxiǎng kànle
 
 :: seasons ::
 
@@ -2645,13 +2646,12 @@ Niúnǎi zài bīngxiāng lǐ (ph) 牛奶在冰箱里  (he) The milk is in the f
 Yīnyuè shēngyīn xiǎo yīdiǎn ér bù huì yǐngxiǎng línjū (ph) 音乐声音小一点而不会影响邻居  (he) Make the music louder so it doesn't disturb the neighbors
 
 
-Lěng sǐle (ph) 冷死了  (he) deathly cold
+:: take care, illness, injury ::
 
+Lěng sǐle (ph) 冷死了  (he) deathly cold
 
 Wǒ xiǎng zhàogù tā (ph) 我想照顾她  (he) I want to take care of her
 Jiùmìng  (ph) 救命  (he) Help!
-
-
 Wǒ shòushāngle (ph) 我受伤了  (he) i am injured.
 
 Wǒ bùnéng shuō liúlì zhōngwén (ph) 我不能说流利中文  (he) I can't speak Chinese fluently
