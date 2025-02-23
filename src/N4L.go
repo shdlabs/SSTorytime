@@ -242,7 +242,6 @@ func main() {
 	//SummarizeAndTestConfig()
 
 	for input := 0; input < len(args); input++ {
-
 		NewFile(args[input])
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
@@ -253,7 +252,6 @@ func main() {
 	}
 
 	if CREATE_ADJACENCY {
-
 		dim, key, d_adj, u_adj := CreateAdjacencyMatrix(ADJ_LIST)
 		PrintMatrix("directed adjacency sub-matrix",dim,key,d_adj)
 		PrintMatrix("undirected adjacency sub-matrix",dim,key,u_adj)
