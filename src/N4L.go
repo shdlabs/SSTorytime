@@ -90,6 +90,8 @@ var (
 	SEQUENCE_RELN string = "then" 
 	LAST_IN_SEQUENCE string = ""
 
+	// Flags
+
 	VERBOSE bool = false
 	DIAGNOSTIC bool = false
 	UPLOAD bool = false
@@ -257,6 +259,9 @@ func main() {
 		PrintMatrix("undirected adjacency sub-matrix",dim,key,u_adj)
 		evc := ComputeEVC(dim,u_adj)
 		PrintNZVector("Eigenvector centrality (EVC) score for symmetrized graph",dim,key,evc)
+	}
+
+	if UPLOAD {
 	}
 }
 
