@@ -124,7 +124,15 @@ func CreateNode(db *sql.DB, key string) bool {
 
 	var qstr string
 
-	qstr = fmt.Sprintf("INSERT INTO Entity(name) VALUES ( '%s' ) RETURNING name",key)
+	var node Node
+	L         int     // length of text string
+	S         string  // text string itself
+
+	Chap      string  // section/chapter name in which this was added
+	SizeClass int     // the string class: N1-N3, LT128, etc for separating types
+
+
+	qstr = fmt.Sprintf("INSERT INTO Node(L,S,Chap,SizeClass) VALUES ( '%s' )",key)
 
 	_,err := db.Query(qstr)
 
