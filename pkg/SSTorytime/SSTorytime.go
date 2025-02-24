@@ -79,25 +79,26 @@ type Link struct {  // A link is a type of arrow, with context
 	Arr ArrowPtr         // type of arrow, presorted
 	Wgt float64          // numerical weight of this link
 	Ctx []string         // context for this pathway
-	Dst NodePtr // adjacent event/item/node
+	Dst NodePtr          // adjacent event/item/node
 }
 
 
 const LINK_TYPE = "CREATE TYPE Link AS  " +
 	"(                    " +
-	"ArrowPtr int,        " +
+	"Arr      int,        " +
 	"Wgt      real,       " +
-	"Ctx      text[],     " +
+	"Ctx      text,       " +
+	"DChan    int,        " +
 	"Dst      int         " +
 	")"
 
 const NODE_DEF = "" +
 	"( " +
-	"NPtr      int primary key," +
+	"CPtr      int primary key," +
 	"L         int,            " +
 	"S         text,           " +
 	"Chap      text,           " +
-	"SizeClass int,            " +
+	"SChan     int,            " +
 	I_MEXPR+"  Link[],         " +
 	I_MCONT+"  Link[],         " +
 	I_MLEAD+"  Link[],         " +
@@ -107,12 +108,9 @@ const NODE_DEF = "" +
 	I_PEXPR+"  Link[]          " +
 	")"
 
-const N1_TABLE = "CREATE TABLE IF NOT EXISTS N1GRAM " + NODE_DEF
-const N2_TABLE = "CREATE TABLE IF NOT EXISTS N2GRAM " + NODE_DEF
-const N3_TABLE = "CREATE TABLE IF NOT EXISTS N3GRAM " + NODE_DEF
-const N4_TABLE = "CREATE TABLE IF NOT EXISTS LT128 " + NODE_DEF
-const N5_TABLE = "CREATE TABLE IF NOT EXISTS LT1024 " + NODE_DEF
-const N6_TABLE = "CREATE TABLE IF NOT EXISTS GT1024 " + NODE_DEF
+const TAB_CREATE = "CREATE TABLE IF NOT EXISTS"
+
+var N_CHANNEL [GT1024+1]string
 
 const NODEPTR_TABLE = "CREATE TABLE IF NOT EXISTS NodePtr " +
 	"( " +
@@ -230,12 +228,24 @@ func Open() PoSST {
 		os.Exit(-1)
 	}
 
+	Configure(ctx)
+
 	return ctx
 }
 
 // **************************************************************************
 
 func Configure(ctx PoSST) {
+
+	// Tmp reset
+
+        ctx.DB.Query("drop table n1gram")
+	ctx.DB.Query("drop table n2gram")
+	ctx.DB.Query("drop table n3gram")
+	ctx.DB.Query("drop table lt128")
+	ctx.DB.Query("drop table lt1024")
+	ctx.DB.Query("drop table gt1024")
+	ctx.DB.Query("drop type Link")
 
 	if !CreateType(ctx,LINK_TYPE) {
 		os.Exit(-1)
@@ -244,32 +254,18 @@ func Configure(ctx PoSST) {
 	// There is no separate link table, as links are an array under nodes
 	// There is an adjacency table, however
 
-	if !CreateTable(ctx,N1_TABLE) {
-		os.Exit(-1)
-	}
+	N_CHANNEL[N1GRAM] = " N1GRAM "
+	N_CHANNEL[N2GRAM] = " N2GRAM "
+	N_CHANNEL[N3GRAM] = " N3GRAM "
+	N_CHANNEL[LT128]  = " LT128 "
+	N_CHANNEL[LT1024] = " LT1024 "
+	N_CHANNEL[GT1024] = " GT1024 "
 
-	if !CreateTable(ctx,N2_TABLE) {
-		os.Exit(-1)
-	}
+	for n := N1GRAM; n <= GT1024; n++ {
 
-	if !CreateTable(ctx,N3_TABLE) {
-		os.Exit(-1)
-	}
-
-	if !CreateTable(ctx,N4_TABLE) {
-		os.Exit(-1)
-	}
-
-	if !CreateTable(ctx,N5_TABLE) {
-		os.Exit(-1)
-	}
-
-	if !CreateTable(ctx,N6_TABLE) {
-		os.Exit(-1)
-	}
-
-	if !CreateTable(ctx,NODEPTR_TABLE) {
-		os.Exit(-1)
+		if !CreateTable(ctx,TAB_CREATE+N_CHANNEL[n]+NODE_DEF) {
+			os.Exit(-1)
+		}
 	}
 
 }
@@ -305,7 +301,6 @@ func CreateType(ctx PoSST, defn string) bool {
 
 func CreateTable(ctx PoSST,defn string) bool {
 
-
 	_,err := ctx.DB.Query(defn)
 	
 	if err != nil {
@@ -327,7 +322,17 @@ func CreateDBNode(ctx PoSST, n Node) bool {
 
 	var qstr string
 
-	qstr = fmt.Sprintf("INSERT INTO Node(Nptr,L,S,Chap,SizeClass) VALUES (%d,%d,'%s','%s',%d)",n.Nptr,n.L,n.S,n.Chap,n.SizeClass)
+	// No need to trust the values
+
+        n.L = len(n.S)
+	n.SizeClass = StorageClass(n.S)
+
+	cptr := n.NPtr.CPtr
+	channel := N_CHANNEL[n.SizeClass]
+
+	qstr = fmt.Sprintf("INSERT INTO %s(CPtr,L,S,Chap,Schan) VALUES (%d,%d,'%s','%s',%d)",channel,cptr,n.L,n.S,n.Chap,n.SizeClass)
+
+	fmt.Println("MAking",qstr)
 
 	_,err := ctx.DB.Query(qstr)
 
@@ -347,7 +352,7 @@ func CreateDBNode(ctx PoSST, n Node) bool {
 
 // **************************************************************************
 
-func AppendDBLinkToNode(ctx PoSST, nodeptr NodePtr, lnk Link, sttype int) bool {
+func AppendDBLinkToNode(ctx PoSST, nptr NodePtr, lnk Link, sttype int) bool {
 
 	// Want to make this idempotent, because SQL is not (and not clause)
 
@@ -357,6 +362,11 @@ func AppendDBLinkToNode(ctx PoSST, nodeptr NodePtr, lnk Link, sttype int) bool {
 	}
 
 	var link_channel string
+	node_channel := N_CHANNEL[nptr.Class]
+	cptr := nptr.CPtr
+
+	lval := fmt.Sprintf("(%d, %f, %s, %d, %d)",lnk.Arr,lnk.Wgt,FormatArray(lnk.Ctx),lnk.Dst.Class,lnk.Dst.CPtr)
+//lval := fmt.Sprintf("(%d, %f, %d, %d)",lnk.Arr,lnk.Wgt,lnk.Dst.Class,lnk.Dst.CPtr)
 
 	switch sttype {
 
@@ -376,7 +386,17 @@ func AppendDBLinkToNode(ctx PoSST, nodeptr NodePtr, lnk Link, sttype int) bool {
 		link_channel = I_MEXPR
 	}
 
-	qstr := fmt.Sprintf("update person set %s = array_append(%s,'%s') where Nptr = '%d' and (%s is null or not '%s' = ANY(%s))")
+	qstr := fmt.Sprintf("UPDATE %s set %s = array_append(%s, '%s'::Link ) where CPtr = '%d' and (%s is null or not '%s'::Link = ANY(%s))",
+node_channel,
+link_channel,
+link_channel,
+lval,
+cptr,
+link_channel,
+lval,
+link_channel)
+
+	fmt.Println("Try",qstr)
 
 	_,err := ctx.DB.Query(qstr)
 
@@ -415,6 +435,79 @@ func ParseArrayString(whole_array string) []string {
 
 	return l
 }
+
+// **************************************************************************
+
+func FormatArray(array []string) string {
+
+        if len(array) == 0 {
+	   return ""
+        }
+
+	var ret string = "\"{ "
+	
+	for i := 0; i < len(array); i++ {
+		ret += fmt.Sprintf("%s",array[i])
+	    if i < len(array)-1 {
+	    ret += ", "
+	    }
+        }
+
+	ret += " }\""
+
+	fmt.Println("RETRUN",ret)
+
+	return ret
+}
+
+//**************************************************************
+
+func StorageClass(s string) int {
+
+	var spaces int = 0
+
+	var l = len(s)
+
+	for i := 0; i < l; i++ {
+
+		if s[i] == ' ' {
+			spaces++
+		}
+
+		if spaces > 2 {
+			break
+		}
+	}
+
+	// Text usage tends to fall into a number of different roles, with a power law
+        // frequency of occurrence in a text, so let's classify in order of likely usage
+	// for small and many, we use a hashmap/btree
+
+	switch spaces {
+	case 0:
+		return N1GRAM
+	case 1:
+		return N2GRAM
+	case 2:
+		return N3GRAM
+	}
+
+	// For longer strings, a linear search is probably fine here
+        // (once it gets into a database, it's someone else's problem)
+
+	if l < 128 {
+		return LT128
+	}
+
+	if l < 1024 {
+		return LT1024
+	}
+
+	return GT1024
+
+}
+
+
 
 
 

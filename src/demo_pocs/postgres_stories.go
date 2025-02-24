@@ -26,21 +26,34 @@ const (
 
 func main() {
 
-	return
-
         ctx := SST.Open()
 
-	fmt.Println("Test..")
+	fmt.Println("Reset..")
 
-	var node SST.Node
-	var nodeptr SST.NodePtr
+	var n1,n2 SST.Node
 	var lnk SST.Link
 	
-	SST.CreateDBNode(ctx, node)
-	SST.AppendDBLinkToNode(ctx,nodeptr,lnk,sttype)
+	n1.NPtr = SST.NodePtr{ CPtr : 1, Class: SST.LT128}
+	n1.S = "Some crucial and important fact or rumour"
+	n1.Chap = "home and away"
+
+	n2.NPtr = SST.NodePtr{ CPtr : 1, Class: SST.N3GRAM}
+	n2.S = "Dolly is guity"
+	n2.Chap = "home and away"
+
+	lnk.Arr = 77
+	lnk.Wgt = 0.34
+	lnk.Ctx = []string{"fairy castles","angel air"}
+	lnk.Dst = n2.NPtr
+	sttype := 2
+
+	SST.CreateDBNode(ctx, n1)
+	SST.CreateDBNode(ctx, n2)
+	SST.AppendDBLinkToNode(ctx,n1.NPtr,lnk,sttype)
 
 	SST.Close(ctx)
 }
+
 
 
 
