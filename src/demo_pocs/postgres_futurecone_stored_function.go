@@ -1,7 +1,7 @@
 //******************************************************************
 //
 // Demo of accessing postgres with custom data structures and arrays
-// ( for graphs )
+// using stored function, which is very hard to debug but works!!
 //
 //******************************************************************
 
@@ -89,9 +89,13 @@ func main() {
 	}
 
 	centre := "Mark"
+	maxradius := 8
 
-	for radius := 1; radius < 10; radius++ {
-		GetFutureCone(db,centre,radius)
+	DefineStoredFunction(db)
+	GetFutureCone(db,centre,maxradius)
+
+	for layer := 1; layer < maxradius; layer++ {
+		GetLayer(db,centre,layer,maxradius)
 	}
 
 }
@@ -162,28 +166,36 @@ func AppendLink(db *sql.DB, arrow,name,fr string) bool {
 
 // **************************************************************************
 
-func GetLinksFromNode(db *sql.DB, key string) []string {
+func DefineStoredFunction(db *sql.DB) {
 
-	qstr := fmt.Sprintf("select hasfriend from Entity where name='%s'",key)
+	qstr := "CREATE OR REPLACE FUNCTION GetNeighbours(start TEXT,maxdepth INTEGER)"+
+		"RETURNS TEXT[] AS $nums$" +
+		"DECLARE " +
+		"    counter INTEGER := 0;" +
+		"    neighbours TEXT[] := ARRAY[start]::TEXT[];" +
+		"    history TEXT[] := ARRAY[start]::TEXT[];" +
+		"    new TEXT;"+
+		"    nb TEXT;" +
+		"BEGIN" +
+		"    LOOP" +
+		"        EXIT WHEN counter = maxdepth;" +
+		"        counter = counter + 1;" +
+		"        select into nb array_agg(distinct member) from output where depth=counter and not member=ANY(history);" +
+		"        neighbours = array_append(neighbours, nb::TEXT);" +
+		"        FOR new IN SELECT member FROM output WHERE depth=counter" +
+		"        LOOP"+
+		"           history := history || new;"+
+		"        END LOOP;"+
+		"    END LOOP;" +
+		"    RETURN neighbours; " +
+		"END ;" +
+		"$nums$ LANGUAGE plpgsql;"
 
-	row, err := db.Query(qstr)
+	_, err := db.Query(qstr)
 
 	if err != nil {
 		fmt.Println("Error executing query:",qstr,err)
 	}
-
-	var whole_array string
-
-	for row.Next() {
-
-		err = row.Scan(&whole_array)
-
-		if err != nil {
-			fmt.Println("Error scanning row:",qstr,err)
-		}
-	}
-
-	return ParseLinkArray(whole_array)
 }
 
 // **************************************************************************
@@ -194,16 +206,15 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 
 	row, err := db.Query("drop table output") // No error check, if output exists next will fail
 
-	/* We group SQL commands by starting BEGIN ... COMMIT */
-
-	qstr := fmt.Sprintf("BEGIN;" +
-             "WITH RECURSIVE cone (name,member,past,depth)"+
-	     " AS ("+
-    	     "SELECT name,unnest(hasfriend), Array['%s']::text[], 1 FROM entity WHERE name='%s'"+
-  	       " UNION "+
-    	       "SELECT e.name,unnest(e.hasfriend),member||past,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < %d and not e.name = ANY(past))"+
-	       ")"+
-	       " SELECT member,depth into output FROM cone;"+
+	qstr := fmt.Sprintf(""+
+		"BEGIN;" +
+		"WITH RECURSIVE cone (name,member,past,depth)"+
+		" AS ("+
+		"SELECT name,unnest(hasfriend), Array['%s']::text[], 1 FROM entity WHERE name='%s'"+
+		" UNION "+
+		"SELECT e.name,unnest(e.hasfriend),member||past,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < %d and not e.name = ANY(past))"+
+		")"+
+		" SELECT member,depth into temporary table output FROM cone;"+
 		"select * from output; "+
 		"commit;",centre,centre,radius)
 
@@ -245,6 +256,33 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 	}
 
 	fmt.Println()
+}
+
+// **************************************************************************
+
+func GetLayer(db *sql.DB,start string,radius,maxradius int) {
+
+	qstr := fmt.Sprintf("SELECT getneighbours[%d] from GetNeighbours('%s',%d)",radius,start,maxradius)
+
+	row, err := db.Query(qstr)
+
+	if err != nil {
+		fmt.Println("Error getting layer",qstr,err)
+	}
+		
+	var whole_array string
+
+	for row.Next() {
+
+		err = row.Scan(&whole_array)
+
+		if err != nil {
+			fmt.Println("Empty",qstr,err)
+		} else {
+			fmt.Println("GOT",radius,ParseLinkArray(whole_array))
+		}
+	}
+
 }
 
 // **************************************************************************
