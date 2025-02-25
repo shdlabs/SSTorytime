@@ -94,6 +94,9 @@ func main() {
 	DefineStoredFunction(db)
 	GetFutureCone(db,centre,maxradius)
 
+	// We wouldn't call it like this in practice, only need the outer level
+	// Or the whole cone in aggregate
+
 	for layer := 0; layer < maxradius; layer++ {
 		GetLayer(db,centre,layer,maxradius)
 	}
@@ -212,7 +215,7 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 		" AS ("+
 		"SELECT name,unnest(hasfriend), Array['%s']::text[], 0 FROM entity WHERE name='%s'"+
 		" UNION "+
-		"SELECT e.name,unnest(e.hasfriend),past||member,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < %d and not e.name = ANY(past))"+
+		"SELECT e.name,unnest(e.hasfriend),past||member,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < %d and not member = ANY(past))"+
 		")"+
 		" SELECT member,depth,past into temporary table output FROM cone order by depth;"+
 		"select member,depth,past from output order by depth; "+
@@ -237,8 +240,6 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 
 	for row.Next() {
 
-		this = ""
-
 		err = row.Scan(&v,&l,&this)
 
 		if err != nil {
@@ -260,7 +261,7 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 		}
 	}
 
-	for l := 0; l < len(histories); l++ {
+	for l := 0; l < len(cone); l++ {
 		fmt.Println("Erroneous raw",l,cone[l])
 	}
 
@@ -294,10 +295,9 @@ func GetLayer(db *sql.DB,start string,radius,maxradius int) {
 		if err != nil {
 			//fmt.Println("\nEmpty",qstr,err)
 		} else {
-			fmt.Println("Corrected acyclic section",radius,ParseLinkArray(whole_array))
+			fmt.Println("Corrected acyclic section",radius,"/",maxradius,ParseLinkArray(whole_array))
 		}
 	}
-
 }
 
 // **************************************************************************

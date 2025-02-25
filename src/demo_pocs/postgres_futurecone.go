@@ -201,7 +201,7 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 	     " AS ("+
     	     "SELECT name,unnest(hasfriend), Array['%s']::text[], 1 FROM entity WHERE name='%s'"+
   	       " UNION "+
-    	       "SELECT e.name,unnest(e.hasfriend),member||past,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < %d and not e.name = ANY(past))"+
+    	       "SELECT e.name,unnest(e.hasfriend),past||member,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < %d and not e.name = ANY(past))"+
 	       ")"+
 	       " SELECT member,depth into output FROM cone;"+
 		"select * from output; "+
@@ -251,7 +251,6 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 
 func Already (s string, cone map[int][]string) bool {
 
-return false
 	for l := range cone {
 		for n := 0; n < len(cone[l]); n++ {
 			if s == cone[l][n] {
