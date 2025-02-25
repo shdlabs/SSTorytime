@@ -281,10 +281,8 @@ func ParseLinkArray(whole_array string) []string {
         items := strings.Split(whole_array,";")
 
 	for i := range items {
-	    var v string
 	    s := strings.TrimSpace(items[i])
-	    fmt.Sscanf(s,"%s",&v)
-	    l = append(l,v)
+	    l = append(l,s)
 	    }
 
 	return l

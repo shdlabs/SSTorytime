@@ -94,7 +94,7 @@ func main() {
 	DefineStoredFunction(db)
 	GetFutureCone(db,centre,maxradius)
 
-	for layer := 1; layer < maxradius; layer++ {
+	for layer := 0; layer < maxradius; layer++ {
 		GetLayer(db,centre,layer,maxradius)
 	}
 
@@ -179,13 +179,13 @@ func DefineStoredFunction(db *sql.DB) {
 		"BEGIN" +
 		"    LOOP" +
 		"        EXIT WHEN counter = maxdepth;" +
-		"        counter = counter + 1;" +
 		"        select into nb array_agg(distinct member) from output where depth=counter and not member=ANY(history);" +
 		"        neighbours = array_append(neighbours, nb::TEXT);" +
 		"        FOR new IN SELECT member FROM output WHERE depth=counter" +
 		"        LOOP"+
 		"           history := history || new;"+
 		"        END LOOP;"+
+		"        counter = counter + 1;" +
 		"    END LOOP;" +
 		"    RETURN neighbours; " +
 		"END ;" +
@@ -210,12 +210,12 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 		"BEGIN;" +
 		"WITH RECURSIVE cone (name,member,past,depth)"+
 		" AS ("+
-		"SELECT name,unnest(hasfriend), Array['%s']::text[], 1 FROM entity WHERE name='%s'"+
+		"SELECT name,unnest(hasfriend), Array['%s']::text[], 0 FROM entity WHERE name='%s'"+
 		" UNION "+
-		"SELECT e.name,unnest(e.hasfriend),member||past,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < %d and not e.name = ANY(past))"+
+		"SELECT e.name,unnest(e.hasfriend),past||member,depth+1 FROM entity e JOIN cone ON e.name = member where (depth < %d and not e.name = ANY(past))"+
 		")"+
-		" SELECT member,depth into temporary table output FROM cone;"+
-		"select * from output; "+
+		" SELECT member,depth,past into temporary table output FROM cone order by depth;"+
+		"select member,depth,past from output order by depth; "+
 		"commit;",centre,centre,radius)
 
 	row, err = db.Query(qstr)
@@ -227,14 +227,19 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 	const maxdepth = 10
 
 	var v string
-	var l int
+	var l int = 1
+	var this string
+
 	var cone = make(map[int][]string,1)
+	var histories []string
 
 	cone[0] = append(cone[0],centre)
 
 	for row.Next() {
 
-		err = row.Scan(&v,&l)
+		this = ""
+
+		err = row.Scan(&v,&l,&this)
 
 		if err != nil {
 			fmt.Println("Error scanning row:",qstr,err)
@@ -248,11 +253,21 @@ func GetFutureCone(db *sql.DB, centre string, radius int) {
 			if !Already(v,cone) {
 				cone[l] = append(cone[l],v)
 			}
+			
+			if histories == nil || this != histories[len(histories)-1] {
+				histories = append(histories, this)
+			}
 		}
 	}
 
-	for l := 0; l < len(cone); l++ {
-		fmt.Println(l,cone[l])
+	for l := 0; l < len(histories); l++ {
+		fmt.Println("Erroneous raw",l,cone[l])
+	}
+
+	fmt.Println()
+
+	for l := 0; l < len(histories); l++ {
+		fmt.Println("path to layer",l,histories[l])
 	}
 
 	fmt.Println()
@@ -277,9 +292,9 @@ func GetLayer(db *sql.DB,start string,radius,maxradius int) {
 		err = row.Scan(&whole_array)
 
 		if err != nil {
-			fmt.Println("Empty",qstr,err)
+			//fmt.Println("\nEmpty",qstr,err)
 		} else {
-			fmt.Println("GOT",radius,ParseLinkArray(whole_array))
+			fmt.Println("Corrected acyclic section",radius,ParseLinkArray(whole_array))
 		}
 	}
 
@@ -289,7 +304,6 @@ func GetLayer(db *sql.DB,start string,radius,maxradius int) {
 
 func Already (s string, cone map[int][]string) bool {
 
-return false
 	for l := range cone {
 		for n := 0; n < len(cone[l]); n++ {
 			if s == cone[l][n] {
@@ -319,10 +333,8 @@ func ParseLinkArray(whole_array string) []string {
         items := strings.Split(whole_array,";")
 
 	for i := range items {
-	    var v string
 	    s := strings.TrimSpace(items[i])
-	    fmt.Sscanf(s,"%s",&v)
-	    l = append(l,v)
+	    l = append(l,s)
 	    }
 
 	return l
