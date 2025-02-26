@@ -513,6 +513,8 @@ func ClassifyConfigRole(token string) {
 
 func InsertArrowDirectory(sec,alias,name,pm string) ArrowPtr {
 
+	// Insert an arrow into the forward/backward indices
+
 	PVerbose("In",sec,"short name",alias,"for",name,", direction",pm)
 
 	var sign int
@@ -1217,7 +1219,7 @@ func ClassifyTokenRole(token string) {
 			ParseError(ERR_MISSING_ITEM_RELN)
 			os.Exit(-1)
 		}
-		link := FindLinkAssociation(token)
+		link := GetLinkArrowByName(token)
 		LINE_ITEM_STATE = ROLE_RELATION
 		LINE_RELN_CACHE["THIS"] = append(LINE_RELN_CACHE["THIS"],link)
 		LINE_RELN_COUNTER++
@@ -1273,7 +1275,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
-		this_iptr := IdempAddTextToNode(this_item)
+		this_iptr := IdempAddNode(this_item)
 		IdempAddArrow(last_item,last_iptr,last_reln,this_item,this_iptr)
 		CheckSection()
 
@@ -1304,9 +1306,8 @@ func AssessGrammarCompletions(token string, prior_state int) {
 			return
 		}
 
-		IdempAddTextToNode(this_item)
-		LinkSequence(token)
-
+		IdempAddNode(this_item)
+		LinkUpStorySequence(token)
 	}
 }
 
@@ -1335,6 +1336,8 @@ func StoreAlias(name string) {
 
 func IdempAddArrow(from string, frptr NodePtr, link Link,to string, toptr NodePtr) {
 
+	// Add a link index cache pointer directly to a from node
+
 	if from == to {
 		ParseError(ERR_ARROW_SELFLOOP)
 		os.Exit(-1)
@@ -1348,18 +1351,18 @@ func IdempAddArrow(from string, frptr NodePtr, link Link,to string, toptr NodePt
 
 	AppendLinkToNode(frptr,link,toptr)
 
-	// Double up for indexing
+	// Double up the reverse definition for easy indexing of both in/out arrows
+	// But be careful not the make the graph undirected by mistake
 
-	invlink := FindLinkAssociation(ARROW_DIRECTORY[INVERSE_ARROWS[link.Arr]].Short)
+	invlink := GetLinkArrowByName(ARROW_DIRECTORY[INVERSE_ARROWS[link.Arr]].Short)
 
 	AppendLinkToNode(toptr,invlink,frptr)
-
 
 }
 
 //**************************************************************
 
-func IdempAddTextToNode(s string) NodePtr {
+func IdempAddNode(s string) NodePtr {
 
 	PVerbose("Event/item/node:",s)
 
@@ -1868,7 +1871,9 @@ func CheckSequenceMode(context string, mode rune) {
 
 //**************************************************************
 
-func LinkSequence(this string) {
+func LinkUpStorySequence(this string) {
+
+	// Join together a sequence of nodes using default "(then)"
 
 	if SEQUENCE_MODE && this != LAST_IN_SEQUENCE {
 
@@ -1876,9 +1881,9 @@ func LinkSequence(this string) {
 			
 			PVerbose("... Sequence addition:",LAST_IN_SEQUENCE,SEQUENCE_RELN,"->",this)
 			
-			last_iptr := IdempAddTextToNode(LAST_IN_SEQUENCE)
-			this_iptr := IdempAddTextToNode(this)
-			link := FindLinkAssociation("(then)")
+			last_iptr := IdempAddNode(LAST_IN_SEQUENCE)
+			this_iptr := IdempAddNode(this)
+			link := GetLinkArrowByName("(then)")
 			AppendLinkToNode(last_iptr,link,this_iptr)
 		}
 		
@@ -1888,7 +1893,9 @@ func LinkSequence(this string) {
 
 //**************************************************************
 
-func FindLinkAssociation(token string) Link {
+func GetLinkArrowByName(token string) Link {
+
+	// Return a preregistered link/arrow ptr bythe name of a link
 
 	var reln []string
 	var weight float64 = 1
@@ -1930,7 +1937,11 @@ func FindLinkAssociation(token string) Link {
 		}
 	}
 
+	// First check if this is an alias/short name
+
 	ptr, ok := ARROW_SHORT_DIR[name]
+
+	// If not, then check longname
 
 	if !ok {
 		ptr, ok = ARROW_LONG_DIR[name]

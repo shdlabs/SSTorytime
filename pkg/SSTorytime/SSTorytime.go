@@ -366,7 +366,6 @@ func AppendDBLinkToNode(ctx PoSST, nptr NodePtr, lnk Link, sttype int) bool {
 	cptr := nptr.CPtr
 
 	lval := fmt.Sprintf("(%d, %f, %s, %d, %d)",lnk.Arr,lnk.Wgt,FormatArray(lnk.Ctx),lnk.Dst.Class,lnk.Dst.CPtr)
-//lval := fmt.Sprintf("(%d, %f, %d, %d)",lnk.Arr,lnk.Wgt,lnk.Dst.Class,lnk.Dst.CPtr)
 
 	switch sttype {
 

@@ -1,15 +1,28 @@
 
 # Source code and design for the N4L knowledge representation
 
-Some notes on the source code:
+Some notes on the source code.
+
+## Data model
+
+A graph consists of:
+
+* `Node`s which point to data values and are easily references by integer pointers.
+* `Link`s are associations from a from-node by (arrow,to-node). They are stored directly under the from node structure as a convenient local index.
+* `Arrow`s are the definitions of `Link` types that define the semantics of Links in a graph.
 
 ## `N4L.go` 
 
-This program promises:
+This program forms the basis for the data model and promises:
 
 * To parse a configuration file in the current directory to define some reusable terms
 * To parse a knowledge file of "notes" and convert into a graph
 * To output the summary as text or upload data to a Postgres database
+
+
+## Nodes as references to text, and Links as references to directed arrows
+
+For details of processes see [Graph Lookups] below
 
 The nodes (or vertices) of the graph are blobs of text, which might be
 anything from a single word to a long passage pasted in from
@@ -33,32 +46,33 @@ given by their array keys and lengths. This text is kept in a number of swim lan
 on the process used to manage them:
 
 <pre> 
-type NodeEventItemBlobs struct {
+
+type NodeDirectory struct {
 
 	// Power law n-gram frequencies
 
 	N1grams map[string]ClassedNodePtr
-	N1directory []NodeEventItem
+	N1directory []Node
 	N1_top ClassedNodePtr
 
 	N2grams map[string]ClassedNodePtr
-	N2directory []NodeEventItem
+	N2directory []Node
 	N2_top ClassedNodePtr
 
 	N3grams map[string]ClassedNodePtr
-	N3directory []NodeEventItem
+	N3directory []Node
 	N3_top ClassedNodePtr
 
 	// Use linear search on these exp fewer long strings
 
-	LT128 []NodeEventItem
+	LT128 []Node
 	LT128_top ClassedNodePtr
-	LT1024 []NodeEventItem
+	LT1024 []Node
 	LT1024_top ClassedNodePtr
-	GT1024 []NodeEventItem
+	GT1024 []Node
 	GT1024_top ClassedNodePtr
 }
- 
+
 </pre>
 
 
@@ -87,13 +101,13 @@ above, consisting of six arrays of type `[]NodeEventItemPtr`.
 * `ARROW_DIRECTORY` - an array of arrow structures that can be searched linearly or using
 pointer shortcuts kept by short and long name (`ARROW_SHORT_DIR` and `ARROW_LONG_DIR`).
 
-* The `NodeEventItem` structure is the graph node, and a list of outgoing links with positive
+* The `Node` structure is the graph node, and a list of outgoing links with positive
 STtypes. Incoming links have negative STtypes. Thus each node acts as a multiway switch (a local
 index at each node) for immediate lookup.
 
 <pre>
 
-type NodeEventItem struct { // essentially the incidence matrix
+type Node struct { // essentially the incidence matrix
 
 	L int                 // length of name string
 	S string              // name string itself
@@ -111,7 +125,7 @@ type NodeEventItem struct { // essentially the incidence matrix
 to which `swim lane` it belongs to.
 
 <pre>
-type NodeEventItemPtr struct {
+type NodePtr struct {
 
 	CPtr  ClassedNodePtr        // index of within name class lane
 	Class int                   // Text size-class
@@ -126,10 +140,10 @@ roles are in use.
 
 We don't expect to have to use a function to get a pointer from a node text. Instead
 we insist that string registration be transparently idempotent, so to get a pointer
-for some text, simply register it with `IdempAddTextToNode()`, this updates
+for some text, simply register it with `IdempAddNode()`, this updates
 the node directory if necessary and returns a pointer, or it simply returns
-a pointer if the record already existst. The converse (finding the text
-pointed to by a text pointer) uses `GetTextFromPtr()`. 
+a pointer if the record already exists. The converse (finding the text
+pointed to by a text pointer) uses `GetNodeFromPtr()`. 
 
 ## The long and short of arrows
 
@@ -264,6 +278,32 @@ So, in the N4L function `SearchIncidentRowClass`, we do flip arrows when constru
 the adjacency matrix, and search all categories, but for other purposes than assembling,
 it is useful to maintain this denormalization.
 
+## Graph Lookups
 
+Here is a list of procedures for obtaining references to Node and Link data.
 
+### Lookup a Node with its text by NodePtr
 
+* NodePtr has two parts: a pointer `CPtr` and a channel, class, or 'swim lane' for text (text is classified by its size `L`, because we know that text frequencies follow a power law by length. The length is cached in Node structures so we don't have to recompute a lot.)
+* Use `L` in `ClassifyString()` to select which class or channel of the six stores to go to: `N1gram, N2gram, N3gram, LT128, LT1024, GT1024`.
+* Use the NODE_DIRECTORY[class][cptr] to get the index to the Node struct in the array/table.
+
+### Lookup a Node with its text by text string
+
+* In general, don't search simply use `IdempAddNode()` to store/lookup. This will return a nodeptr.
+* Find the length of the text and use `ClassifyString()` to select which class or channel of the six stores to go to: `N1gram, N2gram, N3gram, LT128, LT1024, GT1024`.
+* For `N1gram, N2gram, N3gram`, use the map hash table to look up the `Node` structure by name. These may be large.
+* For `LT128, LT1024, GT1024`, search the arrays linearly for a matching `Node` structure by name. These are short.
+
+### Lookup an arrow from an `ArrowPtr`
+
+* Arrows are indexed from `InsertArrowDirectory()`. This inserts them into `ARROW_DIRECTORY`, which keeps
+all arrow definitions by `ArrowPtr` array index, so that all arrow details and semantics boil down to a simple integer index value in graph tables.
+
+* `ARROW_DIRECTORY` is thus used to lookup arrows by `ArrowPtr`.
+
+* To get the `ArrowPtr`, simply call `IdempAddArrow` which returns its pointer in `ARROW_DIRECTORY`.
+
+* To get the reverse arrow of an arrow given by arrow pointer use the `INVERSE_ARROW` index.
+
+* To get an arrow definition by name, call `GetLinkArrowByName()` with either short or long name.
