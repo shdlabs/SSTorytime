@@ -1,11 +1,9 @@
- ::private.commentary.mark.chinese::
 
--Directions in chinese
+- Directions in chinese
 
  :: directions, compass ::
 
-
-"                               北边 běibian
+"DIAGRAM                        北边 běibian
                                 北方 běifāng
                 ----------------------------------------------
                  西北 xīběi         北 Běi         东北 dōngběi  
@@ -18,8 +16,8 @@
                  西南 xīnán         南 Nán         东南 dōngnán 
                 ----------------------------------------------
                                 南边 Nánbian
-                                南方 Nánfāng" 
-
+                                南方 Nánfāng"
+ 
   "  (cont) north
   "  (cont) south
 
@@ -59,9 +57,10 @@ Zòuyuè (ph) 奏乐 (he) play music
 
 ################
 
-  zuo  (confused with) zhuo
-  zhuo (confused with) Zhao
-  zhuo (confused with) zhou
+  zuo  (sl) zhuo
+  zhuo (ll) Zhao
+  zhuo (sl) zhou
+  zhuo (ll) zhou
 
 
 #####
@@ -76,7 +75,7 @@ Zǎo 早 (has) 早
 
 ##########
 
- zhǎo 找 (confused with) zhào 照
+ zhǎo 找 (sl) zhào 照
 
  zhǎo 找  (has)  zhǎo
     "       (has)  找 
@@ -92,7 +91,7 @@ Zǎo 早 (has) 早
 
 // this should scale ok, as we know strings of length > 3 are generally unique 
 
-Huì (cf) huí (cf) huǐ (cf)  $1
+Huì (cf) huí (cf) huǐ 
 
 会 (cf) 回 (cf) 悔
 
