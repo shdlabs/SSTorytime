@@ -21,7 +21,7 @@ This program forms the reference basis for the graph data model and the library 
 
 ## Nodes as references to text, and Links as references to directed arrows
 
-For details of processes see [Graph Lookups](#Graph Lookups) below
+For details of processes see [Graph Lookups](#Graph-Lookups) below
 
 The nodes (or vertices) of the graph are blobs of text, which might be
 anything from a single word to a long passage pasted in from
