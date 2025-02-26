@@ -237,11 +237,17 @@ In order to have an automatic and immediate index of the links
 emanating from a graph, we keep an array of types '[st]Link' from each
 source node to all neighbours. This is quick when depth searching but
 it doesn't make inverse lookups easy. For generel graph connectivity,
-we want the adficency matrix which is dvected in the form...
+we want the adficency matrix which is diected in the form...
 <pre>
 (from, arrous, to)...
 </pre>
-This is easily searched forwards and backwards.
+Such a structure is easily searched forwards and backwards. However, there
+are other considerations for memory models. Graphs can be large and linear
+searching may be expensive. The structures differ slightly for in-memory algorithms
+and in-database algorithms.
+
+* We can do various things to optimize in memory. Go has extensive flexibility to choose algorithms.
+* When storing in the database for long term scaling, we have to let postgres handle scaling and we have to live with the kind of quirky and fragile algorithms that postgres-SQL allows.
 
 Users will possibly define connections, using either forwards or
 badewards arrous however. The simplest thing to do for storage would
