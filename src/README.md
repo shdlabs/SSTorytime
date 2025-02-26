@@ -13,12 +13,11 @@ A graph consists of:
 
 ## `N4L.go` 
 
-This program forms the basis for the data model and promises:
+This program forms the reference basis for the graph data model and the library code. It promises:
 
-* To parse a configuration file in the current directory to define some reusable terms
-* To parse a knowledge file of "notes" and convert into a graph
-* To output the summary as text or upload data to a Postgres database
-
+* To parse a configuration file in the current directory to define some reusable terms.
+* To parse files of "notes" and convert the data into a graph.
+* To output the summary as text or upload data to a Postgres database.
 
 ## Nodes as references to text, and Links as references to directed arrows
 
