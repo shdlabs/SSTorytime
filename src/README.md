@@ -283,7 +283,7 @@ Here is a list of procedures for obtaining references to Node and Link data.
 
 ### Lookup a Node with its text by NodePtr
 
-* NodePtr has two parts: a pointer `CPtr` and a channel, class, or 'swim lane' for text (text is classified by its size `L`, because we know that text frequencies follow a power law by length. The length is cached in Node structures so we don't have to recompute a lot.)
+* `NodePtr` has two parts: a pointer `CPtr` and a channel, class, or 'swim lane' for text (text is classified by its size `L`, because we know that text frequencies follow a power law by length. The length is cached in Node structures so we don't have to recompute a lot.)
 * Use `L` in `ClassifyString()` to select which class or channel of the six stores to go to: `N1gram, N2gram, N3gram, LT128, LT1024, GT1024`.
 * Use the NODE_DIRECTORY[class][cptr] to get the index to the Node struct in the array/table.
 
