@@ -62,6 +62,7 @@ const (
 	ERR_NEGATIVE_WEIGHT = "Arrow relation has a negative weight, which is disallowed. Use a NOT relation if you want to signify inhibition: "
 	ERR_TOO_MANY_WEIGHTS = "More than one weight value in the arrow relation "
         ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
+	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be int he form $label.n"
 )
 
 //**************************************************************
@@ -1981,7 +1982,17 @@ func ResolveAliasedItem(token string) string {
 
 	// split $alias.n into (alias string,n int)
 
+	if len(token) < 1 {
+		return ""
+	}
+
 	split := strings.Split(token[1:],".")
+
+	if len(split) < 2 {
+		ParseError(ERR_MISSING_LINE_LABEL_IN_REFERENCE)
+		os.Exit(-1)
+	}
+
 	name := strings.TrimSpace(split[0])
 
 	var number int = 0
