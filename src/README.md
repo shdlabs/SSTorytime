@@ -112,7 +112,7 @@ type Node struct { // essentially the incidence matrix
 	S string              // name string itself
 
 	Chap string           // section/chapter in which this was added
-	SizeClass int         // the string class: N1-N3, LT128, etc
+	SizeClass int         // the string class: N1-N3, LT128, etc (redundant)
 	NPtr NodeEventItemPtr // Pointer to self
 
 	I [ST_TOP][]Link   // link incidence list, by arrow type
@@ -120,6 +120,9 @@ type Node struct { // essentially the incidence matrix
 }
 
 </pre>
+Note that `SizeClass` is redundant information, not strictly necessary, since it is easily and deterministically
+calculated from `L`. 
+
 * A pointer to such an object `NodeEventItemPtr` is classified for quickly reference
 to which `swim lane` it belongs to.
 
