@@ -398,8 +398,7 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, n2ptr NodePtr, sttyp
 
 func DefineStoredFunctions(ctx PoSST) {
 	
-	// create SELECT IdempInsertNode(5,1,'ngram','terms'); etc
-	// Have to make a static function for each table, because postgres can't do table as parameter
+	// Insert node
 	
 	qstr := "CREATE OR REPLACE FUNCTION IdempInsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)" + 
 		"RETURNS TABLE (    " +
@@ -421,45 +420,50 @@ func DefineStoredFunctions(ctx PoSST) {
 			fmt.Println("Error defining postgres function:",qstr,err)
 		}
 
-		// Drop Functions later?
-}
+	// Search along a vector for the future cone
+	// e.g. select * from GetFwdNeigh('(4,2)',ARRAY[ '(4,6)' ]::NodePtr[]);
 
-// **************************************************************************
-// Retrieve
-// **************************************************************************
+	//for sttype := -EXPRESS; sttype <= EXPRESS; sttype++ {
 
-func GetFwdNeigh(ctx PoSST, start NodePtr, sttype int) {
+	for sttype := LEADSTO; sttype <= LEADSTO; sttype++ {
 
 	stname := STTypeDBChannel(sttype)
  
-	fmt.Println("--- Future cone by layers --- from Node","depth","sttype",sttype,stname)
+		// Get the nearest neighbours as NPtr
 
-	// Note this is posstgres stored procedure language, which is SQL-like but not SQL
+		qstr := fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdNeigh(start NodePtr,exclude NodePtr[] )\n"+
+			"RETURNS NodePtr[] AS $nums$\n" +
+			"DECLARE \n" +
+			"    neighbours NodePtr[];\n" +
+			"    fwdlinks Link[];\n" +
+			"    lnk Link;\n" +
+			"BEGIN\n" +
+			//   Note, you can't select into in the stored function language
+			"    SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start;\n"+
+			"    IF fwdlinks IS NULL THEN\n" +
+			"        RETURN '{}';\n" +
+			"    END IF;\n" +
+			"    neighbours := ARRAY[]::Link[];\n" +
+			"    FOREACH lnk IN ARRAY fwdlinks\n" +
+			"    LOOP\n"+
+			"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
+			"         neighbours := array_append(neighbours, lnk.dst);\n" +
+			"      END IF; \n" +
+			"    END LOOP;\n" +
+			"    RETURN neighbours; \n" +
+			"END ;\n" +
+			"$nums$ LANGUAGE plpgsql;\n",stname)
 
-	qstr1 := "CREATE OR REPLACE FUNCTION GetFwdNeigh(start NodePtr,exclude NodePtr[] )\n"+
-		"RETURNS NodePtr[] AS $nums$\n" +
-		"DECLARE \n" +
-		"    neighbours NodePtr[];\n" +
-		"    fwdlinks Link[];\n" +
-		"    lnk Link;\n" +
-		"BEGIN\n" +
-		//   Note, you can't select into in the stored function language
-		"    SELECT Il1 INTO fwdlinks FROM Node WHERE Nptr=start;\n"+
-		"    IF fwdlinks IS NULL THEN\n" +
-		"        RETURN '{}';\n" +
-		"    END IF;\n" +
-		"    neighbours := ARRAY[]::Link[];\n" +
-		"    FOREACH lnk IN ARRAY fwdlinks\n" +
-		"    LOOP\n"+
-		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
-		"         neighbours := array_append(neighbours, lnk.dst);\n" +
-		"      END IF; \n" +
-		"    END LOOP;\n" +
-		"    RETURN neighbours; \n" +
-		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n"
+		_, err := ctx.DB.Query(qstr)
+		
+		if err != nil {
+			fmt.Println("Error defining postgres function:",qstr,err)
+		}
+	}
+	
+	// Get the forward cone / half-ball as NPtr
 
-	qstr2 := "CREATE OR REPLACE FUNCTION GetFwdCone(start NodePtr,maxdepth INTEGER)\n"+
+	qstr =  "CREATE OR REPLACE FUNCTION GetFwdCone(start NodePtr,maxdepth INTEGER)\n"+
 		"RETURNS NodePtr[] AS $nums$\n" +
 		"DECLARE \n" +
 		"    nextlevel NodePtr[];\n" +
@@ -510,75 +514,40 @@ func GetFwdNeigh(ctx PoSST, start NodePtr, sttype int) {
 		"END ;\n" +
 		"$nums$ LANGUAGE plpgsql;\n"
 
-	// select * from GetFwdCone('(1,4)',4);
+		_, err = ctx.DB.Query(qstr)
+		
+		if err != nil {
+			fmt.Println("Error defining postgres function:",qstr,err)
+		}
 
-	fmt.Println(qstr1+qstr2)
-	return 
+		// Drop Functions later?
 }
 
-
-
+// **************************************************************************
+// Retrieve
 // **************************************************************************
 
-func GetFutureConeOld(ctx PoSST, start NodePtr, radius int,sttype int) {
+func GetFwdCone(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr {
 
-	stname := STTypeDBChannel(sttype)
- 
-	fmt.Println("--- Future cone by layers --- from Node","depth",radius,"sttype",sttype,stname)
+	qstr := fmt.Sprintf("select unnest(getfwdcone) from GetFwdCone('(%d,%d)',%d);",start.Class,start.CPtr,depth)
 
-	// Note this is posstgres stored procedure language, which is SQL-like but not SQL
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY to GetFwdCone Failed",err)
+	}
 
-	qstr := "CREATE OR REPLACE FUNCTION GetFwdCone(start NodePtr,maxdepth INTEGER)\n"+
-		"RETURNS NodePtr[] AS $nums$\n" +
-		"DECLARE \n" +
-		"    counter  INTEGER := 0;\n" +
-		"    neighbours NodePtr[] := ARRAY[start]::NodePtr[];\n" +
-		"    history  NodePtr[] := ARRAY[]::NodePtr[];\n" +
-		"    fwdlinks Link[];\n" +
-		"    lnk      Link;\n" +
-		"    fwd      Link;\n" +
-		"    fwdpart  Link;\n" +
-		"    neigh    NodePtr;\n" +
-		"BEGIN\n" +
-		//   Note, you can't select into in the stored function language
-		"    SELECT Il1 INTO fwdlinks FROM Node WHERE Nptr=start;\n"+
-		"    LOOP\n" +
-		//       This level as type Link 
-		"        IF fwdlinks IS NULL THEN\n" +
-		"           RETURN '{}';\n" +
-		"        END IF;\n" +
-		"        EXIT WHEN counter = maxdepth;\n" +
-		"        neighbours := ARRAY[]::Link[];\n" +
-		"        FOREACH lnk IN ARRAY fwdlinks\n" +
-		"        LOOP\n"+
-		"           IF NOT lnk.dst=ANY(history) THEN\n" +
-		//             neighbours = This level type Nptr extracted from Link
-		"              neighbours := array_append(neighbours, lnk.dst);\n" +
-		//             history =All summed past Nptrs visited
-		"              history := history || lnk.dst;\n" +
-		"           END IF; \n" +
-		"        END LOOP;\n" +
-		//       Get next set all forward links
-		"        fwdlinks = ARRAY[]::Link[];\n" +
-		"foreach neigh in array neighbours \n" +
-		"loop\n" +
-		//"  select Il1 INTO fwdpart FROM Node WHERE Nptr=neigh;\n"+
-		"  foreach fwd in array fwdpart \n"+
-		"  loop\n"+
-		"     RAISE NOTICE 'lnk = %', fwd;\n"+
-		"     fwdlinks = array_append(fwdlnks,fwd);\n" +
-		"  END LOOP;\n" +
-		"end loop;\n"+
-		"        counter = counter + 1;\n" +
-		"    END LOOP;\n" +
-		"    RETURN neighbours; \n" +
-		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n"
+	var whole string
+	var n NodePtr
+	var retval []NodePtr
 
-	// select * from GetFwdCone('(1,4)',4);
+	for row.Next() {		
+		err = row.Scan(&whole)
+		fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
+		retval = append(retval,n)
+	}
 
-	fmt.Println(qstr)
-	return 
+	return retval
 }
 
 // **************************************************************************

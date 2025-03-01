@@ -104,7 +104,10 @@ func main() {
 	n6 = SST.CreateDBNode(ctx, n6)
 	SST.AppendDBLinkToNode(ctx,n5.NPtr,lnk56,n6.NPtr,sttype)
 
-	SST.GetFwdNeigh(ctx,n1.NPtr,sttype)
+	for depth := 0; depth < 4; depth++ {
+		val := SST.GetFwdCone(ctx,n1.NPtr,sttype,depth)
+		fmt.Println("Forward to",depth,"steps:",val)
+	}
 
 	SST.Close(ctx)
 }
