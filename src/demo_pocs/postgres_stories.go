@@ -105,7 +105,12 @@ func main() {
 	SST.AppendDBLinkToNode(ctx,n5.NPtr,lnk56,n6.NPtr,sttype)
 
 	for depth := 0; depth < 4; depth++ {
-		val := SST.GetFwdCone(ctx,n1.NPtr,sttype,depth)
+		val := SST.GetFwdConeAsNodes(ctx,n1.NPtr,sttype,depth)
+		fmt.Println("Forward to",depth,"steps:",val)
+	}
+
+	for depth := 0; depth < 4; depth++ {
+		val := SST.GetFwdConeAsLinks(ctx,n1.NPtr,sttype,depth)
 		fmt.Println("Forward to",depth,"steps:",val)
 	}
 
