@@ -73,8 +73,6 @@ type NodeDirectory struct {
 }
 
 </pre>
-
-
 Now, searching can be done in a way that is appropriate for a string of unknown length.
 For short strings, a hashmap/btree can be used for lookup. For long strings, we cans simply
 do a linear search since there will not be many, since hashing a long string is costly.
@@ -82,6 +80,11 @@ The lookup tables associate an integer primary key index with a string. For long
 comparing the length of the string can quickly eliminate mismatches, without needing
 to see the content. These details explain the apparent "over-thinking" of data representations.
 
+Note that, while this kind of optimization makes sense in memory, where we control the algorithms,
+it makes less sense for the database where we have no control over optimizations and the extra
+difficulty of separating these classes comes as its own cost (both mental and dynamical). So,
+in the database model we can collapse these six arrays into a single Node table and retain
+the classifier as an integer channel variable for quick sorting using an index.
 
 ## Knowledge graph and matrices
 
@@ -286,9 +289,10 @@ So, in the N4L function `SearchIncidentRowClass`, we do flip arrows when constru
 the adjacency matrix, and search all categories, but for other purposes than assembling,
 it is useful to maintain this denormalization.
 
-## Graph Lookups
+## Graph Lookups in memory
 
-Here is a list of procedures for obtaining references to Node and Link data.
+Here is a list of procedures for obtaining references to Node and Link data in computer (Golang) memory.
+In the database, it's better to use indexing on the channel variable to optimize this.
 
 ### Lookup a Node with its text by NodePtr
 
