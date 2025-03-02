@@ -397,8 +397,10 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, n2ptr NodePtr, sttyp
 // **************************************************************************
 
 func DefineStoredFunctions(ctx PoSST) {
+
+	// Node these are "plpgsql" language, NOT pure SQL. They are very different.
 	
-	// Insert node
+	// Insert a node structure, also an anchor for and containing link arrays
 	
 	qstr := "CREATE OR REPLACE FUNCTION IdempInsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)" + 
 		"RETURNS TABLE (    " +
@@ -420,6 +422,7 @@ func DefineStoredFunctions(ctx PoSST) {
 			fmt.Println("Error defining postgres function:",qstr,err)
 		}
 
+	// Construct an empty link pointing nowhere as a starting node
 
 	qstr = "CREATE OR REPLACE FUNCTION GetSingletonLink(start NodePtr)\n"+
 		"RETURNS Link[] AS $nums$\n"+
@@ -439,53 +442,77 @@ func DefineStoredFunctions(ctx PoSST) {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
 
-	// Search along a vector for the future cone
-	// e.g. select * from GetFwdNodes('(4,2)',ARRAY[ '(4,6)' ]::NodePtr[]);
+	// Construct search by sttype. since table names are static we need a case statement
 
-	//for sttype := -EXPRESS; sttype <= EXPRESS; sttype++ {
-
-	stname := STTypeDBChannel(LEADSTO)
- 
-	// Get the nearest neighbours as NPtr
-
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdNodes(start NodePtr,exclude NodePtr[] )\n"+
-		"RETURNS NodePtr[] AS $nums$\n" +
-		"DECLARE \n" +
-		"    neighbours NodePtr[];\n" +
-		"    fwdlinks Link[];\n" +
-		"    lnk Link;\n" +
-		"BEGIN\n" +
-		//   Note, you can't select into in the stored function language
-		"    SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start;\n"+
-		"    IF fwdlinks IS NULL THEN\n" +
-		"        RETURN '{}';\n" +
-		"    END IF;\n" +
-		"    neighbours := ARRAY[]::NodePtr[];\n" +
-		"    FOREACH lnk IN ARRAY fwdlinks\n" +
-		"    LOOP\n"+
-		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
-		"         neighbours := array_append(neighbours, lnk.dst);\n" +
-		"      END IF; \n" +
-		"    END LOOP;\n" +
-		"    RETURN neighbours; \n" +
-		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n",stname)
+	qstr = "CREATE OR REPLACE FUNCTION GetNeighboursByType(start NodePtr, sttype int)\n"+
+		"RETURNS Link[] AS $nums$\n"+
+		"DECLARE \n"+
+		"    fwdlinks Link[] := Array[] :: Link[];\n"+
+		"    lnk Link := (0,0.0,Array[]::text[],(0,0));\n"+
+		"BEGIN\n"+
+		"   CASE sttype \n"
 	
+	for st := -EXPRESS; st <= EXPRESS; st++ {
+		qstr += fmt.Sprintf("WHEN %d THEN\n"+
+			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start;\n",st,STTypeDBChannel(st));
+	}
+	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
+		"END CASE;\n" +
+		"    RETURN fwdlinks; \n" +
+		"END ;\n" +
+		"$nums$ LANGUAGE plpgsql;\n"
+
 	_, err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
 
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdLinks(start NodePtr,exclude NodePtr[] )\n"+
+	// Get the nearest neighbours as NPtr, with respect to each of the four STtype
+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdNodes(start NodePtr,exclude NodePtr[],sttype int)\n"+
+		"RETURNS NodePtr[] AS $nums$\n" +
+		"DECLARE \n" +
+		"    neighbours NodePtr[];\n" +
+		"    fwdlinks Link[];\n" +
+		"    lnk Link;\n" +
+		"BEGIN\n" +
+
+		"    fwdlinks =GetNeighboursByType(start,sttype);\n"+
+
+		"    IF fwdlinks IS NULL THEN\n" +
+		"        RETURN '{}';\n" +
+		"    END IF;\n" +
+
+		"    neighbours := ARRAY[]::NodePtr[];\n" +
+
+		"    FOREACH lnk IN ARRAY fwdlinks\n" +
+		"    LOOP\n"+
+		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
+		"         neighbours := array_append(neighbours, lnk.dst);\n" +
+		"      END IF; \n" +
+		"    END LOOP;\n" +
+
+		"    RETURN neighbours; \n" +
+		"END ;\n" +
+		"$nums$ LANGUAGE plpgsql;\n")
+
+	_, err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdLinks(start NodePtr,exclude NodePtr[],sttype int)\n"+
 		"RETURNS Link[] AS $nums$\n" +
 		"DECLARE \n" +
 		"    neighbours Link[];\n" +
 		"    fwdlinks Link[];\n" +
 		"    lnk Link;\n" +
 		"BEGIN\n" +
-		//   Note, you can't select into in the stored function language
-		"    SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start;\n"+
+
+		"    fwdlinks =GetNeighboursByType(start,sttype);\n"+
+
 		"    IF fwdlinks IS NULL THEN\n" +
 		"        RETURN '{}';\n" +
 		"    END IF;\n" +
@@ -498,7 +525,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    END LOOP;\n" +
 		"    RETURN neighbours; \n" +
 		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n",stname)
+		"$nums$ LANGUAGE plpgsql;\n")
 	
 	_, err = ctx.DB.Query(qstr)
 	
@@ -508,7 +535,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	// Get the forward cone / half-ball as NPtr
 
-	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsNodes(start NodePtr,maxdepth INTEGER)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsNodes(start NodePtr,sttype INT, maxdepth INT)\n"+
 		"RETURNS NodePtr[] AS $nums$\n" +
 		"DECLARE \n" +
 		"    nextlevel NodePtr[];\n" +
@@ -544,7 +571,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    IF NOT neigh = ANY(exclude) THEN\n" +
 		"      cone = array_append(cone,neigh);\n" +
 		"      exclude := array_append(exclude,neigh);\n" +
-		"      partlevel := GetFwdNodes(neigh,exclude);\n" +
+		"      partlevel := GetFwdNodes(neigh,exclude,sttype);\n" +
 		"    END IF;" +
 		"    IF partlevel IS NOT NULL THEN\n" +
 		"         level = array_cat(level,partlevel);\n"+
@@ -566,22 +593,20 @@ func DefineStoredFunctions(ctx PoSST) {
 	}
 	
 	
-	// select unnest(getfwdcone) from GetFwdCone('(4,1)',4);
-	
-          /* e.g.
-          select unnest(GetFwdConeL) from  GetFwdConeL('(4,1)',4);
+          /* e.g. select unnest(fwdconeaslinks) from FwdConeAsLinks('(4,1)',1,4);
                            unnest                           
-          ------------------------------------------------------------
-          (0,0,{},"(4,1)")
-          (77,0.34,"{ ""fairy castles"", ""angel air"" }","(4,2)")
-          (77,0.34,"{ ""fairy castles"", ""angel air"" }","(4,3)")
-          (77,0.34,"{ ""steamy hot tubs"" }","(4,5)")
-          (77,0.34,"{ ""fairy castles"", ""angel air"" }","(4,4)")
-          (77,0.34,"{ ""steamy hot tubs"", ""lady gaga"" }","(4,6)")
-          (6 rows)
+             ------------------------------------------------------------
+              (0,0,{},"(4,1)")
+              (77,0.34,"{ ""fairy castles"", ""angel air"" }","(4,2)")
+              (77,0.34,"{ ""fairy castles"", ""angel air"" }","(4,3)")
+              (77,0.34,"{ ""steamy hot tubs"" }","(4,5)")
+              (77,0.34,"{ ""fairy castles"", ""angel air"" }","(4,4)")
+              (77,0.34,"{ ""steamy hot tubs"", ""lady gaga"" }","(4,6)")
+             (6 rows)
+
           */
 
-	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsLinks(start NodePtr,maxdepth INTEGER)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsLinks(start NodePtr,sttype INT,maxdepth INT)\n"+
 		"RETURNS Link[] AS $nums$\n" +
 		"DECLARE \n" +
 		"    nextlevel Link[];\n" +
@@ -619,7 +644,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    IF NOT neigh.Dst = ANY(exclude) THEN\n" +
 		"      cone = array_append(cone,neigh);\n" +
 		"      exclude := array_append(exclude,neigh.Dst);\n" +
-		"      partlevel := GetFwdLinks(neigh.Dst,exclude);\n" +
+		"      partlevel := GetFwdLinks(neigh.Dst,exclude,sttype);\n" +
 		"    END IF;" +
 		"    IF partlevel IS NOT NULL THEN\n" +
 		"         level = array_cat(level,partlevel);\n"+
@@ -647,7 +672,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr {
 
-	qstr := fmt.Sprintf("select unnest(fwdconeasnodes) from FwdConeAsNodes('(%d,%d)',%d);",start.Class,start.CPtr,depth)
+	qstr := fmt.Sprintf("select unnest(fwdconeasnodes) from FwdConeAsNodes('(%d,%d)',%d,%d);",start.Class,start.CPtr,sttype,depth)
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -672,7 +697,7 @@ func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr {
 
 func GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link {
 
-	qstr := fmt.Sprintf("select unnest(fwdconeaslinks) from FwdConeAsLinks('(%d,%d)',%d);",start.Class,start.CPtr,depth)
+	qstr := fmt.Sprintf("select unnest(fwdconeaslinks) from FwdConeAsLinks('(%d,%d)',%d,%d);",start.Class,start.CPtr,sttype,depth)
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -774,8 +799,6 @@ func ParseSQLLinkString(s string) Link {
 
 	fmt.Sscanf(items[len(items)-2],"%d",&l.Dst.Class)
 	fmt.Sscanf(items[len(items)-1],"%d",&l.Dst.CPtr)
-
-	fmt.Println("Made",l)
 
 	return l
 }

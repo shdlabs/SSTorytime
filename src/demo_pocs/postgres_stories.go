@@ -106,12 +106,19 @@ func main() {
 
 	for depth := 0; depth < 4; depth++ {
 		val := SST.GetFwdConeAsNodes(ctx,n1.NPtr,sttype,depth)
-		fmt.Println("Forward to",depth,"steps:",val)
+		fmt.Println("As NodePtr(s) fwd from",n1,"depth",depth)
+		for l := range val {
+			fmt.Println("   - Step",val[l])
+		}
+
 	}
 
 	for depth := 0; depth < 4; depth++ {
 		val := SST.GetFwdConeAsLinks(ctx,n1.NPtr,sttype,depth)
-		fmt.Println("Forward to",depth,"steps:",val)
+		fmt.Println("As Links fwd from",n1,"depth",depth)
+		for l := range val {
+			fmt.Println("   - Step",val[l])
+		}
 	}
 
 	SST.Close(ctx)
