@@ -844,7 +844,7 @@ func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) [][]Link {
 
 func ParseSQLArrayString(whole_array string) []string {
 
-   // array as {"(1,2,3)","(4,5,6)"}
+	// array as {"(1,2,3)","(4,5,6)"}
 
       	var l []string
 
@@ -903,8 +903,13 @@ func ParseSQLLinkString(s string) Link {
 	
         items := strings.Split(s,",")
 
+	// Arrow type
 	fmt.Sscanf(items[0],"%d",&l.Arr)
+
+	// Link weight
 	fmt.Sscanf(items[1],"%f",&l.Wgt)
+
+	// These are the context array
 
 	var array []string
 
@@ -918,6 +923,8 @@ func ParseSQLLinkString(s string) Link {
 
 	l.Ctx = array
 
+	// the last two are the NPtr
+
 	fmt.Sscanf(items[len(items)-2],"%d",&l.Dst.Class)
 	fmt.Sscanf(items[len(items)-1],"%d",&l.Dst.CPtr)
 
@@ -930,7 +937,7 @@ func ParseLinkPath(s string) [][]Link {
 
 	// Each path will start on a new line, with comma sep Link encodings
 
-	var array = make([][]Link,1)
+	var array [][]Link
 	var index int = 0
 
 	lines := strings.Split(s,"\n")
@@ -945,13 +952,13 @@ func ParseLinkPath(s string) [][]Link {
 				continue
 			}
 
-			array = append(array,make([]Link,1))
+			array = append(array,make([]Link,0))
 
 			for l := 0; l < len(links); l++ {
 
-				array[index] = append(array[index],ParseSQLLinkString(links[l]))
+				lnk := ParseSQLLinkString(links[l])
+				array[index] = append(array[index],lnk)
 			}
-
 			index++
 		}
 	}
@@ -959,7 +966,6 @@ func ParseLinkPath(s string) [][]Link {
 	if index < 1 {
 		return nil
 	}
-	
 	return array
 }
 
