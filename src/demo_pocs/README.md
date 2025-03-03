@@ -456,7 +456,9 @@ marshalled using `Format()` rather than say as type `Link` using variable syntax
              ret_paths := Format('%s\n%s',ret_paths,appendix);
           END IF;      
        END IF;   
-    END IF;END LOOP;RETURN ret_paths;
- END ;
+    END IF;
+ END LOOP;
+RETURN ret_paths;
+END ;
  $function$
 </pre>
