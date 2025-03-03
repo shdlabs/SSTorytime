@@ -414,3 +414,49 @@ END ;
 $nums$ LANGUAGE plpgsql;
 </pre>
 And so forth.
+
+Recursion and iteration lead to trickery in passing of parameters.
+We should think of the Postgres language like writing C code rather than Go code.
+Go will handle complex types easily, but in C you are formatting and parsing string
+encodings of types. So it is here too.
+Functions claim to return datatypes like arrays, but these are really messy escape sequences
+passed as strings. They become so complicated that Postgres can't parse its own encodings
+on occasion. So we can use our own simpler encodings when operating with multiple levels of
+function call. This means that some variables are treated as `TEXT`, and
+marshalled using `Format()` rather than say as type `Link` using variable syntax:
+
+<pre>
+ CREATE OR REPLACE FUNCTION public.sumfwdpaths(start link, path text, sttype integer, depth integer, maxdepth integer, exclude nodeptr[])
+  RETURNS text
+  LANGUAGE plpgsql
+ AS $function$ 
+ DECLARE
+     fwdlinks Link[];
+     empty Link[] = ARRAY[]::Link[];
+     lnk Link;
+     fwd Link;
+     ret_paths Text;
+     appendix Text;
+     tot_path Text;
+ BEGIN
+ IF depth = maxdepth THEN
+   ret_paths := Format('%s\n%s',ret_paths,path);                               // newline separator passed back to Go
+   RETURN ret_paths;
+ END IF;
+ fwdlinks := GetFwdLinks(start.Dst,exclude,sttype);
+ FOREACH lnk IN ARRAY fwdlinks LOOP
+    IF NOT lnk.Dst = ANY(exclude) THEN
+       exclude = array_append(exclude,lnk.Dst);
+       IF lnk IS NULL THEN
+         ret_paths := Format('%s\n%s',ret_paths,path);
+       ELSE         
+          tot_path := Format('%s;%s',path,lnk::Text);
+          appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude); // Recurse, but return text
+          IF appendix IS NOT NULL THEN
+             ret_paths := Format('%s\n%s',ret_paths,appendix);
+          END IF;      
+       END IF;   
+    END IF;END LOOP;RETURN ret_paths;
+ END ;
+ $function$
+</pre>
