@@ -1,15 +1,51 @@
 
-# Writing the SQL queries
+# NOTES on the coding strategy and algorithms
+
+These notes are intended as a pedagogical introduction to the coding strategy, using the
+examples in this directory. The following files are not directly related to the project code,
+but rather try to illustrate the algorithms needed to support a more complicated data structure,
+<pre>
+postgres_ball.go
+postgres_conepaths.go
+postgres_datatypes.go
+postgres_futurecone.go
+postgres_futurecone_stored_function.go
+postgres_multiarray.go
+</pre>
+The additional story-labelled examples use the library package SSTorytime, so they are toy examples
+to develop and test the library before committing to (and possibly messing up!) the main
+code.
+
+## The goal
+
+We want to do as much as possible in the database engine, because sending data back and forth
+over the wire is costly and inefficient in time, even though it makes the programming relatively easy.
+So, we spend some time to experiment with ways to minimize what is returned by a query to the database.
+
+## Writing pure SQL queries 
 
 An important part of implementing graph structures is figuring out the algorithms
-expressed as SQL for parsing the data structres.
+expressed as SQL for parsing the data structres. SQL was not designed to work with
+the kinds of data structures that we've used in the N4L Golang model, so one has to decide
+whether to abandon that approach for a classical normalized Entity-Relation model, or
+use some of the features in Postgres that claim to support more advanced data types.
+
+I will simply state for the record(!) that Postgres advanced data types are fragile
+and that there is a lot of confusion around writing of queries. This is because
+Postgres offers certain features only as part of **stored procedures/functions**.
+Meanwhile, the function language (called PL/pgSQL) is not SQL, although it looks
+confusingly similar, and it's almost mutually exclusive with ordinary SQL. So,
+the developer needs to be clear about whether (s)he is using one or the other.
+In practice, sticking to stored functions makes many things much easier. In particular,
+it does allow us to retain the data model strategy developed for the in-memory
+Golang model for the most part.
 
 Ordinary search results from a `select *...` are called "rows".
 They are instances of tables, just as variables in Go are instances of data types.
 We can call array elements with a row
 of table instance "columns".
 
-## Basics
+## Simplified data, basic ideas
 
 Consider the table:
 <pre>
@@ -49,13 +85,12 @@ as both directions would typically be though of as arrays.
 
 ## Comparing SQL and Go
 
-A SQL `select * from TABLE` statement is roughly analogous to a `for variable := range table` statement is Go.
+A pure SQL `select * from TABLE` statement is roughly analogous to a `for variable := range table` statement is Go.
 
 Where the two arrays can contain lists of associates. Starting from a node with name="mark"
 we aggregate friends and employees as one into a a temporary list called templist:
 
-
-The `unnest()` is postgres function splits up an array of columns into rows, something like
+The pure SQL `unnest()` is postgres function splits up an array of columns into rows, something like
 this pseudo-code:
 <pre>
 func unnest(array []table) {
@@ -69,6 +104,9 @@ func unnest(array []table) {
 ## Nested loops, recursion, and function-like behaviour
 
 So-called recursive queries are something like nested for loops in postres SQL.
+This will get us part of the way, but the result ends up being insufficient and we'll eventually
+abandon this approach for use of a stored function.
+
 Consider the following example used in `postgres_ball.go`
 <pre>
 WITH RECURSIVE templist (name,friend,radius)
@@ -94,7 +132,6 @@ The syntax is idiosyncratic, yet corresponds to something like this:
 9. SELECT DISTINCT friends FROM templist;
 -------------------------------------------------------------------
 </pre>
-
 The recursive statement defines a re-entrant quasi-function object, with formal parameters
 called name, x, and radius. It works something like a for loop
 
@@ -211,4 +248,169 @@ This query results in something like this:
  Jane1              |     6 | {Mark,Mandy,Mike,Jan,Adam,"Company of Friends"}
 (34 rows)
 </pre>
-What we'd like is for the left column to avoid looping around.
+What we'd like is for the left column to avoid looping around. To do this, we need
+a more controllable language on a lower level. So, we turn to the PL/pgSQL stored functions.
+
+## PL/pgSQL queries
+
+
+Many of the structures in PL/pgSQL are designed to look and work like SQL. This is
+very confusing, because one expects things to work in a similar way, but they don't!
+
+Let's begin by looking at the type/table model for the actual SSToryline case:
+
+<pre>
+CREATE TYPE NodePtr AS
+	(    
+	Chan     int,
+	CPtr     int 
+	)"
+
+CREATE TYPE Link AS
+	(
+	Arr      int,
+	Wgt      real,
+	Ctx      text,
+	Dst      NodePtr
+	)"
+
+CREATE TABLE IF NOT EXISTS Node
+	( " +
+	NPtr      NodePtr,
+	L         int,    
+	S         text,   
+	Chap      text,   
+	Im3  Link[],
+	Im2  Link[],
+	Im1  Link[],
+	In0  Link[],
+	Il1  Link[],
+	Ic2  Link[],
+	Ie3  Link[] 
+	)
+
+CREATE TABLE IF NOT EXISTS NodeLinkNode
+	(
+	NFrom    NodePtr,
+	Lnk      Link,   
+	NTo      NodePtr 
+	)
+
+</pre>
+Notice the link arrays Im3 (incidence links of type -3= -EXPRESS), etc. For positive values, I call them
+Il (LEADSTO), Ic (CONTAINS), and Ie (EXPRESS) as a mnemonic. Because general double dimension arrays
+are not supported in the Postgres queries, a simple 2d array with these numbers as parameters is not possible
+(as it is in the Golang version). So we have to work around using a case statement for queries:
+<pre>
+ CREATE OR REPLACE FUNCTION public.getneighboursbytype(start nodeptr, sttype integer)
+  RETURNS link[]                                                                     
+  LANGUAGE plpgsql                                                                   
+ AS $function$                                                                       
+ DECLARE                                                                             
+     fwdlinks Link[] := Array[] :: Link[];                                           
+     lnk Link := (0,0.0,Array[]::text[],(0,0));                                      
+ BEGIN                                                                               
+    CASE sttype                                                                      
+ WHEN -3 THEN                                                                        
+      SELECT Im3 INTO fwdlinks FROM Node WHERE Nptr=start;                           
+ WHEN -2 THEN                                                                        
+      SELECT Im2 INTO fwdlinks FROM Node WHERE Nptr=start;                           
+ WHEN -1 THEN                                                                        
+      SELECT Im1 INTO fwdlinks FROM Node WHERE Nptr=start;                           
+ WHEN 0 THEN                                                                         
+      SELECT In0 INTO fwdlinks FROM Node WHERE Nptr=start;                           
+ WHEN 1 THEN                                                                         
+      SELECT Il1 INTO fwdlinks FROM Node WHERE Nptr=start;                           
+ WHEN 2 THEN                                                                         
+      SELECT Ic2 INTO fwdlinks FROM Node WHERE Nptr=start;                           
+ WHEN 3 THEN                                                                         
+      SELECT Ie3 INTO fwdlinks FROM Node WHERE Nptr=start;                           
+ ELSE RAISE EXCEPTION 'No such sttype %', sttype;                                    
+ END CASE;                                                                           
+     RETURN fwdlinks;                                                                
+ END ;                                                                               
+ $function$                        
+</pre>
+This example also illustrates how `SELECT into` is not SQL. fwdlinks
+is an internal variable, which is not a table. Indeed, selecting into
+a table is not directly possible in the same way here.
+
+Inserting data into the Node table is straightforward. Defining the function:
+<pre>
+CREATE OR REPLACE FUNCTION public.idempinsertnode(ili integer, iszchani integer, icptri integer, isi text, ichapi text)
+  RETURNS TABLE(ret_cptr integer, ret_channel integer)
+  LANGUAGE plpgsql
+AS $function$ 
+DECLARE 
+BEGIN  
+
+  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN
+     INSERT INTO Node (Nptr.Cptr,L,S,chap,Nptr.Chan) VALUES (icptri, iLi, iSi, ichapi, iszchani);
+  END IF;
+
+  RETURN query SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;
+
+END ;$function$
+</pre>
+we can call
+<pre>
+	SELECT IdempInsertNode(%d,%d,%d,'%s','%s')" 
+</pre>
+with Go params `n.L,n.SizeClass,cptr,n.S,n.Chap` substituted.
+
+Managing literal values to initialize types is messy in the language, so
+it's useful to have functions returning values for type conversion:
+<pre>
+CREATE OR REPLACE FUNCTION GetSingletonAsLinkArray(start NodePtr)
+RETURNS Link[] AS $nums$
+DECLARE
+    level Link[] := Array[] :: Link[];
+    lnk Link := (0,0.0,Array[]::text[],(0,0));
+BEGIN
+ lnk.Dst = start;
+ level = array_append(level,lnk);
+RETURN level;
+END ;
+$nums$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION GetSingletonAsLink(start NodePtr)
+RETURNS Link AS $nums$
+DECLARE
+   lnk Link := (0,0.0,Array[]::text[],(0,0));
+BEGIN
+ lnk.Dst = start;
+RETURN lnk;
+END ;
+$nums$ LANGUAGE plpgsql;
+
+</pre>
+Straightforward table lookups are best wrapped in functions too, because trying to
+do too much in a SQL declaration is hard, mainly because there is no way to pass data
+from one statement to another without using intermediate tables. Tables are not easy to parse
+either and they are an indirection that's unwelcome.
+
+When seeking in different tables, we can use some Go code to fill in the unwieldy case statements so that they
+are always aligned with the library code:
+
+</pre>
+CREATE OR REPLACE FUNCTION GetNeighboursByType(start NodePtr, sttype int)
+RETURNS Link[] AS $nums$
+DECLARE
+    fwdlinks Link[] := Array[] :: Link[];
+    lnk Link := (0,0.0,Array[]::text[],(0,0));
+BEGIN
+   CASE sttype
+
+   WHEN -1 THEN
+	...
+   WHEN %d THEN
+	SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start;\n",st,STTypeDBChannel(st));
+
+   ELSE RAISE EXCEPTION 'No such sttype %', sttype;
+END CASE;
+RETURN fwdlinks;
+END ;
+$nums$ LANGUAGE plpgsql;
+</pre>
+And so forth.

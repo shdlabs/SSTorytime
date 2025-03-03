@@ -402,18 +402,18 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	// Insert a node structure, also an anchor for and containing link arrays
 	
-	qstr := "CREATE OR REPLACE FUNCTION IdempInsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)" + 
-		"RETURNS TABLE (    " +
+	qstr := "CREATE OR REPLACE FUNCTION IdempInsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)\n" + 
+		"RETURNS TABLE (    \n" +
 			"    ret_cptr INTEGER," +
 			"    ret_channel INTEGER" +
 			") AS $fn$ " +
-			"DECLARE " +
-			"BEGIN" +
-			"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN" +
+			"DECLARE \n" +
+			"BEGIN\n" +
+			"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN\n" +
 			"     INSERT INTO Node (Nptr.Cptr,L,S,chap,Nptr.Chan) VALUES (icptri, iLi, iSi, ichapi, iszchani);" +
-			"  end if;" +
-			"      return query SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;" +
-			"END ;" +
+			"  end if;\n" +
+			"      return query SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
+			"END ;\n" +
 			"$fn$ LANGUAGE plpgsql;";
 
 		_, err := ctx.DB.Query(qstr)
