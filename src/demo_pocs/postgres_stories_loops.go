@@ -144,14 +144,18 @@ func main() {
 
 	for depth := 0; depth < maxdepth; depth++ {
 
-		fmt.Println("Searching paths of length",depth,"/",maxdepth)
+		fmt.Println("Searching paths of length",depth,"/",maxdepth,"from",n1.NPtr)
+
 		paths := SST.GetFwdPathsAsLinks(ctx,n1.NPtr,sttype,depth)
 
 		for p := range paths {
+
 			if len(paths[p]) > 1 {
-				fmt.Println("   - Found a path len",len(paths[p]))
+			
+				fmt.Println("    Path",p," len",len(paths[p]))
+
 				for l := 0; l < len(paths[p]); l++ {
-					fmt.Println(l,"xx  --> ",paths[p][l].Dst,"weight",paths[p][l].Wgt)
+					fmt.Println("    ",l,"xx  --> ",paths[p][l].Dst,"weight",paths[p][l].Wgt)
 				}
 			}
 		}
