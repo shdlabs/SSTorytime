@@ -698,7 +698,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"startlnk := GetSingletonAsLink(start);\n"+
 		"path := Format('%s',startlnk::Text);\n"+
-		"ret_paths := SumFwdPaths(startlnk,path,sttype,1,maxdepth);" +
+		"ret_paths := SumFwdPaths(startlnk,path,sttype,1,maxdepth,exclude);" +
 
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
@@ -714,12 +714,11 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Return end of path branches as aggregated text summaries
 
-	qstr = "CREATE OR REPLACE FUNCTION SumFwdPaths(start Link,path TEXT, sttype INT,depth int, maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION SumFwdPaths(start Link,path TEXT, sttype INT,depth int, maxdepth INT,exclude NodePtr[])\n"+
 		"RETURNS Text AS $nums$\n" +
 		"DECLARE \n" + 
 		"    fwdlinks Link[];\n" +
 		"    empty Link[] = ARRAY[]::Link[];\n" +
-		"    exclude NodePtr[] = ARRAY['(0,0)']::NodePtr[];\n" +
 		"    lnk Link;\n" +
 		"    fwd Link;\n" +
 		"    ret_paths Text;\n" +
@@ -736,15 +735,17 @@ func DefineStoredFunctions(ctx PoSST) {
 		"fwdlinks := GetFwdLinks(start.Dst,exclude,sttype);\n" +
 
 		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
-		"   exclude = array_append(exclude,lnk.Dst);\n" +
-		"   IF lnk IS NULL THEN" +
-		"      ret_paths := Format('%s\n%s',ret_paths,path);\n"+
-//		"      RAISE NOTICE 'Yend path %',tot_path;"+
-		"   ELSE"+
-		"      tot_path := Format('%s;%s',path,lnk::Text);\n"+
-		"      appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth);\n" +
-		"      IF appendix IS NOT NULL THEN\n"+
-		"          ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
+		"      exclude = array_append(exclude,lnk.Dst);\n" +
+		"      IF lnk IS NULL THEN" +
+		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+//		"         RAISE NOTICE 'Yend path %',tot_path;"+
+		"      ELSE"+
+		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
+		"         appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude);\n" +
+		"         IF appendix IS NOT NULL THEN\n"+
+		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"         END IF;"+
 		"      END IF;"+
 		"   END IF;"+
 		"END LOOP;"+

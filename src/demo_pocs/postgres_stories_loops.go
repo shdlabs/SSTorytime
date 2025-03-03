@@ -31,7 +31,7 @@ func main() {
 	fmt.Println("Reset..")
 
 	var n1,n2,n3,n4,n5,n6 SST.Node
-	var lnk12,lnk23,lnk34,lnk25,lnk56 SST.Link
+	var lnk12,lnk23,lnk34,lnk25,lnk56,lnk62 SST.Link
 	
 	n1.NPtr = SST.NodePtr{ CPtr : 1, Class: SST.LT128}
 	n1.S = "Mary had a little lamb"
@@ -82,6 +82,13 @@ func main() {
 	lnk56.Ctx = []string{"steamy hot tubs","lady gaga"}
 	lnk56.Dst = n6.NPtr
 
+	// Add a loop
+
+	lnk62.Arr = 77
+	lnk62.Wgt = 0.99
+	lnk62.Ctx = []string{"danger will robinson"}
+	lnk62.Dst = n2.NPtr
+
 	sttype := SST.LEADSTO
 
 	n1 = SST.CreateDBNode(ctx, n1)
@@ -103,6 +110,9 @@ func main() {
 	n5 = SST.CreateDBNode(ctx, n5)
 	n6 = SST.CreateDBNode(ctx, n6)
 	SST.AppendDBLinkToNode(ctx,n5.NPtr,lnk56,n6.NPtr,sttype)
+
+	// Add loop
+	SST.AppendDBLinkToNode(ctx,n6.NPtr,lnk62,n2.NPtr,sttype)
 
 	fmt.Println("----------------------------------")
 	fmt.Println("Node section hypersurfaces:")
