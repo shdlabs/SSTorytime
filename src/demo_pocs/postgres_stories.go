@@ -104,7 +104,12 @@ func main() {
 	n6 = SST.CreateDBNode(ctx, n6)
 	SST.AppendDBLinkToNode(ctx,n5.NPtr,lnk56,n6.NPtr,sttype)
 
-	for depth := 0; depth < 4; depth++ {
+	fmt.Println("----------------------------------")
+	fmt.Println("Node section hypersurfaces:")
+
+	const maxdepth = 8
+
+	for depth := 0; depth < maxdepth; depth++ {
 		val := SST.GetFwdConeAsNodes(ctx,n1.NPtr,sttype,depth)
 		fmt.Println("As NodePtr(s) fwd from",n1,"depth",depth)
 		for l := range val {
@@ -113,11 +118,32 @@ func main() {
 
 	}
 
-	for depth := 0; depth < 4; depth++ {
+	fmt.Println("----------------------------------")
+	fmt.Println("Link section hypersurfaces:")
+
+	for depth := 0; depth < maxdepth; depth++ {
 		val := SST.GetFwdConeAsLinks(ctx,n1.NPtr,sttype,depth)
-		fmt.Println("As Links fwd from",n1,"depth",depth)
+		fmt.Println("Search as Links fwd from",n1,"depth",depth)
 		for l := range val {
 			fmt.Println("   - Step",val[l])
+		}
+	}
+
+	fmt.Println("----------------------------------")
+	fmt.Println("Link proper time normal paths:")
+
+	for depth := 0; depth < maxdepth; depth++ {
+
+		fmt.Println("Searching paths of length",depth,"/",maxdepth)
+		paths := SST.GetFwdPathsAsLinks(ctx,n1.NPtr,sttype,depth)
+
+		for p := range paths {
+			if len(paths[p]) > 0 {
+				fmt.Println("   - Found a path len",len(paths[p]))
+				for l := 0; l < len(paths[p]); l++ {
+					fmt.Println(l,"xx  --> ",paths[p][l].Dst,"weight",paths[p][l].Wgt)
+				}
+			}
 		}
 	}
 

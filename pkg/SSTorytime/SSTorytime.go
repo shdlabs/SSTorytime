@@ -424,7 +424,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Construct an empty link pointing nowhere as a starting node
 
-	qstr = "CREATE OR REPLACE FUNCTION GetSingletonLink(start NodePtr)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION GetSingletonAsLinkArray(start NodePtr)\n"+
 		"RETURNS Link[] AS $nums$\n"+
 		"DECLARE \n"+
 		"    level Link[] := Array[] :: Link[];\n"+
@@ -433,6 +433,24 @@ func DefineStoredFunctions(ctx PoSST) {
 		" lnk.Dst = start;\n"+
 		" level = array_append(level,lnk);\n"+
 		"RETURN level; \n"+
+		"END ;\n"+
+		"$nums$ LANGUAGE plpgsql;"
+
+	_, err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	// Construct an empty link pointing nowhere as a starting node
+
+	qstr = "CREATE OR REPLACE FUNCTION GetSingletonAsLink(start NodePtr)\n"+
+		"RETURNS Link AS $nums$\n"+
+		"DECLARE \n"+
+		"    lnk Link := (0,0.0,Array[]::text[],(0,0));\n"+
+		"BEGIN\n"+
+		" lnk.Dst = start;\n"+
+		"RETURN lnk; \n"+
 		"END ;\n"+
 		"$nums$ LANGUAGE plpgsql;"
 
@@ -620,7 +638,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"BEGIN\n" +
 
-		"level := GetSingletonLink(start);\n"+
+		"level := GetSingletonAsLinkArray(start);\n"+
 
 		"LOOP\n" +
 		"  EXIT WHEN counter = maxdepth+1;\n" +
@@ -651,13 +669,92 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    END IF;\n" +
 		"  END LOOP;\n" +
 
-		// Next, continue, foreach
 		"  counter = counter + 1;\n" +
 		"END LOOP;\n" +
 
 		"RETURN cone; \n" +
 		"END ;\n" +
 		"$nums$ LANGUAGE plpgsql;\n"
+
+	_, err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	// Orthogonal (depth first) paths from origin spreading out
+
+	qstr = "CREATE OR REPLACE FUNCTION FwdPathsAsLinks(start NodePtr,sttype INT,maxdepth INT)\n"+
+		"RETURNS Text AS $nums$\n" +
+		"DECLARE\n" +
+		"   hop Text;\n" +
+		"   path Text;\n"+
+		"   summary_path Text[];\n"+
+		"   exclude NodePtr[] = ARRAY['(0,0)']::NodePtr[];\n" +
+		"   ret_paths Text;\n" +
+		"   startlnk Link;"+
+
+		"BEGIN\n" +
+
+		"startlnk := GetSingletonAsLink(start);\n"+
+		"path := Format('%s',startlnk::Text);\n"+
+		"ret_paths := SumFwdPaths(startlnk,path,sttype,1,maxdepth);" +
+
+		"RETURN ret_paths; \n" +
+		"END ;\n" +
+		"$nums$ LANGUAGE plpgsql;\n"
+
+        // select FwdPathsAsLinks('(4,1)',1,3)
+
+	_, err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	// Return end of path branches as aggregated text summaries
+
+	qstr = "CREATE OR REPLACE FUNCTION SumFwdPaths(start Link,path TEXT, sttype INT,depth int, maxdepth INT)\n"+
+		"RETURNS Text AS $nums$\n" +
+		"DECLARE \n" + 
+		"    fwdlinks Link[];\n" +
+		"    empty Link[] = ARRAY[]::Link[];\n" +
+		"    exclude NodePtr[] = ARRAY['(0,0)']::NodePtr[];\n" +
+		"    lnk Link;\n" +
+		"    fwd Link;\n" +
+		"    ret_paths Text;\n" +
+		"    appendix Text;\n" +
+		"    tot_path Text;\n"+
+		"BEGIN\n" +
+
+		"IF depth = maxdepth THEN\n"+
+//		"  RAISE NOTICE 'Xend path %',path;"+
+		"  ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"  RETURN ret_paths;\n"+
+		"END IF;\n"+
+
+		"fwdlinks := GetFwdLinks(start.Dst,exclude,sttype);\n" +
+
+		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
+		"   exclude = array_append(exclude,lnk.Dst);\n" +
+		"   IF lnk IS NULL THEN" +
+		"      ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+//		"      RAISE NOTICE 'Yend path %',tot_path;"+
+		"   ELSE"+
+		"      tot_path := Format('%s;%s',path,lnk::Text);\n"+
+		"      appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth);\n" +
+		"      IF appendix IS NOT NULL THEN\n"+
+		"          ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"      END IF;"+
+		"   END IF;"+
+		"END LOOP;"+
+
+
+		"RETURN ret_paths; \n" +
+		"END ;\n" +
+		"$nums$ LANGUAGE plpgsql;\n"
+
+	// select SumFwdPaths('(4,1)',1,1,3);
 
 	_, err = ctx.DB.Query(qstr)
 	
@@ -712,6 +809,29 @@ func GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link {
 		err = row.Scan(&whole)
 		l := ParseSQLLinkString(whole)
 		retval = append(retval,l)
+	}
+
+	return retval
+}
+
+// **************************************************************************
+
+func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) [][]Link {
+
+	qstr := fmt.Sprintf("select FwdPathsAsLinks from FwdPathsAsLinks('(%d,%d)',%d,%d);",start.Class,start.CPtr,sttype,depth)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY to FwdPathsAsLinkss Failed",err)
+	}
+
+	var whole string
+	var retval [][]Link
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		retval = ParseLinkPath(whole)
 	}
 
 	return retval
@@ -805,10 +925,49 @@ func ParseSQLLinkString(s string) Link {
 
 //**************************************************************
 
+func ParseLinkPath(s string) [][]Link {
+
+	// Each path will start on a new line, with comma sep Link encodings
+
+	var array = make([][]Link,1)
+	var index int = 0
+
+	lines := strings.Split(s,"\n")
+
+	for line := range lines {
+
+		if len(lines[line]) > 0 {
+
+			links := strings.Split(lines[line],";")
+
+			if len(links) < 2 {
+				continue
+			}
+
+			array = append(array,make([]Link,1))
+
+			for l := 0; l < len(links); l++ {
+
+				array[index] = append(array[index],ParseSQLLinkString(links[l]))
+			}
+
+			index++
+		}
+	}
+
+	if index < 1 {
+		return nil
+	}
+	
+	return array
+}
+
+//**************************************************************
+
 func StorageClass(s string) (int,int) {
 	
 	var spaces int = 0
-	
+
 	var l = len(s)
 	
 	for i := 0; i < l; i++ {
