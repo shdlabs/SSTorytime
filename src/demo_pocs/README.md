@@ -393,7 +393,7 @@ either and they are an indirection that's unwelcome.
 When seeking in different tables, we can use some Go code to fill in the unwieldy case statements so that they
 are always aligned with the library code:
 
-</pre>
+<pre>
 CREATE OR REPLACE FUNCTION GetNeighboursByType(start NodePtr, sttype int)
 RETURNS Link[] AS $nums$
 DECLARE
