@@ -260,20 +260,20 @@ func Configure(ctx PoSST) {
 	fmt.Println("* WIPING DB")
 	fmt.Println("***********************")
 
-	ctx.DB.Query("drop function fwdconeaslinks")
-	ctx.DB.Query("drop function fwdconeasnodes")
-	ctx.DB.Query("drop function fwdpathsaslinks")
-	ctx.DB.Query("drop function getfwdlinks")
-	ctx.DB.Query("drop function getfwdnodes")
-	ctx.DB.Query("drop function getneighboursbytype")
-	ctx.DB.Query("drop function getsingletonaslink")
-	ctx.DB.Query("drop function getsingletonaslinkarray")
-	ctx.DB.Query("drop function idempinsertnode")
-	ctx.DB.Query("drop function sumfwdpaths")
-	ctx.DB.Query("drop table Node")
-	ctx.DB.Query("drop table NodeLinkNode")
-	ctx.DB.Query("drop type NodePtr")
-	ctx.DB.Query("drop type Link")
+	ctx.DB.QueryRow("drop function fwdconeaslinks")
+	ctx.DB.QueryRow("drop function fwdconeasnodes")
+	ctx.DB.QueryRow("drop function fwdpathsaslinks")
+	ctx.DB.QueryRow("drop function getfwdlinks")
+	ctx.DB.QueryRow("drop function getfwdnodes")
+	ctx.DB.QueryRow("drop function getneighboursbytype")
+	ctx.DB.QueryRow("drop function getsingletonaslink")
+	ctx.DB.QueryRow("drop function getsingletonaslinkarray")
+	ctx.DB.QueryRow("drop function idempinsertnode")
+	ctx.DB.QueryRow("drop function sumfwdpaths")
+	ctx.DB.QueryRow("drop table Node")
+	ctx.DB.QueryRow("drop table NodeLinkNode")
+	ctx.DB.QueryRow("drop type NodePtr")
+	ctx.DB.QueryRow("drop type Link")
 
 	if !CreateType(ctx,NODEPTR_TYPE) {
 		fmt.Println("Unable to create type as, ",NODEPTR_TYPE)
@@ -576,8 +576,6 @@ func GraphToDB(ctx PoSST) {
 	var count_links [4]int
 	var total int
 
-	fmt.Println("XXXXXXXXXXXXXXXXXx")
-
 	for class := N1GRAM; class <= GT1024; class++ {
 		switch class {
 		case N1GRAM:
@@ -635,7 +633,7 @@ func GraphToDB(ctx PoSST) {
 
 func CreateType(ctx PoSST, defn string) bool {
 
-	_,err := ctx.DB.Query(defn)
+	row,err := ctx.DB.Query(defn)
 
 	if err != nil {
 		s := fmt.Sprintln("Failed to create datatype PGLink ",err)
@@ -647,6 +645,7 @@ func CreateType(ctx PoSST, defn string) bool {
 		}
 	}
 
+	row.Close();
 	return true
 }
 
@@ -654,7 +653,7 @@ func CreateType(ctx PoSST, defn string) bool {
 
 func CreateTable(ctx PoSST,defn string) bool {
 
-	_,err := ctx.DB.Query(defn)
+	row,err := ctx.DB.Query(defn)
 	
 	if err != nil {
 		s := fmt.Sprintln("Failed to create a table %.10 ...",defn,err)
@@ -666,6 +665,7 @@ func CreateTable(ctx PoSST,defn string) bool {
 		}
 	}
 
+	row.Close()
 	return true
 }
 
@@ -708,6 +708,8 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 	n.NPtr.Class = cl
 	n.NPtr.CPtr = ClassedNodePtr(ch)
 
+	row.Close()
+
 	return n
 }
 
@@ -716,13 +718,11 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 func UploadNodeToDB(ctx PoSST, org Node) {
 
 	CreateDBNode(ctx, org)
-	fmt.Println("NODE",org)
 
 	for stindex := range org.I {
 		for lnk := range org.I[stindex] {
 			link := org.I[stindex][lnk]
 			AppendDBLinkToNode(ctx,org.NPtr,link,STIndexToSTType(stindex))
-			fmt.Println("LINK",link)
 		}
 	}
 }
@@ -755,13 +755,14 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 		literal,
 		link_table)
 
-	_,err := ctx.DB.Query(qstr)
+	row,err := ctx.DB.Query(qstr)
 
 	if err != nil {
 		fmt.Println("Failed to append",err,qstr)
 	       return false
 	}
 
+	row.Close()
 	return true
 }
 
@@ -788,11 +789,13 @@ func DefineStoredFunctions(ctx PoSST) {
 			"END ;\n" +
 			"$fn$ LANGUAGE plpgsql;";
 
-		_, err := ctx.DB.Query(qstr)
-		
-		if err != nil {
-			fmt.Println("Error defining postgres function:",qstr,err)
-		}
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
 
 	// Construct an empty link pointing nowhere as a starting node
 
@@ -808,11 +811,13 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n"+
 		"$nums$ LANGUAGE plpgsql;"
 
-	_, err = ctx.DB.Query(qstr)
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
+
+	row.Close()
 
 	// Construct an empty link pointing nowhere as a starting node
 
@@ -826,11 +831,13 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n"+
 		"$nums$ LANGUAGE plpgsql;"
 
-	_, err = ctx.DB.Query(qstr)
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
+
+	row.Close()
 
 	// Construct search by sttype. since table names are static we need a case statement
 
@@ -852,11 +859,13 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n" +
 		"$nums$ LANGUAGE plpgsql;\n"
 
-	_, err = ctx.DB.Query(qstr)
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
+
+	row.Close()
 
 	// Get the nearest neighbours as NPtr, with respect to each of the four STtype
 
@@ -887,11 +896,13 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n" +
 		"$nums$ LANGUAGE plpgsql;\n")
 
-	_, err = ctx.DB.Query(qstr)
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
+
+	row.Close()
 
 	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdLinks(start NodePtr,exclude NodePtr[],sttype int)\n"+
 		"RETURNS Link[] AS $nums$\n" +
@@ -917,11 +928,13 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n" +
 		"$nums$ LANGUAGE plpgsql;\n")
 	
-	_, err = ctx.DB.Query(qstr)
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
+
+	row.Close()
 	
 	// Get the forward cone / half-ball as NPtr
 
@@ -976,12 +989,13 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n" +
 		"$nums$ LANGUAGE plpgsql;\n"
 	
-	_, err = ctx.DB.Query(qstr)
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
 	
+	row.Close()
 	
           /* e.g. select unnest(fwdconeaslinks) from FwdConeAsLinks('(4,1)',1,4);
                            unnest                           
@@ -1048,11 +1062,13 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n" +
 		"$nums$ LANGUAGE plpgsql;\n"
 
-	_, err = ctx.DB.Query(qstr)
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
+
+	row.Close()
 
 	// Orthogonal (depth first) paths from origin spreading out
 
@@ -1078,11 +1094,13 @@ func DefineStoredFunctions(ctx PoSST) {
 
         // select FwdPathsAsLinks('(4,1)',1,3)
 
-	_, err = ctx.DB.Query(qstr)
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
+
+	row.Close()
 
 	// Return end of path branches as aggregated text summaries
 
@@ -1129,11 +1147,13 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// select SumFwdPaths('(4,1)',1,1,3);
 
-	_, err = ctx.DB.Query(qstr)
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
+
+	row.Close()
 }
 
 // **************************************************************************
@@ -1160,6 +1180,7 @@ func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr {
 		retval = append(retval,n)
 	}
 
+	row.Close()
 	return retval
 }
 
@@ -1184,6 +1205,8 @@ func GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link {
 		retval = append(retval,l)
 	}
 
+	row.Close()
+
 	return retval
 }
 
@@ -1207,6 +1230,7 @@ func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) [][]Link {
 		retval = ParseLinkPath(whole)
 	}
 
+	row.Close()
 	return retval
 }
 
