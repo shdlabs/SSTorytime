@@ -47,10 +47,11 @@ and turns it into a machine representation in the form of a "Semantic Spacetime"
  refer to RDF in what follows, except to occasionally clarify the distinction. 
 The command options currently include:
 <pre>
-usage: go run N4L.go [-v] [-u] [-s] [file].dat
+usage: N4L [-v] [-u] [-s] [file].dat
   -adj string
         a quoted, comma-separated list of short link names (default "none")
-  -i    incidence summary (node,links...)
+  -d    diagnostic mode
+  -s    summary (node,links...)
   -u    upload
   -v    verbose
 </pre>
@@ -78,11 +79,11 @@ a certain kind of relation, using abbreviated labels for relations.
 For example, to look for items linked by relation "(pe)" (which stands
 for Pinyin to Hanzi translation) in a file of Chinese language, we could write:
 <pre>
-$ N4L -v -i -adj="pe" chinese.in
+$ N4L -v -s -adj="pe" chinese.in
 </pre>
 We can add other kinds of relation too to expand the set:
 <pre>
-$ N4L -v -i -adj="pe,he" chinese.in
+$ N4L -v -s -adj="pe,he" chinese.in
 </pre>
 This extracts a sub-graph from the total graph. It can be quite effective,
 because most knowledge graphs are only sparsely linked (which is why logical
@@ -92,7 +93,7 @@ In verbose mode, the standard output shows a summary of the text (events or item
 and an excerpt of the adjacency matrix.
 <pre>
 
-$ N4L -v -i -adj="" Mary.in
+$ N4L -v -s -adj="" Mary.in
 
 
 ------------------------------------
@@ -179,7 +180,7 @@ A useful ranking of nodes (known as EVC, or Eigenvector Centrality, which is som
 can be calculated from the weighted graph matrix (see below). The higher the score number, the more
 interconnected or "important" a term of text is, e.g.
 <pre>
-$ ../src/N4L -v -i -adj="" chinese.in
+$ ../src/N4L -v -s -adj="" chinese.in
 
   ...
 

@@ -274,7 +274,7 @@ func Init() []string {
 	verbosePtr := flag.Bool("v", false,"verbose")
 	diagPtr := flag.Bool("d", false,"diagnostic mode")
 	uploadPtr := flag.Bool("u", false,"upload")
-	incidencePtr := flag.Bool("i", false,"incidence summary (node,links...)")
+	incidencePtr := flag.Bool("s", false,"summary (node,links...)")
 	adjacencyPtr := flag.String("adj", "none", "a quoted, comma-separated list of short link names")
 
 	flag.Parse()
