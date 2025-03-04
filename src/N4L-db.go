@@ -133,8 +133,6 @@ func main() {
 	config := ReadFile(CURRENT_FILE)
 	ParseConfig(config)
 
-	//SummarizeAndTestConfig()
-
 	for input := 0; input < len(args); input++ {
 		NewFile(args[input])
 		input := ReadFile(CURRENT_FILE)
@@ -154,6 +152,10 @@ func main() {
 	}
 
 	if UPLOAD {
+		ctx := SST.Open()
+		fmt.Println("Uploading nodes..")
+		SST.GraphToDB(ctx)
+		SST.Close(ctx)
 	}
 }
 
@@ -395,15 +397,15 @@ func ClassifyConfigRole(token string) {
 
 //**************************************************************
 
-func InsertArrowDirectory(sttype,alias,name,pm string) SST.ArrowPtr {
+func InsertArrowDirectory(stname,alias,name,pm string) SST.ArrowPtr {
 
 	// Insert an arrow into the forward/backward indices
 
-	PVerbose("In",sttype,"short name",alias,"for",name,", direction",pm)
+	PVerbose("In",stname,"short name",alias,"for",name,", direction",pm)
 
 	var newarrow SST.ArrowDirectory
 
-	newarrow.STtype = SST.GetSTTypeByName(sttype,pm)
+	newarrow.STAindex = SST.GetSTIndexByName(stname,pm)
 	newarrow.Long = name
 	newarrow.Short = alias
 	newarrow.Ptr = SST.ARROW_DIRECTORY_TOP
@@ -570,81 +572,43 @@ func SummarizeGraph() {
 		switch class {
 		case SST.N1GRAM:
 			for n := range SST.NODE_DIRECTORY.N1directory {
-				fmt.Println(n,"\t",SST.NODE_DIRECTORY.N1directory[n].S)
+				org := SST.NODE_DIRECTORY.N1directory[n]
 				count_nodes++
-				for sttype := range SST.NODE_DIRECTORY.N1directory[n].I {
-					for lnk := range SST.NODE_DIRECTORY.N1directory[n].I[sttype] {
-						count_links[Agg(sttype)]++
-						PrintLink(SST.NODE_DIRECTORY.N1directory[n].I[sttype][lnk])
-					}
-				}
-				fmt.Println()
+				PrintNodeSystem(n,org,&count_links)
 			}
 		case SST.N2GRAM:
 			for n := range SST.NODE_DIRECTORY.N2directory {
-				fmt.Println(n,"\t",SST.NODE_DIRECTORY.N2directory[n].S)
+				org := SST.NODE_DIRECTORY.N2directory[n]
 				count_nodes++
-				for sttype := range SST.NODE_DIRECTORY.N2directory[n].I {
-					for lnk := range SST.NODE_DIRECTORY.N2directory[n].I[sttype] {
-						count_links[Agg(sttype)]++
-						PrintLink(SST.NODE_DIRECTORY.N2directory[n].I[sttype][lnk])
-					}
-
-				}
-				fmt.Println()
+				PrintNodeSystem(n,org,&count_links)
 			}
 		case SST.N3GRAM:
 			for n := range SST.NODE_DIRECTORY.N3directory {
-				fmt.Println(n,"\t",SST.NODE_DIRECTORY.N3directory[n].S)
+				org := SST.NODE_DIRECTORY.N3directory[n]
 				count_nodes++
-				for sttype := range SST.NODE_DIRECTORY.N3directory[n].I {
-					for lnk := range SST.NODE_DIRECTORY.N3directory[n].I[sttype] {
-						count_links[Agg(sttype)]++
-						PrintLink(SST.NODE_DIRECTORY.N3directory[n].I[sttype][lnk])
-					}
-				}
-				fmt.Println()
+				PrintNodeSystem(n,org,&count_links)
 			}
 		case SST.LT128:
 			for n := range SST.NODE_DIRECTORY.LT128 {
-				fmt.Println(n,"\t",SST.NODE_DIRECTORY.LT128[n].S)
+				org := SST.NODE_DIRECTORY.LT128[n]
 				count_nodes++
-				for sttype := range SST.NODE_DIRECTORY.LT128[n].I {
-					for lnk := range SST.NODE_DIRECTORY.LT128[n].I[sttype] {
-						count_links[Agg(sttype)]++
-						PrintLink(SST.NODE_DIRECTORY.LT128[n].I[sttype][lnk])
-					}
-				}
-				fmt.Println()
+				PrintNodeSystem(n,org,&count_links)
 			}
 		case SST.LT1024:
 			for n := range SST.NODE_DIRECTORY.LT1024 {
-				fmt.Println(n,"\t",SST.NODE_DIRECTORY.LT1024[n].S)
+				org := SST.NODE_DIRECTORY.LT1024[n]
 				count_nodes++
-				for sttype := range SST.NODE_DIRECTORY.LT1024[n].I {
-					for lnk := range SST.NODE_DIRECTORY.LT1024[n].I[sttype] {
-						count_links[Agg(sttype)]++
-						PrintLink(SST.NODE_DIRECTORY.LT1024[n].I[sttype][lnk])
-					}
-				}
-				fmt.Println()
+				PrintNodeSystem(n,org,&count_links)
 			}
-
 		case SST.GT1024:
 			for n := range SST.NODE_DIRECTORY.GT1024 {
-				fmt.Println(n,"\t",SST.NODE_DIRECTORY.GT1024[n].S)
+				org := SST.NODE_DIRECTORY.GT1024[n]
 				count_nodes++
-				for sttype := range SST.NODE_DIRECTORY.GT1024[n].I {
-					for lnk := range SST.NODE_DIRECTORY.GT1024[n].I[sttype] {
-						count_links[Agg(sttype)]++
-						PrintLink(SST.NODE_DIRECTORY.GT1024[n].I[sttype][lnk])
-					}
-				}
-				fmt.Println()
+				PrintNodeSystem(n,org,&count_links)
 			}
 		}
 	}
-
+		
 	fmt.Println("-------------------------------------")
 	fmt.Println("Incidence summary of raw declarations")
 	fmt.Println("-------------------------------------")
@@ -870,7 +834,7 @@ func CompareVec(v1,v2 []float64) float64 {
 
 //**************************************************************
 
-func Agg(i int) int {
+func FlatSTType(i int) int {
 
 	n := i - SST.ST_ZERO
 	if n < 0 {
@@ -895,7 +859,7 @@ func ValidateLinkArgs(s string) []SST.ArrowPtr {
 		v,ok := SST.ARROW_SHORT_DIR[list[i]]
 
 		if ok {
-			typ := SST.ARROW_DIRECTORY[v].STtype - SST.ST_ZERO
+			typ := SST.ARROW_DIRECTORY[v].STAindex - SST.ST_ZERO
 			if typ < 0 {
 				typ = -typ
 			}
@@ -1927,11 +1891,26 @@ func StripParen(token string) string {
 // Tools
 //**************************************************************
 
+func PrintNodeSystem(n int,org SST.Node, count_links *[4]int) {
+
+	fmt.Println(n,"\t",org.S)
+
+	for sttype := range org.I {
+		for lnk := range org.I[sttype] {
+			count_links[FlatSTType(sttype)]++
+			PrintLink(org.I[sttype][lnk])
+		}
+	}
+	fmt.Println()
+}
+
+//**************************************************************
+
 func PrintLink(l SST.Link) {
 
 	to := SST.GetNodeFromPtr(l.Dst)
 	arrow := SST.ARROW_DIRECTORY[l.Arr]
-	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",SST.STtype(arrow.STtype))
+	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",SST.PrintSTAIndex(arrow.STAindex))
 }
 
 // **************************************************************************
@@ -1944,6 +1923,7 @@ func ParseError(message string) {
 	fmt.Print("\n",LINE_NUM,":",red)
 	fmt.Println("N4L",CURRENT_FILE,message,"at line", LINE_NUM,endred)
 	Diag("N4L",CURRENT_FILE,message,"at line", LINE_NUM)
+
 }
 
 //**************************************************************
@@ -2053,6 +2033,7 @@ func AppendStringToFile(name string, s string) {
 
 	if err != nil {
 		fmt.Println("Couldn't open for write/append to",name,err)
+		f.Close()
 		return
 	}
 

@@ -107,6 +107,10 @@ pointer shortcuts kept by short and long name (`ARROW_SHORT_DIR` and `ARROW_LONG
 STtypes. Incoming links have negative STtypes. Thus each node acts as a multiway switch (a local
 index at each node) for immediate lookup.
 
+* NB: because array indices can't be negative, there are two forms of STType in use. When called
+`STAindex` or `stindex` the values run from `0 to ST_TOP`. When labelled `STtype` or `sttype`,
+they run from `-3 to +3` or `-EXPRESS to +EXPRESS`.
+
 <pre>
 
 type Node struct { // essentially the incidence matrix
@@ -166,14 +170,19 @@ to an arrow.
 ## Arrow semantics
 
 From a code perspective, the semantics are divided into four 
-meta-types called `STtype`s (actually seven with the inverses). The types
+meta-types called `STAIndex`s (actually seven with the inverses). The types
 determine the way the links will be searched.
 
 <pre>
+
+        // STTypes
+
 	NEAR = 0      // no inverse 0 = -0
 	LEADSTO = 1   // +/-
 	CONTAINS = 2  // +/-
 	EXPRESS = 3   // +/-
+
+        // Shifted STAindices
 
 	ST_OFFSET = EXPRESS // so that ST_OFFSET - EXPRESS == 0
 	ST_TOP = ST_OFFSET + EXPRESS + 1

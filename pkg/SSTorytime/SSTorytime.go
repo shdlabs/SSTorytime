@@ -23,13 +23,15 @@ import (
 //**************************************************************
 
 const (
-	ERR_ST_OUT_OF_BOUNDS="Link STtype is out of bounds - "
+	ERR_ST_OUT_OF_BOUNDS="Link STtype is out of bounds (must be -3 to +3)"
 	ERR_ILLEGAL_LINK_CLASS="ILLEGAL LINK CLASS"
 
 	NEAR = 0
 	LEADSTO = 1   // +/-
 	CONTAINS = 2  // +/-
 	EXPRESS = 3   // +/-
+
+	// And shifted indices for array indicesin Go
 
 	ST_ZERO = EXPRESS
 	ST_TOP = ST_ZERO + EXPRESS + 1
@@ -161,7 +163,7 @@ type ClassedNodePtr int  // Internal pointer type of size-classified text
 
 type ArrowDirectory struct {
 
-	STtype  int
+	STAindex  int
 	Long    string
 	Short   string
 	Ptr     ArrowPtr
@@ -171,7 +173,7 @@ type ArrowPtr int // ArrowDirectory index
 
 const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS Arrow_Directory " +
 	"(    " +
-	"STtype int,             " +
+	"STAindex int,             " +
 	"Long text,              " +
 	"Short text,             " +
 	"ArrPtr int primary key  " +
@@ -197,7 +199,7 @@ var (
 	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
 
 	NO_NODE_PTR NodePtr // see Init()
-	SST_NAMES[4] string
+	SST_NAMES[4] string = [4]string{ "Near", "LeadsTo", "Contains","Express"}
 )
 
 //******************************************************************
@@ -245,11 +247,6 @@ func Open() PoSST {
 	NO_NODE_PTR.Class = 0
 	NO_NODE_PTR.CPtr =  -1
 
-	SST_NAMES[NEAR] = "Near"
-	SST_NAMES[LEADSTO] = "LeadsTo"
-	SST_NAMES[CONTAINS] = "Contains"
-	SST_NAMES[EXPRESS] = "Express"
-
 	return ctx
 }
 
@@ -259,10 +256,24 @@ func Configure(ctx PoSST) {
 
 	// Tmp reset
 
+	fmt.Println("***********************")
+	fmt.Println("* WIPING DB")
+	fmt.Println("***********************")
+
+	ctx.DB.Query("drop function fwdconeaslinks")
+	ctx.DB.Query("drop function fwdconeasnodes")
+	ctx.DB.Query("drop function fwdpathsaslinks")
+	ctx.DB.Query("drop function getfwdlinks")
+	ctx.DB.Query("drop function getfwdnodes")
+	ctx.DB.Query("drop function getneighboursbytype")
+	ctx.DB.Query("drop function getsingletonaslink")
+	ctx.DB.Query("drop function getsingletonaslinkarray")
+	ctx.DB.Query("drop function idempinsertnode")
+	ctx.DB.Query("drop function sumfwdpaths")
 	ctx.DB.Query("drop table Node")
 	ctx.DB.Query("drop table NodeLinkNode")
-	ctx.DB.Query("drop type Link")
 	ctx.DB.Query("drop type NodePtr")
+	ctx.DB.Query("drop type Link")
 
 	if !CreateType(ctx,NODEPTR_TYPE) {
 		fmt.Println("Unable to create type as, ",NODEPTR_TYPE)
@@ -454,24 +465,24 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 
 	frclass := frptr.Class
 	frm := frptr.CPtr
-	sttype := ARROW_DIRECTORY[link.Arr].STtype
+	stindex := ARROW_DIRECTORY[link.Arr].STAindex
 
 	link.Dst = toptr // fill in the last part of the reference
 
 	switch frclass {
 
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[frm].I[sttype] = append(NODE_DIRECTORY.N1directory[frm].I[sttype],link)
+		NODE_DIRECTORY.N1directory[frm].I[stindex] = append(NODE_DIRECTORY.N1directory[frm].I[stindex],link)
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[frm].I[sttype] = append(NODE_DIRECTORY.N2directory[frm].I[sttype],link)
+		NODE_DIRECTORY.N2directory[frm].I[stindex] = append(NODE_DIRECTORY.N2directory[frm].I[stindex],link)
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[frm].I[sttype] = append(NODE_DIRECTORY.N3directory[frm].I[sttype],link)
+		NODE_DIRECTORY.N3directory[frm].I[stindex] = append(NODE_DIRECTORY.N3directory[frm].I[stindex],link)
 	case LT128:
-		NODE_DIRECTORY.LT128[frm].I[sttype] = append(NODE_DIRECTORY.LT128[frm].I[sttype],link)
+		NODE_DIRECTORY.LT128[frm].I[stindex] = append(NODE_DIRECTORY.LT128[frm].I[stindex],link)
 	case LT1024:
-		NODE_DIRECTORY.LT1024[frm].I[sttype] = append(NODE_DIRECTORY.LT1024[frm].I[sttype],link)
+		NODE_DIRECTORY.LT1024[frm].I[stindex] = append(NODE_DIRECTORY.LT1024[frm].I[stindex],link)
 	case GT1024:
-		NODE_DIRECTORY.GT1024[frm].I[sttype] = append(NODE_DIRECTORY.GT1024[frm].I[sttype],link)
+		NODE_DIRECTORY.GT1024[frm].I[stindex] = append(NODE_DIRECTORY.GT1024[frm].I[stindex],link)
 	}
 }
 
@@ -495,7 +506,7 @@ func LinearFindText(in []Node,event Node) (ClassedNodePtr,bool) {
 
 //**************************************************************
 
-func GetSTTypeByName(sttype,pm string) int {
+func GetSTIndexByName(stname,pm string) int {
 
 	var encoding  int
 	var sign int
@@ -507,7 +518,7 @@ func GetSTTypeByName(sttype,pm string) int {
 		sign = -1
 	}
 
-	switch sttype {
+	switch stname {
 
 	case "leadsto":
 		encoding = ST_ZERO + LEADSTO * sign
@@ -525,12 +536,12 @@ func GetSTTypeByName(sttype,pm string) int {
 
 //**************************************************************
 
-func STtype(st int) string {
+func PrintSTAIndex(stindex int) string {
 
-	st = st - ST_ZERO
+	sttype := stindex - ST_ZERO
 	var ty string
 
-	switch st {
+	switch sttype {
 	case -EXPRESS:
 		ty = "-(expressed by)"
 	case -CONTAINS:
@@ -553,6 +564,69 @@ func STtype(st int) string {
 	const endgreen = "\x1b[0m"
 
 	return green + ty + endgreen
+}
+
+//**************************************************************
+// Write to database
+//**************************************************************
+
+func GraphToDB(ctx PoSST) {
+
+	var count_nodes int = 0
+	var count_links [4]int
+	var total int
+
+	fmt.Println("XXXXXXXXXXXXXXXXXx")
+
+	for class := N1GRAM; class <= GT1024; class++ {
+		switch class {
+		case N1GRAM:
+			for n := range NODE_DIRECTORY.N1directory {
+				org := NODE_DIRECTORY.N1directory[n]
+				UploadNodeToDB(ctx,org)
+			}
+		case N2GRAM:
+			for n := range NODE_DIRECTORY.N2directory {
+				org := NODE_DIRECTORY.N2directory[n]
+				UploadNodeToDB(ctx,org)
+			}
+		case N3GRAM:
+			for n := range NODE_DIRECTORY.N3directory {
+				org := NODE_DIRECTORY.N3directory[n]
+				UploadNodeToDB(ctx,org)
+			}
+		case LT128:
+			for n := range NODE_DIRECTORY.LT128 {
+				org := NODE_DIRECTORY.LT128[n]
+				UploadNodeToDB(ctx,org)
+			}
+		case LT1024:
+			for n := range NODE_DIRECTORY.LT1024 {
+				org := NODE_DIRECTORY.LT1024[n]
+				UploadNodeToDB(ctx,org)
+			}
+
+		case GT1024:
+			for n := range NODE_DIRECTORY.GT1024 {
+				org := NODE_DIRECTORY.GT1024[n]
+				UploadNodeToDB(ctx,org)
+			}
+		}
+	}
+
+	fmt.Println("-------------------------------------")
+	fmt.Println("Incidence summary of raw declarations")
+	fmt.Println("-------------------------------------")
+
+	fmt.Println("Total nodes",count_nodes)
+
+	for st := 0; st < 4; st++ {
+		total += count_links[st]
+		fmt.Println("Total directed links of type",SST_NAMES[st],count_links[st])
+	}
+
+	complete := count_nodes * (count_nodes-1)
+	fmt.Println("Total links",total,"sparseness (fraction of completeness)",float64(total)/float64(complete))
 }
 
 // **************************************************************************
@@ -608,9 +682,10 @@ func CreateDBNode(ctx PoSST, n Node) Node {
         n.L,n.SizeClass = StorageClass(n.S)
 	
 	cptr := n.NPtr.CPtr
+	es := EscapeString(n.S)
 
-	qstr = fmt.Sprintf("SELECT IdempInsertNode(%d,%d,%d,'%s','%s')",n.L,n.SizeClass,cptr,n.S,n.Chap)
-	
+	qstr = fmt.Sprintf("SELECT IdempInsertNode(%d,%d,%d,'%s','%s')",n.L,n.SizeClass,cptr,es,n.Chap)
+
 	row,err := ctx.DB.Query(qstr)
 	
 	if err != nil {
@@ -638,17 +713,30 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 
 // **************************************************************************
 
-func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, n2ptr NodePtr, sttype int) bool {
+func UploadNodeToDB(ctx PoSST, org Node) {
+
+	CreateDBNode(ctx, org)
+	fmt.Println("NODE",org)
+
+	for stindex := range org.I {
+		for lnk := range org.I[stindex] {
+			link := org.I[stindex][lnk]
+			AppendDBLinkToNode(ctx,org.NPtr,link,STIndexToSTType(stindex))
+			fmt.Println("LINK",link)
+		}
+	}
+}
+
+// **************************************************************************
+
+func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
 	// Want to make this idempotent, because SQL is not (and not clause)
 
-	if sttype < 0 || sttype > ST_ZERO+EXPRESS {
+	if sttype < -EXPRESS || sttype > EXPRESS {
 		fmt.Println(ERR_ST_OUT_OF_BOUNDS,sttype)
 		os.Exit(-1)
 	}
-
-	lnk.Dst.Class = n2ptr.Class
-	lnk.Dst.CPtr = n2ptr.CPtr
 
 	//                       Arr,Wgt,Ctx,  Dst
 	linkval := fmt.Sprintf("(%d, %f, %s, (%d,%d)::NodePtr)",lnk.Arr,lnk.Wgt,FormatSQLArray(lnk.Ctx),lnk.Dst.Class,lnk.Dst.CPtr)
@@ -1154,7 +1242,7 @@ func ParseSQLArrayString(whole_array string) []string {
 func FormatSQLArray(array []string) string {
 
         if len(array) == 0 {
-	   return ""
+		return "'{ }'"
         }
 
 	var ret string = "'{ "
@@ -1303,6 +1391,8 @@ func StorageClass(s string) (int,int) {
 
 func STTypeDBChannel(sttype int) string {
 
+	// This expects the range for sttype to be unshifted 0,+/-
+
 	var link_channel string
 	switch sttype {
 
@@ -1321,11 +1411,20 @@ func STTypeDBChannel(sttype int) string {
 	case -EXPRESS:
 		link_channel = I_MEXPR
 	default:
-		fmt.Println(ERR_ILLEGAL_LINK_CLASS)
+		fmt.Println(ERR_ILLEGAL_LINK_CLASS,sttype)
 		os.Exit(-1)
 	}
 
 	return link_channel
+}
+
+// **************************************************************************
+
+func STIndexToSTType(stindex int) int {
+
+	// Convert shifted array index to symmetrical type
+
+	return stindex - ST_ZERO
 }
 
 // **************************************************************************
@@ -1343,6 +1442,12 @@ func Already (s string, cone map[int][]string) bool {
 	return false
 }
 
+// **************************************************************************
+
+func EscapeString(s string) string {
+
+	return strings.Replace(s, "'", ".", -1)
+}
 
 
 

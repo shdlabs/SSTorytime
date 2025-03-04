@@ -178,7 +178,7 @@ type Link struct {  // A link is a type of arrow, with context
 
 type ArrowDirectory struct {
 
-	STtype  int
+	STAindex int
 	Long    string
 	Short   string
 	Ptr     ArrowPtr
@@ -531,13 +531,13 @@ func InsertArrowDirectory(sec,alias,name,pm string) ArrowPtr {
 
 	switch sec {
 	case "leadsto":
-		newarrow.STtype = ST_ZERO + LEADSTO * sign
+		newarrow.STAindex = ST_ZERO + LEADSTO * sign
 	case "contains":
-		newarrow.STtype = ST_ZERO + CONTAINS * sign
+		newarrow.STAindex = ST_ZERO + CONTAINS * sign
 	case "properties":
-		newarrow.STtype = ST_ZERO + EXPRESS * sign
+		newarrow.STAindex = ST_ZERO + EXPRESS * sign
 	case "similarity":
-		newarrow.STtype = ST_ZERO + NEAR
+		newarrow.STAindex = ST_ZERO + NEAR
 	}
 
 	newarrow.Long = name
@@ -596,7 +596,7 @@ func SummarizeGraph() {
 				count_nodes++
 				for sttype := range NODE_DIRECTORY.N1directory[n].I {
 					for lnk := range NODE_DIRECTORY.N1directory[n].I[sttype] {
-						count_links[Agg(sttype)]++
+						count_links[FlatSTIndex(sttype)]++
 						PrintLink(NODE_DIRECTORY.N1directory[n].I[sttype][lnk])
 					}
 				}
@@ -608,7 +608,7 @@ func SummarizeGraph() {
 				count_nodes++
 				for sttype := range NODE_DIRECTORY.N2directory[n].I {
 					for lnk := range NODE_DIRECTORY.N2directory[n].I[sttype] {
-						count_links[Agg(sttype)]++
+						count_links[FlatSTIndex(sttype)]++
 						PrintLink(NODE_DIRECTORY.N2directory[n].I[sttype][lnk])
 					}
 
@@ -621,7 +621,7 @@ func SummarizeGraph() {
 				count_nodes++
 				for sttype := range NODE_DIRECTORY.N3directory[n].I {
 					for lnk := range NODE_DIRECTORY.N3directory[n].I[sttype] {
-						count_links[Agg(sttype)]++
+						count_links[FlatSTIndex(sttype)]++
 						PrintLink(NODE_DIRECTORY.N3directory[n].I[sttype][lnk])
 					}
 				}
@@ -633,7 +633,7 @@ func SummarizeGraph() {
 				count_nodes++
 				for sttype := range NODE_DIRECTORY.LT128[n].I {
 					for lnk := range NODE_DIRECTORY.LT128[n].I[sttype] {
-						count_links[Agg(sttype)]++
+						count_links[FlatSTIndex(sttype)]++
 						PrintLink(NODE_DIRECTORY.LT128[n].I[sttype][lnk])
 					}
 				}
@@ -645,7 +645,7 @@ func SummarizeGraph() {
 				count_nodes++
 				for sttype := range NODE_DIRECTORY.LT1024[n].I {
 					for lnk := range NODE_DIRECTORY.LT1024[n].I[sttype] {
-						count_links[Agg(sttype)]++
+						count_links[FlatSTIndex(sttype)]++
 						PrintLink(NODE_DIRECTORY.LT1024[n].I[sttype][lnk])
 					}
 				}
@@ -658,7 +658,7 @@ func SummarizeGraph() {
 				count_nodes++
 				for sttype := range NODE_DIRECTORY.GT1024[n].I {
 					for lnk := range NODE_DIRECTORY.GT1024[n].I[sttype] {
-						count_links[Agg(sttype)]++
+						count_links[FlatSTIndex(sttype)]++
 						PrintLink(NODE_DIRECTORY.GT1024[n].I[sttype][lnk])
 					}
 				}
@@ -891,14 +891,17 @@ func CompareVec(v1,v2 []float64) float64 {
 
 //**************************************************************
 
-func Agg(i int) int {
+func FlatSTIndex(stindex int) int {
 
-	n := i - ST_ZERO
-	if n < 0 {
-		n = -n
+	// Return positive STtype from STAindex
+
+	p_sttype := stindex - ST_ZERO
+
+	if p_sttype < 0 {
+		p_sttype = -p_sttype
 	}
 
-	return n
+	return p_sttype
 }
 
 //**************************************************************
@@ -907,7 +910,7 @@ func PrintLink(l Link) {
 
 	to := GetNodeFromPtr(l.Dst)
 	arrow := ARROW_DIRECTORY[l.Arr]
-	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",STtype(arrow.STtype))
+	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",PrintSTAIndex(arrow.STAindex))
 }
 
 //**************************************************************
@@ -925,7 +928,7 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 		v,ok := ARROW_SHORT_DIR[list[i]]
 
 		if ok {
-			typ := ARROW_DIRECTORY[v].STtype-ST_ZERO
+			typ := ARROW_DIRECTORY[v].STAindex-ST_ZERO
 			if typ < 0 {
 				typ = -typ
 			}
@@ -1541,7 +1544,7 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 
 	frclass := frptr.Class
 	frm := frptr.CPtr
-	sttype := ARROW_DIRECTORY[link.Arr].STtype
+	sttype := ARROW_DIRECTORY[link.Arr].STAindex
 
 	link.Dst = toptr // fill in the last part of the reference
 
@@ -2373,7 +2376,7 @@ func Diag(a ...interface{}) {
 
 //**************************************************************
 
-func STtype(st int) string {
+func PrintSTAIndex(st int) string {
 
 	st = st - ST_ZERO
 	var ty string

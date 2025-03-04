@@ -86,23 +86,23 @@ func main() {
 
 	n1 = SST.CreateDBNode(ctx, n1)
 	n2 = SST.CreateDBNode(ctx, n2)
-	SST.AppendDBLinkToNode(ctx,n1.NPtr,lnk12,n2.NPtr,sttype)
+	SST.AppendDBLinkToNode(ctx,n1.NPtr,lnk12,sttype)
 
 	n2 = SST.CreateDBNode(ctx, n2)
 	n3 = SST.CreateDBNode(ctx, n3)
-	SST.AppendDBLinkToNode(ctx,n2.NPtr,lnk23,n3.NPtr,sttype)
+	SST.AppendDBLinkToNode(ctx,n2.NPtr,lnk23,sttype)
 
 	n3 = SST.CreateDBNode(ctx, n3)
 	n4 = SST.CreateDBNode(ctx, n4)
-	SST.AppendDBLinkToNode(ctx,n3.NPtr,lnk34,n4.NPtr,sttype)
+	SST.AppendDBLinkToNode(ctx,n3.NPtr,lnk34,sttype)
 
 	n2 = SST.CreateDBNode(ctx, n2)
 	n5 = SST.CreateDBNode(ctx, n5)
-	SST.AppendDBLinkToNode(ctx,n2.NPtr,lnk25,n5.NPtr,sttype)
+	SST.AppendDBLinkToNode(ctx,n2.NPtr,lnk25,sttype)
 
 	n5 = SST.CreateDBNode(ctx, n5)
 	n6 = SST.CreateDBNode(ctx, n6)
-	SST.AppendDBLinkToNode(ctx,n5.NPtr,lnk56,n6.NPtr,sttype)
+	SST.AppendDBLinkToNode(ctx,n5.NPtr,lnk56,sttype)
 
 	fmt.Println("----------------------------------")
 	fmt.Println("Node section hypersurfaces:")
