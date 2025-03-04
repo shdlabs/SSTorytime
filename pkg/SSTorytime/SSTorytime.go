@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
 	//"sort"
 
 	_ "github.com/lib/pq"
@@ -24,11 +25,7 @@ import (
 const (
 	ERR_ST_OUT_OF_BOUNDS="Link STtype is out of bounds - "
 	ERR_ILLEGAL_LINK_CLASS="ILLEGAL LINK CLASS"
-)
 
-//**************************************************************
-
-const (
 	NEAR = 0
 	LEADSTO = 1   // +/-
 	CONTAINS = 2  // +/-
@@ -172,7 +169,6 @@ type ArrowDirectory struct {
 
 type ArrowPtr int // ArrowDirectory index
 
-
 const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS Arrow_Directory " +
 	"(    " +
 	"STtype int,             " +
@@ -187,6 +183,22 @@ const ARROW_INVERSES_TABLE = "CREATE TABLE IF NOT EXISTS Arrow_Inverses " +
 	"Minus int,  " +
 	"Primary Key(Plus,Minus)," +
 	")"
+
+//**************************************************************
+// Lookup tables
+//**************************************************************
+
+var ( 
+	ARROW_DIRECTORY []ArrowDirectory
+	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up short name int referene
+	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
+	ARROW_DIRECTORY_TOP ArrowPtr = 0
+
+	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
+
+	NO_NODE_PTR NodePtr // see Init()
+	SST_NAMES[4] string
+)
 
 //******************************************************************
 // LIBRARY
@@ -229,6 +241,14 @@ func Open() PoSST {
 	}
 
 	Configure(ctx)
+
+	NO_NODE_PTR.Class = 0
+	NO_NODE_PTR.CPtr =  -1
+
+	SST_NAMES[NEAR] = "Near"
+	SST_NAMES[LEADSTO] = "LeadsTo"
+	SST_NAMES[CONTAINS] = "Contains"
+	SST_NAMES[EXPRESS] = "Express"
 
 	return ctx
 }
@@ -273,6 +293,270 @@ func Close(ctx PoSST) {
 	ctx.DB.Close()
 }
 
+// **************************************************************************
+// In memory representation structures
+// **************************************************************************
+
+func GetNodeFromPtr(frptr NodePtr) string {
+
+	class := frptr.Class
+	index := frptr.CPtr
+
+	var node Node
+
+	switch class {
+	case N1GRAM:
+		node = NODE_DIRECTORY.N1directory[index]
+	case N2GRAM:
+		node = NODE_DIRECTORY.N2directory[index]
+	case N3GRAM:
+		node = NODE_DIRECTORY.N3directory[index]
+	case LT128:
+		node = NODE_DIRECTORY.LT128[index]
+	case LT1024:
+		node = NODE_DIRECTORY.LT1024[index]
+	case GT1024:
+		node = NODE_DIRECTORY.GT1024[index]
+	}
+
+	return node.S
+}
+
+//**************************************************************
+
+func ClassifyString(s string,l int) int {
+
+	var spaces int = 0
+
+	for i := 0; i < l; i++ {
+
+		if s[i] == ' ' {
+			spaces++
+		}
+
+		if spaces > 2 {
+			break
+		}
+	}
+
+	// Text usage tends to fall into a number of different roles, with a power law
+        // frequency of occurrence in a text, so let's classify in order of likely usage
+	// for small and many, we use a hashmap/btree
+
+	switch spaces {
+	case 0:
+		return N1GRAM
+	case 1:
+		return N2GRAM
+	case 2:
+		return N3GRAM
+	}
+
+	// For longer strings, a linear search is probably fine here
+        // (once it gets into a database, it's someone else's problem)
+
+	if l < 128 {
+		return LT128
+	}
+
+	if l < 1024 {
+		return LT1024
+	}
+
+	return GT1024
+
+}
+
+//**************************************************************
+
+func AppendTextToDirectory(event Node) NodePtr {
+
+	var cnode_slot ClassedNodePtr = -1
+	var ok bool = false
+	var node_alloc_ptr NodePtr
+
+	switch event.SizeClass {
+	case N1GRAM:
+		cnode_slot,ok = NODE_DIRECTORY.N1grams[event.S]
+	case N2GRAM:
+		cnode_slot,ok = NODE_DIRECTORY.N2grams[event.S]
+	case N3GRAM:
+		cnode_slot,ok = NODE_DIRECTORY.N3grams[event.S]
+	case LT128:
+		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT128,event)
+	case LT1024:
+		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT1024,event)
+	case GT1024:
+		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.GT1024,event)
+	}
+
+	node_alloc_ptr.Class = event.SizeClass
+
+	if ok {
+		node_alloc_ptr.CPtr = cnode_slot
+		return node_alloc_ptr
+	}
+
+	switch event.SizeClass {
+	case N1GRAM:
+		cnode_slot = NODE_DIRECTORY.N1_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.N1directory = append(NODE_DIRECTORY.N1directory,event)
+		NODE_DIRECTORY.N1grams[event.S] = cnode_slot
+		NODE_DIRECTORY.N1_top++ 
+		return node_alloc_ptr
+	case N2GRAM:
+		cnode_slot = NODE_DIRECTORY.N2_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.N2directory = append(NODE_DIRECTORY.N2directory,event)
+		NODE_DIRECTORY.N2grams[event.S] = cnode_slot
+		NODE_DIRECTORY.N2_top++
+		return node_alloc_ptr
+	case N3GRAM:
+		cnode_slot = NODE_DIRECTORY.N3_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.N3directory = append(NODE_DIRECTORY.N3directory,event)
+		NODE_DIRECTORY.N3grams[event.S] = cnode_slot
+		NODE_DIRECTORY.N3_top++
+		return node_alloc_ptr
+	case LT128:
+		cnode_slot = NODE_DIRECTORY.LT128_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.LT128 = append(NODE_DIRECTORY.LT128,event)
+		NODE_DIRECTORY.LT128_top++
+		return node_alloc_ptr
+	case LT1024:
+		cnode_slot = NODE_DIRECTORY.LT1024_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.LT1024 = append(NODE_DIRECTORY.LT1024,event)
+		NODE_DIRECTORY.LT1024_top++
+		return node_alloc_ptr
+	case GT1024:
+		cnode_slot = NODE_DIRECTORY.GT1024_top
+		node_alloc_ptr.CPtr = cnode_slot
+		event.NPtr = node_alloc_ptr
+		NODE_DIRECTORY.GT1024 = append(NODE_DIRECTORY.GT1024,event)
+		NODE_DIRECTORY.GT1024_top++
+		return node_alloc_ptr
+	}
+
+	return NO_NODE_PTR
+}
+
+//**************************************************************
+
+func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
+
+	frclass := frptr.Class
+	frm := frptr.CPtr
+	sttype := ARROW_DIRECTORY[link.Arr].STtype
+
+	link.Dst = toptr // fill in the last part of the reference
+
+	switch frclass {
+
+	case N1GRAM:
+		NODE_DIRECTORY.N1directory[frm].I[sttype] = append(NODE_DIRECTORY.N1directory[frm].I[sttype],link)
+	case N2GRAM:
+		NODE_DIRECTORY.N2directory[frm].I[sttype] = append(NODE_DIRECTORY.N2directory[frm].I[sttype],link)
+	case N3GRAM:
+		NODE_DIRECTORY.N3directory[frm].I[sttype] = append(NODE_DIRECTORY.N3directory[frm].I[sttype],link)
+	case LT128:
+		NODE_DIRECTORY.LT128[frm].I[sttype] = append(NODE_DIRECTORY.LT128[frm].I[sttype],link)
+	case LT1024:
+		NODE_DIRECTORY.LT1024[frm].I[sttype] = append(NODE_DIRECTORY.LT1024[frm].I[sttype],link)
+	case GT1024:
+		NODE_DIRECTORY.GT1024[frm].I[sttype] = append(NODE_DIRECTORY.GT1024[frm].I[sttype],link)
+	}
+}
+
+//**************************************************************
+
+func LinearFindText(in []Node,event Node) (ClassedNodePtr,bool) {
+
+	for i := 0; i < len(in); i++ {
+
+		if event.L != in[i].L {
+			continue
+		}
+
+		if in[i].S == event.S {
+			return ClassedNodePtr(i),true
+		}
+	}
+
+	return -1,false
+}
+
+//**************************************************************
+
+func GetSTTypeByName(sttype,pm string) int {
+
+	var encoding  int
+	var sign int
+
+	switch pm {
+	case "+":
+		sign = 1
+	case "-":
+		sign = -1
+	}
+
+	switch sttype {
+
+	case "leadsto":
+		encoding = ST_ZERO + LEADSTO * sign
+	case "contains":
+		encoding = ST_ZERO + CONTAINS * sign
+	case "properties":
+		encoding = ST_ZERO + EXPRESS * sign
+	case "similarity":
+		encoding = ST_ZERO + NEAR
+	}
+
+	return encoding
+
+}
+
+//**************************************************************
+
+func STtype(st int) string {
+
+	st = st - ST_ZERO
+	var ty string
+
+	switch st {
+	case -EXPRESS:
+		ty = "-(expressed by)"
+	case -CONTAINS:
+		ty = "-(part of)"
+	case -LEADSTO:
+		ty = "-(arriving from)"
+	case NEAR:
+		ty = "(close to)"
+	case LEADSTO:
+		ty = "+(leading to)"
+	case CONTAINS:
+		ty = "+(containing)"
+	case EXPRESS:
+		ty = "+(expressing)"
+	default:
+		ty = "unknown relation!"
+	}
+
+	const green = "\x1b[36m"
+	const endgreen = "\x1b[0m"
+
+	return green + ty + endgreen
+}
+
+// **************************************************************************
+// Postgres
 // **************************************************************************
 
 func CreateType(ctx PoSST, defn string) bool {
@@ -1013,38 +1297,6 @@ func StorageClass(s string) (int,int) {
 	}
 	
 	return l,GT1024
-}
-
-// **************************************************************************
-
-func STtype(st int) string {
-
-	st = st - ST_ZERO
-	var ty string
-
-	switch st {
-	case -EXPRESS:
-		ty = "-(expressed by)"
-	case -CONTAINS:
-		ty = "-(part of)"
-	case -LEADSTO:
-		ty = "-(arriving from)"
-	case NEAR:
-		ty = "(close to)"
-	case LEADSTO:
-		ty = "+(leading to)"
-	case CONTAINS:
-		ty = "+(containing)"
-	case EXPRESS:
-		ty = "+(expressing)"
-	default:
-		ty = "unknown relation!"
-	}
-
-	const green = "\x1b[36m"
-	const endgreen = "\x1b[0m"
-
-	return green + ty + endgreen
 }
 
 // **************************************************************************

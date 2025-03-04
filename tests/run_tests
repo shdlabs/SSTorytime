@@ -19,6 +19,9 @@ rm -f test_outputs/*
 #  Name tests to fail fail_1.in etc - the error message matters here
 #
 
+echo ""
+echo "Testing standalone version"
+echo ""
 
 for f in pass_*.in; do
    echo -n testing $f
@@ -43,37 +46,35 @@ for f in fail_*.in; do
    fi
 done
 
+echo ""
+echo "Testing librarified/database version"
+echo ""
 
-# test_1a comments
+PASS_PROG="../src/N4L-db -adj=all"
+FAIL_PROG="../src/N4L-db"
 
-# test_1b section with items - pass
+for f in pass_*.in; do
+   echo -n testing $f
+   rm -f test_outputs/N4L*.log
+   if $PASS_PROG $f > /dev/null; then 
+       echo -e "${GREEN} ok ${END}"
+   else 
+       echo -e "${RED} NOT ok ${END}"
+   fi
+done
 
-# test_2 alter section - pass
 
-# test_3 pick up context - pass
+for f in fail_*.in; do
+   rm -f test_outputs/N4L*.log
+   echo -n testing $f
 
-# test_4 add to context - pass
-
-# test_5 remove from context - pass
-
-# test_5a remove anded context
-
-# test_6 install relation - pass
-
-# test_7 missing item in relation - fail
-
-# test_8 " reference to last line
-
-# test_9 " last reference with several lines
-
-# test_10 alias label a line
-
-# test_11 refer to alias as $x.y
-
-# test_12 two tigers
-
-# test_13 embedded quotes - pass
-
+   if $FAIL_PROG $f > test_output/$f.out; 
+       then 
+       echo -e "${RED} NOT ok ${END}"
+   else 
+       echo -e "${GREEN} ok ${END}"
+   fi
+done
 
 
 
