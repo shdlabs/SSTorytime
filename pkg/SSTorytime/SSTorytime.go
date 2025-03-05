@@ -156,8 +156,8 @@ type NodeDirectory struct {
 
 type NodePtr struct {
 
-	CPtr  ClassedNodePtr // index of within name class lane
 	Class int            // Text size-class
+	CPtr  ClassedNodePtr // index of within name class lane
 }
 
 type ClassedNodePtr int  // Internal pointer type of size-classified text
@@ -832,7 +832,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"DECLARE \n" +
 		"BEGIN\n" +
 		"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN\n" +
-		"     INSERT INTO Node (Nptr.Cptr,Nptr.Chan,L,S,chap) VALUES (icptri,iszchani,iLi,iSi,ichapi);" +
+		"     INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap) VALUES (iszchani,icptri,iLi,iSi,ichapi);" +
 		"  end if;\n" +
 		"      return query SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
 		"END ;\n" +

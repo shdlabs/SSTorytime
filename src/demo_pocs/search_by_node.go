@@ -33,6 +33,8 @@ func main() {
 	const maxdepth = 8
 	sttype := SST.LEADSTO
 
+	levels := make([][]SST.NodePtr,maxdepth)
+
 	// Get the start node
 
 	start_set := SST.GetNodePtrMatchingName(ctx,"start")
@@ -46,52 +48,68 @@ func main() {
 		val := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
 		
 		for l := range val {
-			fmt.Println("   - Step",val[l])
+			fmt.Println("   - node",val[l])
 		}
 		
-	}
-
-	for start := range start_set {
-
-		fmt.Println(" ---------------------------------")
-		fmt.Println(" - Total forward cone (as links) from: ",start_set[start])
-		fmt.Println(" ---------------------------------")
-
-		val := SST.GetFwdConeAsLinks(ctx,start_set[start],sttype,maxdepth)
-
-		for l := range val {
-			fmt.Println("   - Step",val[l])
+		for depth := 0; depth < maxdepth; depth++ {
+			
+			fmt.Println(" ---------------------------------")
+			fmt.Println(" - Cone layers ",depth," from: ",start_set[start])
+			fmt.Println(" ---------------------------------")
+			
+			levels[depth] = make([]SST.NodePtr,0)
+			
+			val := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,depth)
+			
+			for l := range val {
+				if IsNew(val[l],levels) {
+					levels[depth] = append(levels[depth],val[l])
+				}
+			}			
+			fmt.Println("level",depth,levels[depth])
 		}
 		
-	}
-
-	fmt.Println("Link proper time normal paths:")
-	
-	for depth := 0; depth < maxdepth; depth++ {
-		
+		fmt.Println("Link proper time normal paths:")
+			
 		for start := range start_set {
 			
-			fmt.Println("Searching paths of length",depth,"/",maxdepth,"from",start_set[start])
-			
-			paths := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,depth)
-			
-			for p := range paths {
+			for depth := 0; depth < maxdepth; depth++ {
 				
-				if len(paths[p]) > 1 {
+				fmt.Println("Searching paths of length",depth,"/",maxdepth,"from",start_set[start])
+				
+				paths := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,depth)
+				
+				for p := range paths {
 					
-					fmt.Println("    Path",p," len",len(paths[p]))
-					
-					for l := 0; l < len(paths[p]); l++ {
-						fmt.Print(" --> ",paths[p][l].Dst," weight",paths[p][l].Wgt)
+					if len(paths[p]) > 1 {
+						
+						fmt.Println("    Path",p," len",len(paths[p]))
+						
+						for l := 0; l < len(paths[p]); l++ {
+							fmt.Print(" --> ",paths[p][l].Dst," weight",paths[p][l].Wgt)
+						}
+						
+						fmt.Println()
 					}
-
-					fmt.Println()
 				}
 			}
 		}
-	}
-	
+	}		
 	SST.Close(ctx)
+}
+
+//******************************************************************
+
+func IsNew(nptr SST.NodePtr,levels [][]SST.NodePtr) bool {
+
+	for l := range levels {
+		for e := range levels[l] {
+			if levels[l][e] == nptr {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 
