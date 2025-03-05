@@ -111,11 +111,14 @@ const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
 	I_PEXPR+"  Link[]          " + // Ie3
 	")"
 
-const LINK_TABLE = "CREATE TABLE IF NOT EXISTS NodeLinkNode " +
+const LINK_TABLE = "CREATE TABLE IF NOT EXISTS NodeArrowNode " +
 	"( " +
 	"NFrom    NodePtr, " +
-	"Lnk      Link,    " +
-	"NTo      NodePtr " +
+	"STtype   int,     " +
+	"Arr      int,     " +
+	"Wgt      int,     " +
+	"Ctx      text[],  " +
+	"NTo      NodePtr  " +
 	")"
 
 //**************************************************************
@@ -271,7 +274,7 @@ func Configure(ctx PoSST) {
 	ctx.DB.QueryRow("drop function idempinsertnode")
 	ctx.DB.QueryRow("drop function sumfwdpaths")
 	ctx.DB.QueryRow("drop table Node")
-	ctx.DB.QueryRow("drop table NodeLinkNode")
+	ctx.DB.QueryRow("drop table NodeArrowNode")
 	ctx.DB.QueryRow("drop type NodePtr")
 	ctx.DB.QueryRow("drop type Link")
 
@@ -720,9 +723,14 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 	CreateDBNode(ctx, org)
 
 	for stindex := range org.I {
+
 		for lnk := range org.I[stindex] {
-			link := org.I[stindex][lnk]
-			AppendDBLinkToNode(ctx,org.NPtr,link,STIndexToSTType(stindex))
+
+			dst := org.I[stindex][lnk]
+			sttype := STIndexToSTType(stindex)
+
+			AppendDBLinkToNode(ctx,org.NPtr,dst,sttype)
+			CreateDBNodeArrowNode(ctx,org.NPtr,dst,sttype)
 		}
 	}
 }
@@ -766,30 +774,102 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 	return true
 }
 
+// **************************************************************************
+
+func CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool {
+
+	qstr := fmt.Sprintf("SELECT IdempInsertNodeArrowNode(" +
+		"%d," + //infromptr
+		"%d," + //infromchan
+		"%d," + //isttype
+		"%d," + //iarr
+		"%.2f," + //iwgt
+		"%s," + //ictx
+		"%d," + //intoptr
+		"%d " + //intochan,
+		")",
+		org.CPtr,
+		org.Class,
+		sttype,
+		dst.Arr,
+		dst.Wgt,
+		FormatSQLArray(dst.Ctx),
+		dst.Dst.Class,
+		dst.Dst.CPtr)
+
+	row,err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("Failed to make node-arrow-node",err,qstr)
+	       return false
+	}
+
+	row.Close()
+	return true
+}
 
 // **************************************************************************
 
 func DefineStoredFunctions(ctx PoSST) {
 
-	// Node these are "plpgsql" language, NOT pure SQL. They are very different.
+	// NB! these functions are in "plpgsql" language, NOT SQL. They look similar but they are DIFFERENT!
 	
 	// Insert a node structure, also an anchor for and containing link arrays
 	
-	qstr := "CREATE OR REPLACE FUNCTION IdempInsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)\n" + 
+	qstr := "CREATE OR REPLACE FUNCTION IdempInsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)\n" +
 		"RETURNS TABLE (    \n" +
-			"    ret_cptr INTEGER," +
-			"    ret_channel INTEGER" +
-			") AS $fn$ " +
-			"DECLARE \n" +
-			"BEGIN\n" +
-			"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN\n" +
-			"     INSERT INTO Node (Nptr.Cptr,L,S,chap,Nptr.Chan) VALUES (icptri, iLi, iSi, ichapi, iszchani);" +
-			"  end if;\n" +
-			"      return query SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
-			"END ;\n" +
-			"$fn$ LANGUAGE plpgsql;";
+		"    ret_cptr INTEGER," +
+		"    ret_channel INTEGER" +
+		") AS $fn$ " +
+		"DECLARE \n" +
+		"BEGIN\n" +
+		"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN\n" +
+		"     INSERT INTO Node (Nptr.Cptr,Nptr.Chan,L,S,chap) VALUES (icptri,iszchani,iLi,iSi,ichapi);" +
+		"  end if;\n" +
+		"      return query SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;";
 
 	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// For lookup by arrow
+
+	qstr = "CREATE OR REPLACE FUNCTION IdempInsertNodeArrowNode\n" +
+		"(\n" +
+		"infromptr  int,   \n" +
+		"infromchan int,   \n" +
+		"isttype    int,   \n" +
+		"iarr       int,   \n" +
+		"iwgt       real,  \n" +
+		"ictx       text[],\n" +
+		"intoptr    int,   \n" +
+		"intochan   int    \n" +
+		")\n" +
+
+		"RETURNS real AS $fn$ " +
+
+		"DECLARE \n" +
+		"  ret_wgt real;\n" +
+		"BEGIN\n" +
+
+		"  IF NOT EXISTS (SELECT Wgt FROM NodeArrowNode WHERE (NFrom).Cptr=infromptr AND Arr=iarr AND (NTo).Cptr=intoptr) THEN\n" +
+
+		"     INSERT INTO NodeArrowNode (nfrom.Cptr,nfrom.Chan,arr,wgt,ctx,nto.Cptr,nto.Chan) \n" +
+		"       VALUES (infromptr,infromchan,iarr,iwgt,ictx,intoptr,intochan);" +
+
+		"  END IF;\n" +
+		"  SELECT Wgt into ret_wgt FROM NodeArrowNode WHERE (NFrom).Cptr=infromptr AND Arr=iarr AND (NTo).Cptr=intoptr;\n" +
+		"  RETURN ret_wgt;" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;";
+
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
@@ -800,7 +880,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	// Construct an empty link pointing nowhere as a starting node
 
 	qstr = "CREATE OR REPLACE FUNCTION GetSingletonAsLinkArray(start NodePtr)\n"+
-		"RETURNS Link[] AS $nums$\n"+
+		"RETURNS Link[] AS $fn$\n"+
 		"DECLARE \n"+
 		"    level Link[] := Array[] :: Link[];\n"+
 		"    lnk Link := (0,0.0,Array[]::text[],(0,0));\n"+
@@ -809,7 +889,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		" level = array_append(level,lnk);\n"+
 		"RETURN level; \n"+
 		"END ;\n"+
-		"$nums$ LANGUAGE plpgsql;"
+		"$fn$ LANGUAGE plpgsql;"
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -822,14 +902,14 @@ func DefineStoredFunctions(ctx PoSST) {
 	// Construct an empty link pointing nowhere as a starting node
 
 	qstr = "CREATE OR REPLACE FUNCTION GetSingletonAsLink(start NodePtr)\n"+
-		"RETURNS Link AS $nums$\n"+
+		"RETURNS Link AS $fn$\n"+
 		"DECLARE \n"+
 		"    lnk Link := (0,0.0,Array[]::text[],(0,0));\n"+
 		"BEGIN\n"+
 		" lnk.Dst = start;\n"+
 		"RETURN lnk; \n"+
 		"END ;\n"+
-		"$nums$ LANGUAGE plpgsql;"
+		"$fn$ LANGUAGE plpgsql;"
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -842,7 +922,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	// Construct search by sttype. since table names are static we need a case statement
 
 	qstr = "CREATE OR REPLACE FUNCTION GetNeighboursByType(start NodePtr, sttype int)\n"+
-		"RETURNS Link[] AS $nums$\n"+
+		"RETURNS Link[] AS $fn$\n"+
 		"DECLARE \n"+
 		"    fwdlinks Link[] := Array[] :: Link[];\n"+
 		"    lnk Link := (0,0.0,Array[]::text[],(0,0));\n"+
@@ -857,7 +937,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END CASE;\n" +
 		"    RETURN fwdlinks; \n" +
 		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n"
+		"$fn$ LANGUAGE plpgsql;\n"
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -870,7 +950,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	// Get the nearest neighbours as NPtr, with respect to each of the four STtype
 
 	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdNodes(start NodePtr,exclude NodePtr[],sttype int)\n"+
-		"RETURNS NodePtr[] AS $nums$\n" +
+		"RETURNS NodePtr[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    neighbours NodePtr[];\n" +
 		"    fwdlinks Link[];\n" +
@@ -894,7 +974,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"    RETURN neighbours; \n" +
 		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n")
+		"$fn$ LANGUAGE plpgsql;\n")
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -905,7 +985,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	row.Close()
 
 	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdLinks(start NodePtr,exclude NodePtr[],sttype int)\n"+
-		"RETURNS Link[] AS $nums$\n" +
+		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    neighbours Link[];\n" +
 		"    fwdlinks Link[];\n" +
@@ -926,7 +1006,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    END LOOP;\n" +
 		"    RETURN neighbours; \n" +
 		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n")
+		"$fn$ LANGUAGE plpgsql;\n")
 	
 	row,err = ctx.DB.Query(qstr)
 	
@@ -939,7 +1019,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	// Get the forward cone / half-ball as NPtr
 
 	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsNodes(start NodePtr,sttype INT, maxdepth INT)\n"+
-		"RETURNS NodePtr[] AS $nums$\n" +
+		"RETURNS NodePtr[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    nextlevel NodePtr[];\n" +
 		"    partlevel NodePtr[];\n" +
@@ -987,7 +1067,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		
 		"RETURN cone; \n" +
 		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n"
+		"$fn$ LANGUAGE plpgsql;\n"
 	
 	row,err = ctx.DB.Query(qstr)
 	
@@ -1011,7 +1091,7 @@ func DefineStoredFunctions(ctx PoSST) {
           */
 
 	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsLinks(start NodePtr,sttype INT,maxdepth INT)\n"+
-		"RETURNS Link[] AS $nums$\n" +
+		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    nextlevel Link[];\n" +
 		"    partlevel Link[];\n" +
@@ -1060,7 +1140,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"RETURN cone; \n" +
 		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n"
+		"$fn$ LANGUAGE plpgsql;\n"
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -1073,7 +1153,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	// Orthogonal (depth first) paths from origin spreading out
 
 	qstr = "CREATE OR REPLACE FUNCTION FwdPathsAsLinks(start NodePtr,sttype INT,maxdepth INT)\n"+
-		"RETURNS Text AS $nums$\n" +
+		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   hop Text;\n" +
 		"   path Text;\n"+
@@ -1090,7 +1170,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n"
+		"$fn$ LANGUAGE plpgsql;\n"
 
         // select FwdPathsAsLinks('(4,1)',1,3)
 
@@ -1105,7 +1185,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	// Return end of path branches as aggregated text summaries
 
 	qstr = "CREATE OR REPLACE FUNCTION SumFwdPaths(start Link,path TEXT, sttype INT,depth int, maxdepth INT,exclude NodePtr[])\n"+
-		"RETURNS Text AS $nums$\n" +
+		"RETURNS Text AS $fn$\n" +
 		"DECLARE \n" + 
 		"    fwdlinks Link[];\n" +
 		"    empty Link[] = ARRAY[]::Link[];\n" +
@@ -1143,7 +1223,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
-		"$nums$ LANGUAGE plpgsql;\n"
+		"$fn$ LANGUAGE plpgsql;\n"
 
 	// select SumFwdPaths('(4,1)',1,1,3);
 
