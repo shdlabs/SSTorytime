@@ -98,7 +98,7 @@ const LINK_TYPE = "CREATE TYPE Link AS  " +
 
 const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
 	"( " +
-	"NPtr      NodePtr,         " +
+	"NPtr      NodePtr,        " +
 	"L         int,            " +
 	"S         text,           " +
 	"Chap      text,           " +
@@ -259,6 +259,7 @@ func Configure(ctx PoSST) {
 
 	// Tmp reset
 
+/*
 	fmt.Println("***********************")
 	fmt.Println("* WIPING DB")
 	fmt.Println("***********************")
@@ -276,7 +277,7 @@ func Configure(ctx PoSST) {
 	ctx.DB.QueryRow("drop table Node")
 	ctx.DB.QueryRow("drop table NodeArrowNode")
 	ctx.DB.QueryRow("drop type NodePtr")
-	ctx.DB.QueryRow("drop type Link")
+	ctx.DB.QueryRow("drop type Link") */
 
 	if !CreateType(ctx,NODEPTR_TYPE) {
 		fmt.Println("Unable to create type as, ",NODEPTR_TYPE)
@@ -614,6 +615,13 @@ func GraphToDB(ctx PoSST) {
 			}
 		}
 	}
+
+	// CREATE INDICES
+
+	fmt.Println("Indexing ....")
+
+	ctx.DB.QueryRow("CREATE INDEX on NodeArrowNode (Arr,STType)")
+	ctx.DB.QueryRow("CREATE INDEX on Node (((NPtr).Chan),L,S)")
 
 	fmt.Println("-------------------------------------")
 	fmt.Println("Incidence summary of raw declarations")
@@ -1238,6 +1246,35 @@ func DefineStoredFunctions(ctx PoSST) {
 
 // **************************************************************************
 // Retrieve
+// **************************************************************************
+
+func GetNodePtrMatchingName(ctx PoSST,s string) []NodePtr {
+
+	search := "%"+s+"%"
+
+	qstr := fmt.Sprintf("select NPtr from Node where S LIKE '%s'",search)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetNodePtrMatchingName Failed",err)
+	}
+
+	var whole string
+	var n NodePtr
+	var retval []NodePtr
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
+		retval = append(retval,n)
+	}
+
+	row.Close()
+	return retval
+
+}
+
 // **************************************************************************
 
 func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr {
