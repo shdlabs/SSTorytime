@@ -48,9 +48,11 @@ This is why we strive to study the role of stories in learning and understanding
 
 The tool-set consistent of several components, starting with:
 
-* [N4L](docs/N4L.md) - a Unicode text based note taking language for jotting down notes in a way
+* [N4L](docs/N4L.md) - a standalone Unicode text based note taking language for jotting down notes in a way
         that can be parsed and loaded into a semantic database. 
         N = note, 4 = 4 semantic type, L = language
         N4L = notes for loading
+
+* [N4L-db](docs/N4L.md) - a version of N4L that depends on the golang package SSToryline in /pkg and uploads to a postgres database. These are kept separate for now, but might be merged into N4L later.
 
 
