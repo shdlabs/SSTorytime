@@ -19,6 +19,8 @@ code.
 Other examples are for developing the API and interaction patterns as cases:
 <pre>
 $ (cd ../src; make)
+$ (cd ../../examples/; ../src/N4L-db -u doors.n4l)
+
 $ go run postgres_stories.go
 $ go run postgres_stories_loops.go
 $ go run search_by_node.go
