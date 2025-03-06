@@ -695,12 +695,12 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]NodePtr,[][]float64,[][]flo
 	dim := len(filtered_node_list)
 
 	for f := 0; f < len(filtered_node_list); f++ {
-		Verbose("    - row/col key [",f,"/",dim,"]",GetNodeFromPtr(filtered_node_list[f]))
+		Verbose("    - row/col key [",f,"/",dim,"]",GetNodeTxtFromPtr(filtered_node_list[f]))
 	}
 
 	// Debugging mainly
 	//for f := range path_weights {
-	//	Verbose("    - path weight",path_weights[f],"from",GetNodeFromPtr(f.Row),"to",GetNodeFromPtr(f.Col))
+	//	Verbose("    - path weight",path_weights[f],"from",GetNodeTxtFromPtr(f.Row),"to",GetNodeTxtFromPtr(f.Col))
 	//}
 
 	var subadj_matrix [][]float64 = make([][]float64,dim)
@@ -741,7 +741,7 @@ func PrintMatrix(name string, dim int, key []NodePtr, matrix [][]float64) {
 
 	for row := 0; row < dim; row++ {
 		
-		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",GetNodeFromPtr(key[row]))
+		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",GetNodeTxtFromPtr(key[row]))
 		
 		for col := 0; col < dim; col++ {
 			
@@ -775,7 +775,7 @@ func PrintNZVector(name string, dim int, key []NodePtr, vector[]float64) {
 	var vec []KV = make([]KV,dim)
 
 	for row := 0; row < dim; row++ {
-		vec[row].Key = GetNodeFromPtr(key[row])
+		vec[row].Key = GetNodeTxtFromPtr(key[row])
 		vec[row].Value = vector[row]
 	}
 
@@ -908,7 +908,7 @@ func FlatSTIndex(stindex int) int {
 
 func PrintLink(l Link) {
 
-	to := GetNodeFromPtr(l.Dst)
+	to := GetNodeTxtFromPtr(l.Dst)
 	arrow := ARROW_DIRECTORY[l.Arr]
 	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",PrintSTAIndex(arrow.STAindex))
 }
@@ -1387,7 +1387,7 @@ func IdempAddNode(s string) NodePtr {
 
 //**************************************************************
 
-func GetNodeFromPtr(frptr NodePtr) string {
+func GetNodeTxtFromPtr(frptr NodePtr) string {
 
 	class := frptr.Class
 	index := frptr.CPtr

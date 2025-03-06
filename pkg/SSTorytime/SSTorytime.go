@@ -64,8 +64,6 @@ type Node struct { // essentially the incidence matrix
 	S         string  // text string itself
 
 	Chap      string  // section/chapter name in which this was added
-	SizeClass int     // the string class: N1-N3, LT128, etc for separating types
-
 	NPtr      NodePtr // Pointer to self index
 
 	I [ST_TOP][]Link  // link incidence list, by arrow type
@@ -149,8 +147,9 @@ type NodeDirectory struct {
 	GT1024_top ClassedNodePtr
 }
 
-// This is better represented as separate tables in SQL, one for each class
+//**************************************************************
 
+var NODE_CACHE = make(map[NodePtr]NodePtr)
 
 //**************************************************************
 
@@ -254,6 +253,10 @@ func Open() PoSST {
 	NO_NODE_PTR.Class = 0
 	NO_NODE_PTR.CPtr =  -1
 
+	NODE_DIRECTORY.N1grams = make(map[string]ClassedNodePtr)
+	NODE_DIRECTORY.N2grams = make(map[string]ClassedNodePtr)
+	NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
+
 	return ctx
 }
 
@@ -327,7 +330,7 @@ func Close(ctx PoSST) {
 // In memory representation structures
 // **************************************************************************
 
-func GetNodeFromPtr(frptr NodePtr) string {
+func GetNodeTxtFromPtr(frptr NodePtr) string {
 
 	class := frptr.Class
 	index := frptr.CPtr
@@ -352,49 +355,31 @@ func GetNodeFromPtr(frptr NodePtr) string {
 	return node.S
 }
 
-//**************************************************************
+// **************************************************************************
 
-func ClassifyString(s string,l int) int {
+func GetNodeFromPtr(frptr NodePtr) Node {
 
-	var spaces int = 0
+	class := frptr.Class
+	index := frptr.CPtr
 
-	for i := 0; i < l; i++ {
+	var node Node
 
-		if s[i] == ' ' {
-			spaces++
-		}
-
-		if spaces > 2 {
-			break
-		}
+	switch class {
+	case N1GRAM:
+		node = NODE_DIRECTORY.N1directory[index]
+	case N2GRAM:
+		node = NODE_DIRECTORY.N2directory[index]
+	case N3GRAM:
+		node = NODE_DIRECTORY.N3directory[index]
+	case LT128:
+		node = NODE_DIRECTORY.LT128[index]
+	case LT1024:
+		node = NODE_DIRECTORY.LT1024[index]
+	case GT1024:
+		node = NODE_DIRECTORY.GT1024[index]
 	}
 
-	// Text usage tends to fall into a number of different roles, with a power law
-        // frequency of occurrence in a text, so let's classify in order of likely usage
-	// for small and many, we use a hashmap/btree
-
-	switch spaces {
-	case 0:
-		return N1GRAM
-	case 1:
-		return N2GRAM
-	case 2:
-		return N3GRAM
-	}
-
-	// For longer strings, a linear search is probably fine here
-        // (once it gets into a database, it's someone else's problem)
-
-	if l < 128 {
-		return LT128
-	}
-
-	if l < 1024 {
-		return LT1024
-	}
-
-	return GT1024
-
+	return node
 }
 
 //**************************************************************
@@ -405,7 +390,7 @@ func AppendTextToDirectory(event Node) NodePtr {
 	var ok bool = false
 	var node_alloc_ptr NodePtr
 
-	switch event.SizeClass {
+	switch event.NPtr.Class {
 	case N1GRAM:
 		cnode_slot,ok = NODE_DIRECTORY.N1grams[event.S]
 	case N2GRAM:
@@ -420,14 +405,14 @@ func AppendTextToDirectory(event Node) NodePtr {
 		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.GT1024,event)
 	}
 
-	node_alloc_ptr.Class = event.SizeClass
+	node_alloc_ptr.Class = event.NPtr.Class
 
 	if ok {
 		node_alloc_ptr.CPtr = cnode_slot
 		return node_alloc_ptr
 	}
 
-	switch event.SizeClass {
+	switch event.NPtr.Class {
 	case N1GRAM:
 		cnode_slot = NODE_DIRECTORY.N1_top
 		node_alloc_ptr.CPtr = cnode_slot
@@ -704,12 +689,12 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 
 	// No need to trust the values
 
-        n.L,n.SizeClass = StorageClass(n.S)
+        n.L,n.NPtr.Class = StorageClass(n.S)
 	
 	cptr := n.NPtr.CPtr
 	es := EscapeString(n.S)
 
-	qstr = fmt.Sprintf("SELECT IdempInsertNode(%d,%d,%d,'%s','%s')",n.L,n.SizeClass,cptr,es,n.Chap)
+	qstr = fmt.Sprintf("SELECT IdempInsertNode(%d,%d,%d,'%s','%s')",n.L,n.NPtr.Class,cptr,es,n.Chap)
 
 	row,err := ctx.DB.Query(qstr)
 	
@@ -1341,9 +1326,15 @@ func GetDBNodePtrMatchingName(ctx PoSST,s string) []NodePtr {
 
 // **************************************************************************
 
-func GetDBNodeByNodePtr(ctx PoSST,nptr NodePtr) Node {
+func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 
-	qstr := fmt.Sprintf("select L,S,Chap from Node where NPtr='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
+	im_nptr,cached := NODE_CACHE[db_nptr]
+
+	if cached {
+		return GetNodeFromPtr(im_nptr)
+	}
+
+	qstr := fmt.Sprintf("select L,S,Chap from Node where NPtr='(%d,%d)'::NodePtr",db_nptr.Class,db_nptr.CPtr)
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -1353,6 +1344,8 @@ func GetDBNodeByNodePtr(ctx PoSST,nptr NodePtr) Node {
 
 	var n Node
 	var count int = 0
+
+	n.NPtr = db_nptr
 
 	for row.Next() {		
 		err = row.Scan(&n.L,&n.S,&n.Chap)
@@ -1365,8 +1358,12 @@ func GetDBNodeByNodePtr(ctx PoSST,nptr NodePtr) Node {
 	}
 
 	row.Close()
-	return n
 
+	if !cached {
+		CacheNode(n)
+	}
+
+	return n
 }
 
 // **************************************************************************
@@ -1480,6 +1477,13 @@ func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) [][]Link {
 
 	row.Close()
 	return retval
+}
+
+// **************************************************************************
+
+func CacheNode(n Node) {
+
+	NODE_CACHE[n.NPtr] = AppendTextToDirectory(n)
 }
 
 // **************************************************************************

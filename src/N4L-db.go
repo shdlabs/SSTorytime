@@ -130,6 +130,7 @@ func main() {
 	NewFile("N4Lconfig.in")
 
 	config := ReadFile(CURRENT_FILE)
+
 	ParseConfig(config)
 
 	for input := 0; input < len(args); input++ {
@@ -203,9 +204,11 @@ func Init() []string {
 		ADJ_LIST = *adjacencyPtr
 	}
 
-	SST.NODE_DIRECTORY.N1grams = make(map[string]SST.ClassedNodePtr)
-	SST.NODE_DIRECTORY.N2grams = make(map[string]SST.ClassedNodePtr)
-	SST.NODE_DIRECTORY.N3grams = make(map[string]SST.ClassedNodePtr)
+	if !UPLOAD {
+		SST.NODE_DIRECTORY.N1grams = make(map[string]SST.ClassedNodePtr)
+		SST.NODE_DIRECTORY.N2grams = make(map[string]SST.ClassedNodePtr)
+		SST.NODE_DIRECTORY.N3grams = make(map[string]SST.ClassedNodePtr)
+	}
 
 	return args
 }
@@ -641,12 +644,12 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]SST.NodePtr,[][]float64,[][
 	dim := len(filtered_node_list)
 
 	for f := 0; f < len(filtered_node_list); f++ {
-		Verbose("    - row/col key [",f,"/",dim,"]",SST.GetNodeFromPtr(filtered_node_list[f]))
+		Verbose("    - row/col key [",f,"/",dim,"]",SST.GetNodeTxtFromPtr(filtered_node_list[f]))
 	}
 
 	// Debugging mainly
 	//for f := range path_weights {
-	//	Verbose("    - path weight",path_weights[f],"from",GetNodeFromPtr(f.Row),"to",GetNodeFromPtr(f.Col))
+	//	Verbose("    - path weight",path_weights[f],"from",GetNodeTxtFromPtr(f.Row),"to",GetNodeTxtFromPtr(f.Col))
 	//}
 
 	var subadj_matrix [][]float64 = make([][]float64,dim)
@@ -687,7 +690,7 @@ func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float64) {
 
 	for row := 0; row < dim; row++ {
 		
-		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",SST.GetNodeFromPtr(key[row]))
+		s = fmt.Sprintf("%20.15s ..\r\t\t\t(",SST.GetNodeTxtFromPtr(key[row]))
 		
 		for col := 0; col < dim; col++ {
 			
@@ -722,7 +725,7 @@ func PrintNZVector(name string, dim int, key []SST.NodePtr, vector[]float64) {
 	var vec []KV = make([]KV,dim)
 
 	for row := 0; row < dim; row++ {
-		vec[row].Key = SST.GetNodeFromPtr(key[row])
+		vec[row].Key = SST.GetNodeTxtFromPtr(key[row])
 		vec[row].Value = vector[row]
 	}
 
@@ -1308,14 +1311,13 @@ func IdempAddNode(s string) SST.NodePtr {
 
 	PVerbose("Event/item/node:",s)
 
-	l := len(s)
-	c := SST.ClassifyString(s,l)
+	l,c := SST.StorageClass(s)
 
 	var new_nodetext SST.Node
 	new_nodetext.S = s
 	new_nodetext.L = l
 	new_nodetext.Chap = SECTION_STATE
-	new_nodetext.SizeClass = c
+	new_nodetext.NPtr.Class = c
 
 	iptr := SST.AppendTextToDirectory(new_nodetext)
 	LINE_ITEM_REFS = append(LINE_ITEM_REFS,iptr)
@@ -1912,7 +1914,7 @@ func PrintNodeSystem(n int,org SST.Node, count_links *[4]int) {
 
 func PrintLink(l SST.Link) {
 
-	to := SST.GetNodeFromPtr(l.Dst)
+	to := SST.GetNodeTxtFromPtr(l.Dst)
 	arrow := SST.ARROW_DIRECTORY[l.Arr]
 	Verbose("\t ... --(",arrow.Long,",",l.Wgt,")->",to,l.Ctx," \t . . .",SST.PrintSTAIndex(arrow.STAindex))
 }
