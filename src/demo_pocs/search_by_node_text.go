@@ -42,7 +42,7 @@ func main() {
 
 	// Get the start node
 
-	start_set := SST.GetNodePtrMatchingName(ctx,"start")
+	start_set := SST.GetDBNodePtrMatchingName(ctx,"start")
 
 	for start := range start_set {
 
@@ -53,7 +53,7 @@ func main() {
 		allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
 		
 		for l := range allnodes {
-			fullnode := SST.GetNodeByNodePtr(ctx,allnodes[l])
+			fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
 			fmt.Println("   - ",fullnode.S,"\tin",fullnode.Chap)
 		}
 		
@@ -70,7 +70,7 @@ func main() {
 			for l := range allnodes {
 				if IsNew(allnodes[l],levels) {
 					levels[depth] = append(levels[depth],allnodes[l])
-					fullnode := SST.GetNodeByNodePtr(ctx,allnodes[l])
+					fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
 					fmt.Println("   - Level",depth,fullnode.S,"\tin",fullnode.Chap)
 				}
 			}
@@ -97,8 +97,8 @@ func main() {
 						fmt.Print(" Path",p,"/",len(paths[p]),": ")
 						
 						for l := 0; l < len(paths[p]); l++ {
-							fullnode := SST.GetNodeByNodePtr(ctx,paths[p][l].Dst)
-							arr := SST.GetArrowByPtr(ctx,paths[p][l].Arr)
+							fullnode := SST.GetDBNodeByNodePtr(ctx,paths[p][l].Dst)
+							arr := SST.GetDBArrowByPtr(ctx,paths[p][l].Arr)
 							fmt.Print(fullnode.S)
 							if l < len(paths[p])-1 {
 								fmt.Print("  -(",arr.Long,";",paths[p][l].Wgt,")->  ")

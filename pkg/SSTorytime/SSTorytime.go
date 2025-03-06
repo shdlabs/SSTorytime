@@ -1312,7 +1312,7 @@ func DefineStoredFunctions(ctx PoSST) {
 // Retrieve
 // **************************************************************************
 
-func GetNodePtrMatchingName(ctx PoSST,s string) []NodePtr {
+func GetDBNodePtrMatchingName(ctx PoSST,s string) []NodePtr {
 
 	search := "%"+s+"%"
 
@@ -1341,7 +1341,7 @@ func GetNodePtrMatchingName(ctx PoSST,s string) []NodePtr {
 
 // **************************************************************************
 
-func GetNodeByNodePtr(ctx PoSST,nptr NodePtr) Node {
+func GetDBNodeByNodePtr(ctx PoSST,nptr NodePtr) Node {
 
 	qstr := fmt.Sprintf("select L,S,Chap from Node where NPtr='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
 
@@ -1371,7 +1371,7 @@ func GetNodeByNodePtr(ctx PoSST,nptr NodePtr) Node {
 
 // **************************************************************************
 
-func GetArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
+func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 
 	qstr := fmt.Sprintf("SELECT STAindex,Long,Short FROM ArrowDirectory WHERE ArrPtr=%d",arrowptr)
 
