@@ -19,10 +19,11 @@ code.
 Other examples are for developing the API and interaction patterns as cases:
 <pre>
 $ (cd ../src; make)
-$ (cd ../../examples/; ../src/N4L-db -u doors.n4l)
 
 $ go run postgres_stories.go
 $ go run postgres_stories_loops.go
+
+$ (cd ../../examples/; ../src/N4L-db -u doors.n4l)
 $ go run search_by_node.go
 $ go run search_by_node_text.go
 </pre>
