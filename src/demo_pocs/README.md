@@ -16,6 +16,15 @@ The additional story-labelled examples use the library package SSTorytime, so th
 to develop and test the library before committing to (and possibly messing up!) the main
 code.
 
+Other examples are for developing the API and interaction patterns as cases:
+<pre>
+$ (cd ../src; make)
+$ go run postgres_stories.go
+$ go run postgres_stories_loops.go
+$ go run search_by_node.go
+$ go run search_by_node_text.go
+</pre>
+
 ## The goal
 
 We want to do as much as possible in the database engine, because sending data back and forth
