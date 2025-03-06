@@ -204,6 +204,9 @@ var (
 
 	NO_NODE_PTR NodePtr // see Init()
 	SST_NAMES[4] string = [4]string{ "Near", "LeadsTo", "Contains","Express"}
+
+	WIPE_DB bool = false
+
 )
 
 //******************************************************************
@@ -260,25 +263,27 @@ func Configure(ctx PoSST) {
 
 	// Tmp reset
 
-/*
-	fmt.Println("***********************")
-	fmt.Println("* WIPING DB")
-	fmt.Println("***********************")
+	if WIPE_DB {
 
-	ctx.DB.QueryRow("drop function fwdconeaslinks")
-	ctx.DB.QueryRow("drop function fwdconeasnodes")
-	ctx.DB.QueryRow("drop function fwdpathsaslinks")
-	ctx.DB.QueryRow("drop function getfwdlinks")
-	ctx.DB.QueryRow("drop function getfwdnodes")
-	ctx.DB.QueryRow("drop function getneighboursbytype")
-	ctx.DB.QueryRow("drop function getsingletonaslink")
-	ctx.DB.QueryRow("drop function getsingletonaslinkarray")
-	ctx.DB.QueryRow("drop function idempinsertnode")
-	ctx.DB.QueryRow("drop function sumfwdpaths")
-	ctx.DB.QueryRow("drop table Node")
-	ctx.DB.QueryRow("drop table NodeArrowNode")
-	ctx.DB.QueryRow("drop type NodePtr")
-	ctx.DB.QueryRow("drop type Link") */
+		fmt.Println("***********************")
+		fmt.Println("* WIPING DB")
+		fmt.Println("***********************")
+		
+		ctx.DB.QueryRow("drop function fwdconeaslinks")
+		ctx.DB.QueryRow("drop function fwdconeasnodes")
+		ctx.DB.QueryRow("drop function fwdpathsaslinks")
+		ctx.DB.QueryRow("drop function getfwdlinks")
+		ctx.DB.QueryRow("drop function getfwdnodes")
+		ctx.DB.QueryRow("drop function getneighboursbytype")
+		ctx.DB.QueryRow("drop function getsingletonaslink")
+		ctx.DB.QueryRow("drop function getsingletonaslinkarray")
+		ctx.DB.QueryRow("drop function idempinsertnode")
+		ctx.DB.QueryRow("drop function sumfwdpaths")
+		ctx.DB.QueryRow("drop table Node")
+		ctx.DB.QueryRow("drop table NodeArrowNode")
+		ctx.DB.QueryRow("drop type NodePtr")
+		ctx.DB.QueryRow("drop type Link")
+	}
 
 	if !CreateType(ctx,NODEPTR_TYPE) {
 		fmt.Println("Unable to create type as, ",NODEPTR_TYPE)
@@ -586,10 +591,6 @@ func PrintSTAIndex(stindex int) string {
 
 func GraphToDB(ctx PoSST) {
 
-	var count_nodes int = 0
-	var count_links [4]int
-	var total int
-
 	fmt.Println("Storing nodes...")
 
 	for class := N1GRAM; class <= GT1024; class++ {
@@ -640,7 +641,7 @@ func GraphToDB(ctx PoSST) {
 
 	for arrow := range INVERSE_ARROWS {
 
-		UploadArrowToDB(ctx,ArrowPtr(arrow))
+		UploadInverseArrowToDB(ctx,ArrowPtr(arrow))
 	}
 
 	// CREATE INDICES
@@ -649,20 +650,6 @@ func GraphToDB(ctx PoSST) {
 
 	ctx.DB.QueryRow("CREATE INDEX on NodeArrowNode (Arr,STType)")
 	ctx.DB.QueryRow("CREATE INDEX on Node (((NPtr).Chan),L,S)")
-
-	fmt.Println("-------------------------------------")
-	fmt.Println("Incidence summary of raw declarations")
-	fmt.Println("-------------------------------------")
-
-	fmt.Println("Total nodes",count_nodes)
-
-	for st := 0; st < 4; st++ {
-		total += count_links[st]
-		fmt.Println("Total directed links of type",SST_NAMES[st],count_links[st])
-	}
-
-	complete := count_nodes * (count_nodes-1)
-	fmt.Println("Total links",total,"sparseness (fraction of completeness)",float64(total)/float64(complete))
 }
 
 // **************************************************************************
@@ -733,6 +720,7 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 		} else {
 			fmt.Println(s,"FAILED \n",qstr,err)
 		}
+		return n
 	}
 
 	var whole string
@@ -789,6 +777,31 @@ func UploadArrowToDB(ctx PoSST,arrow ArrowPtr) {
 		} else {
 			fmt.Println(s,"FAILED \n",qstr,err)
 		}
+		return
+	}
+
+	row.Close()
+}
+
+// **************************************************************************
+
+func UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr) {
+
+	plus := arrow
+	minus := INVERSE_ARROWS[arrow]
+
+	qstr := fmt.Sprintf("INSERT INTO ArrowInverses (Plus,Minus) VALUES (%d,%d)",plus,minus)
+
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		s := fmt.Sprint("Failed to insert",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+		return
 	}
 
 	row.Close()

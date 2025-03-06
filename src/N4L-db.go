@@ -166,6 +166,7 @@ func Init() []string {
 	verbosePtr := flag.Bool("v", false,"verbose")
 	diagPtr := flag.Bool("d", false,"diagnostic mode")
 	uploadPtr := flag.Bool("u", false,"upload")
+	wipePtr := flag.Bool("wipe", false,"wipe and reset")
 	incidencePtr := flag.Bool("s", false,"summary (node,links...)")
 	adjacencyPtr := flag.String("adj", "none", "a quoted, comma-separated list of short link names")
 
@@ -179,6 +180,10 @@ func Init() []string {
 
 	if *verbosePtr {
 		VERBOSE = true
+	}
+
+	if *wipePtr {
+		SST.WIPE_DB = true
 	}
 
 	if *diagPtr {
