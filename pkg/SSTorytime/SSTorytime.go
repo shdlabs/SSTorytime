@@ -174,7 +174,7 @@ type ArrowDirectory struct {
 
 type ArrowPtr int // ArrowDirectory index
 
-const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS Arrow_Directory " +
+const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS ArrowDirectory " +
 	"(    " +
 	"STAindex int,             " +
 	"Long text,              " +
@@ -182,11 +182,11 @@ const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS Arrow_Directory " +
 	"ArrPtr int primary key  " +
 	")"
 
-const ARROW_INVERSES_TABLE = "CREATE TABLE IF NOT EXISTS Arrow_Inverses " +
+const ARROW_INVERSES_TABLE = "CREATE TABLE IF NOT EXISTS ArrowInverses " +
 	"(    " +
 	"Plus int,  " +
 	"Minus int,  " +
-	"Primary Key(Plus,Minus)," +
+	"Primary Key(Plus,Minus)" +
 	")"
 
 //**************************************************************
@@ -296,6 +296,15 @@ func Configure(ctx PoSST) {
 
 	if !CreateTable(ctx,LINK_TABLE) {
 		fmt.Println("Unable to create table as, ",LINK_TABLE)
+		os.Exit(-1)
+	}
+
+	if !CreateTable(ctx,ARROW_INVERSES_TABLE) {
+		fmt.Println("Unable to create table as, ",ARROW_INVERSES_TABLE)
+		os.Exit(-1)
+	}
+	if !CreateTable(ctx,ARROW_DIRECTORY_TABLE) {
+		fmt.Println("Unable to create table as, ",ARROW_DIRECTORY_TABLE)
 		os.Exit(-1)
 	}
 
@@ -580,6 +589,8 @@ func GraphToDB(ctx PoSST) {
 	var count_links [4]int
 	var total int
 
+	fmt.Println("Storing nodes...")
+
 	for class := N1GRAM; class <= GT1024; class++ {
 		switch class {
 		case N1GRAM:
@@ -614,6 +625,14 @@ func GraphToDB(ctx PoSST) {
 				UploadNodeToDB(ctx,org)
 			}
 		}
+	}
+
+
+	fmt.Println("Storing Arrows...")
+
+	for arrow := range ARROW_DIRECTORY {
+
+		UploadArrowToDB(ctx,ArrowPtr(arrow))
 	}
 
 	// CREATE INDICES
@@ -734,13 +753,37 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 
 		for lnk := range org.I[stindex] {
 
-			dst := org.I[stindex][lnk]
+			dstlnk := org.I[stindex][lnk]
 			sttype := STIndexToSTType(stindex)
 
-			AppendDBLinkToNode(ctx,org.NPtr,dst,sttype)
-			CreateDBNodeArrowNode(ctx,org.NPtr,dst,sttype)
+			AppendDBLinkToNode(ctx,org.NPtr,dstlnk,sttype)
+			CreateDBNodeArrowNode(ctx,org.NPtr,dstlnk,sttype)
 		}
 	}
+}
+
+// **************************************************************************
+
+func UploadArrowToDB(ctx PoSST,arrow ArrowPtr) {
+
+	stidx := ARROW_DIRECTORY[arrow].STAindex
+	long := ARROW_DIRECTORY[arrow].Long
+	short := ARROW_DIRECTORY[arrow].Short
+
+	qstr := fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) VALUES (%d,'%s','%s',%d)",stidx,long,short,arrow)
+
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		s := fmt.Sprint("Failed to insert",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+	}
+
+	row.Close()
 }
 
 // **************************************************************************
@@ -891,7 +934,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"RETURNS Link[] AS $fn$\n"+
 		"DECLARE \n"+
 		"    level Link[] := Array[] :: Link[];\n"+
-		"    lnk Link := (0,0.0,Array[]::text[],(0,0));\n"+
+		"    lnk Link := (0,1.0,Array[]::text[],(0,0));\n"+
 		"BEGIN\n"+
 		" lnk.Dst = start;\n"+
 		" level = array_append(level,lnk);\n"+
@@ -912,7 +955,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	qstr = "CREATE OR REPLACE FUNCTION GetSingletonAsLink(start NodePtr)\n"+
 		"RETURNS Link AS $fn$\n"+
 		"DECLARE \n"+
-		"    lnk Link := (0,0.0,Array[]::text[],(0,0));\n"+
+		"    lnk Link := (0,1.0,Array[]::text[],(0,0));\n"+
 		"BEGIN\n"+
 		" lnk.Dst = start;\n"+
 		"RETURN lnk; \n"+
@@ -933,7 +976,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"RETURNS Link[] AS $fn$\n"+
 		"DECLARE \n"+
 		"    fwdlinks Link[] := Array[] :: Link[];\n"+
-		"    lnk Link := (0,0.0,Array[]::text[],(0,0));\n"+
+		"    lnk Link := (0,1.0,Array[]::text[],(0,0));\n"+
 		"BEGIN\n"+
 		"   CASE sttype \n"
 	
@@ -1272,6 +1315,73 @@ func GetNodePtrMatchingName(ctx PoSST,s string) []NodePtr {
 
 	row.Close()
 	return retval
+
+}
+
+// **************************************************************************
+
+func GetNodeByNodePtr(ctx PoSST,nptr NodePtr) Node {
+
+	qstr := fmt.Sprintf("select L,S,Chap from Node where NPtr='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("GetNodeByNodePointer Failed:",err)
+	}
+
+	var n Node
+	var count int = 0
+
+	for row.Next() {		
+		err = row.Scan(&n.L,&n.S,&n.Chap)
+		count++
+	}
+
+	if count > 1 {
+		fmt.Println("GetNodeByNodePointer returned too may matches:",count)
+		os.Exit(-1)
+	}
+
+	row.Close()
+	return n
+
+}
+
+// **************************************************************************
+
+func GetArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
+
+	qstr := fmt.Sprintf("SELECT STAindex,Long,Short FROM ArrowDirectory WHERE ArrPtr=%d",arrowptr)
+
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		s := fmt.Sprint("Failed to insert",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+	}
+
+	var a ArrowDirectory
+	var count int = 0
+
+	a.Ptr = arrowptr
+
+	for row.Next() {		
+		err = row.Scan(&a.STAindex,&a.Long,&a.Short)
+		count++
+	}
+
+	if count > 1 {
+		fmt.Println("GetArrowByPtr returned too may matches:",count)
+		os.Exit(-1)
+	}
+
+	row.Close()
+	return a
 
 }
 

@@ -2,7 +2,7 @@
 //
 // Demo of accessing SST in postgres
 // Test of future (causal) cone and independent path retrieval
-// (By NPtr and Link reference only)
+// (Add text to NPtr and Link reference)
 //
 // Prepare:
 // cd examples
@@ -53,7 +53,8 @@ func main() {
 		allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
 		
 		for l := range allnodes {
-			fmt.Println("   - node",allnodes[l])
+			fullnode := SST.GetNodeByNodePtr(ctx,allnodes[l])
+			fmt.Println("   - ",fullnode.S,"\tin",fullnode.Chap)
 		}
 		
 		for depth := 0; depth < maxdepth; depth++ {
@@ -69,9 +70,10 @@ func main() {
 			for l := range allnodes {
 				if IsNew(allnodes[l],levels) {
 					levels[depth] = append(levels[depth],allnodes[l])
+					fullnode := SST.GetNodeByNodePtr(ctx,allnodes[l])
+					fmt.Println("   - Level",depth,fullnode.S,"\tin",fullnode.Chap)
 				}
-			}			
-			fmt.Println("level",depth,levels[depth])
+			}
 		}
 		
 		fmt.Println("Link proper time normal paths:")
@@ -80,18 +82,27 @@ func main() {
 			
 			for depth := 0; depth < maxdepth; depth++ {
 				
-				fmt.Println("Searching paths of length",depth,"/",maxdepth,"from",start_set[start])
-				
 				paths := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,depth)
-				
+
+				if paths == nil {
+					continue
+				}
+
+				fmt.Println("Searching paths of length",depth,"/",maxdepth,"from origin",start_set[start])
+								
 				for p := range paths {
 					
 					if len(paths[p]) > 1 {
 						
-						fmt.Println("    Path",p," len",len(paths[p]))
+						fmt.Print(" Path",p,"/",len(paths[p]),": ")
 						
 						for l := 0; l < len(paths[p]); l++ {
-							fmt.Print(" --> ",paths[p][l].Dst," weight",paths[p][l].Wgt)
+							fullnode := SST.GetNodeByNodePtr(ctx,paths[p][l].Dst)
+							arr := SST.GetArrowByPtr(ctx,paths[p][l].Arr)
+							fmt.Print(fullnode.S)
+							if l < len(paths[p])-1 {
+								fmt.Print("  -(",arr.Long,";",paths[p][l].Wgt,")->  ")
+							}
 						}
 						
 						fmt.Println()
