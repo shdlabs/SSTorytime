@@ -1,7 +1,8 @@
 //******************************************************************
 //
-// Demo of accessing postgres with custom data structures and arrays
-// converting to the package library format
+// Demo of accessing SST in postgres
+// Test of future (causal) cone and independent path retrieval
+// (By NPtr and Link reference only)
 //
 //******************************************************************
 
@@ -45,10 +46,10 @@ func main() {
 		fmt.Println(" - Total forward cone from: ",start_set[start])
 		fmt.Println(" ---------------------------------")
 
-		val := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
+		allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
 		
-		for l := range val {
-			fmt.Println("   - node",val[l])
+		for l := range allnodes {
+			fmt.Println("   - node",allnodes[l])
 		}
 		
 		for depth := 0; depth < maxdepth; depth++ {
@@ -59,11 +60,11 @@ func main() {
 			
 			levels[depth] = make([]SST.NodePtr,0)
 			
-			val := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,depth)
+			allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,depth)
 			
-			for l := range val {
-				if IsNew(val[l],levels) {
-					levels[depth] = append(levels[depth],val[l])
+			for l := range allnodes {
+				if IsNew(allnodes[l],levels) {
+					levels[depth] = append(levels[depth],allnodes[l])
 				}
 			}			
 			fmt.Println("level",depth,levels[depth])
