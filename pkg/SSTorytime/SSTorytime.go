@@ -198,6 +198,7 @@ var (
 	ARROW_SHORT_DIR = make(map[string]ArrowPtr) // Look up short name int referene
 	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
+	INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
 
 	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
 
@@ -631,6 +632,13 @@ func GraphToDB(ctx PoSST) {
 	fmt.Println("Storing Arrows...")
 
 	for arrow := range ARROW_DIRECTORY {
+
+		UploadArrowToDB(ctx,ArrowPtr(arrow))
+	}
+
+	fmt.Println("Storing inverse Arrows...")
+
+	for arrow := range INVERSE_ARROWS {
 
 		UploadArrowToDB(ctx,ArrowPtr(arrow))
 	}

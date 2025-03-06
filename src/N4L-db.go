@@ -85,7 +85,6 @@ var (
 	FWD_INDEX SST.ArrowPtr
 	BWD_INDEX SST.ArrowPtr
 	ANNOTATION = make(map[string]string)
-	INVERSE_ARROWS = make(map[SST.ArrowPtr]SST.ArrowPtr)
 
 	CONTEXT_STATE = make(map[string]bool)
 	SECTION_STATE string
@@ -424,8 +423,8 @@ func InsertInverseArrowDirectory(fwd,bwd SST.ArrowPtr) {
 
 	// Lookup inverse by long name, only need this in search presentation
 
-	INVERSE_ARROWS[fwd] = bwd
-	INVERSE_ARROWS[bwd] = fwd
+	SST.INVERSE_ARROWS[fwd] = bwd
+	SST.INVERSE_ARROWS[bwd] = fwd
 }
 
 //**************************************************************
@@ -871,7 +870,7 @@ func ValidateLinkArgs(s string) []SST.ArrowPtr {
 			search_list = append(search_list,ptr)
 
 			if typ != SST.NEAR {
-				inverse := INVERSE_ARROWS[ptr]
+				inverse := SST.INVERSE_ARROWS[ptr]
 				fmt.Println("   including inverse meaning",SST.ARROW_DIRECTORY[inverse].Long)
 				search_list = append(search_list,inverse)
 			}
@@ -1292,7 +1291,7 @@ func IdempAddArrow(from string, frptr SST.NodePtr, link SST.Link,to string, topt
 	// Double up the reverse definition for easy indexing of both in/out arrows
 	// But be careful not the make the graph undirected by mistake
 
-	invlink := GetLinkArrowByName(SST.ARROW_DIRECTORY[INVERSE_ARROWS[link.Arr]].Short)
+	invlink := GetLinkArrowByName(SST.ARROW_DIRECTORY[SST.INVERSE_ARROWS[link.Arr]].Short)
 
 	SST.AppendLinkToNode(toptr,invlink,frptr)
 
