@@ -571,6 +571,37 @@ func PrintSTAIndex(stindex int) string {
 }
 
 //**************************************************************
+
+func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
+
+	// Insert an arrow into the forward/backward indices
+
+	var newarrow ArrowDirectory
+
+	newarrow.STAindex = GetSTIndexByName(stname,pm)
+	newarrow.Long = name
+	newarrow.Short = alias
+	newarrow.Ptr = ARROW_DIRECTORY_TOP
+
+	ARROW_DIRECTORY = append(ARROW_DIRECTORY,newarrow)
+	ARROW_SHORT_DIR[alias] = ARROW_DIRECTORY_TOP
+	ARROW_LONG_DIR[name] = ARROW_DIRECTORY_TOP
+	ARROW_DIRECTORY_TOP++
+
+	return ARROW_DIRECTORY_TOP-1
+}
+
+//**************************************************************
+
+func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
+
+	// Lookup inverse by long name, only need this in search presentation
+
+	INVERSE_ARROWS[fwd] = bwd
+	INVERSE_ARROWS[bwd] = fwd
+}
+
+//**************************************************************
 // Write to database
 //**************************************************************
 

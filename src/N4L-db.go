@@ -1,3 +1,4 @@
+
 //
 // N4LParser
 //
@@ -329,10 +330,12 @@ func ClassifyConfigRole(token string) {
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				BWD_INDEX = InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
-				InsertInverseArrowDirectory(FWD_INDEX,BWD_INDEX)
+				BWD_INDEX = SST.InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
+				SST.InsertInverseArrowDirectory(FWD_INDEX,BWD_INDEX)
+				PVerbose("In",SECTION_STATE,"short name",reln,"for",BWD_ARROW,", direction","-")
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
-				FWD_INDEX = InsertArrowDirectory(SECTION_STATE,reln,FWD_ARROW,"+")
+				FWD_INDEX = SST.InsertArrowDirectory(SECTION_STATE,reln,FWD_ARROW,"+")
+				PVerbose("In",SECTION_STATE,"short name",reln,"for",FWD_ARROW,", direction","+")
 			} else {
 				ParseError(ERR_BAD_ABBRV)
 				os.Exit(-1)
@@ -348,7 +351,8 @@ func ClassifyConfigRole(token string) {
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"both")
+				SST.InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"both")
+				PVerbose("In",SECTION_STATE,reln,"for",BWD_ARROW,", direction","both")
 			} else {
 				PVerbose(SECTION_STATE,"abbreviation out of place")
 			}
@@ -400,39 +404,6 @@ func ClassifyConfigRole(token string) {
 		ParseError(ERR_ILLEGAL_CONFIGURATION+" "+SECTION_STATE)
 		os.Exit(-1)
 	}
-}
-
-//**************************************************************
-
-func InsertArrowDirectory(stname,alias,name,pm string) SST.ArrowPtr {
-
-	// Insert an arrow into the forward/backward indices
-
-	PVerbose("In",stname,"short name",alias,"for",name,", direction",pm)
-
-	var newarrow SST.ArrowDirectory
-
-	newarrow.STAindex = SST.GetSTIndexByName(stname,pm)
-	newarrow.Long = name
-	newarrow.Short = alias
-	newarrow.Ptr = SST.ARROW_DIRECTORY_TOP
-
-	SST.ARROW_DIRECTORY = append(SST.ARROW_DIRECTORY,newarrow)
-	SST.ARROW_SHORT_DIR[alias] = SST.ARROW_DIRECTORY_TOP
-	SST.ARROW_LONG_DIR[name] = SST.ARROW_DIRECTORY_TOP
-	SST.ARROW_DIRECTORY_TOP++
-
-	return SST.ARROW_DIRECTORY_TOP-1
-}
-
-//**************************************************************
-
-func InsertInverseArrowDirectory(fwd,bwd SST.ArrowPtr) {
-
-	// Lookup inverse by long name, only need this in search presentation
-
-	SST.INVERSE_ARROWS[fwd] = bwd
-	SST.INVERSE_ARROWS[bwd] = fwd
 }
 
 //**************************************************************
