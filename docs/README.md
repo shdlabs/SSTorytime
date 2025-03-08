@@ -117,7 +117,8 @@ Since version 1.13 of Go, big changes have been made (and are expected to contin
 </pre>
 To use the Go Driver, download it
 <pre>
-% go get github.com/arangodb/go-driver
+% go get github.com/lib/pq
+
 </pre>
 
 Try writing some simple programs in golang to learn its quirks. The
