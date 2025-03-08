@@ -32,17 +32,24 @@ directed links (and their inverses) with any names that are compatible with thes
 using the configuration file. After that, they can use simple abbreviations
 in an easy way. The result is a graph structure, which is indexed by node text.
 
-Since node texts are potentially long, we don't want to use them for any purpose
-if we can avoid it. So we register every string in a directory or lookup table.
-It's known, from previous research, that the frequency or probability of getting a
-string of length *L* falls off as a power law with increasing *L*. Most strings are
-short and the likelihood of seeing the same string more than once falls off rapidly (faster
-than exponentially). So, knowing the kinds of operations we are going to need to do
-on the data, we arbitrarily introduce six classes of text that are handled 
-independently but transparently for the user: n-grams (words separated by spaces) of one, two,
-and three words; short strings of less than 128 Unicode characters, longer strings less than 1024 characters, and everything else. These are turned into two dimensional coordinates (class,index)
-given by their array keys and lengths. This text is kept in a number of swim lanes depending
-on the process used to manage them:
+Since node texts are potentially long, we don't want to use them for
+any purpose if we can avoid it. So we register every string in a
+directory or lookup table.  It's known, from previous research, that
+the frequency or probability of getting a string of length *L* falls
+off as a power law with increasing *L*. Most strings are short and the
+likelihood of seeing the same string more than once falls off rapidly
+(faster than exponentially). So, knowing the kinds of operations we
+are going to need to do on the data, we arbitrarily introduce six
+classes of text that are handled independently but transparently for
+the user: n-grams (words separated by spaces) of one, two, and three
+words; short strings of less than 128 Unicode characters, longer
+strings less than 1024 characters, and everything else. These are
+turned into two dimensional coordinates (class,index) given by their
+array keys and lengths. This text is kept in a number of swim lanes
+depending on the process used to manage them, There are thus,
+effectively, six *namespaces* for in-memory text. In the database
+version these are merged and index instead, because of the way the
+database is optimized.
 
 <pre> 
 
@@ -80,11 +87,11 @@ The lookup tables associate an integer primary key index with a string. For long
 comparing the length of the string can quickly eliminate mismatches, without needing
 to see the content. These details explain the apparent "over-thinking" of data representations.
 
-Note that, while this kind of optimization makes sense in memory, where we control the algorithms,
+*Note that, while this kind of optimization makes sense in memory, where we control the algorithms,
 it makes less sense for the database where we have no control over optimizations and the extra
 difficulty of separating these classes comes as its own cost (both mental and dynamical). So,
-in the database model we can collapse these six arrays into a single Node table and retain
-the classifier as an integer channel variable for quick sorting using an index.
+in the database model we can collapse these six array/namespaces into a single Node table and retain
+the classifier as an integer channel variable for quick sorting using an index.*
 
 ## Knowledge graph and matrices
 
