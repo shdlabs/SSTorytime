@@ -31,7 +31,8 @@ const (
 
 func main() {
 
-        ctx := SST.Open()
+	load_arrows := false
+	ctx := SST.Open(load_arrows)
 
 	fmt.Println("Node causal forward cone doors.N4l")
 

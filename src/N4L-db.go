@@ -47,7 +47,6 @@ const (
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
 	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
 	ERR_NO_SUCH_ALIAS = "No such alias or \" reference exists to fill in - aborting"
-	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
 	ERR_MISSING_ITEM_SOMEWHERE = "Missing item somewhere"
 	ERR_MISSING_ITEM_RELN = "Missing item or double relation"
 	ERR_MISMATCH_QUOTE = "Apparent missing or mismatch in ', \" or ( )"
@@ -153,7 +152,8 @@ func main() {
 	}
 
 	if UPLOAD {
-		ctx := SST.Open()
+		load_arrows := false
+		ctx := SST.Open(load_arrows)
 		fmt.Println("Uploading nodes..")
 		SST.GraphToDB(ctx)
 		SST.Close(ctx)
@@ -455,14 +455,14 @@ func GetLinkArrowByName(token string) SST.Link {
 	// First check if this is an alias/short name
 
 	ptr, ok := SST.ARROW_SHORT_DIR[name]
-
+	
 	// If not, then check longname
-
+	
 	if !ok {
 		ptr, ok = SST.ARROW_LONG_DIR[name]
-
+		
 		if !ok {
-			ParseError(ERR_NO_SUCH_ARROW+name)
+			ParseError(SST.ERR_NO_SUCH_ARROW+name)
 			os.Exit(-1)
 		}
 	}

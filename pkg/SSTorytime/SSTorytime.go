@@ -25,6 +25,8 @@ import (
 const (
 	ERR_ST_OUT_OF_BOUNDS="Link STtype is out of bounds (must be -3 to +3)"
 	ERR_ILLEGAL_LINK_CLASS="ILLEGAL LINK CLASS"
+	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
+	ERR_MEMORY_DB_ARROW_MISMATCH = "Arrows in database are not in synch (shouldn't happen)"
 
 	NEAR = 0
 	LEADSTO = 1   // +/-
@@ -219,7 +221,7 @@ type PoSST struct {
 
 //******************************************************************
 
-func Open() PoSST {
+func Open(load_arrows bool) PoSST {
 
 	var ctx PoSST
 	var err error
@@ -248,7 +250,7 @@ func Open() PoSST {
 		os.Exit(-1)
 	}
 
-	Configure(ctx)
+	Configure(ctx,load_arrows)
 
 	NO_NODE_PTR.Class = 0
 	NO_NODE_PTR.CPtr =  -1
@@ -262,7 +264,7 @@ func Open() PoSST {
 
 // **************************************************************************
 
-func Configure(ctx PoSST) {
+func Configure(ctx PoSST,load_arrows bool) {
 
 	// Tmp reset
 
@@ -318,6 +320,10 @@ func Configure(ctx PoSST) {
 	}
 
 	DefineStoredFunctions(ctx)
+
+	if load_arrows {
+		DownloadArrowsFromDB(ctx)
+	}
 }
 
 // **************************************************************************
@@ -778,11 +784,11 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 
 func UploadArrowToDB(ctx PoSST,arrow ArrowPtr) {
 
-	stidx := ARROW_DIRECTORY[arrow].STAindex
+	staidx := ARROW_DIRECTORY[arrow].STAindex
 	long := ARROW_DIRECTORY[arrow].Long
 	short := ARROW_DIRECTORY[arrow].Short
 
-	qstr := fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) VALUES (%d,'%s','%s',%d)",stidx,long,short,arrow)
+	qstr := fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) VALUES (%d,'%s','%s',%d)",staidx,long,short,arrow)
 
 	row,err := ctx.DB.Query(qstr)
 	
@@ -1399,39 +1405,115 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 
 // **************************************************************************
 
-func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
+func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 
-	qstr := fmt.Sprintf("SELECT STAindex,Long,Short FROM ArrowDirectory WHERE ArrPtr=%d",arrowptr)
-
-	row,err := ctx.DB.Query(qstr)
+	ptr, ok := ARROW_SHORT_DIR[name]
 	
-	if err != nil {
-		s := fmt.Sprint("Failed to insert",err)
+	// If not, then check longname
+	
+	if !ok {
+		ptr, ok = ARROW_LONG_DIR[name]
 		
-		if strings.Contains(s,"duplicate key") {
-		} else {
-			fmt.Println(s,"FAILED \n",qstr,err)
+		if !ok {
+			DownloadArrowsFromDB(ctx)
+
+			ptr, ok = ARROW_SHORT_DIR[name]
+			
+			// If not, then check longname
+			
+			if !ok {
+				ptr, ok = ARROW_LONG_DIR[name]
+				fmt.Println(ERR_NO_SUCH_ARROW,name)
+				os.Exit(-1)
+			}
 		}
 	}
+	return ptr
+}
 
-	var a ArrowDirectory
-	var count int = 0
+// **************************************************************************
 
-	a.Ptr = arrowptr
+func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 
-	for row.Next() {		
-		err = row.Scan(&a.STAindex,&a.Long,&a.Short)
-		count++
+	if len(ARROW_DIRECTORY) > int(arrowptr) {
+		a := ARROW_DIRECTORY[arrowptr]
+		return a
 	}
 
-	if count > 1 {
-		fmt.Println("GetArrowByPtr returned too may matches:",count)
+	DownloadArrowsFromDB(ctx)
+
+	if len(ARROW_DIRECTORY) < int(arrowptr) {
+		fmt.Println(ERR_NO_SUCH_ARROW,arrowptr)
 		os.Exit(-1)
 	}
 
-	row.Close()
-	return a
+	return ARROW_DIRECTORY[arrowptr]
 
+}
+
+// **************************************************************************
+
+func DownloadArrowsFromDB(ctx PoSST) {
+
+	// These must be ordered to match in-memory array
+
+	qstr := fmt.Sprintf("SELECT STAindex,Long,Short,ArrPtr FROM ArrowDirectory ORDER BY ArrPtr")
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY Download Arrows Failed",err)
+	}
+
+	var staidx int
+	var long string
+	var short string
+	var ptr ArrowPtr
+	var ad ArrowDirectory
+
+	for row.Next() {		
+		err = row.Scan(&staidx,&long,&short,&ptr)
+		ad.STAindex = staidx
+		ad.Long = long
+		ad.Short = short
+		ad.Ptr = ptr
+
+		ARROW_DIRECTORY = append(ARROW_DIRECTORY,ad)
+		ARROW_SHORT_DIR[short] = ARROW_DIRECTORY_TOP
+		ARROW_LONG_DIR[long] = ARROW_DIRECTORY_TOP
+
+		if ad.Ptr != ARROW_DIRECTORY_TOP {
+			fmt.Println(ERR_MEMORY_DB_ARROW_MISMATCH,ad,ad.Ptr,ARROW_DIRECTORY_TOP)
+			os.Exit(-1)
+		}
+
+		ARROW_DIRECTORY_TOP++
+	}
+
+	row.Close()
+
+	// Get Inverses
+
+	qstr = fmt.Sprintf("SELECT Plus,Minus FROM ArrowInverses ORDER BY Plus")
+
+	row, err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY Download Inverses Failed",err)
+	}
+
+	var plus,minus ArrowPtr
+
+	for row.Next() {		
+
+		err = row.Scan(&plus,&minus)
+
+		if err != nil {
+			fmt.Println("QUERY Download Arrows Failed",err)
+		}
+
+		INVERSE_ARROWS[plus] = minus
+	}
 }
 
 // **************************************************************************
