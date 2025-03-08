@@ -48,6 +48,15 @@ GRANT ALL PRIVILEGES ON DATABASE newdb TO sstoryline;
 it's useful to have another, called `newdb`.
 * Only superuser can CREATE or DROP a database.
 
+* You should now be able to log in to the postgres shell as an ordinary user, without sudo.
+
+<pre>
+psql newdb
+psql sstoryline
+</pre>
+When connecting in code, you have to add the password. For a shell user, postgres recognizes your local
+credentials.
+
 Cleary this is not a secure configuration, so you should only use this for testing on your laptop.
 Also, note that this will not allow you to login until you also open up the configuration of postgres
 as below. In summary, 
