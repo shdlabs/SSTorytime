@@ -1,6 +1,8 @@
 
 # Setting up and getting started
 
+To do:
+
 * Download this repository, which contains examples of data input
 languages N4L and examples of scripting your own programs.
 
