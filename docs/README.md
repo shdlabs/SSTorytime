@@ -30,7 +30,7 @@ Once you have a root shell, you can grant access to postgres to other users.
 
 * `psql` is a tool that accepts commands of two kind:
 
- * Backslash commands, e.g. describe tables for the current database `\dt`,  `\d tablename`, and `\df`.
+ * Backslash commands, e.g. describe tables for the current database `\dt`,  `\d tablename`, and describing stored functions `\df`.
  * As direct SQL commands, which must end in ;
 
 Set up a database for the examples, e.g. as root user. The default name in the code is:
