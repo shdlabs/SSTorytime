@@ -1,0 +1,12 @@
+
+- flow chart
+
+@question Do I have the key?
+
+Start (next) Find Door (next) $question.1
+
+ $question.1 (next if yes) Open Door (next) End
+
+ $question.1 (next if no)  Get key (next) $question.1
+
+

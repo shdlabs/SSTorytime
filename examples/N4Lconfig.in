@@ -17,6 +17,11 @@
         + is followed by (next) - is preceded by (prev)    
         + then the next is (then) - previous (prior)
 
+        // Flow charts / FSMs etc
+
+	+ next if yes (ifyes) - is a positive outcome of (bifyes)
+	+ next if no (if no)  - is anegitive outcome of (bifno)
+
         + intends (intt)    - is the intent of (iof)
         + proposed (prop)    - proposed by (propby)
         + decided (decide)    - decided by (decidby)
