@@ -3,7 +3,7 @@
 
  These notes are all about how to use N4L and knowledge graphs in general (case of) How to?
 
-  " (key issue) A key issue is how we use context to activate knowledge from memory
+    " (key issue) A key issue is how we use context to activate knowledge from memory
 
  #
 
@@ -88,6 +88,34 @@
 
  Strategic context (has role) What?
 
- 
+ # 
 
+ ::: Searching, semantic strategies ::
+
+ Look for key words in strategic context tags
+ Look for key words in section/chapter name
+
+ Get all causal consequences
+ Get all generalizations 
+ Get all specializations
+
+ Get all similar  (involves) generalize up/CONTAINED BY then come back down/CONTAINS
+     "            (involves) look for similar/NEAR nodes
+
+ :: API calls ::
+
+ GetDBNodePtrMatchingName (leads to) simple string match of proper name
+ GetArrowByName           (leads to) nodes related by query type
+
+ GetFwdConeAsNodes or Links (leads to)   neighbour nodes by STtype
+           "                (implements) GetSimilar as NEAR
+           "                (implements) GetSimilar as CONTAINED BY/CONTAINS
+           "                (implements) GetGeneralizations as CONTAINED BY
+           "                (implements) GetSpecialCases as CONTAINS
+           "                (implements) GetConsequences as LEADS TO
+           "                (implements) GetNextSteps as LEADS TO
+           "                (implements) GetHistory as inverse LEADS TO
+
+
+ GetFwdPathsAsLinks (implements) Path integral stories or histories
 
