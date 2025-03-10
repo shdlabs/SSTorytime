@@ -250,6 +250,7 @@ func Open(load_arrows bool) PoSST {
 		os.Exit(-1)
 	}
 
+	MemoryInit()
 	Configure(ctx,load_arrows)
 
 	NO_NODE_PTR.Class = 0

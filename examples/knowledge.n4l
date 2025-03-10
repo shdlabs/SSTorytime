@@ -105,6 +105,7 @@
  :: API calls ::
 
  GetDBNodePtrMatchingName (leads to) simple string match of proper name
+
  GetArrowByName           (leads to) nodes related by query type
 
  GetFwdConeAsNodes or Links (leads to)   neighbour nodes by STtype
