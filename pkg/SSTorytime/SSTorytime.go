@@ -60,7 +60,7 @@ const (
 
 //**************************************************************
 
-type Node struct { // essentially the incidence matrix
+type Node struct {
 
 	L         int     // length of text string
 	S         string  // text string itself
@@ -69,6 +69,19 @@ type Node struct { // essentially the incidence matrix
 	NPtr      NodePtr // Pointer to self index
 
 	I [ST_TOP][]Link  // link incidence list, by arrow type
+  	                  // NOTE: carefully how offsets represent negative SSTtypes
+}
+
+//**************************************************************
+
+type NodeArrowNode struct {
+
+	NFrom NodePtr
+	STType int
+	Arr ArrowPtr
+	Wgt float64
+	Ctx []string
+	NTo NodePtr
   	                  // NOTE: carefully how offsets represent negative SSTtypes
 }
 
@@ -972,8 +985,8 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"  IF NOT EXISTS (SELECT Wgt FROM NodeArrowNode WHERE (NFrom).Cptr=infromptr AND Arr=iarr AND (NTo).Cptr=intoptr) THEN\n" +
 
-		"     INSERT INTO NodeArrowNode (nfrom.Cptr,nfrom.Chan,arr,wgt,ctx,nto.Cptr,nto.Chan) \n" +
-		"       VALUES (infromptr,infromchan,iarr,iwgt,ictx,intoptr,intochan);" +
+		"     INSERT INTO NodeArrowNode (nfrom.Cptr,nfrom.Chan,sttype,arr,wgt,ctx,nto.Cptr,nto.Chan) \n" +
+		"       VALUES (infromptr,infromchan,isttype,iarr,iwgt,ictx,intoptr,intochan);" +
 
 		"  END IF;\n" +
 		"  SELECT Wgt into ret_wgt FROM NodeArrowNode WHERE (NFrom).Cptr=infromptr AND Arr=iarr AND (NTo).Cptr=intoptr;\n" +
@@ -1423,6 +1436,52 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 
 // **************************************************************************
 
+func GetDBNodeArrowNodeMatchingArrowName(ctx PoSST,s string) []NodeArrowNode {
+
+//	search := s
+
+	qstr := fmt.Sprintf("SELECT NFrom,STType,Arr,Wgt,Ctx,NTo FROM NodeArrowNode where Arr=97")
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("GetDBNodeArrowNodeMatchingArrowName Failed:",err)
+	}
+
+	var from_node string
+	var to_node string
+	var actx string
+	var st,arr int
+	var wgt float64
+
+	var nfr,nto NodePtr
+	var nan NodeArrowNode
+	var nanlist []NodeArrowNode
+
+	for row.Next() {		
+		err = row.Scan(&from_node,&st,&arr,&wgt,&actx,&to_node)
+
+		fmt.Sscanf(from_node,"(%d,%d)",&nfr.Class,&nfr.CPtr)
+		fmt.Sscanf(to_node,"(%d,%d)",&nto.Class,&nto.CPtr)
+
+		nan.NFrom = nfr
+		nan.STType = st
+		nan.Arr = ArrowPtr(arr)
+		nan.Wgt = wgt
+		nan.Ctx = ParseSQLArrayString(actx)
+		nan.NTo = nto
+
+		nanlist = append(nanlist,nan)
+
+	}
+
+	row.Close()
+
+	return nanlist
+}
+
+// **************************************************************************
+
 func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 
 	ptr, ok := ARROW_SHORT_DIR[name]
@@ -1661,10 +1720,10 @@ func ParseSQLArrayString(whole_array string) []string {
         items := strings.Split(whole_array,";")
 
 	for i := range items {
-	    var v string
+
 	    s := strings.TrimSpace(items[i])
-	    fmt.Sscanf(s,"%s",&v)
-	    l = append(l,v)
+
+	    l = append(l,s)
 	    }
 
 	return l

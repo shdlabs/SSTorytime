@@ -84,8 +84,15 @@ func Search(ctx SST.PoSST, text string) {
 				SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:")
 			}
 		}
-		fmt.Printf("   (END %d)\n",start)
+		fmt.Printf("     (END %d)\n",start)
 	}
+
+	// Now look at the arrow content
+
+	matching_arrows := SST.GetDBNodeArrowNodeMatchingArrowName(ctx,text)
+
+	fmt.Println(matching_arrows)
+
 }
 
 //******************************************************************
