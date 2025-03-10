@@ -205,11 +205,7 @@ func Init() []string {
 		ADJ_LIST = *adjacencyPtr
 	}
 
-	if !UPLOAD {
-		SST.NODE_DIRECTORY.N1grams = make(map[string]SST.ClassedNodePtr)
-		SST.NODE_DIRECTORY.N2grams = make(map[string]SST.ClassedNodePtr)
-		SST.NODE_DIRECTORY.N3grams = make(map[string]SST.ClassedNodePtr)
-	}
+	SST.MemoryInit()
 
 	return args
 }

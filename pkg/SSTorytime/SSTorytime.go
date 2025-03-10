@@ -255,11 +255,24 @@ func Open(load_arrows bool) PoSST {
 	NO_NODE_PTR.Class = 0
 	NO_NODE_PTR.CPtr =  -1
 
-	NODE_DIRECTORY.N1grams = make(map[string]ClassedNodePtr)
-	NODE_DIRECTORY.N2grams = make(map[string]ClassedNodePtr)
-	NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
-
 	return ctx
+}
+
+// **************************************************************************
+
+func MemoryInit() {
+
+	if NODE_DIRECTORY.N1grams == nil {
+		NODE_DIRECTORY.N1grams = make(map[string]ClassedNodePtr)
+	}
+
+	if NODE_DIRECTORY.N2grams == nil {
+		NODE_DIRECTORY.N2grams = make(map[string]ClassedNodePtr)
+	}
+
+	if NODE_DIRECTORY.N3grams == nil {
+		NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
+	}
 }
 
 // **************************************************************************
