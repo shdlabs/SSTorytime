@@ -50,9 +50,8 @@ func main() {
 func Search(ctx SST.PoSST, text string) {
 
 	text = strings.TrimSpace(text)
-	fmt.Printf("\n\nSearch text: (%s)\n",text)
 
-	const maxdepth = 8
+	const maxdepth = 5
 	sttype := SST.LEADSTO
 
 	// Simplistic text match of a node, and print some stuff
@@ -61,46 +60,32 @@ func Search(ctx SST.PoSST, text string) {
 
 	for start := range start_set {
 
+		name :=  SST.GetDBNodeByNodePtr(ctx,start_set[start])
+
+		fmt.Println()
+		fmt.Println("-------------------------------------------")
+		fmt.Printf(" SEARCH MATCH %d: (%s -> %s)\n",start,text,name.S)
+		fmt.Println("-------------------------------------------")
+
 		allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
 		
 		for l := range allnodes {
 			fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
-			fmt.Println("   - ",fullnode.S,"\t found in",fullnode.Chap)
+			fmt.Println("   - Fwd ",SST.SST_NAMES[sttype]," cone item: ",fullnode.S,", found in",fullnode.Chap)
 		}
-		
-		for start := range start_set {
+
+		alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth)
 			
-			for depth := 0; depth < maxdepth; depth++ {
-				
-				paths := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,depth)
-
-				if paths == nil {
-					continue
-				}
-
-				fmt.Println("Searching paths of length",depth,"/",maxdepth,"from origin",start_set[start])
-								
-				for p := range paths {
-					
-					if len(paths[p]) > 1 {
-						
-						fmt.Print(" Path",p,"/",len(paths[p]),": ")
-						
-						for l := 0; l < len(paths[p]); l++ {
-							fullnode := SST.GetDBNodeByNodePtr(ctx,paths[p][l].Dst)
-							arr := SST.GetDBArrowByPtr(ctx,paths[p][l].Arr)
-							fmt.Print(fullnode.S)
-							if l < len(paths[p])-1 {
-								fmt.Print("  -(",arr.Long,";",paths[p][l].Wgt,")->  ")
-							}
-						}
-						
-						fmt.Println()
-					}
-				}
+		if alt_paths != nil {
+			
+			fmt.Printf("\n-- Forward",SST.SST_NAMES[sttype],"cone stories ----------------------------------\n")
+			
+			for p := 0; p < path_depth; p++ {
+				SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:")
 			}
 		}
-	}		
+		fmt.Printf("   (END %d)\n",start)
+	}
 }
 
 //******************************************************************

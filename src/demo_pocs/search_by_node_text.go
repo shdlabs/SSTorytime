@@ -83,7 +83,7 @@ func main() {
 			
 			for depth := 0; depth < maxdepth; depth++ {
 				
-				paths := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,depth)
+				paths,_ := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,depth)
 
 				if paths == nil {
 					continue

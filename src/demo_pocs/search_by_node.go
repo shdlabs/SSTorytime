@@ -83,7 +83,7 @@ func main() {
 				
 				fmt.Println("Searching paths of length",depth,"/",maxdepth,"from",start_set[start])
 				
-				paths := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,depth)
+				paths,_ := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,depth)
 				
 				for p := range paths {
 					

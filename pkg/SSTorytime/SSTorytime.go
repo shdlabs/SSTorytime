@@ -302,6 +302,9 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop table NodeArrowNode")
 		ctx.DB.QueryRow("drop type NodePtr")
 		ctx.DB.QueryRow("drop type Link")
+
+		ctx.DB.QueryRow("drop table ArrowDirectory")
+		ctx.DB.QueryRow("drop table ArrowInverses")
 	}
 
 	if !CreateType(ctx,NODEPTR_TYPE) {
@@ -1405,7 +1408,7 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 	}
 
 	if count > 1 {
-		fmt.Println("GetNodeByNodePointer returned too may matches:",count)
+		fmt.Println("GetNodeByNodePtr returned too many matches (multi-model conflict?):",count,"for ptr",db_nptr)
 		os.Exit(-1)
 	}
 
@@ -1450,7 +1453,7 @@ func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 
 func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 
-	if len(ARROW_DIRECTORY) > int(arrowptr) {
+	if ARROW_DIRECTORY_TOP > 0 {
 		a := ARROW_DIRECTORY[arrowptr]
 		return a
 	}
@@ -1585,14 +1588,14 @@ func GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link {
 
 // **************************************************************************
 
-func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) [][]Link {
+func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) ([][]Link,int) {
 
 	qstr := fmt.Sprintf("select FwdPathsAsLinks from FwdPathsAsLinks('(%d,%d)',%d,%d);",start.Class,start.CPtr,sttype,depth)
 
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY to FwdPathsAsLinkss Failed",err)
+		fmt.Println("QUERY to FwdPathsAsLinks Failed",err)
 	}
 
 	var whole string
@@ -1604,7 +1607,33 @@ func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) [][]Link {
 	}
 
 	row.Close()
-	return retval
+	return retval,len(retval)
+}
+
+// **************************************************************************
+
+func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string) {
+
+	if len(alt_paths[p]) > 1 {
+
+		path_start := GetDBNodeByNodePtr(ctx,alt_paths[p][0].Dst)		
+		
+		fmt.Print(prefix," from ",path_start.S)
+		
+		for l := 1; l < len(alt_paths[p]); l++ {
+			
+			arr := GetDBArrowByPtr(ctx,alt_paths[p][l].Arr)
+			
+			if l < len(alt_paths[p]) {
+				fmt.Print("  -(",arr.Long,")->  ")
+			}
+			
+			nextnode := GetDBNodeByNodePtr(ctx,alt_paths[p][l].Dst)
+			fmt.Print(nextnode.S)
+		}
+		
+		fmt.Println()
+	}
 }
 
 // **************************************************************************
