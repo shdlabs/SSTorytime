@@ -789,6 +789,7 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 
 			AppendDBLinkToNode(ctx,org.NPtr,dstlnk,sttype)
 			CreateDBNodeArrowNode(ctx,org.NPtr,dstlnk,sttype)
+			fmt.Print(".")
 		}
 	}
 }
