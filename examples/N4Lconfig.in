@@ -129,6 +129,7 @@
  + may have value (hasX)    - is a possible value for (isX)
 
  + note/remark (note) - is a note or remark about (isnotefor)
+ + added remark (remark) - is a remark concerning (concerns)
 
  + stands for (sfor)  - is a case of (caseof)
  + refers to (ref)    - may be referred to as (refas)
