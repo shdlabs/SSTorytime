@@ -124,19 +124,7 @@ func Search(ctx SST.PoSST, text string) {
 	}
 }
 
-//******************************************************************
 
-func IsNew(nptr SST.NodePtr,levels [][]SST.NodePtr) bool {
-
-	for l := range levels {
-		for e := range levels[l] {
-			if levels[l][e] == nptr {
-				return false
-			}
-		}
-	}
-	return true
-}
 
 
 
