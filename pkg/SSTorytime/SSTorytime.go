@@ -872,7 +872,7 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 	}
 
 	//                       Arr,Wgt,Ctx,  Dst
-	linkval := fmt.Sprintf("(%d, %f, %s, (%d,%d)::NodePtr)",lnk.Arr,lnk.Wgt,FormatSQLArray(lnk.Ctx),lnk.Dst.Class,lnk.Dst.CPtr)
+	linkval := fmt.Sprintf("(%d, %f, %s, (%d,%d)::NodePtr)",lnk.Arr,lnk.Wgt,FormatSQLStringArray(lnk.Ctx),lnk.Dst.Class,lnk.Dst.CPtr)
 
 	literal := fmt.Sprintf("%s::Link",linkval)
 
@@ -918,7 +918,7 @@ func CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool {
 		sttype,
 		dst.Arr,
 		dst.Wgt,
-		FormatSQLArray(dst.Ctx),
+		FormatSQLStringArray(dst.Ctx),
 		dst.Dst.Class,
 		dst.Dst.CPtr)
 
@@ -1436,16 +1436,40 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 
 // **************************************************************************
 
-func GetDBNodeArrowNodeMatchingArrowName(ctx PoSST,s string) []NodeArrowNode {
+func GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr {
 
-//	search := s
+	var list []ArrowPtr
 
-	qstr := fmt.Sprintf("SELECT NFrom,STType,Arr,Wgt,Ctx,NTo FROM NodeArrowNode where Arr=97")
+	if ARROW_DIRECTORY_TOP == 0 {
+		DownloadArrowsFromDB(ctx)
+	}
+
+	for a := range ARROW_DIRECTORY {
+
+		if SimilarString(s,ARROW_DIRECTORY[a].Long) || SimilarString(s,ARROW_DIRECTORY[a].Short) {
+			list = append(list,ARROW_DIRECTORY[a].Ptr)
+		}
+	}
+
+	return list
+}
+
+// **************************************************************************
+
+func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,arrows []ArrowPtr) []NodeArrowNode {
+
+	var intarrows []int
+
+	for i := range arrows {
+		intarrows = append(intarrows,int(arrows[i]))
+	}
+
+	qstr := fmt.Sprintf("SELECT NFrom,STType,Arr,Wgt,Ctx,NTo FROM NodeArrowNode where Arr=ANY(%s::int[])",FormatSQLIntArray(intarrows))
 
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("GetDBNodeArrowNodeMatchingArrowName Failed:",err)
+		fmt.Println("GetDBNodeArrowNodeMatchingArrowPtrs Failed:",err,qstr)
 	}
 
 	var from_node string
@@ -1731,7 +1755,29 @@ func ParseSQLArrayString(whole_array string) []string {
 
 // **************************************************************************
 
-func FormatSQLArray(array []string) string {
+func FormatSQLIntArray(array []int) string {
+
+        if len(array) == 0 {
+		return "'{ }'"
+        }
+
+	var ret string = "'{ "
+	
+	for i := 0; i < len(array); i++ {
+		ret += fmt.Sprintf("%d",array[i])
+	    if i < len(array)-1 {
+	    ret += ", "
+	    }
+        }
+
+	ret += " }' "
+
+	return ret
+}
+
+// **************************************************************************
+
+func FormatSQLStringArray(array []string) string {
 
         if len(array) == 0 {
 		return "'{ }'"
@@ -1941,6 +1987,18 @@ func EscapeString(s string) string {
 	return strings.Replace(s, "'", ".", -1)
 }
 
+// **************************************************************************
+
+func SimilarString(s1,s2 string) bool {
+
+	// Placeholder
+
+	if strings.Contains(s2,s1) || strings.Contains(s1,s2) {
+		return true
+	}
+
+	return false
+}
 
 
 

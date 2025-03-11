@@ -2,6 +2,10 @@
 //
 // Exploring how to present a search text, with API
 //
+// Prepare:
+// cd examples
+// ../src/N4L-db -u Mary.n4l, e.g. try type Mary example, type 1
+//
 //******************************************************************
 
 package main
@@ -52,11 +56,23 @@ func Search(ctx SST.PoSST, text string) {
 	text = strings.TrimSpace(text)
 
 	const maxdepth = 5
+
 	sttype := SST.LEADSTO
+	fmt.Print("Choose a search type: ")
 
-	// Simplistic text match of a node, and print some stuff
+	for t := SST.NEAR; t <= SST.EXPRESS; t++ {
+		fmt.Print(t,"=",SST.SST_NAMES[t],", ")
+	}
 
-	start_set := SST.GetDBNodePtrMatchingName(ctx,text)
+	fmt.Scanf("%d",&sttype)
+
+	var start_set []SST.NodePtr
+
+	search_items := strings.Split(text," ")
+
+	for w := range search_items {
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w])...)
+	}
 
 	for start := range start_set {
 
@@ -89,10 +105,23 @@ func Search(ctx SST.PoSST, text string) {
 
 	// Now look at the arrow content
 
-	matching_arrows := SST.GetDBNodeArrowNodeMatchingArrowName(ctx,text)
+	fmt.Println("\nLooking at relations...\n")
 
-	fmt.Println(matching_arrows)
+	matching_arrows := SST.GetDBArrowsMatchingArrowName(ctx,text)
 
+	relns := SST.GetDBNodeArrowNodeMatchingArrowPtrs(ctx,matching_arrows)
+
+	for r := range relns {
+
+		from := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
+		to := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
+		//st := relns[r].STType
+		arr := SST.ARROW_DIRECTORY[relns[r].Arr].Long
+		wgt := relns[r].Wgt
+		actx := relns[r].Ctx
+		fmt.Println("See also: ",from.S,"--(",arr,")->",to.S,"\n       (... wgt",wgt,"in the contexts",actx,")\n")
+
+	}
 }
 
 //******************************************************************
