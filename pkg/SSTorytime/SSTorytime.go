@@ -937,8 +937,8 @@ func CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool {
 		dst.Arr,
 		dst.Wgt,
 		FormatSQLStringArray(dst.Ctx),
-		dst.Dst.Class,
-		dst.Dst.CPtr)
+		dst.Dst.CPtr,
+		dst.Dst.Class)
 
 	row,err := ctx.DB.Query(qstr)
 
