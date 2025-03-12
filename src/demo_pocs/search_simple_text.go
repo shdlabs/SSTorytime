@@ -61,7 +61,7 @@ func Search(ctx SST.PoSST, text string) {
 	fmt.Print("Choose a search type: ")
 
 	for t := SST.NEAR; t <= SST.EXPRESS; t++ {
-		fmt.Print(t,"=",SST.SST_NAMES[t],", ")
+		fmt.Print(t,"=",SST.STTypeName(t),", ")
 	}
 
 	fmt.Scanf("%d",&sttype)
@@ -87,14 +87,14 @@ func Search(ctx SST.PoSST, text string) {
 		
 		for l := range allnodes {
 			fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
-			fmt.Println("   - Fwd ",SST.SST_NAMES[sttype]," cone item: ",fullnode.S,", found in",fullnode.Chap)
+			fmt.Println("   - Fwd ",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
 		}
 
 		alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth)
 			
 		if alt_paths != nil {
 			
-			fmt.Printf("\n-- Forward",SST.SST_NAMES[sttype],"cone stories ----------------------------------\n")
+			fmt.Printf("\n-- Forward",SST.STTypeName(sttype9,"cone stories ----------------------------------\n")
 			
 			for p := 0; p < path_depth; p++ {
 				SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:")

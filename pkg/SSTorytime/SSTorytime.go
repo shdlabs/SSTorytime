@@ -235,7 +235,6 @@ var (
 	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
 
 	NO_NODE_PTR NodePtr // see Init()
-	SST_NAMES[4] string = [4]string{ "Near", "LeadsTo", "Contains","Express"}
 
 	WIPE_DB bool = false
 
@@ -1904,7 +1903,7 @@ func GetMatroidNodesByArrow(ctx PoSST) []ArrowMatroid {
  (3,0) | 138 | {"(4,4)"}
  (4,1) | 138 | {"(0,4)"} */
 
-	qstr := "SELECT NFrom,Arr,array_agg(NTo) FROM NodeArrowNode GROUP BY Arr,Nfrom order by Arr"
+	qstr := "SELECT NFrom,Arr,array_agg(NTo) FROM NodeArrowNode GROUP BY Arr,Nfrom HAVING count(NTo) > 1 ORDER BY Arr "
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -1946,7 +1945,7 @@ func GetMatroidNodesBySTType(ctx PoSST) []STTypeMatroid {
  (4,0) |      3 | {"(1,4)"}
  (4,4) |      3 | {"(0,3)"}*/
 
-	qstr := "SELECT NFrom,sttype,array_agg(NTo) FROM NodeArrowNode GROUP BY sttype,Nfrom order by sttype"
+	qstr := "SELECT NFrom,sttype,array_agg(NTo) FROM NodeArrowNode GROUP BY sttype,Nfrom HAVING count(NTo) > 1 ORDER BY sttype"
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -2224,6 +2223,30 @@ func STIndexToSTType(stindex int) int {
 	// Convert shifted array index to symmetrical type
 
 	return stindex - ST_ZERO
+}
+
+// **************************************************************************
+
+func STTypeName(sttype int) string {
+
+	switch sttype {
+	case -EXPRESS:
+		return "-Properties"
+	case -CONTAINS:
+		return "-Contains"
+	case -LEADSTO:
+		return "-LeadsTo"
+	case NEAR:
+		return "Similarity"
+	case LEADSTO:
+		return "+LeadsTo"
+	case CONTAINS:
+		return "+Contains"
+	case EXPRESS:
+		return "+Properties"
+	}
+
+	return "Unknown ST type"
 }
 
 // **************************************************************************
