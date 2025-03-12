@@ -105,7 +105,7 @@ func Search(ctx SST.PoSST, text string) {
 
 	// Now look at the arrow content
 
-	fmt.Println("\nLooking for repeated relations...\n")
+	fmt.Println("\nLooking at relations...\n")
 
 	matching_arrows := SST.GetDBArrowsMatchingArrowName(ctx,text)
 
@@ -124,7 +124,19 @@ func Search(ctx SST.PoSST, text string) {
 	}
 }
 
+//******************************************************************
 
+func IsNew(nptr SST.NodePtr,levels [][]SST.NodePtr) bool {
+
+	for l := range levels {
+		for e := range levels[l] {
+			if levels[l][e] == nptr {
+				return false
+			}
+		}
+	}
+	return true
+}
 
 
 

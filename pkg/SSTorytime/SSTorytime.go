@@ -87,6 +87,24 @@ type NodeArrowNode struct {
 
 //**************************************************************
 
+type STTypeMatroid struct {
+
+	NFrom NodePtr
+	STType int
+	NTo []NodePtr
+}
+
+//**************************************************************
+
+type ArrowMatroid struct {
+
+	NFrom NodePtr
+	Arr ArrowPtr
+	NTo []NodePtr
+}
+
+//**************************************************************
+
 type Link struct {  // A link is a type of arrow, with context
                     // and maybe with a weightfor package math
 	Arr ArrowPtr         // type of arrow, presorted
@@ -1127,7 +1145,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    LOOP\n"+
 		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
 		"         neighbours := array_append(neighbours, lnk);\n" +
-		"      END IF; \n" +
+		"      END IF; \n" + 
 		"    END LOOP;\n" +
 		"    RETURN neighbours; \n" +
 		"END ;\n" +
@@ -1345,7 +1363,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   END IF;"+
 		"END LOOP;"+
 
-
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
@@ -1554,6 +1571,13 @@ func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 
 // **************************************************************************
 
+func CacheNode(n Node) {
+
+	NODE_CACHE[n.NPtr] = AppendTextToDirectory(n)
+}
+
+// **************************************************************************
+
 func DownloadArrowsFromDB(ctx PoSST) {
 
 	// These must be ordered to match in-memory array
@@ -1720,14 +1744,251 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string) {
 }
 
 // **************************************************************************
+// Retrieve Analysis
+// **************************************************************************
 
-func CacheNode(n Node) {
+func GetMatroidArrayByArrow(ctx PoSST) map[ArrowPtr][]NodePtr {
 
-	NODE_CACHE[n.NPtr] = AppendTextToDirectory(n)
+/* arr |             x             
+-----+---------------------------
+  18 | {"(2,4)","(3,4)","(4,4)"}
+ 138 | {"(4,4)","(0,4)"}
+  97 | {"(1,2)"}
+  96 | {"(0,4)"}
+ 137 | {"(1,4)","(0,3)"}
+  52 | {"(0,4)"}
+  53 | {"(0,2)"}*/
+
+	qstr := "SELECT arr,array_agg(NTo) FROM NodeArrowNode GROUP BY arr"
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+	}
+
+	var arry string
+	var arr ArrowPtr
+	var retval = make(map[ArrowPtr][]NodePtr)
+
+	for row.Next() {		
+		err = row.Scan(&arr,&arry)
+		retval[arr] = ParseSQLNPtrArray(arry)
+	}
+
+	row.Close()
+	
+	return retval
+}
+
+// **************************************************************************
+
+func GetMatroidArrayBySSType(ctx PoSST) map[int][]NodePtr {
+
+
+/* sttype |             array_agg             
+--------+-----------------------------------
+     -3 | {"(0,4)","(4,4)"}
+     -2 | {"(1,2)"}
+     -1 | {"(0,2)"}
+      1 | {"(0,4)","(2,4)","(3,4)","(4,4)"}
+      2 | {"(0,4)"}
+      3 | {"(0,3)","(1,4)"} */
+
+
+	qstr := "SELECT sttype,array_agg(NTo) FROM NodeArrowNode GROUP BY Sttype order by sttype"
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+	}
+
+	var arry string
+	var sttype int
+	var retval = make(map[int][]NodePtr)
+
+	for row.Next() {		
+		err = row.Scan(&sttype,&arry)
+		retval[sttype] = ParseSQLNPtrArray(arry)
+	}
+
+	row.Close()
+	
+	return retval
+}
+
+// **************************************************************************
+
+func GetMatroidHistogramByArrow(ctx PoSST) map[ArrowPtr]int {
+
+/* arr | count 
+-----+-------
+  18 |     3
+  52 |     1
+  53 |     1
+  96 |     1
+  97 |     1
+ 137 |     2
+ 138 |     2 */
+
+	qstr := "SELECT arr,count(NTo) FROM NodeArrowNode GROUP BY arr order by Arr"
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+	}
+
+	var freq int
+	var arr ArrowPtr
+	var retval = make(map[ArrowPtr]int)
+
+	for row.Next() {		
+		err = row.Scan(&arr,&freq)
+		retval[arr] = freq
+	}
+
+	row.Close()
+	
+	return retval
+}
+
+// **************************************************************************
+
+func GetMatroidHistogramBySSType(ctx PoSST) map[int]int {
+
+/* sttype | x 
+--------+---
+      1 | 4
+     -1 | 1
+      2 | 1
+     -2 | 1
+      3 | 2
+     -3 | 2 */
+
+	qstr := "SELECT sttype,count(NTo) FROM NodeArrowNode GROUP BY Sttype"
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+	}
+
+	var freq int
+	var sttype int
+	var retval = make(map[int]int)
+
+	for row.Next() {		
+		err = row.Scan(&sttype,&freq)
+		retval[sttype] = freq
+	}
+	return retval
+}
+
+// **************************************************************************
+
+func GetMatroidNodesByArrow(ctx PoSST) []ArrowMatroid {
+
+/*  nfrom | arr | array_agg 
+-------+-----+-----------
+ (4,0) |  18 | {"(2,4)"}
+ (4,2) |  18 | {"(3,4)"}
+ (4,3) |  18 | {"(4,4)"}
+ (2,0) |  52 | {"(0,4)"}
+ (4,0) |  53 | {"(0,2)"}
+ (2,1) |  96 | {"(0,4)"}
+ (4,0) |  97 | {"(1,2)"}
+ (4,0) | 137 | {"(1,4)"}
+ (4,4) | 137 | {"(0,3)"}
+ (3,0) | 138 | {"(4,4)"}
+ (4,1) | 138 | {"(0,4)"} */
+
+	qstr := "SELECT NFrom,Arr,array_agg(NTo) FROM NodeArrowNode GROUP BY Arr,Nfrom order by Arr"
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+	}
+
+	var nptr,arry string
+	var retval []ArrowMatroid
+	var this ArrowMatroid
+
+	for row.Next() {		
+		err = row.Scan(&nptr,&this.Arr,&arry)
+		fmt.Sscanf(nptr,"(%d,%d)",&this.NFrom.Class,&this.NFrom.CPtr)
+		this.NTo = ParseSQLNPtrArray(arry)
+		retval = append(retval,this)
+	}
+
+	row.Close()
+
+	return retval
+}
+
+// **************************************************************************
+
+func GetMatroidNodesBySTType(ctx PoSST) []STTypeMatroid {
+
+/*  nfrom | sttype | array_agg 
+-------+--------+-----------
+ (3,0) |     -3 | {"(4,4)"}
+ (4,1) |     -3 | {"(0,4)"}
+ (4,0) |     -2 | {"(1,2)"}
+ (4,0) |     -1 | {"(0,2)"}
+ (2,0) |      1 | {"(0,4)"}
+ (4,0) |      1 | {"(2,4)"}
+ (4,2) |      1 | {"(3,4)"}
+ (4,3) |      1 | {"(4,4)"}
+ (2,1) |      2 | {"(0,4)"}
+ (4,0) |      3 | {"(1,4)"}
+ (4,4) |      3 | {"(0,3)"}*/
+
+	qstr := "SELECT NFrom,sttype,array_agg(NTo) FROM NodeArrowNode GROUP BY sttype,Nfrom order by sttype"
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetMatroidArrayBySTType Failed",err)
+	}
+
+	var retval []STTypeMatroid
+	var this STTypeMatroid
+	var nptr,arr,arry string
+
+	for row.Next() {		
+		err = row.Scan(&nptr,&arr,&arry)
+		err = row.Scan(&nptr,&this.STType,&arry)
+		fmt.Sscanf(nptr,"(%d,%d)",&this.NFrom.Class,&this.NFrom.CPtr)
+		this.NTo = ParseSQLNPtrArray(arry)
+		retval = append(retval,this)
+	}
+
+	row.Close()
+	return retval
 }
 
 // **************************************************************************
 // Tools
+// **************************************************************************
+
+func ParseSQLNPtrArray(s string) []NodePtr {
+
+	stringify := ParseSQLArrayString(s)
+
+	var retval []NodePtr
+	var nptr NodePtr
+
+	for n := 0; n < len(stringify); n++ {
+		fmt.Sscanf(stringify[n],"(%d,%d)",&nptr.Class,&nptr.CPtr)
+		retval = append(retval,nptr)
+	}
+
+	return retval
+}
+
 // **************************************************************************
 
 func ParseSQLArrayString(whole_array string) []string {
@@ -1992,6 +2253,8 @@ func EscapeString(s string) string {
 func SimilarString(s1,s2 string) bool {
 
 	// Placeholder
+
+	// Need to handle pluralisation patterns etc... multi-language
 
 	if strings.Contains(s2,s1) || strings.Contains(s1,s2) {
 		return true
