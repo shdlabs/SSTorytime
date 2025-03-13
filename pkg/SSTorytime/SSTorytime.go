@@ -1410,6 +1410,42 @@ func GetDBNodePtrMatchingName(ctx PoSST,s string) []NodePtr {
 
 // **************************************************************************
 
+func GetDBNodePtrMatchingNCC(ctx PoSST,chap,nm string ,cn []string) []NodePtr {
+
+	// Match name, context, chapter
+
+	name := "%"+nm+"%"
+	context := FormatSQLStringArray(cn)
+	chapter := "%"+chap+"%"
+
+	qstr := fmt.Sprintf("WITH matching_nodes AS "+
+		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
+		"     SELECT DISTINCT nfrom FROM matching_nodes "+
+		"      JOIN Node ON nptr=nfrom WHERE match=true AND S LIKE '%s' AND chap LIKE '%s'",context,name,chapter)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetNodePtrMatchingNCC Failed",err)
+	}
+
+	var whole string
+	var n NodePtr
+	var retval []NodePtr
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
+		retval = append(retval,n)
+	}
+
+	row.Close()
+	return retval
+
+}
+
+// **************************************************************************
+
 func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 
 	im_nptr,cached := NODE_CACHE[db_nptr]
