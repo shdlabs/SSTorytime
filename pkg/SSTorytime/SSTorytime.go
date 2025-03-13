@@ -1746,19 +1746,27 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string) {
 // Retrieve Analysis
 // **************************************************************************
 
-func GetMatroidArrayByArrow(ctx PoSST) map[ArrowPtr][]NodePtr {
+func GetMatroidArrayByArrow(ctx PoSST, context,chapter string) map[ArrowPtr][]NodePtr {
 
-/* arr |             x             
------+---------------------------
-  18 | {"(2,4)","(3,4)","(4,4)"}
- 138 | {"(4,4)","(0,4)"}
-  97 | {"(1,2)"}
-  96 | {"(0,4)"}
- 137 | {"(1,4)","(0,3)"}
-  52 | {"(0,4)"}
-  53 | {"(0,2)"}*/
+          /* arr |             x             
+            -----+---------------------------
+              18 | {"(2,4)","(3,4)","(4,4)"}
+             138 | {"(4,4)","(0,4)"}
+              97 | {"(1,2)"}
+              96 | {"(0,4)"}
+             137 | {"(1,4)","(0,3)"}
+              52 | {"(0,4)"}
+              53 | {"(0,2)"} */
 
-	qstr := "SELECT arr,array_agg(NTo) FROM NodeArrowNode GROUP BY arr"
+	var qplus string
+
+	// Postgres && operator on arrays is SET OVERLAP .. how to solve this?
+
+	if context != "any" {
+		qplus += fmt.Sprintf("WHERE %s LIKE ANY(CTX)",context)
+	}
+
+	qstr := "SELECT arr,array_agg(DISTINCT NTo) FROM NodeArrowNode GROUP BY arr"
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -1785,17 +1793,17 @@ func GetMatroidArrayByArrow(ctx PoSST) map[ArrowPtr][]NodePtr {
 func GetMatroidArrayBySSType(ctx PoSST) map[int][]NodePtr {
 
 
-/* sttype |             array_agg             
---------+-----------------------------------
-     -3 | {"(0,4)","(4,4)"}
-     -2 | {"(1,2)"}
-     -1 | {"(0,2)"}
-      1 | {"(0,4)","(2,4)","(3,4)","(4,4)"}
-      2 | {"(0,4)"}
-      3 | {"(0,3)","(1,4)"} */
+          /* sttype |             array_agg             
+             --------+-----------------------------------
+                 -3 | {"(0,4)","(4,4)"}
+                 -2 | {"(1,2)"}
+                 -1 | {"(0,2)"}
+                  1 | {"(0,4)","(2,4)","(3,4)","(4,4)"}
+                  2 | {"(0,4)"}
+                  3 | {"(0,3)","(1,4)"} */
 
 
-	qstr := "SELECT sttype,array_agg(NTo) FROM NodeArrowNode GROUP BY Sttype order by sttype"
+	qstr := "SELECT sttype, array_agg(DISTINCT NTo) FROM NodeArrowNode GROUP BY Sttype order by sttype"
 
 	row, err := ctx.DB.Query(qstr)
 	
