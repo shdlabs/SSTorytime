@@ -591,7 +591,7 @@ func SummarizeGraph() {
 
 	for st := 0; st < 4; st++ {
 		total += count_links[st]
-		fmt.Println("Total directed links of type",SST.SST_NAMES[st],count_links[st])
+		fmt.Println("Total directed links of type",SST.STTypeName(st),count_links[st])
 	}
 
 	complete := count_nodes * (count_nodes-1)
@@ -841,7 +841,7 @@ func ValidateLinkArgs(s string) []SST.ArrowPtr {
 			name := SST.ARROW_DIRECTORY[v].Long
 			ptr := SST.ARROW_DIRECTORY[v].Ptr
 
-			fmt.Println(" - including search pathway STtype",SST.SST_NAMES[typ],"->",name)
+			fmt.Println(" - including search pathway STtype",SST.STTypeName(typ),"->",name)
 			search_list = append(search_list,ptr)
 
 			if typ != SST.NEAR {
