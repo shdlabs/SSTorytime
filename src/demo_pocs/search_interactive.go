@@ -46,9 +46,9 @@ func main() {
 	for goes := 0; goes < 10; goes ++ {
 
 
-		fmt.Println("Current context:",context)
+		fmt.Println("\nCurrent context:",context)
+		fmt.Println("Enter newcontext text:")
 
-		fmt.Println("\n\nEnter newcontext text:")
 		cntext, _ := reader.ReadString('\n')
 
 		if cntext != "" {
@@ -113,7 +113,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 	fmt.Println("Looking for relevant nodes by",searchtext)
 	fmt.Println("--------------------------------------------------")
 
-	const maxdepth = 5
+	const maxdepth = 3
 	
 	var start_set []SST.NodePtr
 	
@@ -145,12 +145,14 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 					fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
 					fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
 				}
+
+				// Conic proper time paths
 			
 				alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth)
 				
 				if alt_paths != nil {
 					
-					fmt.Printf("\n-- Forward",SST.STTypeName(sttype),"cone stories ----------------------------------\n")
+					fmt.Println("\n-- Forward (",SST.STTypeName(sttype),") cone stories ----------------------------------\n")
 					
 					for p := 0; p < path_depth; p++ {
 						SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:")
