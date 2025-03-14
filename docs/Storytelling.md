@@ -100,10 +100,38 @@ than you explicitly stated in the beginning. Using `fuzzy' inferences, on the ot
 perform lateral reasoning just like humans do. The goal is to be able to tell a plausible story
 about something.
 
-The details of the graph below are not yet defined, but you can imagine that they lead to
-an organization of thought something like the picture below.
+The details of the graph below are not yet defined, but you can
+imagine that they lead to an organization of thought something like
+the picture below.
+
 
 ![A study or murder](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/knowledge.png 'The large scale structure of a well-formed knowledge graph organizes knowledge into regions that lead from one to the other.')
+
+Data entry is generally on a low level, item by item, but certain similarities
+lead to groupings of things that are related only by inference. This is what we 
+mean by **scaling** of the graph.
+
+We enter data from the bottom-up, but we usually
+want to think about it and search it conceptually in a top-down way. That's a conundrum for
+logics, because logics do not have a natural notion of scale. Focusing
+on logical relationships can easily obscure *set information*. 
+The SST principles help us to do that.
+
+### Common structures in a graph
+
+The most important structure in any directed graph is a [*matroid*](https://arxiv.org/abs/1702.04638) or *hub*.
+In Promise Theory, these imply so-called appointed roles to the nodes. If several arrows of the same
+type point to a node, then the node absorbs the property and it 
+becomes a `target' or shared property of the links. Conversely, if a node emits many arrows of the same
+type, it is a kind of distributor of that property. In other words, these structures imply many-to-one
+groupings, in which the `one' matroidal node represents the group. Groups of the four meta-types each have
+different meanings.
+
+In a directed graph there are two major type of matroid for incoming and outgoing nodes.
+
+![Common structures](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/matroid.png 'Matroids, or hub nodes, are important structures in scaling.')
+
+
 
 
 
