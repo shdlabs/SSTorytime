@@ -406,7 +406,7 @@ Not all relation types are as obvious as we may think:
 Look at the example of friendship, which has inverse like this:
 <pre>
 
- + has friend (frnd) - is a friend of (isfrnd)
+ + has friend (fr) - is a friend of (isfriend)
 
 </pre>
 What type is this? Is friendship a mutual property (friends with) or is it a
@@ -416,7 +416,7 @@ encode individual beliefs:
 <pre>
 - properties   # NOT similarity/proximity
 
- + has friend (frnd) - is a friend of (isfrnd)
+ + has friend (fr) - is a friend of (isfriend)
 
 </pre>
 If we want to enocde mutual friendship, we simply declare the relation
@@ -427,12 +427,12 @@ both ways, but we don't have to assume that:
 
  John (wrote) Mary had a little lamb
 
- Mary (frnd) Little Lamb
+ Mary (fr) Little Lamb
 
- Little Lamb (frnd) Shawn
- Shawn Little (frnd) Lamb
+ Little Lamb (fr) Shawn
+ Shawn Little (fr) Lamb
 
- Shawn (is a friend of) Team Wallace and Gromit
+ Shawn (is a friend of) Team Wallace and Gromit  // use short/long as you think of it
 
  Team Wallace and Gromit (has member) Wallace
            "             (memb) Gromit
