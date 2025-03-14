@@ -2330,5 +2330,11 @@ func SimilarString(s1,s2 string) bool {
 	return false
 }
 
+//****************************************************************************
 
+func NewLine(n int) {
 
+	if n % 8 == 0 {
+		fmt.Println()
+	}
+}
