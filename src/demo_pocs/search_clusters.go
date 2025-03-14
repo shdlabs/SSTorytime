@@ -61,7 +61,10 @@ func Analyze(ctx SST.PoSST) {
 
 	var ama map[SST.ArrowPtr][]SST.NodePtr
 
-	ama = SST.GetMatroidArrayByArrow(ctx)
+	context := "any"
+	chapter := "any"
+
+	ama = SST.GetMatroidArrayByArrow(ctx,context,chapter)
 
 	fmt.Println("FEATURE: GetMatroidArrayByArrow: raw",ama)
 
