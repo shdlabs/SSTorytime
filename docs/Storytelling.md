@@ -51,11 +51,9 @@ processes those things are involved in, i.e. the things we are interested in.
 If we make data searchable by design, we avoid gettting into trouble later.*
 
 
-## Some examples
+### A flow chart example
 
-Here are some examples of knowledge graphs.
-
-* Everyone knows about flow charts. These can be rather trivial, or very complicated. They are the basis for finite state machines (FSM), as well as error and risk graphs too. In N4L, we might write:
+Everyone knows about flow charts. These can be rather trivial, or very complicated. They are the basis for finite state machines (FSM), as well as error and risk graphs too. In N4L, we might write:
 
 <pre>
 
@@ -92,4 +90,23 @@ In this case, we defined the arrows in the `N4Lconfig.in` file.
 
 </pre>
 
+### Dial M for Murder
+
+Associations of clues and bits of information form forensic trails that are ideally suited
+to graph representations. You can imagine a crime solving team entering all their evidence into
+a graph and searching it for possible connections using inferences along the way. This is more
+powerful than simply applying logical rules to an ontology, because logic can never tell you any more
+than you explicitly stated in the beginning. Using `fuzzy' inferences, on the other hand, we can
+perform lateral reasoning just like humans do. The goal is to be able to tell a plausible story
+about something.
+
+The details of the graph below are not yet defined, but you can imagine that they lead to
+an organization of thought something like the picture below.
+
+![A study or murder](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/knowledge.png 'The large scale structure of a well-formed knowledge graph organizes knowledge into regions that lead from one to the other.')
+
+
+
 ## More generally an API for interacting with the SST graph
+
+Once data have been entered into a SSToryline database, we want to be able to extract it again.
