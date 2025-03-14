@@ -42,6 +42,6 @@ that describe spacetime semantics.
 
 
 
-![A Flow Chart is a knowledge representation](/markburgess/SSTorytime/blob/main/docs/figs/flow.png 'Flow Charts Are Knowledge Graphs')
+![A Flow Chart is a knowledge representation](/markburgess/SSTorytime/docs/figs/flow.png 'Flow Charts Are Knowledge Graphs')
 
 
