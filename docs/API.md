@@ -218,7 +218,7 @@ For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/
 
 ## Basic retrieval functions
 
-* `GetDBNodePtrMatchingName(ctx PoSST,s string) []NodePtr` - returns a list of node pointers to names matching the input string as a substring
+* `GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr` - returns a list of node pointers to names matching the input string as a substring
 
 * `GetDBNodePtrMatchingNCC(ctx PoSST,chap,nm string ,cn []string) []NodePtr` - returns a list of node pointers to nodes matching the combined input string, filtered by chapter and context strategy matches. *This is currently a simple substring match, but is intended to offer more sophisticated fuzzy matching in future.* [See demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/search_by_name.go)
 
@@ -226,7 +226,7 @@ For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/
 
 * `GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr` - Find a list of arrows matching the given name as a substring.
 
-* `GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,arrows []ArrowPtr) []NodeArrowNode` - Get a list of NodeArrowNode relations that involve the given arrow pointer type.
+* `GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chapter string,cn []string,arrows []ArrowPtr) []NodeArrowNode` - Get a list of NodeArrowNode relations that involve the given arrow pointer type.
 
 * `GetDBArrowByName(ctx PoSST,name string) ArrowPtr` - Return the arrow pointer for the given exact name.
 
@@ -256,7 +256,7 @@ For examples, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src
 
 These functions will most likely be used during browsing of data, when getting a feel for the size and shape of the data.
 
-* `GetMatroidArrayByArrow(ctx PoSST, context,chapter string) map[ArrowPtr][]NodePtr` - return a map of groups of nodes formed as matroids to arrows of all types, classified by arrow type.
+* `GetMatroidArrayByArrow(ctx PoSST, context []string,chapter string) map[ArrowPtr][]NodePtr` - return a map of groups of nodes formed as matroids to arrows of all types, classified by arrow type.
 
 * `GetMatroidArrayBySSType(ctx PoSST) map[int][]NodePtr` - return a map of groups of nodes formed as matroids to arrows classified by STType.
 

@@ -47,7 +47,7 @@ func main() {
 
 func UseGetMatroidArrayByArrow(ctx SST.PoSST) {
 
-	context := "any"
+	context := []string{"any"}
 	chapter := "any"
 
 	var ama map[SST.ArrowPtr][]SST.NodePtr

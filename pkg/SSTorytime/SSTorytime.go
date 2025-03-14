@@ -1381,11 +1381,16 @@ func DefineStoredFunctions(ctx PoSST) {
 // Retrieve
 // **************************************************************************
 
-func GetDBNodePtrMatchingName(ctx PoSST,s string) []NodePtr {
+func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
 
-	search := "%"+s+"%"
+	search := "%"+src+"%"
 
 	qstr := fmt.Sprintf("select NPtr from Node where S LIKE '%s'",search)
+
+	if chap != "any" && chap != "" {
+		chapter := "%"+chap+"%"
+		qstr += fmt.Sprintf("AND chap LIKE '%s'",chapter)
+	}
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -1508,7 +1513,7 @@ func GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr {
 
 // **************************************************************************
 
-func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,arrows []ArrowPtr) []NodeArrowNode {
+func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrows []ArrowPtr) []NodeArrowNode {
 
 	var intarrows []int
 
@@ -1518,6 +1523,16 @@ func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,arrows []ArrowPtr) []NodeArro
 
 	qstr := fmt.Sprintf("SELECT NFrom,STType,Arr,Wgt,Ctx,NTo FROM NodeArrowNode where Arr=ANY(%s::int[])",FormatSQLIntArray(intarrows))
 
+	if cn != nil {
+		context := FormatSQLStringArray(cn)
+		chapter := "%"+chap+"%"
+		
+		qstr = fmt.Sprintf("WITH matching_rel AS "+
+			" (SELECT NFrom,STType,Arr,Wgt,Ctx,NTo,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
+			"   SELECT DISTINCT nfrom FROM matching_rel "+
+			"    JOIN Node ON nptr=nfrom WHERE match=true AND chap LIKE '%s'",context,chapter)	
+	}
+	
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
@@ -1782,7 +1797,7 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string) {
 // Retrieve Analysis
 // **************************************************************************
 
-func GetMatroidArrayByArrow(ctx PoSST, context,chapter string) map[ArrowPtr][]NodePtr {
+func GetMatroidArrayByArrow(ctx PoSST, context []string,chapter string) map[ArrowPtr][]NodePtr {
 
           /* arr |             x             
             -----+---------------------------
@@ -1794,20 +1809,20 @@ func GetMatroidArrayByArrow(ctx PoSST, context,chapter string) map[ArrowPtr][]No
               52 | {"(0,4)"}
               53 | {"(0,2)"} */
 
-	var qplus string
-
 	// Postgres && operator on arrays is SET OVERLAP .. how to solve this?
 
-	if context != "any" {
-		qplus += fmt.Sprintf("WHERE %s LIKE ANY(CTX)",context)
+	qstr := "SELECT arr,array_agg(DISTINCT NTo) FROM NodeArrowNode"
+
+	if context != nil {
+		qstr += fmt.Sprintf(" WHERE %s LIKE ANY(CTX)",FormatSQLStringArray(context))
 	}
 
-	qstr := "SELECT arr,array_agg(DISTINCT NTo) FROM NodeArrowNode GROUP BY arr"
+	qstr += " GROUP BY arr"
 
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err,qstr)
 	}
 
 	var arry string
@@ -2327,6 +2342,18 @@ func SimilarString(s1,s2 string) bool {
 		return true
 	}
 
+	return false
+}
+
+//****************************************************************************
+
+func MatchesInContext(s string,context []string) bool {
+	
+	for c := range context {
+		if strings.Contains(s,context[c]) || strings.Contains(context[c],s) {
+			return true
+		}
+	}
 	return false
 }
 

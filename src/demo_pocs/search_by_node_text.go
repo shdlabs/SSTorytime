@@ -43,7 +43,7 @@ func main() {
 
 	// Get the start node
 
-	start_set := SST.GetDBNodePtrMatchingName(ctx,"start")
+	start_set := SST.GetDBNodePtrMatchingName(ctx,"","start")
 
 	for start := range start_set {
 

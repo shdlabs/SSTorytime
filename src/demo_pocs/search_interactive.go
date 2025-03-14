@@ -38,7 +38,7 @@ func main() {
 
 	//reader := bufio.NewReader(os.Stdin)
 
-	for goes := 0; goes < 10; goes ++ {
+	//for goes := 0; goes < 10; goes ++ {
 
 		/*
 		fmt.Println("\n\nEnter chapter text:")
@@ -49,26 +49,26 @@ func main() {
 		searchtext, _ := reader.ReadString('\n')
 		*/
 		searchtext := "tiger"
-		chaptext := "chinese"
-		context := "poem"
+	chaptext := "chinese"
+	context := []string{"poem"}
 
 		Search(ctx,chaptext,context,searchtext)
-	}
+	//}
 
 	SST.Close(ctx)
 }
 
 //******************************************************************
 
-func Search(ctx SST.PoSST, chaptext,context,searchtext string) {
+func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 
 	chaptext = strings.TrimSpace(chaptext)
-	context = strings.TrimSpace(context)
 	searchtext = strings.TrimSpace(searchtext)
 
 	// **** Look for meaning in the arrows ***
 
 	var ama map[SST.ArrowPtr][]SST.NodePtr
+	var count int
 
 	ama = SST.GetMatroidArrayByArrow(ctx,context,chaptext)
 
@@ -79,8 +79,9 @@ func Search(ctx SST.PoSST, chaptext,context,searchtext string) {
 	for arrowptr := range ama {
 		arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
 
-		if strings.Contains(arr_dir.Long,context) {
+		if SST.MatchesInContext(arr_dir.Long,context) {
 
+			count++
 			fmt.Println("\nArrow --(",arr_dir.Long,")--> points to a group of nodes with a similar role in the context of",context,"in the chapter",chaptext,"\n")
 			
 			for n := 0; n < len(ama[arrowptr]); n++ {
@@ -92,6 +93,10 @@ func Search(ctx SST.PoSST, chaptext,context,searchtext string) {
 			fmt.Println()
 			fmt.Println("............................................")
 		}
+	}
+
+	if count == 0 {
+		fmt.Println("    (No relevant matches)")
 	}
 
 	fmt.Println("--------------------------------------------------")
@@ -106,30 +111,29 @@ func Search(ctx SST.PoSST, chaptext,context,searchtext string) {
 	
 	for w := range search_items {
 		fmt.Print("Looking for nodes like ",search_items[w],"...")
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w])...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,chaptext,search_items[w])...)
 	}
 
-	fmt.Println("Found possible relevant nodes:",start_set)
+	fmt.Println("   Found possible relevant nodes:",start_set)
 
 	for start := range start_set {
 
 		for sttype := -SST.EXPRESS; sttype <= SST.EXPRESS; sttype++ {
 
-			fmt.Println("   ... Searching these",len(start_set),"nodes by",SST.STTypeName(sttype))
-			
 			name :=  SST.GetDBNodeByNodePtr(ctx,start_set[start])
 
 			allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
 			
-			if len(allnodes) > 1 {			
+			if len(allnodes) > 1 {
 				fmt.Println()
 				fmt.Println("    -------------------------------------------")
-				fmt.Printf("     SEARCH TEXT MATCH #%d by %s : (%s -> %s)\n",start+1,SST.STTypeName(sttype),searchtext,name.S)
+				fmt.Printf("     Search text MATCH #%d via %s connection\n",start+1,SST.STTypeName(sttype))
+				fmt.Printf("     (search %s => hit %s)\n",searchtext,name.S)
 				fmt.Println("    -------------------------------------------")
-				
+
 				for l := range allnodes {
 					fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
-					fmt.Println("   - Fwd ",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
+					fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
 				}
 			
 				alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth)
@@ -142,27 +146,32 @@ func Search(ctx SST.PoSST, chaptext,context,searchtext string) {
 						SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:")
 					}
 				}
-				fmt.Printf("     (END %d)\n",start)
+				fmt.Printf("     (END %d)\n",start+1)
 			}
 		}
+	}
+	
+	
+	// Now look at the arrow content
+	
+	fmt.Println()
+	fmt.Println("--------------------------------------------------")
+	fmt.Println("checking whether any arrows also match search",searchtext,"(in any context)")
+	fmt.Println("--------------------------------------------------")
+	
+	matching_arrows := SST.GetDBArrowsMatchingArrowName(ctx,searchtext)
+	
+	relns := SST.GetDBNodeArrowNodeMatchingArrowPtrs(ctx,chaptext,context,matching_arrows)
+	
+	for r := range relns {
 		
-		// Now look at the arrow content
+		from := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
+		to := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
+		arr := SST.ARROW_DIRECTORY[relns[r].Arr].Long
+		wgt := relns[r].Wgt
+		actx := relns[r].Ctx
+		fmt.Println("   See also: ",from.S,"--(",arr,")->",to.S,"\n       (... wgt",wgt,"in the contexts",actx,")\n")
 		
-		matching_arrows := SST.GetDBArrowsMatchingArrowName(ctx,searchtext)
-		
-		relns := SST.GetDBNodeArrowNodeMatchingArrowPtrs(ctx,matching_arrows)
-		
-		for r := range relns {
-			
-			from := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
-			to := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
-			//st := relns[r].STType
-			arr := SST.ARROW_DIRECTORY[relns[r].Arr].Long
-			wgt := relns[r].Wgt
-			actx := relns[r].Ctx
-			fmt.Println("See also: ",from.S,"--(",arr,")->",to.S,"\n       (... wgt",wgt,"in the contexts",actx,")\n")
-			
-		}
 	}
 }
 

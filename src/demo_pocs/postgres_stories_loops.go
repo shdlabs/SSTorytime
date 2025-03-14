@@ -26,7 +26,7 @@ const (
 
 func main() {
 
-        ctx := SST.Open()
+        ctx := SST.Open(false)
 
 	fmt.Println("Reset..")
 
@@ -146,7 +146,7 @@ func main() {
 
 		fmt.Println("Searching paths of length",depth,"/",maxdepth,"from",n1.NPtr)
 
-		paths := SST.GetFwdPathsAsLinks(ctx,n1.NPtr,sttype,depth)
+		paths,_ := SST.GetFwdPathsAsLinks(ctx,n1.NPtr,sttype,depth)
 
 		for p := range paths {
 
