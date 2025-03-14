@@ -237,6 +237,8 @@ For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/
 The future cone of graph, from a starting node, is the set of all connected nodes following a particular
 meta-type class (one of the four semantic spacetime meta-types). Think of this as the unfolding cone of influence, expanding from a root-cause, to integer link depth. 
 
+This function will most likely be used when making inferences, or trying to connect the dots between the steps in a storyline.
+
 For examples, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/postgres_stories.go).
 
 * `GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr` - return a set of nodes in the forward cone, for links of given STType to fixed depth. By increasing the depth, one can slice the spatial hypersurfaces of the graph, circumferentially in expanding rings around the starting node.
@@ -251,6 +253,8 @@ For examples, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src
 ## Matroid Analysis Functions
 
 For examples, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/search_clusters_functions.go) and [example](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/search_clusters.go).
+
+These functions will most likely be used during browsing of data, when getting a feel for the size and shape of the data.
 
 * `GetMatroidArrayByArrow(ctx PoSST, context,chapter string) map[ArrowPtr][]NodePtr` - return a map of groups of nodes formed as matroids to arrows of all types, classified by arrow type.
 
