@@ -118,7 +118,7 @@ newdb=# select S from Node where NPtr=(1,5);
 
 </pre>
 
-## Links and Arrows
+### Links and Arrows
 
 A link is a composite relation that involves an arrow (pointer), a context,
 and a destination node. Links are anchored to their origin nodes in the `Node` table
@@ -152,6 +152,125 @@ newdb=# select * from arrowdirectory limit 10;
 (10 rows)
 
 </pre>
+
+## The Go(lang) interfaces
+
+The SSToryline package tries to make querying the data structures easy, by providing
+generic scriptable functions that can be used easily in Go.
+
+The open a database connection, to make any kind of query, with the help of the SSToryline package:
+<pre>
+
+package main
+
+import (
+	"fmt"
+        SST "SSTorytime"
+)
+
+//******************************************************************
+
+const (
+	host     = "localhost"
+	port     = 5432
+	user     = "sstoryline"
+	password = "sst_1234"
+	dbname   = "newdb"
+)
+
+//******************************************************************
+
+func main() {
+
+	load_arrows := false
+
+	ctx := SST.Open(load_arrows)
+
+	row,err := ctx.DB.Query("SELECT NFrom,Arr,NTo FROM NodeArrowNode LIMIT 10")
+
+	var a,c string	
+	var b int
+
+	for row.Next() {		
+		err = row.Scan(&a,&b,&c)
+		fmt.Println(a,b,c)
+	}
+	
+	row.Close()
+
+	SST.Close(ctx)
+}
+
+</pre>
+
+## Low level wrapper functions
+
+In general, you will want to use the special functions written for
+querying the data.  These return data into Go structures directly,
+performing all the marshalling and de-marshalling. The following are
+basic workhorses. You will not normally use these.
+For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/postgres_stories.go).
+
+* `CreateDBNode(ctx PoSST, n Node) Node` - idempotently create a node and return its database pointer structure.
+* `AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool` - idempotently attach an outgoing link to a Node.
+* `UploadArrowToDB(ctx PoSST,arrow ArrowPtr)` - define an arrow in the arrow directory.
+* `CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool` - Create a NodeArrowNode reference.
+
+## Basic retrieval functions
+
+* `GetDBNodePtrMatchingName(ctx PoSST,s string) []NodePtr` - returns a list of node pointers to names matching the input string as a substring
+
+* `GetDBNodePtrMatchingNCC(ctx PoSST,chap,nm string ,cn []string) []NodePtr` - returns a list of node pointers to nodes matching the combined input string, filtered by chapter and context strategy matches. *This is currently a simple substring match, but is intended to offer more sophisticated fuzzy matching in future.* [See demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/search_by_name.go)
+
+* `GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node` - Return the full node details from its pointer.
+
+* `GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr` - Find a list of arrows matching the given name as a substring.
+
+* `GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,arrows []ArrowPtr) []NodeArrowNode` - Get a list of NodeArrowNode relations that involve the given arrow pointer type.
+
+* `GetDBArrowByName(ctx PoSST,name string) ArrowPtr` - Return the arrow pointer for the given exact name.
+
+* `GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory` - Return the arrow definition for a given arrow pointer.
+
+## Future cone functions
+
+The future cone of graph, from a starting node, is the set of all connected nodes following a particular
+meta-type class (one of the four semantic spacetime meta-types). Think of this as the unfolding cone of influence, expanding from a root-cause, to integer link depth. 
+
+For examples, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/postgres_stories.go).
+
+* `GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr` - return a set of nodes in the forward cone, for links of given STType to fixed depth. By increasing the depth, one can slice the spatial hypersurfaces of the graph, circumferentially in expanding rings around the starting node.
+
+* `GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link` - as above, but returning data as Link structures that contain both arrow and node information.
+
+* `GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) ([][]Link,int)` - return the set of `proper time' paths expanding perpendicularly to the cirumferential/spatial layers. This is a form of path integral representation.
+
+* `PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string)` - display a path structure returned above.
+
+
+## Matroid Analysis Functions
+
+For examples, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/search_clusters_functions.go) and [example](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/search_clusters.go).
+
+* `GetMatroidArrayByArrow(ctx PoSST, context,chapter string) map[ArrowPtr][]NodePtr` - return a map of groups of nodes formed as matroids to arrows of all types, classified by arrow type.
+
+* `GetMatroidArrayBySSType(ctx PoSST) map[int][]NodePtr` - return a map of groups of nodes formed as matroids to arrows classified by STType.
+
+* `GetMatroidHistogramByArrow(ctx PoSST) map[ArrowPtr]int` - Find the group (member frequency) sizes of the above groups by arrow.
+
+* `GetMatroidHistogramBySSType(ctx PoSST) map[int]int` - Find the group (member frequency) sizes of the above groups by STType.
+
+* `GetMatroidNodesByArrow(ctx PoSST) []ArrowMatroid` - Return the group members of a matroid by arrow type.
+
+* `GetMatroidNodesBySTType(ctx PoSST) []STTypeMatroid` - Return the group members of a matroid by STType.
+
+
+
+
+
+
+
+
 
 
 
