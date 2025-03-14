@@ -45,10 +45,17 @@ func main() {
 
 	for goes := 0; goes < 10; goes ++ {
 
+
+		fmt.Println("Current context:",context)
+
 		fmt.Println("\n\nEnter newcontext text:")
 		cntext, _ := reader.ReadString('\n')
+
 		if cntext != "" {
-			context = append(context,cntext)
+			w := strings.Split(cntext," ")
+			for c := range w {
+				context = append(context,strings.TrimSpace(w[c]))
+			}
 		}
 		fmt.Println("\n\nEnter search text:")
 		searchtext, _ := reader.ReadString('\n')
