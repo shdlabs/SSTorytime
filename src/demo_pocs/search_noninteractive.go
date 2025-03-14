@@ -12,8 +12,6 @@ package main
 
 import (
 	"fmt"
-	//"os"
-	//"bufio"
 	"strings"
 
         SST "SSTorytime"
@@ -36,24 +34,11 @@ func main() {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	//reader := bufio.NewReader(os.Stdin)
-
-	//for goes := 0; goes < 10; goes ++ {
-
-		/*
-		fmt.Println("\n\nEnter chapter text:")
-		chaptext, _ := reader.ReadString('\n')
-		fmt.Println("\n\nEnter context text:")
-		context, _ := reader.ReadString('\n')
-		fmt.Println("\n\nEnter search text:")
-		searchtext, _ := reader.ReadString('\n')
-		*/
-		searchtext := "tiger"
+	searchtext := "tiger"
 	chaptext := "chinese"
 	context := []string{"poem"}
 
-		Search(ctx,chaptext,context,searchtext)
-	//}
+	Search(ctx,chaptext,context,searchtext)
 
 	SST.Close(ctx)
 }
