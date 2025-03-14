@@ -1529,10 +1529,10 @@ func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrow
 		
 		qstr = fmt.Sprintf("WITH matching_rel AS "+
 			" (SELECT NFrom,STType,Arr,Wgt,Ctx,NTo,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
-			"   SELECT DISTINCT nfrom FROM matching_rel "+
+			"   SELECT DISTINCT NFrom,STType,Arr,Wgt,Ctx,NTo FROM matching_rel "+
 			"    JOIN Node ON nptr=nfrom WHERE match=true AND chap LIKE '%s'",context,chapter)	
 	}
-	
+
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
