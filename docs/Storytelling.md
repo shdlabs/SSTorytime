@@ -55,8 +55,7 @@ If we make data searchable by design, we avoid gettting into trouble later.*
 
 Here are some examples of knowledge graphs.
 
-* Everyone knows about flow charts. These can be rather trivial, or very complicated. They are the basis for 
-error and risk graphs too. In N4L, we might write:
+* Everyone knows about flow charts. These can be rather trivial, or very complicated. They are the basis for finite state machines (FSM), as well as error and risk graphs too. In N4L, we might write:
 
 <pre>
 
@@ -76,7 +75,21 @@ The picture looks like this:
 
 ![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/flow.png 'Flow Charts Are Knowledge Graphs')
 
+In this case, we defined the arrows in the `N4Lconfig.in` file.
 
+<pre>
+- leadsto
 
+ 	# Define arrow causal directions ... left to right
+
+        + is followed by (next) - is preceded by (prev)    
+        + then the next is (then) - previous (prior)
+
+        // Flow charts / FSMs etc
+
+	+ next if yes (ifyes) - is a positive outcome of (bifyes)
+	+ next if no (if no)  - is anegitive outcome of (bifno)
+
+</pre>
 
 ## More generally an API for interacting with the SST graph
