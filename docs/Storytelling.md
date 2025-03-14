@@ -132,9 +132,3 @@ In a directed graph there are two major type of matroid for incoming and outgoin
 ![Common structures](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/matroid.png 'Matroids, or hub nodes, are important structures in scaling.')
 
 
-
-
-
-## More generally an API for interacting with the SST graph
-
-Once data have been entered into a SSToryline database, we want to be able to extract it again.
