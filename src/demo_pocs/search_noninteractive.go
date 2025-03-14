@@ -166,7 +166,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 	for r := range relns {
 		
 		from := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
-		to := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
+		to := SST.GetDBNodeByNodePtr(ctx,relns[r].NTo)
 		arr := SST.ARROW_DIRECTORY[relns[r].Arr].Long
 		wgt := relns[r].Wgt
 		actx := relns[r].Ctx
