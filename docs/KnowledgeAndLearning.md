@@ -87,7 +87,7 @@ Learning examines spacelike and timelike invariants.
 * Learning stories discovers behavioural invariants (mesoscopic sequences).
 
 
-## Context: where, when, and strategy
+## Context: where, when, and strategy. A Scene Description Language?
 
 Consciousness is not the hard problem of knowledge: context is.
 
@@ -102,10 +102,16 @@ This is a strategioc use of context. It says: my strategy was to put this here s
 find it, if you looked up these keywords.
 
 * **Scene description**: thanks to our senses, the context in which we think of something
-may depend on a complex web of causality that is summarized by a sort of snapshot of the scene.
+may depend on a complex web of happenings (of causality) that's ultimately summarized by a sort of 
+snapshot of *the state the scene*
+that we think of as context.
 The fullest possible description of context is thus a background story for the moment.
 Think of forensic investigators solving a mystery. They assemble context as factual descriptors,
-causal motives and how all of the above come together.
+causal motives and how all of the above come together. 
+
+We might imagine a Scene Description Language
+to be the ultimate goal of context. Our hypothesis here is that this imaginary Scene Description Language
+is just a form of the semantic spacetime that we are developing under N4L.
 
 In IT knowledge systems, the concept of a formal "ontology" has found popularity.
 This is the idea that there is a kind of spanning tree of correct categorical meanings
