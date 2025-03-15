@@ -3,9 +3,13 @@
 
 : human brain :
 
-# Mitchell, Kevin J.. Free Agents: How Evolution Gave Us Free Will (p. 108). Princeton University Press. 
+# inspired Mitchell, Kevin J.. Free Agents: How Evolution Gave Us Free Will (p. 108). Princeton University Press. 
 
-human brain (consists of) forebrain, midbrain, hindbrain
+:: structure , parts etc ::
+
+human brain (consists of) forebrain
+   "       (consists of)  midbrain
+    "      (consists of)  hindbrain
 
 neocortex (structure) modular repeating columns in 6 layers
      "    (function)  accumulating knowledge 
@@ -43,6 +47,8 @@ basal ganglia (located) below cortex, forebrain
      "         (function) mediates evaluatuon and selection of actions 
      "         (depends on) signal from midbrain about reward/punishment/surprise 
 inner chamber
+
+ :: memory, spacetime encoding ::
 
 hippocampus  (function) learning and memory
      "      (function) creates temporary structured episodic record 
