@@ -11,7 +11,7 @@ N4L is an intentionally simple language, for keeping notes and
 scanning into a structured format for uploading into a database or for
 use with other tools.  The language is designed to encourage you to
 think about how you express and structure notes. That, in turn,
-encourages you to revisit, tidy and organise the notes again and again, while
+encourages you to revisit, tidy and organize the notes again and again, while
 being able to quickly turn them into a searchable graphical database, from which
 and can reason through stories.
 
@@ -399,6 +399,35 @@ a noun, but we now use both for both!
 We see that language is used and abused in fluid ways, so we need more
 discipline in thinking about what the functions of terms are.
 
+## Even Spock fell afoul of logic
+
+Depending on your background in sciences or humanities, you will almost
+certainly think very differently about how meaning arises. Those of us
+in the natural sciences are trained to think "logically" or "rationally".
+Those in humanities are apt to draw analogies and play loose and fast with
+meanings. Both of these habits have their usage, but they are only strategies
+for inference. Neither is right or wrong, and both can be misunderstood.
+
+If we aim to write about universal truth for all humanity, we have
+a communication problem of great delicacy to solve.
+If, on the other hand, our goal in modelling is to remind ourselves
+of how we think about something, to develop and evolve our own meaning,
+then we have no responsibility to be accountable to others in our choice of
+strategy. Indeed, we should be fairly suspicious of someone telling us how we *must*
+do it.
+
+Be clear: this is **not** an argument that right and wrong do not exist.
+It's a statement that **language** is a utility that can and is used in
+various ways. If we are flexible, we can learn from that. If we are inflexible,
+we will simply be confused about the difference between intent and truth.
+
+When we come to **the hard problem of context**, there are many more pitfalls
+to modelling, so it's best not to make things harder than they need to be in the beginning.
+The lesson, I believe, as a pedagog is to not allow perfect be a barrier to progress.
+
+*You can and *should* revisit and modify your choices over and over again,
+because it's exactly the process that contributes to learning, not the
+putting of things in boxes for an archive you never revisit.*
 
 ## Examples and pitfalls in modelling
 
@@ -589,6 +618,40 @@ that is learning.
 The usefulness
 of a language interface becomes clear now. It's much easier to edit your notes than to maintain
 a database.
+
+### Example: space or time?
+
+Consider the use of a word in a sentence.
+<pre>
+It was a happy accident (???) happy
+</pre>
+What can we say about the relationship between these two?
+* You could say that it is a property of the string (PROPERTY/ATTRIBUTE)
+* Is it merely a part of the sentence (CONTAINS/PART OF).
+* Is it a causal component that significantly influences the meaning? (LEADSTO/CAUSES)
+Probably no one would think the left and the right hand side were similar (SIMILAR/NEAR).
+
+To say that happy is simply a property or attribute of the longer phrase is true, but it doesn't tell us whether
+it contributes significantly to the meaning. To say that the longer phrase contains the word is also true, but
+the same criticism applies. On the other hand, to say that happy leads to happy accidents is
+unlikley though it could depend on the context.
+
+If you're still trying to make an ontology of absolute truth, in the logical sense, you should
+take a step back and rethink your model. When modelling, we fall into these traps because those of us
+with mathematical background have been
+taught to apply the discpline of logic when formulating structure. Philosophers and writers, on the
+other hand, are taught to throw everything up in the air and consider every possibliity, none more
+fundamental than the next. This can be liberating and infuriating in equal measure.
+
+The important point is this: you can apply all of these possibilities and you would not wrong,
+except in a specific context. So why not? the hard part of modelling should be limited to
+understanding context. We should not try to limit the usage of language.
+
+The fallacy of the logical truth/falsity approach is that meanings are not mutually exlcusive
+ontological catgories, they are superpositions of meanings that remain in play until something
+makes a definite selection. This is an evolutionary strategy (some might say it's a quantum-like
+strategy--indeed, the mathematics of quantum `superposition and collapse' is a representation of
+this kind of parallel hedging of bets. It's what software engineers sometimes call `lazy evaluation').
 
 
 ## Context - what is it?
