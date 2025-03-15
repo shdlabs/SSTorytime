@@ -87,10 +87,33 @@ Learning examines spacelike and timelike invariants.
 * Learning stories discovers behavioural invariants (mesoscopic sequences).
 
 
-## Context: where, when
+## Context: where, when, and strategy
+
+Consciousness is not the hard problem of knowledge: context is.
 
 When we describe the context in which we learned something we are describing the key
 for finding it later.
+
+We use the term context in several ways.
+
+* **Strategic context***: When taking notes, we use headers and headlines to descibe a context of "aboutness":
+keywords, perhaps in a phrase, that describe what we'll find in the passage.
+This is a strategioc use of context. It says: my strategy was to put this here so you would
+find it, if you looked up these keywords.
+
+* **Scene description**: thanks to our senses, the context in which we think of something
+may depend on a complex web of causality that is summarized by a sort of snapshot of the scene.
+The fullest possible description of context is thus a background story for the moment.
+Think of forensic investigators solving a mystery. They assemble context as factual descriptors,
+causal motives and how all of the above come together.
+
+In IT knowledge systems, the concept of a formal "ontology" has found popularity.
+This is the idea that there is a kind of spanning tree of correct categorical meanings
+for knowledge. Unfortunately, this idea has been shown to be flawed, if not merely false,
+many times. There are always many possible spanning trees, or interpretations that classify
+meaning. When we tell a story we might start at the beginning and follow chronology, or we might start
+with the outcome and work backwards. We might hop back and forth atemporally in order
+to discuss the relevance of the parts to the whole. The context is not a spanning tree.
 
 By following trails of thought, we are assembling a trail of prerequisites that
 our brains, evolved for navigation in a landscape, can understand. If we 
