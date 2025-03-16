@@ -122,13 +122,15 @@ The SST principles help us to do that.
 The most important structure in any directed graph is a [*matroid*](https://arxiv.org/abs/1702.04638) or *hub*.
 In Promise Theory, these imply so-called appointed roles to the nodes. If several arrows of the same
 type point to a node, then the node absorbs the property and it 
-becomes a `target' or shared property of the links. Conversely, if a node emits many arrows of the same
+becomes a "target" or shared property of the links. Conversely, if a node emits many arrows of the same
 type, it is a kind of distributor of that property. In other words, these structures imply many-to-one
-groupings, in which the `one' matroidal node represents the group. Groups of the four meta-types each have
+groupings, in which the "one" matroidal node represents the group. Groups of the four meta-types each have
 different meanings.
 
 In a directed graph there are two major type of matroid for incoming and outgoing nodes.
 
 ![Common structures](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/matroid.png 'Matroids, or hub nodes, are important structures in scaling.')
+
+
 
 
