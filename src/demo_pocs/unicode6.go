@@ -126,6 +126,31 @@ func main() {
 
 	s := "žůžo  ÅåøØææÆÆ Tā pǎole shànglái"
 	fmt.Println(paragraph, removeDiacritics(s))
+
+
+	list := []string { "Wǒ de lǎobǎn shàng gè yuè méiyǒu gěi wǒ gōngzī ",
+		"Wǎnshàng",
+		"Mǎshàng",
+		"shàngkè",
+		"Chuān shàng",
+		"Jīntiān wǎnshàng zài yīyàng dì dìfāng ..",
+		"Zài shàngmiàn",
+		"diàntī zhèngzài shàngshēng",
+		"Nǐ méi qù shàngbān ma?",
+		"WRONG: Wǒ shàng gè zhōumò *bù* gēn tā jiànmiàn",
+		"Tā jīntiān zǎoshang liǎng diǎn cái huí jiā",
+		"Zhàopiàn zài jiàzǐ shàng",
+		"Shù shàng yǒu liù zhǐ niǎo",
+		"Zhuōzǐ shàng yǒuyī běn shū",
+		"Měi gè xuéshēng xūyào shàng kēxué kè",
+		"Hēibǎn shàng xiě shénme wǒ kàn bù qīngchǔ",
+		"Kètáng shàng bùyào shuōhuà",
+		"Chīfàn yǐhòu yīdìng yào mǎshàng",
+		"Xièxiè. Zuótiān zài shàngbān. Wàngle huífù nǐ le" }
+
+	for s := range list {
+		fmt.Println(list[s], "\t", removeDiacritics(list[s]))
+	}
 }
 
 // ******************************************************************
