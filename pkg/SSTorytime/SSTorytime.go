@@ -237,7 +237,6 @@ var (
 	NO_NODE_PTR NodePtr // see Init()
 
 	WIPE_DB bool = false
-
 )
 
 //******************************************************************
@@ -1375,6 +1374,26 @@ func DefineStoredFunctions(ctx PoSST) {
 	}
 
 	row.Close()
+
+	// Matching strings with fuzzy criteria
+
+	qstr = "CREATE OR REPLACE FUNCTION match_context(set1 text[],set2 text[]) RETURNS boolean AS $fn$" +
+		"DECLARE "+
+		"BEGIN "+
+		"  IF set1 && set2 THEN " +
+		"     RETURN true;" +
+		"  END IF;" +
+		"  RETURN false;" +
+		"END ;" +
+		"$fn$ LANGUAGE plpgsql;"
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("FAILED \n",qstr,err)
+	}
+
+	row.Close()
 }
 
 // **************************************************************************
@@ -2365,3 +2384,9 @@ func NewLine(n int) {
 		fmt.Println()
 	}
 }
+
+
+//****************************************************************************
+// Unicode
+//****************************************************************************
+

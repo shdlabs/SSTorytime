@@ -6,7 +6,7 @@ To do:
 * Download this repository, which contains examples of data input
 languages N4L and examples of scripting your own programs.
 
-* Install the postgres database, and psql shell command line client.
+* Install the `postgres` database, `postgres-contrib` extensions, and `psql` shell command line client.
 
 * Install the Go(lang) programming and build environment
 
@@ -44,8 +44,10 @@ CREATE DATABASE sstoryline;
 CREATE DATABASE newdb;
 GRANT ALL PRIVILEGES ON DATABASE sst TO sstoryline;
 GRANT ALL PRIVILEGES ON DATABASE newdb TO sstoryline;
-
+CREATE EXTENSION UNACCENT;
 </pre>
+For the last line, you must have installed the extension packages `postgres-contrib`.
+
 * In the examples, two databases are used: `sstoryline` and `newdb` for personal scripting and testing,
 it's useful to have another, called `newdb`.
 * Only superuser can CREATE or DROP a database.
