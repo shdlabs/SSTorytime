@@ -121,6 +121,7 @@
 
  #  A (expresses) B, B (is expressed by) A
 
+ + has resource/reference  (resource) - is a resource for (isresource)
  + NOT correct about (wrongabt) - is NOT a case of (wrong)
  + expresses (expr)          - is expressed by  (exprby)
  + has property (prop)       - is a property of (propof)
