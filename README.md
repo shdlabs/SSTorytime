@@ -10,7 +10,7 @@
 
 * This is a work in progress for 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/) *
 
-* See the [Medium artice introduction](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
+* See the [Medium article introduction](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
 
 This project aims to make knowledge capture, querying, and dissemination easy for humans
 for general use. AI can only capture knowledge from humans, so even if we
@@ -21,7 +21,7 @@ management (with the CFEngine project) and realized that the main problem there 
 fixing machinery but rather understanding the monster you've created! Knowledge Management
 was built into CFEngine 3, but later removed again when `the market wasn't ready'. Over those
 20 years, I've studied and learned how to approach the problem in better ways. I've implemented
-the concepts using a variaety of technologies, including my own. In this latest version, I'm
+the concepts using a variety of technologies, including my own. In this latest version, I'm
 combining those lessons to make a version that builds on standard Postgres.
 
 Knowledge capture requires tools for collecting factual notes, data
@@ -55,6 +55,6 @@ The tool-set consistent of several components, starting with:
         N = note, 4 = 4 semantic type, L = language
         N4L = notes for loading
 
-* [N4L-db](docs/N4L.md) - a version of N4L that depends on the golang package SSToryline in /pkg and uploads to a postgres database. These are kept separate for now, but might be merged into N4L later.
+* [N4L-db](docs/N4L.md) - a version of N4L that depends on the Golang package SSToryline in /pkg and uploads to a postgres database. These are kept separate for now, but might be merged into N4L later.
 
 
