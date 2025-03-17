@@ -206,6 +206,11 @@ $ ../src/N4L -v -s -adj="" chinese.in
 
 ## Language syntax
 
+The N4L language has only a small number of features. It's power hopefully lies in its simplicity.
+It consists of text, small or larger (but pragmatically not huge), and relationships between them
+(in parentheses). The vocabulary of parenthetic relations is defined separately in a configuration file called `N4Lconfig.in` 
+(see below).
+
 <pre>
 
 #  a comment for the rest of the line
@@ -547,112 +552,6 @@ For instance, now we can explain the event further:
          "        (contains) black stiletto box 1446
 </pre>
 
-### Example: The "is a" fallacy
-
-During the OO-movement to sanctify Object Orientation as a software modelling approach, 
-Object Orientation rubber stamped
-the idea that objects, i.e. "things" (rather than processes or activities) are the most important concept in a model, 
-leaving *processes* asking: what am I 
-then? (The answer was usually that processes should be thought of as methods that affect
-objects, which is extremely limiting.)
-Classification of objects into types was the goal of OO, because this is a way to simply
-map ideas into first order logic, and that makes programming easy to understand.
-Alas, squeezing processes into this isn't always easy.
-The answer commonly associated with this was to use the "is a" or "is an instance of" relation
-as the way of thinking about things.
-<pre>
-Object X is an instance of a class Square
-A Square is a special case (inheriting) the class of Rectangle
-etc.
-</pre>
-The trouble with this idea is that it attempts to assert an *static* or *invariant* truth
-about the role of something (the square). But squares, indeed any properties or
-roles, are typically context dependent. We use the same concept in different ways.
-<pre>
-In DIY: A hammer is a tool.
-In music: A hammer is a musical instrument
-In DIY: a drill is a tool for making holes.
-In operations, a drill is a practice episode.
-</pre>
-If we insist of having different types for each of these cases (a type polymorphic approach),
-we push the responsibilty of the technology back onto the person using it. Technology
-is supposed to work for humans, not the other way around.
-
-The example above of damaged delivery  is a good example of how this becomes
-problematic. Suppose we introduce an object for a delivery, is that
-"Delivery" or "Shoes"? Should we have a separate object for "Damaged delivery" or is
-damage an attribute of the object. What could it mean? how would we explain it?
-
-The virtue of a semantic language is that we never have to shoe-horn
-(no pun intended) an idea into a rigid box, as we do when we try to
-lock down data types. This is an affectation of logical reasoning,
-but logic is highly restrictive (on purpose, as a matter of design).
-That makes it precise, but also extremely fragile to variability.
-
-### Example: Belonging
-
-Some relationships can be tricky to fathom. The semantics of ownership,
-for example, are not completely unambiguous. Suppose you want to say
-
-<pre>
-The bracelet "belongs to" Martin 
-</pre> 
-
-Is the bracelet a property of Martin or a part of him?  As an object,
-we might choose to make this a part the "extended space of
-martin". There is no right answer. You can choose what works for you.
-The difference between the two is how they are searched.  If we
-interpret the bracelet as "a part of" Martin then we can also say that
-the bracelet contains a diamond and thus the diamond is also a part of
-Martin, because "part of" is a transitive relationship. But if we say
-that the bracelet is just something that characterizes him, it's not
-clear that that is transitive because a bracelet may be characterized
-by being golden but this does not imply that Martin is golden!
-
-You might make the wrong choices about things initially, but it's easy to
-change your decision because the definition of the relationship is
-made independently of all the data where you use it. You'll figure out
-the bugs in your wordings as you go, and it's precisely this reworking
-that is learning.
-
-The usefulness
-of a language interface becomes clear now. It's much easier to edit your notes than to maintain
-a database.
-
-### Example: space or time?
-
-Consider the use of a word in a sentence.
-<pre>
-It was a happy accident (???) happy
-</pre>
-What can we say about the relationship between these two?
-* You could say that it is a property of the string (PROPERTY/ATTRIBUTE)
-* Is it merely a part of the sentence (CONTAINS/PART OF).
-* Is it a causal component that significantly influences the meaning? (LEADSTO/CAUSES)
-Probably no one would think the left and the right hand side were similar (SIMILAR/NEAR).
-
-To say that happy is simply a property or attribute of the longer phrase is true, but it doesn't tell us whether
-it contributes significantly to the meaning. To say that the longer phrase contains the word is also true, but
-the same criticism applies. On the other hand, to say that happy leads to happy accidents is
-unlikley though it could depend on the context.
-
-If you're still trying to make an ontology of absolute truth, in the logical sense, you should
-take a step back and rethink your model. When modelling, we fall into these traps because those of us
-with mathematical background have been
-taught to apply the discpline of logic when formulating structure. Philosophers and writers, on the
-other hand, are taught to throw everything up in the air and consider every possibliity, none more
-fundamental than the next. This can be liberating and infuriating in equal measure.
-
-The important point is this: you can apply all of these possibilities and you would not wrong,
-except in a specific context. So why not? the hard part of modelling should be limited to
-understanding context. We should not try to limit the usage of language.
-
-The fallacy of the logical truth/falsity approach is that meanings are not mutually exlcusive
-ontological catgories, they are superpositions of meanings that remain in play until something
-makes a definite selection. This is an evolutionary strategy (some might say it's a quantum-like
-strategy--indeed, the mathematics of quantum `superposition and collapse' is a representation of
-this kind of parallel hedging of bets. It's what software engineers sometimes call `lazy evaluation').
-
 
 ## Context - what is it?
 
@@ -694,6 +593,236 @@ states or classes observed. In N4L the computer under observation is the set of 
 So the contexts are terms that provide the sensory data, not the selection criteria. The user will later
 be the `policy engine', deciding what is relevant. So, you will never need to type logical expressions in
 your notes, except for highly skilled and specialized notes that we'll come back to later.*
+
+## The `N4Lconfig.in` file
+
+The structure of this file is similar to the basic language, but the sections
+are used to define the four types of arrows and their meanings.
+The syntax takes the following form for the first three kinds of arrow:
+<pre>
+- [leadsto | contains | properties ]
+
+    + forward reading (forward alias) - reverse reading (backward alias)
+    ...
+</pre>
+For the fourth or zeroth type, there is only one direction for the meaning,
+since the arrow reads the same both forwards and backwards. Note, this does not
+mean the arrow is directionless, only that the reading of the arrow against its flow
+has the same meaning! 
+
+### Leads to arrows (causality and order)
+
+Arrows that express relationships putting items in a certain order
+are called "leads to" arrows:
+<pre>
+- leadsto
+
+ 	# Define arrow causal directions ... left to right
+ 	# what does A -----> B mean, and what is its opposite?
+
+        + leads to (lt) - arriving from (af)
+
+ 	# causal order, preconditions, succession
+
+ 	+ forwards (fwd) - backwards (bwd)              # A (forwards)	B,  B (backwards) A
+ 	+ affects  (aff)  - affected by (baff)  	# A (affects) 	B,  B (affected by) A
+ 	+ causes   (cf)  - is caused by (cb)
+ 	+ used for (for)  - is a possible use of (useof)
+ 	+ generates (cf)  - is generated by (gen)
+ 	+ determines (det)  - is determined by (detby)
+
+        // Flow charts / FSMs etc
+
+	+ next if yes (ifyes) - is a positive outcome of (bifyes)
+	+ next if no (if no)  - is anegitive outcome of (bifno)
+
+        + intends (intt)    - is the intent of (iof)
+        + proposed (prop)    - proposed by (propby)
+        + decided (decide)    - decided by (decidby)
+        + spoke to (spoke)    - was spoken to by (talked)
+        + implements (impl) - was implemented by (implorg)        
+        + named after (named) - inspired the name (inspname)
+
+ 	# these next two are mutually complementary interpretations
+ 	+ succeeded by (succ) - preceded by (pre)
+ 	+ comes before (bfr)  - comes after (aft)
+
+        ## other meanings
+
+        + wrote (wrote) - written by (written)
+        + invented (invent) - invented by (inventby)
+
+        # Numbers can be interpreted either as set order (value) 
+        # or by set containment (count), so be careful with semantics!
+
+        # succeeds is more accurate in terms of order
+        #
+	# + is less than (lth) - is greater than (gth)
+
+     :: construction, building, industry ::
+
+     + supplies (supply) - is supplied by (supplyby)
+     + delivered to (delivaddr) - delivery address for (delivgoods)
+
+     + handles (handles) - is handled by (handleyby)      // has dual meanings!
+     + coordinates (coord) - is coordinated by (coordby)
+
+     :: chinese language ::
+
+ 	+ english for pinyin (ep) - pinyin for english (pe)  
+ 	+ pinyin for hanzi (ph) - hanzi for pinyin (hp)
+ 	+ hanzi for english (he) - english for hanzi (eh)
+ 	+ english for Norwegian (en) - Norwegian for english (ne)
+ 	+ english to norsk (en) - norsk to english (ne)
+
+</pre>
+
+### Contains arrows (membership)
+
+Belonging to a group or a container is also a directed relationship
+so we read it differently in either direction.
+<pre>
+- contains
+
+ + has component (has) - is component of (part)
+ + contains (c)        - is within (in)
+ + is a set of (setof) - is part of set (inset) // designations can be multi-valued
+ + contains (cont)     - is an element of (el)
+ + subsumes (sub)      - is subsumed by (subby)
+ + swallows (sw)       - is swallowed by (swby)
+ + consists of (cons)  - is part of (pt)
+ + makes use of (uses) - occurs in (occurs)
+ + has aspect (aspect) - is an aspect of (aspect of)
+ + has key issue (key issue) - is a key issue of (is key)
+ + generalizes (general) - is a special case of (special)
+ + includes (includes) - is a kind of of (kind of)
+ + has example (hasex) - example of (ex)
+ + has member (memb) - belongs to (belong)
+
+ + has friend (fr) - is considered a friend of (isfrof)
+ + discusses (disc) - is discussed in (isdisc)
+ + obeys the rule (rule) - is a rule for (rule4)
+
+ + owns (owns) - is owned by (ownby)
+ + rents (rents) - is rented by (rentby)
+ + employer of (employs) - is employed at (workat)
+ + based in (org) - is the home of (home)
+
+ + right word? (word?) - right usage? (usage?)
+
+</pre>
+
+
+### Properties arrows (attributes)
+
+<pre>
+- properties
+
+ # properties are more type-centric in a logical sense
+ # because they are ontological
+
+ #  A (expresses) B, B (is expressed by) A
+
+ + has resource/reference  (resource) - is a resource for (isresource)
+ + NOT correct about (wrongabt) - is NOT a case of (wrong)
+ + expresses (expr)          - is expressed by  (exprby)
+ + has property (prop)       - is a property of (propof)
+ + means (means)             - is meant by (meansb)
+ + is pronounced as (pronas) - is the pronunciation for (pronof)
+ + is short for (short for)  - can be shortened to (shorter)
+ + has friend (friend) - is a friend of (isfriend)
+
+ # Here we see type classifiers in action
+
+ + is called (called) - name of (pname)
+
+ + may have state (instate) - is a possible state of (stateof)
+ + may have value (hasX)    - is a possible value for (isX)
+
+ + note/remark (note) - is a note or remark about (isnotefor)
+ + added remark (remark) - is a remark concerning (concerns)
+ + please note! (NB) - is an important remark concerning (important regarding)
+
+ + stands for (sfor)  - is a case of (case of)
+ + refers to (ref)    - may be referred to as (refas)
+ + has role (role)    - is the role of (isrole)
+ + has employment status (emplstatus) - employment status of (emplstatof)
+
+ + likes (lk) - is liked by (lkby)
+
+</pre>
+
+### Similarity or proximty
+
+How similar or close together are things? Simiarity or equivalence is
+not a directed relation in its meaning, but it can be directed in its
+applicability. For example, A is next to B implies that B is next to A,
+there is no other reading of it. However A next to B doesn't mean that
+B must be next to A: what if there is the equivalent a one-way street or one-way glass
+connecting things.
+<pre>
+- similarity # nearness, proximity
+
+ looks like         	(ll)
+ sounds like        	(sl)
+
+ equals             	(eq)
+ same as                (=)
+ is not the same as 	(!eq)
+ is not                 (not)
+
+ similar to         	(sim)
+ associated with    	(ass)  # (loose coupling)
+ see also               (see)
+ near               	(nr)
+
+ met with               (met) // a mutual coincidence
+
+ comes together with    (and)
+</pre>
+
+### Annotations
+
+Annotations are special characters used to mark up a longer text, i.e. to pick out
+certain words within a body of text. A word that is prefixed by such a character will
+be linked to the whole text using the relationship declared in this list, e.g.
+<pre>
+  in a sentence +specialword can be marked ...
+</pre>
+The `+ sign` generates an implicit link:
+<pre>
+  in a sentence +specialword can be marked ...   (discusses) specialword
+</pre>
+*Languages that do not use spaces are not supported here, so one must introduce
+an artificial space separator in those cases.*
+
+The declarations are as follows:
+<pre>
+ - annotations
+
+ // for marking up a text body: body (relation) annotation
+ // hyphen is illegal, as it's common in text and ambiguous to section grammar
+
+ + (discusses)
+ = (depends on)
+ * (is a special case of)
+ # - (explains) , this is illegal
+ > (has subject)
+</pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
