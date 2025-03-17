@@ -334,6 +334,13 @@ In a directed graph there are two major type of matroid for incoming and outgoin
 
 ![Common structures](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/matroid.png 'Matroids, or hub nodes, are important structures in scaling.')
 
+We can use these structures to good effect when walking through the graph and analysing it.
+For example, if we see a hub that connected a number of things together, it acts as a kind of group leader
+for those things. If the arrow is of type contains, then it's clearly the name of the container--and we have the 
+name on the box the items belong to. On the other hand, if all arrows point to a certain item and the
+arrow is "depends on" (inverse leadsto), then we know that single node is a critical dependency, perhaps
+even a Single Point of Failure for the items! These are examples of how even sem--formal semantics provide simple insights.
+
 
 
 
