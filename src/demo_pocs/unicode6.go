@@ -134,20 +134,22 @@ func removeDiacritics(str string) string {
 
 	reg := regexp.MustCompile("[^\u0000-\u007E]")
 
-	return reg.ReplaceAllStringFunc(str, func(a string) string {
-
-		r, _ := utf8.DecodeRuneInString(a)
-
-		if replacement, ok := diacriticsMap[rune(r)]; ok {
-			return replacement
-		}
-		return a
-	})
+	return reg.ReplaceAllStringFunc(str,convert)
 }
 
 // ******************************************************************
 
-// MAGIC! This function is not called but it is used(!)
+func convert(a string) string {
+	
+	r, _ := utf8.DecodeRuneInString(a)
+	
+	if replacement, ok := diacriticsMap[rune(r)]; ok {
+		return replacement
+	}
+	return a
+}
+
+// ******************************************************************
 
 func init() {
 

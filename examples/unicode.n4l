@@ -1,5 +1,8 @@
 
---unicode notes
+--unicode notes stub
+
+
+ :: go, golang, programming ::
 
  # Unicode is key to text based representation, so we'd better get it right
 
@@ -34,3 +37,17 @@ The compatibility normal forms, NFKC and NFKD, will map many visually nearly ide
 
 
 "The internet standard for comparing strings of different character sets is called "PRECIS" i.e. Preparation, Enforcement, and Comparison of Internationalized Strings in Application Protocols and is documented in RFC7564. There is also a Go implementation at golang.org/x/text/secure/precis."
+
+
+
+
+  :: postgres ::
+
+ https:/www.enterprisedb.com/blog/unicode-normalization-postgresql-13
+
+ https:/tapoueh.org/blog/2017/07/playing-with-unicode/
+
+ "RETURN translate($1, 'éçàêè...', 'ecaee...') ;"
+
+
+
