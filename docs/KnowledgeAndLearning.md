@@ -25,6 +25,8 @@ You can't reach everyone, so you aim for a few.
 
 ## What is knowing, actually?
 
+See also [the introductory article](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de) on this topic.
+
 Knowledge is more than memory. You can `learn' a page of text by
 heart and still have no idea how to use it. As long as it remains a
 lump of data, in your head or simply on paper, in a computer, or and the back of your hand,
@@ -34,7 +36,6 @@ You won't have go and look up details because access will be integrated into you
 conscious experience and awareness of environments you know about. This is what it
 means to have knowledge at your fingertips. We are designed to use our hands
 and fingers. 
-
 
 Writing stuff down is useless if no one reads it. This is why Wikis,
 knowledge bases, and expert systems often fail. Most Wikis are
@@ -81,10 +82,266 @@ have its own learning plateau associated with its characteristic scales
 architectures have discovered this, but they are still based mainly on
 recall.
 
-Learning examines spacelike and timelike invariants.
 
-* Learning things discovers mesoscopic invariants snapshot structures.
-* Learning stories discovers behavioural invariants (mesoscopic sequences).
+## Even Spock fell afoul of logic
+
+Depending on your background in sciences or humanities, you will almost
+certainly think very differently about how meaning arises. Those of us
+in the natural sciences are trained to think "logically" or "rationally".
+Those in humanities are apt to draw analogies and play loose and fast with
+meanings. Both of these habits have their usage, but they are only strategies
+for inference. Neither is right or wrong, and both can be misunderstood.
+
+If we aim to write about universal truth for all humanity, we have
+a communication problem of great delicacy to solve.
+If, on the other hand, our goal in modelling is to remind ourselves
+of how we think about something, to develop and evolve our own meaning,
+then we have no responsibility to be accountable to others in our choice of
+strategy. Indeed, we should be fairly suspicious of someone telling us how we *must*
+do it.
+
+Be clear: this is **not** an argument that right and wrong do not exist.
+It's a statement that **language** is a utility that can and is used in
+various ways. If we are flexible, we can learn from that. If we are inflexible,
+we will simply be confused about the difference between intent and truth.
+
+When we come to **the hard problem of context**, there are many more pitfalls
+to modelling, so it's best not to make things harder than they need to be in the beginning.
+The lesson, I believe, as a pedagog is to not allow perfect be a barrier to progress.
+
+*You can and *should* revisit and modify your choices over and over again,
+because it's exactly the process that contributes to learning, not the
+putting of things in boxes for an archive you never revisit.*
+
+## Examples and pitfalls in modelling
+
+Not all relation types are as obvious as we may think:
+Look at the example of friendship, which has inverse like this:
+<pre>
+
+ + has friend (fr) - is a friend of (isfriend)
+
+</pre>
+What type is this? Is friendship a mutual property (friends with) or is it a
+personal judgement that might not be receiprocated (considers a friend)?
+If we don't assume mutual friendship, we have a more powerful abiility to
+encode individual beliefs:
+<pre>
+- properties   # NOT similarity/proximity
+
+ + has friend (fr) - is a friend of (isfriend)
+
+</pre>
+If we want to enocde mutual friendship, we simply declare the relation
+both ways, but we don't have to assume that:
+<pre>
+
+-friends
+
+ John (wrote) Mary had a little lamb
+
+ Mary (fr) Little Lamb
+
+ Little Lamb (fr) Shawn
+ Shawn Little (fr) Lamb
+
+ Shawn (is a friend of) Team Wallace and Gromit  // use short/long as you think of it
+
+ Team Wallace and Gromit (has member) Wallace
+           "             (memb) Gromit
+
+</pre>
+If we parse this, we now see
+<pre>
+- including search pathway STtype Express -> has friend
+   including inverse meaning is a friend of
+    - row/col key [ 0 / 6 ] Shawn Little
+    - row/col key [ 1 / 6 ] Little Lamb
+    - row/col key [ 2 / 6 ] Mary
+    - row/col key [ 3 / 6 ] Team Wallace and Gromit
+    - row/col key [ 4 / 6 ] Shawn
+    - row/col key [ 5 / 6 ] Lamb
+
+ directed adjacency sub-matrix ...
+
+        Shawn Little .. (   0.0   0.0   0.0   0.0   0.0   1.0)
+         Little Lamb .. (   0.0   0.0   0.0   0.0   1.0   0.0)
+                Mary .. (   0.0   1.0   0.0   0.0   0.0   0.0)
+     Team Wallace an .. (   0.0   0.0   0.0   0.0   0.0   0.0)
+               Shawn .. (   0.0   0.0   0.0   1.0   0.0   0.0)
+                Lamb .. (   0.0   0.0   0.0   0.0   0.0   0.0)
+
+ undirected adjacency sub-matrix ...
+
+        Shawn Little .. (   0.0   0.0   0.0   0.0   0.0   1.0)
+         Little Lamb .. (   0.0   0.0   1.0   0.0   1.0   0.0)
+                Mary .. (   0.0   1.0   0.0   0.0   0.0   0.0)
+     Team Wallace an .. (   0.0   0.0   0.0   0.0   1.0   0.0)
+               Shawn .. (   0.0   1.0   0.0   1.0   0.0   0.0)
+                Lamb .. (   1.0   0.0   0.0   0.0   0.0   0.0)
+
+ Eigenvector centrality score for symmetrized graph ...
+
+        Shawn Little .. (   0.1)
+         Little Lamb .. (   1.0)
+                Mary .. (   0.6)
+     Team Wallace an .. (   0.6)
+               Shawn .. (   1.0)
+                Lamb .. (   0.1)
+
+</pre>
+By computing both directed and undirected matrices automatically, N4L allows us to
+compare the effects of this modelling difference. In general, it's best not to assume
+mutual relationships, as these can easily be symmetrized but undoing mutuality is hard.
+
+When we say that A follows B, this may apply to things or actions.
+* Space travel came after aircraft. 
+* Shopping is done after work.
+* Hammering is done after assembly.
+Order applies to both processes and objects.
+
+We could imagine a supply-chain worker noting:
+<pre>
+ delivery 123 (damaged) 2 boxes
+</pre>
+It's a fair thing to write in a moment of unexpected pressure. But which of the
+four relations is this? That's the same as asking: what could we use this note
+for later? The problem with it is that it's ambiguous.
+
+The left hand side "delivery 123" is clear enough. It represents some shipment
+and we could embellish this description like this
+<pre>
+ delivery 123 (contains) shoes
+     "        (came from) Italy
+     "        (received by) shift crew 12
+</pre>
+and so on. So no problem here. The relation "damaged" becomes an issue however
+because it's referring to the condition or state of the delivery. 
+A more flexible approach would be to rewrite this as
+<pre>
+ delivery 123 (condition) 2 boxes damaged
+</pre>
+because now
+* condition is a generic and reusable relation, which is a propery attribute (type 3) of the delivery
+* "2 boxes damaged" is an event that can be explained easily
+For instance, now we can explain the event further:
+<pre>
+  2 boxes damaged (condition) water damage
+         "        (contains) red stiletto box 1445
+         "        (contains) black stiletto box 1446
+</pre>
+
+
+
+
+
+### Example: The "is a" fallacy
+
+During the OO-movement to sanctify Object Orientation as a software modelling approach, 
+Object Orientation rubber stamped
+the idea that objects, i.e. "things" (rather than processes or activities) are the most important concept in a model, 
+leaving *processes* asking: what am I 
+then? (The answer was usually that processes should be thought of as methods that affect
+objects, which is extremely limiting.)
+Classification of objects into types was the goal of OO, because this is a way to simply
+map ideas into first order logic, and that makes programming easy to understand.
+Alas, squeezing processes into this isn't always easy.
+The answer commonly associated with this was to use the "is a" or "is an instance of" relation
+as the way of thinking about things.
+<pre>
+Object X is an instance of a class Square
+A Square is a special case (inheriting) the class of Rectangle
+etc.
+</pre>
+The trouble with this idea is that it attempts to assert an *static* or *invariant* truth
+about the role of something (the square). But squares, indeed any properties or
+roles, are typically context dependent. We use the same concept in different ways.
+<pre>
+In DIY: A hammer is a tool.
+In music: A hammer is a musical instrument
+In DIY: a drill is a tool for making holes.
+In operations, a drill is a practice episode.
+</pre>
+If we insist of having different types for each of these cases (a type polymorphic approach),
+we push the responsibilty of the technology back onto the person using it. Technology
+is supposed to work for humans, not the other way around.
+
+The example above of damaged delivery  is a good example of how this becomes
+problematic. Suppose we introduce an object for a delivery, is that
+"Delivery" or "Shoes"? Should we have a separate object for "Damaged delivery" or is
+damage an attribute of the object. What could it mean? how would we explain it?
+
+The virtue of a semantic language is that we never have to shoe-horn
+(no pun intended) an idea into a rigid box, as we do when we try to
+lock down data types. This is an affectation of logical reasoning,
+but logic is highly restrictive (on purpose, as a matter of design).
+That makes it precise, but also extremely fragile to variability.
+
+### Example: Belonging
+
+Some relationships can be tricky to fathom. The semantics of ownership,
+for example, are not completely unambiguous. Suppose you want to say
+
+<pre>
+The bracelet "belongs to" Martin 
+</pre> 
+
+Is the bracelet a property of Martin or a part of him?  As an object,
+we might choose to make this a part the "extended space of
+martin". There is no right answer. You can choose what works for you.
+The difference between the two is how they are searched.  If we
+interpret the bracelet as "a part of" Martin then we can also say that
+the bracelet contains a diamond and thus the diamond is also a part of
+Martin, because "part of" is a transitive relationship. But if we say
+that the bracelet is just something that characterizes him, it's not
+clear that that is transitive because a bracelet may be characterized
+by being golden but this does not imply that Martin is golden!
+
+You might make the wrong choices about things initially, but it's easy to
+change your decision because the definition of the relationship is
+made independently of all the data where you use it. You'll figure out
+the bugs in your wordings as you go, and it's precisely this reworking
+that is learning.
+
+The usefulness
+of a language interface becomes clear now. It's much easier to edit your notes than to maintain
+a database.
+
+### Example: space or time?
+
+Consider the use of a word in a sentence.
+<pre>
+It was a happy accident (???) happy
+</pre>
+What can we say about the relationship between these two?
+* You could say that it is a property of the string (PROPERTY/ATTRIBUTE)
+* Is it merely a part of the sentence (CONTAINS/PART OF).
+* Is it a causal component that significantly influences the meaning? (LEADSTO/CAUSES)
+Probably no one would think the left and the right hand side were similar to one another (SIMILAR/NEAR).
+
+To say that happy is simply a property or attribute of the longer phrase is true, but it doesn't tell us whether
+it contributes significantly to the meaning. To say that the longer phrase contains the word is also true, but
+the same criticism applies. On the other hand, to say that happy leads to happy accidents is
+unlikley though it could depend on the context.
+
+If you're still trying to make an ontology of absolute truth, in the logical sense, you should
+take a step back and rethink your model. When modelling, we fall into these traps because those of us
+with mathematical background have been
+taught to apply the discpline of logic when formulating structure. Philosophers and writers, on the
+other hand, are taught to throw everything up in the air and consider every possibliity, none more
+fundamental than the next. This can be liberating and infuriating in equal measure.
+
+The important point is this: you can apply all of these possibilities and you would not wrong,
+except in a specific context. So why not? the hard part of modelling should be limited to
+understanding context. We should not try to limit the usage of language.
+
+The fallacy of the logical truth/falsity approach is that meanings are not mutually exlcusive
+ontological catgories, they are superpositions of meanings that remain in play until something
+makes a definite selection. This is an evolutionary strategy (some might say it's a quantum-like
+strategy--indeed, the mathematics of quantum `superposition and collapse' is a representation of
+this kind of parallel hedging of bets. It's what software engineers sometimes call `lazy evaluation').
+
+
 
 
 ## Context: where, when, and strategy. A Scene Description Language?

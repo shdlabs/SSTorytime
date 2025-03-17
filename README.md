@@ -10,6 +10,8 @@
 
 * This is a work in progress for 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/) *
 
+* See the [Medium artice introduction](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
+
 This project aims to make knowledge capture, querying, and dissemination easy for humans
 for general use. AI can only capture knowledge from humans, so even if we
 want to use AI, we'd better get the knowledge representations right.
