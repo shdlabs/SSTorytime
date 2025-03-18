@@ -23,7 +23,7 @@ const (
 	port     = 5432
 	user     = "sstoryline"
 	password = "sst_1234"
-	dbname   = "newdb"
+	dbname   = "sstoryline"
 )
 
 //******************************************************************

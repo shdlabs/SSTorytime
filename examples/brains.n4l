@@ -11,78 +11,78 @@ human brain (consists of) forebrain
    "       (consists of)  midbrain
     "      (consists of)  hindbrain
 
-neocortex (structure) modular repeating columns in 6 layers
-     "    (function)  accumulating knowledge 
-     "    (history)   outgrowth of hypothalamus
+neocortex (hasstruct) modular repeating columns in 6 layers
+     "    (role)  accumulating knowledge 
+     "    (comes from)   outgrowth of hypothalamus
 
 hypothalamus (role) key nexus between body and brain , vital decision making circuits
-     "     (located) forebrain
-     "     (function) monitoring signals in the bloodstream and neural signals
-     "     (controls) hormones
-     "     (function) regulate bodily functions—blood pressure, heart rate, enzyme levels, digestion, gut peristalsis, sweating, shivering, sleep, arousal
-     "     (comment) hypothalamus is extensively interconnected with other brain regions that collectively provide signals that motivate different types of behaviors, with varying levels of urgency. The resultant signals of need may be experienced as hunger, thirst, tiredness, cold, pain, fear, and so on; that is, basic emotions. These naturally 
+     "     (where) forebrain
+     "     (role) monitoring signals in the bloodstream and neural signals
+     "     (infl) hormones
+     "     (role) regulate bodily functions—blood pressure, heart rate, enzyme levels, digestion, gut peristalsis, sweating, shivering, sleep, arousal
+     "     (note) hypothalamus is extensively interconnected with other brain regions that collectively provide signals that motivate different types of behaviors, with varying levels of urgency. The resultant signals of need may be experienced as hunger, thirst, tiredness, cold, pain, fear, and so on; that is, basic emotions. These naturally 
 
- "     (controls) urges to eat, drink, sleep, find shelter, avoid whatever is causing pain or fear, or respond with defensive or aggressive behaviours.
+ "     (infl) urges to eat, drink, sleep, find shelter, avoid whatever is causing pain or fear, or respond with defensive or aggressive behaviours.
 
- " (history) early telencephalon meaning the end of the brain
- " (evolved to) ultimately expand in mammals to become the neocortex
+ " (comes from) early telencephalon, meaning the end of the brain
+ " (leads to) ultimately expand in mammals to become the neocortex
 
-hormones (controls) autonomic nervous system 
+hormones (infl) autonomic nervous system 
 
-thalamus (located) forebrain
+thalamus (where) forebrain
 
-retinal ganglia (located) optic nerve
-     "         (send to) tectum, thalamus
+retinal ganglia (where) optic nerve
+     "         (signals) tectum, thalamus
 
 columnar organization hypothesis
 
-column (part of) neocortex 
+column (pt) neocortex 
 column (depends on) tectum, thalamus
 
 // Each column is thus a functional unit designed to take in a variety of inputs, operate on them in some way, communicate with neighbouring column 
 
 
-basal ganglia (located) below cortex, forebrain
-     "         (structure) nested circuit loops
-     "         (function) mediates evaluatuon and selection of actions 
+basal ganglia (where) below cortex, forebrain
+     "         (hasstruct) nested circuit loops
+     "         (role) mediates evaluatuon and selection of actions 
      "         (depends on) signal from midbrain about reward/punishment/surprise 
 inner chamber
 
  :: memory, spacetime encoding ::
 
-hippocampus  (function) learning and memory
-     "      (function) creates temporary structured episodic record 
-     "      (function) structured for causal relationships A causes B
+hippocampus  (role) learning and memory
+     "      (role) creates temporary structured episodic record 
+     "      (role) structured for causal relationships A causes B
 
-tectum (function) maps incoming sensory stimulus to a menu of actions (instinct)
-   "   (function) performs various kinds of neural operations, using these integrated maps of different kinds of stimuli to derive an optimal action
-   "   (method) attractive signals engage a winner-takes-all competition
-   "   (promise type) conditional promises
+tectum (role) maps incoming sensory stimulus to a menu of actions/instincts
+   "   (role) performs various kinds of neural operations, using these integrated maps of different kinds of stimuli to derive an optimal action
+   "   (how) attractive signals engage a winner-takes-all competition
+   "   (note) conditional promises
  
-       (located) top of midbrain
+   "    (where) top of midbrain
 
-layer 1 (function) top down modulation
-        (speculate) intentions?
+layer 1 (role) top down modulation
+   "    (note) plays a role in intentionality?
 
-layer 2, layer 3 (function) collect sensory information and integrate with neighbouring columns
+layer 2, layer 3 (role) collect sensory information and integrate with neighbouring columns
 
-layer 4 (function) receive inputs from other brain areas
+layer 4 (role) receive inputs from other brain areas
 
-layer 5 (function) take signals from 2,3 and context and redistribute
-   "    (send to) tectum, cortex, spine, other hemisphere 
+layer 5 (role) take signals from 2,3 and context and redistribute
+   "    (signals) tectum, cortex, spine, other hemisphere 
 
-layer 6 (function) feedback mainly to thalamus
-   "    (send to) back to thalamus
+layer 6 (role) feedback mainly to thalamus
+   "    (signals) back to thalamus
 
-thalamus (function) conduit/relay station for sensory information
-   "     (function) performs significant processing/compression on input
+thalamus (role) conduit/relay station for sensory information
+   "     (role) performs significant processing/compression on input
 
-affordances (function) what we can do with a object or service
-   "   (promise type) conditional promises
+affordances (role) what we can do with a object or service
+   "   (note) conditional promises
 
 neurons that fire together wire together
 
-hippocampus (contains) physical structures/neural circuits (represents) cortex embody knowledge
+hippocampus (contains) physical structures/neural circuits 
 
 
 encoding meaning as "things" is efficient conceptualisation, which is a coarse graining of spacetime pattern persistence and recurrence.

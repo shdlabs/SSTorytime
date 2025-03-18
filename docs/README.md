@@ -16,6 +16,49 @@ languages N4L and examples of scripting your own programs.
 
 ## Running on a GNU/Linux distribution
 
+Once you've installed the dependencies: Go programming language, Postgres database, the Postgress-contrib library, and (optionally) the Make program, you could start like this:
+<pre>
+$ make
+$ cd examples
+$ ../src/N4L-db -u chinese*n4l Mary.n4l doors.n4l cluedo.n4l brains.n4l
+
+2442:N4L chinese.n4l WARNING: Found a note to self in the text (ZZZZZZZZ) at line 2442 
+
+2517:N4L chinese.n4l WARNING: Found a note to self in the text (HERE TO DO) at line 2517 
+Uploading nodes..
+Storing nodes...
+.................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+
+</pre>
+Once the data are uploaded, you can try a simple test, e.g. the demo program
+<pre>
+% go run search_noninteractive.go
+--------------------------------------------------
+Looking for relevant arrows by [poem] chinese
+--------------------------------------------------
+    (No relevant matches)
+--------------------------------------------------
+Looking for relevant nodes by tiger
+--------------------------------------------------
+Looking for nodes like tiger...   Found possible relevant nodes: [{4 626}]
+
+    -------------------------------------------
+     Search text MATCH #1 via -LeadsTo connection
+     (search tiger => hit two tigers, two tigers)
+    -------------------------------------------
+     - SSType -LeadsTo  cone item:  two tigers, two tigers , found in notes on chinese
+     - SSType -LeadsTo  cone item:  两只老虎, 两只老虎 , found in notes on chinese
+     - SSType -LeadsTo  cone item:  Liǎng zhī lǎohǔ, liǎng zhī lǎohǔ , found in notes on chinese
+     (END 1)
+
+--------------------------------------------------
+checking whether any arrows also match search tiger (in any context)
+--------------------------------------------------
+mark% 
+
+</pre>
+If you see something like this, everything is working.
+
 ### Installing database Postgres
 
 * Use your local package manager to download packages for `postgres databaser server` and `psql client`.
@@ -42,7 +85,7 @@ Set up a database for the examples, e.g. as root user. The default name in the c
 CREATE user sstoryline password 'sst_1234' superuser;
 CREATE DATABASE sstoryline;
 CREATE DATABASE newdb;
-GRANT ALL PRIVILEGES ON DATABASE sst TO sstoryline;
+GRANT ALL PRIVILEGES ON DATABASE sstoryline TO sstoryline;
 GRANT ALL PRIVILEGES ON DATABASE newdb TO sstoryline;
 CREATE EXTENSION UNACCENT;
 </pre>

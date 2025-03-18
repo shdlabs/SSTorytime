@@ -458,7 +458,7 @@ func GetLinkArrowByName(token string) SST.Link {
 		ptr, ok = SST.ARROW_LONG_DIR[name]
 		
 		if !ok {
-			ParseError(SST.ERR_NO_SUCH_ARROW+name)
+			ParseError(SST.ERR_NO_SUCH_ARROW+"("+name+")")
 			os.Exit(-1)
 		}
 	}

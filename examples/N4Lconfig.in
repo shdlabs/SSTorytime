@@ -49,6 +49,7 @@
  	+ gives or results in (gives) - is a result of (result of)
  	+ depends on (dep) - drives (drv)
  	+ influences (infl) - is influenced by (isinfl)
+        + signals to (signals) - is signalled by (sigby)
         + supports (support) - is supported by (suportby)
 
         + wrote (wrote) - written by (written)
@@ -112,6 +113,11 @@
 
  + right word? (word?) - right usage? (usage?)
 
+ :: cluedo ::
+
+ + happened while (activity) - happened during (during)
+ + employs method (how)  - is a method for (method)
+
 #########################################################
 
 - properties
@@ -146,11 +152,26 @@
  + has role (role)    - is the role of (isrole)
  + has employment status (emplstatus) - employment status of (emplstatof)
 
+ + has the structure of (hasstruct) - structure found in (structex)
+
  + likes (lk) - is liked by (lkby)
 
  :: delivery ::
 
  + is in condition (condition) - condition of (condof)
+
+ :: cluedo ::
+
+ + involved the use of (with) - item is implicated in  (invwith)
+ + during activity (while) - activity taking place at (takeplace)
+ + at location (where) - location involved in (location of)
+ + perpetrated by (perpby) - perpetrator of (perp)
+ + victim was (victim) - has the role of victim in (victimof)
+
+ + happened while (while) - was taking place when (during)
+ + could be used in the role of (could be) - could be fulfilled by (fulfilled by)
+
+ + is about about the subject (about) - is the subject of (hassubject)
 
 #########################################################
 
@@ -172,7 +193,8 @@
  met with               (met) // a mutual coincidence
 
  comes together with    (and)
-
+ connects to            (connects)
+ is adjacent with       (adj)
 
 #########################################################
 
@@ -185,7 +207,7 @@
  = (depends on)
  * (is a special case of)
  # - (explains) , this is illegal
- > (has subject)
+ > (hassubject)
 
 
 

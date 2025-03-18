@@ -260,7 +260,7 @@ func Open(load_arrows bool) PoSST {
 		port     = 5432
 		user     = "sstoryline"
 		password = "sst_1234"
-		dbname   = "newdb"
+		dbname   = "sstoryline"
 	)
 
         connStr := "user="+user+" dbname="+dbname+" password="+password+" sslmode=disable"
@@ -337,6 +337,9 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop table ArrowDirectory")
 		ctx.DB.QueryRow("drop table ArrowInverses")
 	}
+
+	// Ignore error
+	ctx.DB.QueryRow("CREATE EXTENSION unaccent")
 
 	if !CreateType(ctx,NODEPTR_TYPE) {
 		fmt.Println("Unable to create type as, ",NODEPTR_TYPE)
@@ -1669,7 +1672,7 @@ func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 			
 			if !ok {
 				ptr, ok = ARROW_LONG_DIR[name]
-				fmt.Println(ERR_NO_SUCH_ARROW,name)
+				fmt.Println(ERR_NO_SUCH_ARROW,"("+name+")")
 				os.Exit(-1)
 			}
 		}
@@ -1689,7 +1692,7 @@ func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 	DownloadArrowsFromDB(ctx)
 
 	if len(ARROW_DIRECTORY) < int(arrowptr) {
-		fmt.Println(ERR_NO_SUCH_ARROW,arrowptr)
+		fmt.Println(ERR_NO_SUCH_ARROW,"(",arrowptr,")")
 		os.Exit(-1)
 	}
 
