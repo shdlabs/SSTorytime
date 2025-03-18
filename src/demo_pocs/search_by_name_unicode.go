@@ -34,13 +34,11 @@ func main() {
 
 	cntx := []string{ "yes", "thank you", "(food)"}
 	chapter := "chinese"
-	name := "lamb"
+	name := "(niurou)"
 
 	nptrs := SST.GetDBNodePtrMatchingNCC(ctx,chapter,name,cntx)
 
-	fmt.Println("RETURNED",nptrs)
-
-	fmt.Println("\nExpanding..")
+	fmt.Println("\nSearching..in chapter",chapter,"\nin contexts",cntx,"\nfor",name,"\n")
 
 	for n := range nptrs {
 		node := SST.GetDBNodeByNodePtr(ctx,nptrs[n])

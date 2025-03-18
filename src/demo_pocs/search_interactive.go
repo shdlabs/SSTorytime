@@ -45,7 +45,6 @@ func main() {
 
 	for goes := 0; goes < 10; goes ++ {
 
-
 		fmt.Println("\nCurrent context:",context)
 		fmt.Println("Enter newcontext text:")
 

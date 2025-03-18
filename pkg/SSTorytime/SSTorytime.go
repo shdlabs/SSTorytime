@@ -327,6 +327,8 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function getsingletonaslinkarray")
 		ctx.DB.QueryRow("drop function idempinsertnode")
 		ctx.DB.QueryRow("drop function sumfwdpaths")
+		ctx.DB.QueryRow("drop function match_context")
+
 		ctx.DB.QueryRow("drop table Node")
 		ctx.DB.QueryRow("drop table NodeArrowNode")
 		ctx.DB.QueryRow("drop type NodePtr")
@@ -1377,15 +1379,31 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Matching strings with fuzzy criteria
 
-	qstr = "CREATE OR REPLACE FUNCTION match_context(set1 text[],set2 text[]) RETURNS boolean AS $fn$" +
-		"DECLARE "+
-		"BEGIN "+
-		"  IF set1 && set2 THEN " +
-		"     RETURN true;" +
-		"  END IF;" +
-		"  RETURN false;" +
-		"END ;" +
-		"$fn$ LANGUAGE plpgsql;"
+	qstr = "CREATE OR REPLACE FUNCTION match_context(db_set text[],user_set text[])\n"+
+		"RETURNS boolean AS $fn$\n" +
+		"DECLARE\n" +
+		"   db_ref text[];\n" +
+		"   unicode text;\n" +
+		"   item text;\n" +
+		"BEGIN \n" +
+		"FOREACH item IN ARRAY db_set LOOP\n" +
+		"   db_ref := array_append(db_ref,unaccent(item));\n" +
+		"END LOOP;\n" +
+		"FOREACH item IN ARRAY user_set LOOP\n" +
+		"  unicode := replace(item,'|','');\n" +
+		"  IF unicode != item THEN\n" +
+		"     IF unicode = ANY(db_ref) THEN \n" + // unaccented unicode match
+		"        RETURN true;\n" +
+		"     END IF;\n" +
+		"  ELSE\n" +
+		"     IF item = ANY(db_set) THEN \n" + // exact match
+		"        RETURN true;\n" +
+		"     END IF;\n" +
+		"  END IF;\n" +
+		"END LOOP;\n" +
+		"RETURN false;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -1402,13 +1420,28 @@ func DefineStoredFunctions(ctx PoSST) {
 
 func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
 
-	search := "%"+src+"%"
+	var qstr string
 
-	qstr := fmt.Sprintf("select NPtr from Node where S LIKE '%s'",search)
+	remove_accents,stripped := IsBracketedSearchTerm(src)
+
+	if remove_accents {
+		search := "%"+stripped+"%"
+		qstr = fmt.Sprintf("select NPtr from Node where unaccent(S) LIKE '%s'",search)
+	} else {
+		search := "%"+src+"%"
+		qstr = fmt.Sprintf("select NPtr from Node where S LIKE '%s'",search)
+	}
 
 	if chap != "any" && chap != "" {
-		chapter := "%"+chap+"%"
-		qstr += fmt.Sprintf("AND chap LIKE '%s'",chapter)
+
+		remove_accents,stripped := IsBracketedSearchTerm(chap)
+		if remove_accents {
+			chapter := "%"+stripped+"%"
+			qstr += fmt.Sprintf("AND unaccent(chap) LIKE '%s'",chapter)
+		} else {
+			chapter := "%"+chap+"%"
+			qstr += fmt.Sprintf("AND chap LIKE '%s'",chapter)
+		}
 	}
 
 	row, err := ctx.DB.Query(qstr)
@@ -1438,19 +1471,45 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,chap,nm string ,cn []string) []NodePtr {
 
 	// Match name, context, chapter
 
-	name := "%"+nm+"%"
-	context := FormatSQLStringArray(cn)
-	chapter := "%"+chap+"%"
+	var chap_col, nm_col string
+	var context string
+
+	remove_name_accents,nm_stripped := IsBracketedSearchTerm(nm)
+
+	if remove_name_accents {
+		nm_search := "%"+nm_stripped+"%"
+		nm_col = fmt.Sprintf("AND unaccent(S) LIKE '%s'",nm_search)
+	} else {
+		nm_search := "%"+nm+"%"
+		nm_col = fmt.Sprintf("AND S LIKE '%s'",nm_search)
+	}
+
+	if chap != "any" && chap != "" {
+
+		remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chap)
+
+		if remove_chap_accents {
+			chap_search := "%"+chap_stripped+"%"
+			chap_col = fmt.Sprintf("AND unaccent(chap) LIKE '%s'",chap_search)
+		} else {
+			chap_search := "%"+chap+"%"
+			chap_col = fmt.Sprintf("AND chap LIKE '%s'",chap_search)
+		}
+	}
+
+	_,cn_stripped := IsBracketedSearchList(cn)
+	context = FormatSQLStringArray(cn_stripped)
 
 	qstr := fmt.Sprintf("WITH matching_nodes AS "+
 		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
 		"     SELECT DISTINCT nfrom FROM matching_nodes "+
-		"      JOIN Node ON nptr=nfrom WHERE match=true AND S LIKE '%s' AND chap LIKE '%s'",context,name,chapter)
+		"      JOIN Node ON nptr=nfrom WHERE match=true %s %s",
+		context,nm_col,chap_col)
 
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetNodePtrMatchingNCC Failed",err)
+		fmt.Println("QUERY GetNodePtrMatchingNCC Failed",err,qstr)
 	}
 
 	var whole string
@@ -2385,8 +2444,50 @@ func NewLine(n int) {
 	}
 }
 
-
 //****************************************************************************
 // Unicode
 //****************************************************************************
+
+func IsBracketedSearchList(list []string) (bool,[]string) {
+
+	var stripped_list []string
+	retval := false
+
+	for i := range list {
+
+		isbrack,stripped := IsBracketedSearchTerm(list[i])
+
+		if isbrack {
+			retval = true
+			stripped_list = append(stripped_list,"|"+stripped+"|")
+		} else {
+			stripped_list = append(stripped_list,list[i])
+		}
+
+	}
+
+	return retval,stripped_list
+}
+
+//****************************************************************************
+
+func IsBracketedSearchTerm(src string) (bool,string) {
+
+	retval := false
+	stripped := src
+
+	decomp := strings.TrimSpace(src)
+
+	if len(decomp) == 0{
+		return false, ""
+	}
+
+	if decomp[0] == '(' && decomp[len(decomp)-1] == ')' {
+		retval = true
+		stripped = decomp[1:len(decomp)-1]
+		stripped = strings.TrimSpace(stripped)
+	}
+
+	return retval,stripped
+}
 
