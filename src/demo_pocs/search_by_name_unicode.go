@@ -34,7 +34,7 @@ func main() {
 
 	cntx := []string{ "yes", "thank you", "(food)"}
 	chapter := "chinese"
-	name := "(niurou)"
+	name := "(rou)"
 
 	nptrs := SST.GetDBNodePtrMatchingNCC(ctx,chapter,name,cntx)
 
