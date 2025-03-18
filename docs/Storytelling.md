@@ -65,6 +65,12 @@ a cash register, or drive a car, when and how much to water a crop.
 Basically, it's about having the familiarity with cause and effect to trust
 ourselves to act appropriately in the appropriate circumstance or context.
 
+*As a simple rule of thumb, if your notes don't form an obvious story, they are incomplete
+and you should seek to fill in the kind of elements that allow a story to be told.
+In particular, the palette of relations you might use to relate the parts into a whole.
+This is not a trivial matter, but it points to the missing pieces. When you confront
+these issues, you find yourself pursuing understanding.*
+
 A simple measure of knowledge is what kind of story we could tell.  A
 knowledgable `story' is much more than idle gossip about unfamiliar hearsay: it has
 to make sense, it has to be grounded in intimate detail. Condensing
