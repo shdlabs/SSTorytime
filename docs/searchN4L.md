@@ -14,7 +14,6 @@ $ ./searchN4L -limit 4 -chapter multi start
 Looking for relevant nodes by start
 --------------------------------------------------
 Search separately by start,..
-XXX select NPtr from Node where S LIKE '%start%' AND chap LIKE '%multi%'
 found 1 possible relevant nodes:
 
 #1 (search start => start)
