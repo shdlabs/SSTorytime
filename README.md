@@ -36,6 +36,7 @@ what we have today.
 * [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
 * [SSTorytelling](docs/Storytelling.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
+* [searchN4L - preliminary search/testing tool](docs/searchN4L.md)
 
 One of the goals of this project is to better understand what we call "reasoning".
 One used to think of reasoning, philosophically, as logical argumentation. As computers
