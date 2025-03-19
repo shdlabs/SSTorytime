@@ -1,8 +1,10 @@
 
 # searchN4L
 
-This is an experimental tool for querying the database, e.g.
+This is an experimental tool for querying the database. The details
+are likely to change in the near future as the software is tested in use.
 
+e.g. try the examples
 <pre>
 $ cd examples
 $ ../src/N4L-db -wipe -u chinese*n4l doors.n4l Mary.n4l brains.n4l
@@ -52,5 +54,30 @@ found 1 possible relevant nodes:
 Check for story paths of length 3
 No stories
 
+</pre>
 
+And
+
+<pre>
+ ./searchN4L -chapter chinese tiger
+--------------------------------------------------
+Looking for relevant nodes by tiger
+--------------------------------------------------
+Search separately by tiger,..
+XXX select NPtr from Node where S LIKE '%tiger%' AND chap LIKE '%chinese%'
+found 1 possible relevant nodes:
+
+#1 (search tiger => two tigers, two tigers)
+--------------------------------------------
+ -comes from: 'two tigers, two tigers'  in chapter notes on chinese
+ -comes from: '两只老虎, 两只老虎'      in chapter notes on chinese
+ -comes from: 'Liǎng zhī lǎohǔ, liǎng zhī lǎohǔ'        in chapter notes on chinese
+
+  Story:1: two tigers, two tigers  -(english for hanzi)->  两只老虎, 两只老虎  -(hanzi for pinyin)->  Liǎng zhī lǎohǔ, liǎng zhī lǎohǔ...
+
+
+(No relevant matroid patterns matching by arrow)
+
+Check for story paths of length 3
+No stories
 </pre>
