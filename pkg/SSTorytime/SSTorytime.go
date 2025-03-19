@@ -466,6 +466,7 @@ func AppendTextToDirectory(event Node) NodePtr {
 
 	if ok {
 		node_alloc_ptr.CPtr = cnode_slot
+		IdempAddChapterToNode(node_alloc_ptr.Class,node_alloc_ptr.CPtr,event.Chap)
 		return node_alloc_ptr
 	}
 
@@ -518,6 +519,54 @@ func AppendTextToDirectory(event Node) NodePtr {
 	}
 
 	return NO_NODE_PTR
+}
+
+//**************************************************************
+
+func IdempAddChapterToNode(class int,cptr ClassedNodePtr,chap string) {
+
+	/* In the DB version, we have handle chapter collisions
+           we want all similar names to have a single node for lateral
+           association, but we need to be able to search by chapter too,
+           so merge the chapters as an attribute list */
+
+	var node Node
+
+	switch class {
+	case N1GRAM:
+		node = NODE_DIRECTORY.N1directory[cptr]
+	case N2GRAM:
+		node = NODE_DIRECTORY.N2directory[cptr]
+	case N3GRAM:
+		node = NODE_DIRECTORY.N3directory[cptr]
+	case LT128:
+		node = NODE_DIRECTORY.LT128[cptr]
+	case LT1024:
+		node = NODE_DIRECTORY.LT1024[cptr]
+	case GT1024:
+		node = NODE_DIRECTORY.GT1024[cptr]
+	}
+
+	if strings.Contains(node.Chap,chap) {
+		return
+	}
+
+	newchap := node.Chap + "," + chap
+
+	switch class {
+	case N1GRAM:
+		NODE_DIRECTORY.N1directory[cptr].Chap = newchap
+	case N2GRAM:
+		NODE_DIRECTORY.N2directory[cptr].Chap = newchap
+	case N3GRAM:
+		NODE_DIRECTORY.N3directory[cptr].Chap = newchap
+	case LT128:
+		NODE_DIRECTORY.LT128[cptr].Chap = newchap
+	case LT1024:
+		NODE_DIRECTORY.LT1024[cptr].Chap = newchap
+	case GT1024:
+		NODE_DIRECTORY.GT1024[cptr].Chap = newchap
+	}
 }
 
 //**************************************************************
@@ -1440,13 +1489,14 @@ func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
 		remove_accents,stripped := IsBracketedSearchTerm(chap)
 		if remove_accents {
 			chapter := "%"+stripped+"%"
-			qstr += fmt.Sprintf("AND unaccent(chap) LIKE '%s'",chapter)
+			qstr += fmt.Sprintf(" AND unaccent(chap) LIKE '%s'",chapter)
 		} else {
 			chapter := "%"+chap+"%"
-			qstr += fmt.Sprintf("AND chap LIKE '%s'",chapter)
+			qstr += fmt.Sprintf(" AND chap LIKE '%s'",chapter)
 		}
 	}
 
+	fmt.Println("\nXXX",qstr)
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
@@ -1545,7 +1595,7 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("GetNodeByNodePointer Failed:",err)
+		fmt.Println("GetDBNodeByNodePointer Failed:",err)
 	}
 
 	var n Node
@@ -1559,7 +1609,7 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 	}
 
 	if count > 1 {
-		fmt.Println("GetNodeByNodePtr returned too many matches (multi-model conflict?):",count,"for ptr",db_nptr)
+		fmt.Println("GetDBNodeByNodePtr returned too many matches (multi-model conflict?):",count,"for ptr",db_nptr)
 		os.Exit(-1)
 	}
 
@@ -1856,7 +1906,7 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string) {
 
 		path_start := GetDBNodeByNodePtr(ctx,alt_paths[p][0].Dst)		
 		
-		fmt.Print(prefix," from ",path_start.S)
+		fmt.Print(prefix,p+1,": ",path_start.S)
 		
 		for l := 1; l < len(alt_paths[p]); l++ {
 			
@@ -1870,7 +1920,7 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string) {
 			fmt.Print(nextnode.S)
 		}
 		
-		fmt.Println()
+		fmt.Println("...\n")
 	}
 }
 
@@ -2371,19 +2421,19 @@ func STTypeName(sttype int) string {
 
 	switch sttype {
 	case -EXPRESS:
-		return "-Properties"
+		return "-is property of"
 	case -CONTAINS:
-		return "-Contains"
+		return "-contained by"
 	case -LEADSTO:
-		return "-LeadsTo"
+		return "-comes from"
 	case NEAR:
 		return "Similarity"
 	case LEADSTO:
-		return "+LeadsTo"
+		return "+leads to"
 	case CONTAINS:
-		return "+Contains"
+		return "+contains"
 	case EXPRESS:
-		return "+Properties"
+		return "+property"
 	}
 
 	return "Unknown ST type"
