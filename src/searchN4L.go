@@ -244,7 +244,7 @@ func SearchStoriesFrom(ctx SST.PoSST,node SST.NodePtr,sttype int,limit int) {
 	
 	if alt_paths != nil {
 		for p := 0; p < path_depth; p++ {
-			SST.PrintLinkPath(ctx,alt_paths,p,"\n  Story:")
+			SST.PrintLinkPath(ctx,alt_paths,p,"  Story:")
 		}
 	}
 }

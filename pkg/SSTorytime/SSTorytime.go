@@ -1392,7 +1392,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"BEGIN\n" +
 
 		"IF depth = maxdepth THEN\n"+
-//		"  RAISE NOTICE 'Xend path %',path;"+
+		"  RAISE NOTICE 'Xend path %',path;"+
 		"  ret_paths := Format('%s\n%s',ret_paths,path);\n"+
 		"  RETURN ret_paths;\n"+
 		"END IF;\n"+
@@ -1404,12 +1404,13 @@ func DefineStoredFunctions(ctx PoSST) {
 		"      exclude = array_append(exclude,lnk.Dst);\n" +
 		"      IF lnk IS NULL THEN" +
 		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
-//		"         RAISE NOTICE 'Yend path %',tot_path;"+
 		"      ELSE"+
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
 		"         appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude);\n" +
 		"         IF appendix IS NOT NULL THEN\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"         ELSE"+
+		"            ret_paths := tot_path;"+
 		"         END IF;"+
 		"      END IF;"+
 		"   END IF;"+
@@ -1496,7 +1497,6 @@ func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
 		}
 	}
 
-	fmt.Println("\nXXX",qstr)
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {

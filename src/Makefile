@@ -8,7 +8,7 @@ N4L: N4L.go
 N4L-db: N4L-db.go ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
-searchN4L:  ../pkg/SSTorytime/SSTorytime.go
+searchN4L: searchN4L.go ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
 clean:
