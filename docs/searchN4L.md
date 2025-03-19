@@ -4,7 +4,7 @@
 This is an experimental tool for querying the database. The details
 are likely to change in the near future as the software is tested in use.
 
-e.g. try the examples
+For now, you can get started by trying the examples, e.g.
 <pre>
 $ cd examples
 $ ../src/N4L-db -wipe -u chinese*n4l doors.n4l Mary.n4l brains.n4l
