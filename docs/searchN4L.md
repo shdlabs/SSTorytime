@@ -54,7 +54,7 @@ No stories
 </pre>
 This matches the picture from the configuration this figure:
 
-![doorways](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/doors.png'A multipath multislit topology')
+![doorways](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/doors.png 'A multipath multislit topology')
 
 <pre>
 
