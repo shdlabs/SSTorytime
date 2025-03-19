@@ -112,8 +112,6 @@ var (
 // DATA structures for input
 //**************************************************************
 
-//**************************************************************
-
 type RCtype struct {
 	Row SST.NodePtr
 	Col SST.NodePtr
@@ -1276,7 +1274,7 @@ func IdempAddArrow(from string, frptr SST.NodePtr, link SST.Link,to string, topt
 
 func IdempAddNode(s string) SST.NodePtr {
 
-	PVerbose("Event/item/node:",s)
+	PVerbose("Event/item/node:",s,"in chapter",SECTION_STATE)
 
 	l,c := SST.StorageClass(s)
 
@@ -1287,6 +1285,7 @@ func IdempAddNode(s string) SST.NodePtr {
 	new_nodetext.NPtr.Class = c
 
 	iptr := SST.AppendTextToDirectory(new_nodetext)
+
 	LINE_ITEM_REFS = append(LINE_ITEM_REFS,iptr)
 
 	return iptr

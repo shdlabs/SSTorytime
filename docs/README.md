@@ -32,6 +32,7 @@ Storing nodes...
 </pre>
 Once the data are uploaded, you can try a simple test, e.g. the demo program
 <pre>
+% cd src/demo_pocs
 % go run search_noninteractive.go
 --------------------------------------------------
 Looking for relevant arrows by [poem] chinese
