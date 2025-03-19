@@ -1,11 +1,14 @@
 #
 
-all: N4L N4L-db
+all: N4L N4L-db searchN4L
 
 N4L: N4L.go
 	go build -o $@ $@.go
 
 N4L-db: N4L-db.go ../pkg/SSTorytime/SSTorytime.go
+	go build -o $@ $@.go
+
+searchN4L:  ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
 clean:

@@ -55,6 +55,8 @@ The tool-set consistent of several components, starting with:
         N = note, 4 = 4 semantic type, L = language
         N4L = notes for loading
 
-* [N4L-db](docs/N4L.md) - a version of N4L that depends on the Golang package SSToryline in /pkg and uploads to a postgres database. These are kept separate for now, but might be merged into N4L later.
+* [N4L-db](docs/N4L.md) - a version of N4L that depends on the Golang package SSToryline in /pkg and uploads to a postgres database. This version is a compatible superset of N4L which prepares a database for searchN4L.
+
+* [searchN4L](docs/searchN4L.md) - a simple and experimental command line tool for testing the graph database
 
 
