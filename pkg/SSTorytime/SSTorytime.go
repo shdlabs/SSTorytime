@@ -1353,7 +1353,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   hop Text;\n" +
 		"   path Text;\n"+
 		"   summary_path Text[];\n"+
-		"   exclude NodePtr[] = ARRAY['(0,0)']::NodePtr[];\n" +
+		"   exclude NodePtr[] = ARRAY[start]::NodePtr[];\n" +
 		"   ret_paths Text;\n" +
 		"   startlnk Link;"+
 
@@ -1392,7 +1392,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"BEGIN\n" +
 
 		"IF depth = maxdepth THEN\n"+
-		"  RAISE NOTICE 'Xend path %',path;"+
 		"  ret_paths := Format('%s\n%s',ret_paths,path);\n"+
 		"  RETURN ret_paths;\n"+
 		"END IF;\n"+
@@ -1420,7 +1419,37 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 
-	// select SumFwdPaths('(4,1)',1,1,3);
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// Typeless cone searches
+
+	qstr = "CREATE OR REPLACE FUNCTION AllPathsAsLinks(start NodePtr,orientation text,maxdepth INT)\n"+
+		"RETURNS Text AS $fn$\n" +
+		"DECLARE\n" +
+		"   hop Text;\n" +
+		"   path Text;\n"+
+		"   summary_path Text[];\n"+
+		"   exclude NodePtr[] = ARRAY[start]::NodePtr[];\n" +
+		"   ret_paths Text;\n" +
+		"   startlnk Link;"+
+
+		"BEGIN\n" +
+
+		"startlnk := GetSingletonAsLink(start);\n"+
+		"path := Format('%s',startlnk::Text);\n"+
+		"ret_paths := SumAllPaths(startlnk,path,orientation,1,maxdepth,exclude);" +
+		
+		"RETURN ret_paths; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+	
+        // select AllPathsAsLinks('(4,1)',3)
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -1430,7 +1459,93 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
-	// Matching strings with fuzzy criteria
+	// SumAllPaths
+
+	qstr = "CREATE OR REPLACE FUNCTION SumAllPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,exclude NodePtr[])\n"+
+		"RETURNS Text AS $fn$\n" +
+		"DECLARE \n" + 
+		"    fwdlinks Link[];\n" +
+		"    stlinks  Link[];\n" +
+		"    empty Link[] = ARRAY[]::Link[];\n" +
+		"    lnk Link;\n" +
+		"    fwd Link;\n" +
+		"    ret_paths Text;\n" +
+		"    appendix Text;\n" +
+		"    tot_path Text;\n"+
+		"BEGIN\n" +
+
+		"IF depth = maxdepth THEN\n"+
+		"  ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"  RETURN ret_paths;\n"+
+		"END IF;\n"+
+
+		// Get *All* in/out Links
+		"CASE \n" +
+		"   WHEN orientation = 'bwd' THEN\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"   WHEN orientation = 'fwd' THEN\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"   ELSE\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"END CASE;\n" +
+
+		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
+		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
+		"      exclude = array_append(exclude,lnk.Dst);\n" +
+		"      IF lnk IS NULL THEN\n" +
+		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"      ELSE\n"+
+		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
+		"         appendix := SumAllPaths(lnk,tot_path,depth+1,maxdepth,exclude);\n" +
+		"         IF appendix IS NOT NULL THEN\n"+
+		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"         ELSE\n"+
+		"            ret_paths := tot_path;\n"+
+		"         END IF;\n"+
+		"      END IF;\n"+
+		"   END IF;\n"+
+		"END LOOP;\n"+
+
+		"RETURN ret_paths; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// Matching context strings with fuzzy criteria
 
 	qstr = "CREATE OR REPLACE FUNCTION match_context(db_set text[],user_set text[])\n"+
 		"RETURNS boolean AS $fn$\n" +
@@ -1446,7 +1561,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"  unicode := replace(item,'|','');\n" +
 		"  IF unicode != item THEN\n" +
 		"     IF unicode = ANY(db_ref) THEN \n" + // unaccented unicode match
-		"        RETURN true;\n" +
+	"        RETURN true;\n" +
 		"     END IF;\n" +
 		"  ELSE\n" +
 		"     IF item = ANY(db_set) THEN \n" + // exact match
@@ -1900,15 +2015,54 @@ func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) ([][]Link,in
 
 // **************************************************************************
 
-func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string) {
+func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth int) ([][]Link,int) {
+
+	// orientation should be "fwd" or "bwd" else "both"
+
+	qstr := fmt.Sprintf("select AllPathsAsLinks from AllPathsAsLinks('(%d,%d)','%s',%d);",
+		start.Class,start.CPtr,orientation,depth)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY to AllPathsAsLinks Failed",err,qstr)
+	}
+
+	var whole string
+	var retval [][]Link
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		retval = ParseLinkPath(whole)
+	}
+
+	row.Close()
+	return retval,len(retval)
+}
+
+// **************************************************************************
+
+func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter string,context []string) {
 
 	if len(alt_paths[p]) > 1 {
 
 		path_start := GetDBNodeByNodePtr(ctx,alt_paths[p][0].Dst)		
 		
 		fmt.Print(prefix,p+1,": ",path_start.S)
+
+		// unpack path list
 		
 		for l := 1; l < len(alt_paths[p]); l++ {
+
+			if !MatchContexts(context,alt_paths[p][l].Ctx) {
+				break
+			}
+
+			nextnode := GetDBNodeByNodePtr(ctx,alt_paths[p][l].Dst)
+
+			if !SimilarString(nextnode.Chap,chapter) {
+				break
+			}
 			
 			arr := GetDBArrowByPtr(ctx,alt_paths[p][l].Arr)
 			
@@ -1916,7 +2070,6 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string) {
 				fmt.Print("  -(",arr.Long,")->  ")
 			}
 			
-			nextnode := GetDBNodeByNodePtr(ctx,alt_paths[p][l].Dst)
 			fmt.Print(nextnode.S)
 		}
 		
@@ -2160,7 +2313,7 @@ func GetMatroidNodesBySTType(ctx PoSST) []STTypeMatroid {
 }
 
 // **************************************************************************
-// Tools
+// SQL marshalling Tools
 // **************************************************************************
 
 func ParseSQLNPtrArray(s string) []NodePtr {
@@ -2376,6 +2529,8 @@ func StorageClass(s string) (int,int) {
 }
 
 // **************************************************************************
+// Semantic Spacetime names and channels
+// **************************************************************************
 
 func STTypeDBChannel(sttype int) string {
 
@@ -2440,6 +2595,78 @@ func STTypeName(sttype int) string {
 }
 
 // **************************************************************************
+// String matching - keep this simple for now
+// **************************************************************************
+
+func SimilarString(s1,s2 string) bool {
+
+	// Placeholder
+	// Need to handle pluralisation patterns etc... multi-language
+
+	if s1 == s2 {
+		return true
+	}
+
+	if s1 == "" || s2 == "" {
+		return false
+	}
+
+	if (s1[0] == '!' && s2[0] != '!') || (s1[0] != '!' && s2[0] == '!') {
+		if !strings.Contains(s2,s1) || !strings.Contains(s1,s2) {
+			return true
+		}
+	}
+
+	if strings.Contains(s2,s1) || strings.Contains(s1,s2) {
+		return true
+	}
+
+	return false
+}
+
+//****************************************************************************
+
+func MatchContexts(context1 []string,context2 []string) bool {
+
+	for c := range context1 {
+		if MatchesInContext(context1[c],context2) {
+			return true
+		}
+	}
+	return false 
+}
+
+//****************************************************************************
+
+func MatchesInContext(s string,context []string) bool {
+	
+	for c := range context {
+		if SimilarString(s,context[c]) {
+			return true
+		}
+	}
+	return false 
+}
+
+// **************************************************************************
+// Misc tools
+// **************************************************************************
+
+func EscapeString(s string) string {
+
+	return strings.Replace(s, "'", ".", -1)
+}
+
+//****************************************************************************
+
+func NewLine(n int) {
+
+	if n % 8 == 0 {
+		fmt.Println()
+	}
+}
+
+// **************************************************************************
 
 func Already (s string, cone map[int][]string) bool {
 
@@ -2452,49 +2679,6 @@ func Already (s string, cone map[int][]string) bool {
 	}
 
 	return false
-}
-
-// **************************************************************************
-
-func EscapeString(s string) string {
-
-	return strings.Replace(s, "'", ".", -1)
-}
-
-// **************************************************************************
-
-func SimilarString(s1,s2 string) bool {
-
-	// Placeholder
-
-	// Need to handle pluralisation patterns etc... multi-language
-
-	if strings.Contains(s2,s1) || strings.Contains(s1,s2) {
-		return true
-	}
-
-	return false
-}
-
-//****************************************************************************
-
-func MatchesInContext(s string,context []string) bool {
-	
-	for c := range context {
-		if strings.Contains(s,context[c]) || strings.Contains(context[c],s) {
-			return true
-		}
-	}
-	return false
-}
-
-//****************************************************************************
-
-func NewLine(n int) {
-
-	if n % 8 == 0 {
-		fmt.Println()
-	}
 }
 
 //****************************************************************************
