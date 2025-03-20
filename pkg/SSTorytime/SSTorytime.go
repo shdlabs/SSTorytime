@@ -2050,6 +2050,7 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 		
 		fmt.Print(prefix,p+1,": ",path_start.S)
 
+		var format int
 		// unpack path list
 		
 		for l := 1; l < len(alt_paths[p]); l++ {
@@ -2057,6 +2058,8 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 			if !MatchContexts(context,alt_paths[p][l].Ctx) {
 				break
 			}
+
+			NewLine(format)
 
 			nextnode := GetDBNodeByNodePtr(ctx,alt_paths[p][l].Dst)
 
@@ -2071,6 +2074,7 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 			}
 			
 			fmt.Print(nextnode.S)
+			format += 2
 		}
 		
 		fmt.Println("...\n")

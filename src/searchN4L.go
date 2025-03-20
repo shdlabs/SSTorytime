@@ -240,10 +240,10 @@ func SearchStoriesFrom(ctx SST.PoSST,node SST.NodePtr,sttype int,limit int) {
 
 	// Conic proper time paths
 	
-	alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,node,sttype,limit)
+	alt_paths,num_paths := SST.GetFwdPathsAsLinks(ctx,node,sttype,limit)
 	
 	if alt_paths != nil {
-		for p := 0; p < path_depth; p++ {
+		for p := 0; p < num_paths; p++ {
 			SST.PrintLinkPath(ctx,alt_paths,p,"  Story:",CHAPTER,CONTEXT)
 		}
 	}
