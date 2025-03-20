@@ -2607,8 +2607,8 @@ func SimilarString(s1,s2 string) bool {
 		return true
 	}
 
-	if s1 == "" || s2 == "" {
-		return false
+	if s1 == "" || s2 == "" || s1 == "any" || s2 == "any" {  // same as any
+		return true
 	}
 
 	if (s1[0] == '!' && s2[0] != '!') || (s1[0] != '!' && s2[0] == '!') {
@@ -2628,7 +2628,12 @@ func SimilarString(s1,s2 string) bool {
 
 func MatchContexts(context1 []string,context2 []string) bool {
 
+	if context1 == nil || context2 == nil {
+		return true
+	}
+
 	for c := range context1 {
+
 		if MatchesInContext(context1[c],context2) {
 			return true
 		}
