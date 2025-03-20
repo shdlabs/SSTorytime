@@ -8,13 +8,28 @@
 
 # SSTorytime
 
-* This is a work in progress for 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/) *
+* This is a work in progress during 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/) *
 
 * See the [Medium article introduction](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
 
 This project aims to make knowledge capture, querying, and dissemination easy for humans
 for general use. AI can only capture knowledge from humans, so even if we
 want to use AI, we'd better get the knowledge representations right.
+
+*Imagine being able to take notes easily, work with them, and later be
+able to "rummage around" in everything to understand what you were
+thinking, and how it all fits together.  In other words, remaining in
+control of what you see and ask, rather than handing over to a batch
+job summary by an LLM text tool in which you get an answer `take it or leave it'.*
+
+
+* [The Mission and Approach](docs/approach.md)
+* [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
+* [SSTorytelling](docs/Storytelling.md)
+* [N4L - Notes For Learning/Loading](docs/N4L.md)
+* [searchN4L - preliminary search/testing tool](docs/searchN4L.md)
+
+## History
 
 The roots of this project go back almost 20 years for me, when I was working in configuration
 management (with the CFEngine project) and realized that the main problem there was not
@@ -31,12 +46,6 @@ this in the past, trying to force discipline onto people at the wrong
 moment and neglecting to do so when it matters. As a lifelong teacher
 of ideas, I've studied this problem and think we can do better than
 what we have today.
-
-* [The Mission and Approach](docs/approach.md)
-* [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
-* [SSTorytelling](docs/Storytelling.md)
-* [N4L - Notes For Learning/Loading](docs/N4L.md)
-* [searchN4L - preliminary search/testing tool](docs/searchN4L.md)
 
 One of the goals of this project is to better understand what we call "reasoning".
 One used to think of reasoning, philosophically, as logical argumentation. As computers
