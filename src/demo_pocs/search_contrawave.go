@@ -35,7 +35,7 @@ func main() {
 
 	// Contra colliding wavefronts as path integral solver
 
-	const maxdepth = 5
+	const maxdepth = 6
 	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var count int
