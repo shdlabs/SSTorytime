@@ -886,8 +886,8 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 func UploadArrowToDB(ctx PoSST,arrow ArrowPtr) {
 
 	staidx := ARROW_DIRECTORY[arrow].STAindex
-	long := ARROW_DIRECTORY[arrow].Long
-	short := ARROW_DIRECTORY[arrow].Short
+	long := SQLEscape(ARROW_DIRECTORY[arrow].Long)
+	short := SQLEscape(ARROW_DIRECTORY[arrow].Short)
 
 	qstr := fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) VALUES (%d,'%s','%s',%d)",staidx,long,short,arrow)
 
@@ -2042,6 +2042,30 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 
 // **************************************************************************
 
+func AdjointLinkPath(LL []Link) []Link {
+
+	var adjoint []Link
+
+	// len(seq)-1 matches the last node of right join
+	// when we invert, links and destinations are shifted
+
+	var prevarrow ArrowPtr
+
+	for j := len(LL)-1; j >= 0; j-- {
+
+		var lnk Link
+
+		lnk.Dst = LL[j].Dst
+		lnk.Arr = INVERSE_ARROWS[prevarrow]
+		adjoint = append(adjoint,lnk)
+		prevarrow = LL[j].Arr
+	}
+
+	return adjoint
+}
+
+// **************************************************************************
+
 func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter string,context []string) {
 
 	if len(alt_paths[p]) > 1 {
@@ -2318,6 +2342,15 @@ func GetMatroidNodesBySTType(ctx PoSST) []STTypeMatroid {
 
 // **************************************************************************
 // SQL marshalling Tools
+// **************************************************************************
+
+func SQLEscape(s string) string {
+
+	// single quotes must be doubled!
+
+	return strings.Replace(s, `'`, `''`, -1)
+}
+
 // **************************************************************************
 
 func ParseSQLNPtrArray(s string) []NodePtr {
