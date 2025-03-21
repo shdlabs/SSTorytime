@@ -30,12 +30,12 @@ const (
 
 func main() {
 
-	load_arrows := false
+	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
 	// Contra colliding wavefronts as path integral solver
 
-	const maxdepth = 7
+	const maxdepth = 5
 	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var count int
@@ -57,10 +57,10 @@ func main() {
 		left_paths,Lnum = SST.GetEntireConePathsAsLinks(ctx,"fwd",leftptrs[0],ldepth)		
 		right_paths,Rnum = SST.GetEntireConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth)		
 		
-		solutions := WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+		solutions,loop_corrections := WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
-			fmt.Println("-------------------------------------------")
+			fmt.Println("-- T R E E ----------------------------------")
 			fmt.Println("Path solution",count,"from",start_bc,"to",end_bc,"with lengths",ldepth,-rdepth)
 
 			for s := 0; s < len(solutions); s++ {
@@ -69,6 +69,18 @@ func main() {
 			}
 			count++
 			fmt.Println("-------------------------------------------")
+		}
+
+		if len(loop_corrections) > 0 {
+			fmt.Println("++ L O O P S +++++++++++++++++++++++++++++++")
+			fmt.Println("Path solution",count,"from",start_bc,"to",end_bc,"with lengths",ldepth,-rdepth)
+
+			for s := 0; s < len(loop_corrections); s++ {
+				prefix := fmt.Sprintf(" - story %d: ",s)
+				SST.PrintLinkPath(ctx,loop_corrections,s,prefix,"",nil)
+			}
+			count++
+			fmt.Println("+++++++++++++++++++++++++++++++++++++++++++")
 		}
 
 		if turn % 2 == 0 {
@@ -81,12 +93,13 @@ func main() {
 
 // **********************************************************
 
-func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rnum,ldepth,rdepth int) [][]SST.Link {
+func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rnum,ldepth,rdepth int) ([][]SST.Link,[][]SST.Link) {
 
 	// The wave front consists of Lnum and Rnum points left_paths[len()-1].
 	// Any of the
 
 	var solutions [][]SST.Link
+	var loops [][]SST.Link
 
 	// Start expanding the waves from left and right, one step at a time, alternately
 
@@ -114,13 +127,15 @@ func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rn
 		fmt.Println("Right adjoint:",ShowNodePath(ctx,adjoint))
 		fmt.Println(".....................\n")
 
-		if IsDAG(LRsplice) || true {
+		if IsDAG(LRsplice) {
 			solutions = append(solutions,LRsplice)
+		} else {
+			loops = append(loops,LRsplice)
 		}
 	}
 
 	fmt.Printf("  (found %d touching solutions)\n",len(incidence))
-	return solutions
+	return solutions,loops
 }
 
 // **********************************************************
