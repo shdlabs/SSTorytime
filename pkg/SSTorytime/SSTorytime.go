@@ -2049,13 +2049,11 @@ func AdjointLinkPath(LL []Link) []Link {
 	// len(seq)-1 matches the last node of right join
 	// when we invert, links and destinations are shifted
 
-	var prevarrow ArrowPtr
+	var prevarrow ArrowPtr = INVERSE_ARROWS[0]
 
 	for j := len(LL)-1; j >= 0; j-- {
 
-		var lnk Link
-
-		lnk.Dst = LL[j].Dst
+		var lnk Link = LL[j]
 		lnk.Arr = INVERSE_ARROWS[prevarrow]
 		adjoint = append(adjoint,lnk)
 		prevarrow = LL[j].Arr

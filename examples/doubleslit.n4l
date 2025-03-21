@@ -3,23 +3,23 @@
 
  :: physics, connectivity, path example ::
 
- A1 (lt) A2
-  " (lt) A3
- A2 (lt) A5
- A3 (lt) A5
- A3 (lt) A6
- A4 (lt) S1
- A5 (lt) S1
- A5 (lt) S2
- A6 (lt) S2
+ A1 (forwards) A2
+  " (forwards) A3
+ A2 (forwards) A5
+ A3 (forwards) A5
+ A3 (forwards) A6
+ A4 (forwards) S1
+ A5 (forwards) S1
+ A5 (forwards) S2
+ A6 (forwards) S2
 
- S1 (lt) B1
- S2 (lt) B2
- S2 (lt) B3
+ S1 (forwards) B1
+ S2 (forwards) B2
+ S2 (forwards) B3
  
- B1 (lt) B4
- B2 (lt) B4
- B2 (lt) B5
- B3 (lt) B5
- B4 (lt) B6
+ B1 (forwards) B4
+ B2 (forwards) B4
+ B2 (forwards) B5
+ B3 (forwards) B5
+ B4 (forwards) B6
 

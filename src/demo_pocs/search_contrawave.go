@@ -35,7 +35,7 @@ func main() {
 
 	// Contra colliding wavefronts as path integral solver
 
-	const maxdepth = 10
+	const maxdepth = 7
 	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var count int
@@ -60,12 +60,15 @@ func main() {
 		solutions := WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
+			fmt.Println("-------------------------------------------")
 			fmt.Println("Path solution",count,"from",start_bc,"to",end_bc,"with lengths",ldepth,-rdepth)
 
 			for s := 0; s < len(solutions); s++ {
-				SST.PrintLinkPath(ctx,solutions,s,"  Story:","",nil)
+				prefix := fmt.Sprintf(" - story %d: ",s)
+				SST.PrintLinkPath(ctx,solutions,s,prefix,"",nil)
 			}
 			count++
+			fmt.Println("-------------------------------------------")
 		}
 
 		if turn % 2 == 0 {
@@ -89,7 +92,10 @@ func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rn
 
 	leftfront := WaveFront(left_paths,Lnum)
 	rightfront := WaveFront(right_paths,Rnum)
-	
+
+	fmt.Println("\n  Left front radius",ldepth,":",ShowNode(ctx,leftfront))
+	fmt.Println("  Right front radius",rdepth,":",ShowNode(ctx,rightfront))
+
 	join_match := NodesOverlap(ctx,leftfront,rightfront)
 	
 	for join := range join_match {
@@ -100,13 +106,22 @@ func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rn
 		var LRsplice []SST.Link		
 
 		LRsplice = LeftJoin(LRsplice,left_paths[lp])
-		LRsplice = RightComplementJoin(LRsplice,right_paths[rp])
-		solutions = append(solutions,LRsplice)
-		return solutions
+		adjoint := SST.AdjointLinkPath(right_paths[rp])
+		LRsplice = RightComplementJoin(LRsplice,adjoint)
+
+		fmt.Println("...SPLICE............")
+		fmt.Println("Left tendril",ShowNodePath(ctx,left_paths[lp]))
+		fmt.Println("Right tendril",ShowNodePath(ctx,right_paths[rp]))
+		fmt.Println("Right adjoint:",ShowNodePath(ctx,adjoint))
+		fmt.Println(".....................\n")
+
+		if IsDAG(LRsplice) || true {
+			solutions = append(solutions,LRsplice)
+		}
 	}
 
-
-	return nil
+	fmt.Printf("  (found %d touching solutions)\n",len(join_match))
+	return solutions
 }
 
 // **********************************************************
@@ -116,9 +131,14 @@ func WaveFront(path [][]SST.Link,num int) []SST.NodePtr {
 	// assemble the cross cutting nodeptrs of the wavefronts
 
 	var front []SST.NodePtr
+	var idemp = make(map[SST.NodePtr]int)
 
 	for l := 0; l < num; l++ {
-		front = append(front,path[l][len(path[l])-1].Dst)
+		idemp[path[l][len(path[l])-1].Dst]++
+	}
+
+	for unique := range idemp {
+		front = append(front,unique)
 	}
 
 	return front
@@ -129,14 +149,24 @@ func WaveFront(path [][]SST.Link,num int) []SST.NodePtr {
 func NodesOverlap(ctx SST.PoSST,left,right []SST.NodePtr) map[int]int {
 
 	var LRsplice = make(map[int]int)
+	var list string
+
+	// Return coordinate pairs of partial paths to splice
 
 	for l := range left {
 		for r := range right {
 			if left[l] == right[r] {
+				node := SST.GetDBNodeByNodePtr(ctx,left[l])
+				list += node.S+", "
 				LRsplice[l] = r
 			}
 		}
 	}
+
+	if len(list) > 0 {
+		fmt.Println("\n  ***  Waves touch",len(LRsplice),"times at: ",list)
+	}
+
 	return LRsplice
 }
 
@@ -154,16 +184,13 @@ func LeftJoin(LRsplice,seq []SST.Link) []SST.Link {
 
 // **********************************************************
 
-func RightComplementJoin(LRsplice,seq []SST.Link) []SST.Link {
+func RightComplementJoin(LRsplice,adjoint []SST.Link) []SST.Link {
 
 	// len(seq)-1 matches the last node of right join
+	// when we invert, links and destinations are shifted
 
-	for j := len(seq)-2; j >= 0; j-- {
-
-		link := seq[j]
-		link.Arr = SST.INVERSE_ARROWS[link.Arr]
-
-		LRsplice = append(LRsplice,link)
+	for j := 1; j < len(adjoint); j++ {
+		LRsplice = append(LRsplice,adjoint[j])
 	}
 
 	return LRsplice
@@ -171,16 +198,53 @@ func RightComplementJoin(LRsplice,seq []SST.Link) []SST.Link {
 
 // **********************************************************
 
-func ShowArray(ctx SST.PoSST,s string, a []SST.NodePtr) {
+func IsDAG(seq []SST.Link) bool {
 
-	fmt.Print(s,": ")
+	var freq = make(map[SST.NodePtr]int)
 
-	for m := range a {
-		n := SST.GetDBNodeByNodePtr(ctx,a[m])
-		fmt.Print(n.S,",")
+	for i := range seq {
+		freq[seq[i].Dst]++
 	}
-	fmt.Println()
+
+	for n := range freq {
+		if freq[n] > 1 {
+			return false
+		}
+	}
+
+	return true
 }
+
+// **********************************************************
+
+func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
+
+	var ret string
+
+	for n := range nptr {
+		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
+		ret += node.S + ","
+	}
+
+	return ret
+}
+
+// **********************************************************
+
+func ShowNodePath(ctx SST.PoSST,lnk []SST.Link) string {
+
+	var ret string
+
+	for n := range lnk {
+		node := SST.GetDBNodeByNodePtr(ctx,lnk[n].Dst)
+		arrs := SST.GetDBArrowByPtr(ctx,lnk[n].Arr).Long
+		ret += fmt.Sprintf("(%s) -> %s ",arrs,node.S)
+	}
+
+	return ret
+}
+
+
 
 
 
