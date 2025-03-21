@@ -96,12 +96,11 @@ func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rn
 	fmt.Println("\n  Left front radius",ldepth,":",ShowNode(ctx,leftfront))
 	fmt.Println("  Right front radius",rdepth,":",ShowNode(ctx,rightfront))
 
-	join_match := NodesOverlap(ctx,leftfront,rightfront)
+	incidence := NodesOverlap(ctx,leftfront,rightfront)
 	
-	for join := range join_match {
+	for lp := range incidence {
 
-		lp := join
-		rp := join_match[join]
+		rp := incidence[lp]
 
 		var LRsplice []SST.Link		
 
@@ -109,7 +108,7 @@ func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rn
 		adjoint := SST.AdjointLinkPath(right_paths[rp])
 		LRsplice = RightComplementJoin(LRsplice,adjoint)
 
-		fmt.Println("...SPLICE............")
+		fmt.Printf("...SPLICE PATHS L%d with R%d.....\n",lp,rp)
 		fmt.Println("Left tendril",ShowNodePath(ctx,left_paths[lp]))
 		fmt.Println("Right tendril",ShowNodePath(ctx,right_paths[rp]))
 		fmt.Println("Right adjoint:",ShowNodePath(ctx,adjoint))
@@ -120,7 +119,7 @@ func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rn
 		}
 	}
 
-	fmt.Printf("  (found %d touching solutions)\n",len(join_match))
+	fmt.Printf("  (found %d touching solutions)\n",len(incidence))
 	return solutions
 }
 
@@ -131,14 +130,9 @@ func WaveFront(path [][]SST.Link,num int) []SST.NodePtr {
 	// assemble the cross cutting nodeptrs of the wavefronts
 
 	var front []SST.NodePtr
-	var idemp = make(map[SST.NodePtr]int)
 
 	for l := 0; l < num; l++ {
-		idemp[path[l][len(path[l])-1].Dst]++
-	}
-
-	for unique := range idemp {
-		front = append(front,unique)
+		front = append(front,path[l][len(path[l])-1].Dst)
 	}
 
 	return front
@@ -153,8 +147,8 @@ func NodesOverlap(ctx SST.PoSST,left,right []SST.NodePtr) map[int]int {
 
 	// Return coordinate pairs of partial paths to splice
 
-	for l := range left {
-		for r := range right {
+	for l := 0; l < len(left); l++ {
+		for r := 0; r < len(right); r++ {
 			if left[l] == right[r] {
 				node := SST.GetDBNodeByNodePtr(ctx,left[l])
 				list += node.S+", "
@@ -164,7 +158,7 @@ func NodesOverlap(ctx SST.PoSST,left,right []SST.NodePtr) map[int]int {
 	}
 
 	if len(list) > 0 {
-		fmt.Println("\n  ***  Waves touch",len(LRsplice),"times at: ",list)
+		fmt.Println("  (i.e. waves impinge",len(LRsplice),"times at: ",list,")\n")
 	}
 
 	return LRsplice
