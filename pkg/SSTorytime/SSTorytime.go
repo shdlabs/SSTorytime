@@ -1523,7 +1523,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
 		"      ELSE\n"+
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
-		"         appendix := SumAllPaths(lnk,tot_path,depth+1,maxdepth,exclude);\n" +
+		"         appendix := SumAllPaths(lnk,tot_path,orientation,depth+1,maxdepth,exclude);\n" +
 		"         IF appendix IS NOT NULL THEN\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
 		"         ELSE\n"+
@@ -2023,7 +2023,7 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 		start.Class,start.CPtr,orientation,depth)
 
 	row, err := ctx.DB.Query(qstr)
-	
+
 	if err != nil {
 		fmt.Println("QUERY to AllPathsAsLinks Failed",err,qstr)
 	}
@@ -2099,7 +2099,7 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 			format += 2
 		}
 		
-		fmt.Println("...\n")
+		fmt.Println("...")
 	}
 }
 

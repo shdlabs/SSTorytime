@@ -33,15 +33,15 @@ func main() {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	nodeptrs := SST.GetDBNodePtrMatchingName(ctx,"slit","start")
+	nodeptrs := SST.GetDBNodePtrMatchingName(ctx,"slit","A1")
 
 	fmt.Println("Found",nodeptrs)
 
 	for n := range nodeptrs {
 
-		const maxdepth = 7
+		const maxdepth = 5
 		context := []string{"physics","slits"}
-		chapter := "multi slit"
+		chapter := "slit"
 
 		alt_paths,path_depth := SST.GetEntireConePathsAsLinks(ctx,"fwd",nodeptrs[n],maxdepth)
 		
