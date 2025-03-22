@@ -465,7 +465,18 @@ really full  (eh) 真饱 (hp) Zhēnbǎo
 
 ###########################################################################
 
-:: body ::
+:: body,  senses, body parts ::
+
+eyes  (eh) 眼睛  (hp) Yǎnjīng
+glasses (eh)  眼镜  (hp) Yǎnjìng
+wear glasses  (eh) 戴眼镜 (hp)  Dài yǎnjìng
+nose  (eh) 鼻子  (hp) Bízi
+ears  (eh) 耳朵  (hp) Ěrduǒ
+mouth (eh) 嘴巴  (hp) Zuǐbā
+
+liǎn (ph) 脸 (he) face
+miàn (ph) 面  (he) face 
+body (ep) Shēntǐ (ph) 身体 
 
 head  (eh) 头 (hp) Tóu
 hair  (eh) 头发 (hp) Tóufǎ
@@ -476,6 +487,16 @@ arm  (eh) 手臂 (hp) Shǒubì
 wrist  (eh) 手腕 (hp) Shǒuwàn
 wristwatch  (eh) 手表 (hp) Shǒubiǎo
 stomach/gut (ep) Dùzi (ph)  肚子
+
++::example::
+Nǐ de liǎn shàng nàgè yǒu dōngxī (ph) 你的脸上那个有东西 (he) There's something on your face.
+
+
+
+:: body, left, right, handed hand, handedness, feet ::
+
+your left hand  (eh) 你的左手 (hp) Nǐ de zuǒ shǒu
+your right foot  (eh) 你的右脚 (hp) Nǐ de yòu jiǎo
 
 ::health::
 
@@ -490,7 +511,6 @@ Pàng (hp) 胖  (he) fat
 
 smoke (eh) 抽烟 (hp) Chōuyān
 
-body (ep) Shēntǐ (ph) 身体 
 Wǒ de shēntǐ bùcuò (ph) 我的身体不错 (he) my body/health is in a not bad condition 
 
 Please pay attention to your health (eh) 请注意健康  (hp) Qǐng zhùyì jiànkāng 
@@ -1547,7 +1567,6 @@ contains (ep) Lǐ Yǒu (ph) 里有
 
 biān (refers to) edge, side
 miàn (refers to) face, side, episode-meeting
-liǎn (ph) 脸 (he) face
 
 左边  (hp) zuǒbiān  (pe)  to the left of
 右边  (hp) yòubiān  (pe)  to the right of
@@ -1588,10 +1607,6 @@ The south/southern  (eh) 南方 (hp) Nánfāng
 eastern  (eh) 东方 (hp) Dōngfāng
 western  (eh) 西方 (hp) Xīfāng
 
-:: body, left, right, handed hand, handedness, feet ::
-
-your left hand  (eh) 你的左手 (hp) Nǐ de zuǒ shǒu
-your right foot  (eh) 你的右脚 (hp) Nǐ de yòu jiǎo
 
 
 +:: driving ::
@@ -2154,16 +2169,6 @@ india  (he) 印度  (hp) Yìndù
 
 
 #########################################################
-
-:: senses ::
-
-
-eyes  (eh) 眼睛  (hp) Yǎnjīng
-glasses (eh)  眼镜  (hp) Yǎnjìng
-wear glasses  (eh) 戴眼镜 (hp)  Dài yǎnjìng
-nose  (eh) 鼻子  (hp) Bízi
-ears  (eh) 耳朵  (hp) Ěrduǒ
-mouth (eh) 嘴巴  (hp) Zuǐbā
 
 :: colours, color ::
 
