@@ -39,6 +39,8 @@ const (
 	ROLE_LINE_ALIAS = 8
 	ROLE_LOOKUP = 9
 
+	WORD_MISTAKE_LEN = 3 // a string shorter than this is probably a mistake
+
 	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
 	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
@@ -52,7 +54,7 @@ const (
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	ERR_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
-	ERR_ANNOTATION_TOO_LONG = "Annotation marker should be a single non-alphnumeric character "
+	ERR_ANNOTATION_BAD = "Annotation marker should be short mark of non-space, non-alphanumeric character "
 	ERR_BAD_ABBRV = "abbreviation out of place"
 	ERR_BAD_ALIAS_REFERENCE = "Alias references start from $name.1"
 	ERR_ANNOTATION_MISSING = "Missing non-alphnumeric annotation marker or stray relation"
@@ -63,6 +65,9 @@ const (
 	ERR_TOO_MANY_WEIGHTS = "More than one weight value in the arrow relation "
         ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
 	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be int he form $label.n"
+	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
+	ERR_SHORT_WORD="Short word, probably a mistake: "
+
 )
 
 //**************************************************************
@@ -495,9 +500,12 @@ func ClassifyConfigRole(token string) {
 			LINE_ITEM_STATE = ROLE_BLANK_LINE
 			
 		default:
-			if (len(token) > 1 || unicode.IsLetter(rune(token[0]))) {
-				ParseError(ERR_ANNOTATION_TOO_LONG)
+			for r := range token {
+				if unicode.IsLetter(rune(token[r])) {
+					ParseError(ERR_ANNOTATION_BAD)
+				}
 			}
+
 			Diag("Markup character defined in",SECTION_STATE, token)
 			LINE_ITEM_STATE = HAVE_PLUS
 			LAST_IN_SEQUENCE = token
@@ -1279,7 +1287,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
-		this_iptr := IdempAddNode(this_item)
+		this_iptr := HandleNode(this_item)
 		IdempAddArrow(last_item,last_iptr,last_reln,this_item,this_iptr)
 		CheckSection()
 
@@ -1310,7 +1318,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 			return
 		}
 
-		IdempAddNode(this_item)
+		HandleNode(this_item)
 		LinkUpStorySequence(token)
 	}
 }
@@ -1366,9 +1374,27 @@ func IdempAddArrow(from string, frptr NodePtr, link Link,to string, toptr NodePt
 
 //**************************************************************
 
-func IdempAddNode(s string) NodePtr {
+func HandleNode(s string) NodePtr {
 
-	PVerbose("Event/item/node:",s)
+	PVerbose("Event/item/node:",s,"in chapter",SECTION_STATE)
+
+	clean_version := StripAnnotations(s)
+
+	clean_ptr := IdempAddNode(clean_version)
+
+	// cache the ptr references during parsing
+	LINE_ITEM_REFS = append(LINE_ITEM_REFS,clean_ptr)
+
+	if len(clean_version) != len(s) {
+		AddBackAnnotations(clean_ptr,s)
+	}
+
+	return clean_ptr
+}
+
+//**************************************************************
+
+func IdempAddNode(s string) NodePtr {
 
 	l := len(s)
 	c := ClassifyString(s,l)
@@ -1377,10 +1403,9 @@ func IdempAddNode(s string) NodePtr {
 	new_nodetext.S = s
 	new_nodetext.L = l
 	new_nodetext.Chap = SECTION_STATE
-	new_nodetext.SizeClass = c
+	new_nodetext.NPtr.Class = c
 
 	iptr := AppendTextToDirectory(new_nodetext)
-	LINE_ITEM_REFS = append(LINE_ITEM_REFS,iptr)
 
 	return iptr
 }
@@ -1885,8 +1910,8 @@ func LinkUpStorySequence(this string) {
 			
 			PVerbose("... Sequence addition:",LAST_IN_SEQUENCE,SEQUENCE_RELN,"->",this)
 			
-			last_iptr := IdempAddNode(LAST_IN_SEQUENCE)
-			this_iptr := IdempAddNode(this)
+			last_iptr := HandleNode(LAST_IN_SEQUENCE)
+			this_iptr := HandleNode(this)
 			link := GetLinkArrowByName("(then)")
 			AppendLinkToNode(last_iptr,link,this_iptr)
 		}
@@ -2007,6 +2032,120 @@ func ResolveAliasedItem(token string) string {
 	}
 
 	return LookupAlias(name,number)
+}
+
+//**************************************************************
+
+func StripAnnotations(fulltext string) string {
+
+	var protected bool = false
+	var deloused []rune
+	var preserve_unicode = []rune(fulltext)
+
+	for r := 0; r < len(preserve_unicode); r++ {
+
+		if preserve_unicode[r] == '"' {
+			protected = !protected
+		}
+
+		if !protected {
+			skip,symb := EmbeddedSymbol(preserve_unicode,r)
+			if skip > 0 {
+				r += skip
+				if unicode.IsSpace(preserve_unicode[r]) {
+					ParseError(ERR_NON_WORD_WHITE+symb)
+				}
+				continue
+			}
+		}
+
+		deloused = append(deloused,preserve_unicode[r])
+	}
+
+	return string(deloused)
+}
+
+//**************************************************************
+
+func AddBackAnnotations(nptr NodePtr,fulltext string) {
+
+	var protected bool = false
+
+	reminder := fmt.Sprintf("%.30s...",fulltext)
+	PVerbose("\n        Adding annotations from \""+reminder+"\"")
+
+	for r := 0; r < len(fulltext); r++ {
+
+		if fulltext[r] == '"' {
+			protected = !protected
+		}
+
+		if !protected {
+			skip,symb := EmbeddedSymbol([]rune(fulltext),r)
+			if skip > 0 {
+				link := GetLinkArrowByName(ANNOTATION[symb])
+				this_item := ExtractWord(fulltext,r)
+				this_iptr := HandleNode(this_item)
+				IdempAddArrow(reminder,nptr,link,this_item,this_iptr)
+				r += skip-1
+				continue
+			}
+		}
+	}
+}
+
+//**************************************************************
+
+func EmbeddedSymbol(fulltext []rune,offset int) (int,string) {
+
+	for an := range ANNOTATION {
+
+		// Careful of unicode, convert to runes
+		uni := []rune(an)
+		match := true
+
+		for r := 0; r < len(uni) && r+offset < len(fulltext); r++ {
+			if uni[r] != fulltext[offset+r] {
+				match = false
+			}
+		} 
+
+		if match {
+			return len(an),an
+		}
+	}
+
+	return 0,"UNKNOWN SYMBOL"
+}
+
+//**************************************************************
+
+func ExtractWord(fulltext string,offset int) string {
+
+	var protected bool = false
+	var word string
+
+	for r := offset+1; r < len(fulltext); r++ {
+
+		if fulltext[r] == '"' {
+			protected = !protected
+		}
+
+		if !protected && !unicode.IsLetter(rune(fulltext[r])) {
+			word = strings.Trim(strings.TrimSpace(word),"\" ")
+			return word
+		}
+
+		word += string(fulltext[r])
+	}
+	
+	word = strings.Trim(strings.TrimSpace(word),"\" ")
+	
+	if len(word) <= WORD_MISTAKE_LEN {
+		ParseError(ERR_SHORT_WORD+word)
+	}
+	
+	return word
 }
 
 //**************************************************************
@@ -2235,7 +2374,7 @@ func CheckSection() {
 
 func AllCaps(s string) bool {
 
-	if len(s) < 3 {
+	if len(s) <= WORD_MISTAKE_LEN {
 		return false
 	}
 

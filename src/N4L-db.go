@@ -389,7 +389,7 @@ func ClassifyConfigRole(token string) {
 			LINE_ITEM_STATE = ROLE_BLANK_LINE
 			
 		default:
-//			if (len(token) > 1 || unicode.IsLetter(rune(token[0]))) {
+
 			for r := range token {
 				if unicode.IsLetter(rune(token[r])) {
 					ParseError(ERR_ANNOTATION_BAD)
