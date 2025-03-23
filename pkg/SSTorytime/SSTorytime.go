@@ -829,9 +829,10 @@ func CreateDBNode(ctx PoSST, n Node) Node {
         n.L,n.NPtr.Class = StorageClass(n.S)
 	
 	cptr := n.NPtr.CPtr
-	es := EscapeString(n.S)
+	es := SQLEscape(n.S)
+	ec := SQLEscape(n.Chap)
 
-	qstr = fmt.Sprintf("SELECT IdempInsertNode(%d,%d,%d,'%s','%s')",n.L,n.NPtr.Class,cptr,es,n.Chap)
+	qstr = fmt.Sprintf("SELECT IdempInsertNode(%d,%d,%d,'%s','%s')",n.L,n.NPtr.Class,cptr,es,ec)
 
 	row,err := ctx.DB.Query(qstr)
 	
@@ -2344,8 +2345,6 @@ func GetMatroidNodesBySTType(ctx PoSST) []STTypeMatroid {
 
 func SQLEscape(s string) string {
 
-	// single quotes must be doubled!
-
 	return strings.Replace(s, `'`, `''`, -1)
 }
 
@@ -2424,7 +2423,7 @@ func FormatSQLStringArray(array []string) string {
 	var ret string = "'{ "
 	
 	for i := 0; i < len(array); i++ {
-		ret += fmt.Sprintf("\"%s\"",array[i])
+		ret += fmt.Sprintf("\"%s\"",SQLEscape(array[i]))
 	    if i < len(array)-1 {
 	    ret += ", "
 	    }
@@ -2694,7 +2693,8 @@ func MatchesInContext(s string,context []string) bool {
 
 func EscapeString(s string) string {
 
-	return strings.Replace(s, "'", ".", -1)
+	// Don't do this here, move to SQLEscape()
+	return s
 }
 
 //****************************************************************************

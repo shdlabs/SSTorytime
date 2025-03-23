@@ -4,7 +4,7 @@ OBJ=search_broad search_by_node search_clusters search_contrawave_quantum search
 
 all: $(OBJ)
 
-% : %.go
+% : %.go ../../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
 
