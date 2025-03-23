@@ -71,7 +71,7 @@ func Search(ctx SST.PoSST, text string) {
 	search_items := strings.Split(text," ")
 
 	for w := range search_items {
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w])...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,"",search_items[w])...)
 	}
 
 	for start := range start_set {
@@ -94,22 +94,22 @@ func Search(ctx SST.PoSST, text string) {
 			
 		if alt_paths != nil {
 			
-			fmt.Printf("\n-- Forward",SST.STTypeName(sttype9,"cone stories ----------------------------------\n")
+			fmt.Printf("\n-- Forward",SST.STTypeName(sttype),"cone stories ----------------------------------\n")
 			
 			for p := 0; p < path_depth; p++ {
-				SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:")
+				SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:","",nil)
 			}
 		}
 		fmt.Printf("     (END %d)\n",start)
 	}
-
+	
 	// Now look at the arrow content
-
+	
 	fmt.Println("\nLooking for repeated relations...\n")
 
 	matching_arrows := SST.GetDBArrowsMatchingArrowName(ctx,text)
 
-	relns := SST.GetDBNodeArrowNodeMatchingArrowPtrs(ctx,matching_arrows)
+	relns := SST.GetDBNodeArrowNodeMatchingArrowPtrs(ctx,"",nil,matching_arrows)
 
 	for r := range relns {
 

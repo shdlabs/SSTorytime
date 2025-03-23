@@ -128,7 +128,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 					fmt.Printf("\n-- Forward",SST.STTypeName(sttype),"cone stories ----------------------------------\n")
 					
 					for p := 0; p < path_depth; p++ {
-						SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:")
+						SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:","",nil)
 					}
 				}
 				fmt.Printf("     (END %d)\n",start+1)
