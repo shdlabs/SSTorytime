@@ -1182,7 +1182,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		last_item := LINE_ITEM_CACHE["THIS"][LINE_ITEM_COUNTER-2]
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
-		this_iptr := IdempAddNode(this_item)
+		this_iptr := HandleNode(this_item)
 		IdempAddArrow(last_item,last_iptr,last_reln,this_item,this_iptr)
 		CheckSection()
 
@@ -1213,7 +1213,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 			return
 		}
 
-		IdempAddNode(this_item)
+		HandleNode(this_item)
 		LinkUpStorySequence(token)
 	}
 }
@@ -1272,9 +1272,25 @@ func IdempAddArrow(from string, frptr SST.NodePtr, link SST.Link,to string, topt
 
 //**************************************************************
 
-func IdempAddNode(s string) SST.NodePtr {
+func HandleNode(s string) SST.NodePtr {
 
 	PVerbose("Event/item/node:",s,"in chapter",SECTION_STATE)
+
+	//clean_version := StripAnnotations(s)
+
+	iptr := IdempAddNode(s)
+
+	// cache the ptr references during parsing
+	LINE_ITEM_REFS = append(LINE_ITEM_REFS,iptr)
+
+	//AddBackAnnotations(iptr,s)
+
+	return iptr
+}
+
+//**************************************************************
+
+func IdempAddNode(s string) SST.NodePtr {
 
 	l,c := SST.StorageClass(s)
 
@@ -1285,8 +1301,6 @@ func IdempAddNode(s string) SST.NodePtr {
 	new_nodetext.NPtr.Class = c
 
 	iptr := SST.AppendTextToDirectory(new_nodetext)
-
-	LINE_ITEM_REFS = append(LINE_ITEM_REFS,iptr)
 
 	return iptr
 }
@@ -1593,8 +1607,8 @@ func LinkUpStorySequence(this string) {
 			
 			PVerbose("... Sequence addition:",LAST_IN_SEQUENCE,SEQUENCE_RELN,"->",this)
 			
-			last_iptr := IdempAddNode(LAST_IN_SEQUENCE)
-			this_iptr := IdempAddNode(this)
+			last_iptr := HandleNode(LAST_IN_SEQUENCE)
+			this_iptr := HandleNode(this)
 			link := GetLinkArrowByName("(then)")
 			SST.AppendLinkToNode(last_iptr,link,this_iptr)
 		}
