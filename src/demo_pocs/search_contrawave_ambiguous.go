@@ -35,14 +35,14 @@ func main() {
 
 	// Contra colliding wavefronts as path integral solver
 
-	const maxdepth = 6
+	const maxdepth = 18
 	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var count int
 	var left_paths, right_paths [][]SST.Link
 
-	start_bc := "start"
-	end_bc := "target 1"
+	start_bc := "careful"
+	end_bc := "road"
 
 	leftptrs := SST.GetDBNodePtrMatchingName(ctx,"",start_bc)
 	rightptrs := SST.GetDBNodePtrMatchingName(ctx,"",end_bc)
