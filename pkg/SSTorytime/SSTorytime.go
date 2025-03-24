@@ -2120,7 +2120,32 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 	}
 
 	row.Close()
+
+	// Eliminate duplicates
+
+	retval = DeDuplicate(retval)
+
 	return retval,len(retval)
+}
+
+// **************************************************************************
+
+func DeDuplicate(links [][]Link) [][]Link {
+
+	var trimmed [][]Link
+
+	var done = make(map[NodePtr]bool)
+
+	for l := 0; l < len(links); l++ {
+
+		if done[links[l][0].Dst] {
+			continue
+		} else {
+			done[links[l][0].Dst] = true
+		}
+		trimmed = append(trimmed,links[l])
+	}
+	return trimmed
 }
 
 // **************************************************************************

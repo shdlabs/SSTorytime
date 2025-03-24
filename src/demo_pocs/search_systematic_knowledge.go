@@ -81,8 +81,6 @@ func SearchStoryPaths(ctx SST.PoSST,name string,start SST.NodePtr, arrows []SST.
 
 	cone,_ := SST.GetEntireConePathsAsLinks(ctx,"any",start,8)
 
-	var done = make(map[SST.NodePtr]bool)
-
 	if len(cone) < 1 {
 		return
 	}
@@ -91,38 +89,8 @@ func SearchStoryPaths(ctx SST.PoSST,name string,start SST.NodePtr, arrows []SST.
 
 	for s := 0; s < len(cone); s++ {
 
-		if done[cone[s][0].Dst] {
-			continue
-		} else {
-			done[cone[s][0].Dst] = true
-		}
-
 		prefix := fmt.Sprintf("\n - Word/Phrase ")
 		SST.PrintLinkPath(ctx,cone,s,prefix,chap,context)
-	}
-
-}
-
-//**************************************************************
-
-func SearchStoryMatroids(ctx SST.PoSST,name string,start SST.NodePtr, arrows []SST.ArrowPtr) {
-
-
-	var ams map[int][]SST.NodePtr
-
-	ams = SST.GetMatroidArrayBySSType(ctx)
-
-	for sttype := range ams {
-
-		fmt.Println("\nArrow class --(",SST.STTypeName(sttype),")--> acts as a type/interpretation correlator of the following group by pointing/pointed to:\n")
-
-		for n := 0; n < len(ams[sttype]); n++ {
-			node := SST.GetDBNodeByNodePtr(ctx,ams[sttype][n])
-			//NewLine(n)
-			fmt.Print("..  ",node.S,",")
-		}
-		fmt.Println()
-		fmt.Println("............................................")
 	}
 
 }
@@ -145,14 +113,7 @@ func Header(h []string,chap string) {
 	fmt.Println("\n============================================================")
 }
 
-//**************************************************************
 
-func Box(a ...interface{}) {
-
-	fmt.Println("\n------------------------------------")
-	fmt.Println(a...)
-	fmt.Println("------------------------------------\n")
-}
 
 
 
