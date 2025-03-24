@@ -8,6 +8,8 @@
 
 # SSTorytime
 
+ Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API
+
 * This is a work in progress during 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/) *
 
 * See the [Medium article introduction](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
