@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	//"sort"
+	"sort"
 
 	_ "github.com/lib/pq"
 
@@ -328,6 +328,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function idempinsertnode")
 		ctx.DB.QueryRow("drop function sumfwdpaths")
 		ctx.DB.QueryRow("drop function match_context")
+		ctx.DB.QueryRow("drop function match_arrows")
 
 		ctx.DB.QueryRow("drop table Node")
 		ctx.DB.QueryRow("drop table NodeArrowNode")
@@ -1559,6 +1560,9 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   db_ref := array_append(db_ref,unaccent(item));\n" +
 		"END LOOP;\n" +
 		"FOREACH item IN ARRAY user_set LOOP\n" +
+		"   IF item = 'any' OR item = '' THEN\n"+
+		"     RETURN true;"+
+		"   END IF;"+
 		"  unicode := replace(item,'|','');\n" +
 		"  IF unicode != item THEN\n" +
 		"     IF unicode = ANY(db_ref) THEN \n" + // unaccented unicode match
@@ -1581,6 +1585,27 @@ func DefineStoredFunctions(ctx PoSST) {
 	}
 
 	row.Close()
+
+	// Matching integer ranges
+
+	qstr = "CREATE OR REPLACE FUNCTION match_arrows(arr int,user_set int[])\n"+
+		"RETURNS boolean AS $fn$\n" +
+		"BEGIN \n" +
+		"   IF arr = ANY(user_set) THEN \n" + // exact match
+		"      RETURN true;\n" +
+		"   END IF;\n" +
+		"RETURN false;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("FAILED \n",qstr,err)
+	}
+
+	row.Close()
+
 }
 
 // **************************************************************************
@@ -1816,6 +1841,63 @@ func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrow
 	row.Close()
 
 	return nanlist
+}
+
+// **************************************************************************
+
+func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext string,arrow []ArrowPtr) map[string][]NodePtr {
+
+	var qstr string
+
+	if cn == nil {
+		return nil
+	} else {
+		context := FormatSQLStringArray(cn)
+		chapter := "%"+chap+"%"
+		arrows := FormatSQLIntArray(Arrow2Int(arrow))
+		
+		// sufficient to search NFrom to get all nodes in context, as +/- relations complete
+
+		qstr = fmt.Sprintf("WITH matching_nodes AS \n"+
+			" (SELECT NFrom,Arr,Ctx,match_context(Ctx,%s) AS matchc,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)\n"+
+			"   SELECT NFrom,Ctx,Chap FROM matching_nodes \n"+
+			"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND Chap LIKE '%s' ORDER BY Ctx",context,arrows,chapter)
+
+		//qstr = fmt.Sprintf("SELECT DISTINCT NFrom,Ctx,Chap FROM NodeArrowNode JOIN Node ON nptr=nfrom where chap like '%s' ORDER BY Ctx",chapter)
+
+	}
+	
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("GetDBNodeArrowNodeByContext Failed:",err,qstr)
+	}
+
+	var return_value = make(map[string][]NodePtr)
+
+	var nptr NodePtr
+	var nctx string
+	var nchap string
+	var nptrs string
+	var header string
+
+	for row.Next() {		
+
+		nctx = ""
+		nchap = ""
+		err = row.Scan(&nptrs,&nctx,&nchap)
+		fmt.Sscanf(nptrs,"(%d,%d)",&nptr.Class,&nptr.CPtr)
+
+		if nctx != header {
+			header = nctx
+		}
+
+		return_value[header] = append(return_value[header],nptr)
+	}
+
+	row.Close()
+
+	return return_value
 }
 
 // **************************************************************************
@@ -2074,7 +2156,6 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 		fmt.Print(prefix,p+1,": ",path_start.S)
 
 		var format int
-		// unpack path list
 		
 		for l := 1; l < len(alt_paths[p]); l++ {
 
@@ -2099,9 +2180,37 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 			fmt.Print(nextnode.S)
 			format += 2
 		}
-		
 		fmt.Println("...")
 	}
+}
+
+// **************************************************************************
+
+func NextLinkArrow(ctx PoSST,path []Link,arrows []ArrowPtr) string {
+
+	var rstring string
+
+	if len(path) > 1 {
+
+		for l := 1; l < len(path); l++ {
+
+			if !MatchArrows(arrows,path[l].Arr) {
+				break
+			}
+
+			nextnode := GetDBNodeByNodePtr(ctx,path[l].Dst)
+			
+			arr := GetDBArrowByPtr(ctx,path[l].Arr)
+			
+			if l < len(path) {
+				rstring += fmt.Sprint("  -(",arr.Long,")->  ")
+			}
+			
+			rstring += fmt.Sprint(nextnode.S)
+		}
+	}
+
+	return rstring
 }
 
 // **************************************************************************
@@ -2369,16 +2478,34 @@ func ParseSQLNPtrArray(s string) []NodePtr {
 
 func ParseSQLArrayString(whole_array string) []string {
 
-	// array as {"(1,2,3)","(4,5,6)"}
+	// array as {"(1,2,3)","(4,5,6)",spacelessstring}
 
       	var l []string
 
     	whole_array = strings.Replace(whole_array,"{","",-1)
     	whole_array = strings.Replace(whole_array,"}","",-1)
-	whole_array = strings.Replace(whole_array,"\",\"",";",-1)
-	whole_array = strings.Replace(whole_array,"\"","",-1)
-	
-        items := strings.Split(whole_array,";")
+
+	uni_array := []rune(whole_array)
+
+	var items []string
+	var item []rune
+	var protected = false
+
+	for u := range uni_array {
+
+		if uni_array[u] == '"' {
+			protected = !protected
+			continue
+		}
+
+		if !protected && uni_array[u] == ',' {
+			items = append(items,string(item))
+			item = nil
+			continue
+		}
+
+		item = append(item,uni_array[u])
+	}
 
 	for i := range items {
 
@@ -2393,6 +2520,10 @@ func ParseSQLArrayString(whole_array string) []string {
 // **************************************************************************
 
 func FormatSQLIntArray(array []int) string {
+
+	sort.Slice(array, func(i, j int) bool {
+		return array[i] < array[j]
+	})
 
         if len(array) == 0 {
 		return "'{ }'"
@@ -2419,6 +2550,8 @@ func FormatSQLStringArray(array []string) string {
         if len(array) == 0 {
 		return "'{ }'"
         }
+
+	sort.Strings(array) // Avoids ambiguities in db comparisons
 
 	var ret string = "'{ "
 	
@@ -2660,6 +2793,19 @@ func SimilarString(s1,s2 string) bool {
 
 //****************************************************************************
 
+func MatchArrows(arrows []ArrowPtr,arr ArrowPtr) bool {
+
+	for a := range arrows {
+		if arrows[a] == arr {
+			return true
+		}
+	}
+
+	return false
+}
+
+//****************************************************************************
+
 func MatchContexts(context1 []string,context2 []string) bool {
 
 	if context1 == nil || context2 == nil {
@@ -2719,6 +2865,19 @@ func Already (s string, cone map[int][]string) bool {
 	}
 
 	return false
+}
+
+//****************************************************************************
+
+func Arrow2Int(arr []ArrowPtr) []int {
+
+	var ret []int
+
+	for a := range arr {
+		ret = append(ret,int(arr[a]))
+	}
+
+	return ret
 }
 
 //****************************************************************************

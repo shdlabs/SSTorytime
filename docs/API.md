@@ -220,9 +220,11 @@ For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/
 
 * `GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr` - returns a list of node pointers to names matching the input string as a substring
 
-* `GetDBNodePtrMatchingNCC(ctx PoSST,chap,nm string ,cn []string) []NodePtr` - returns a list of node pointers to nodes matching the combined input string, filtered by chapter and context strategy matches. *This is currently a simple substring match, but is intended to offer more sophisticated fuzzy matching in future.* [See demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/search_by_name.go)
+* `GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext string,arrow ArrowPtr) map[string][]NodePtr` - returns a list of node pointers classified by context, which match the type of arrow, combined with name, filtered by chapter and context strategy matches. The arrow name is ow we represent effective type/role of node results in SST.
 
 * `GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node` - Return the full node details from its pointer.
+
+* `GetDBNodeByContext(ctx PoSST,chap string,cn []string,searchtext string) map[[]string][]NodePtr` - returns a hash map of nodes, whose map key is a context array and whose value is a list of node pointers, filtered by the search text.
 
 * `GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr` - Find a list of arrows matching the given name as a substring.
 
