@@ -14,16 +14,6 @@ import (
 
 //******************************************************************
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "sstoryline"
-	password = "sst_1234"
-	dbname   = "newdb"
-)
-
-//******************************************************************
-
 func main() {
 
         ctx := SST.Open(false)
