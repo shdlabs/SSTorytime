@@ -324,6 +324,11 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function getfwdnodes")
 		ctx.DB.QueryRow("drop function getneighboursbytype")
 		ctx.DB.QueryRow("drop function getsingletonaslink")
+		ctx.DB.QueryRow("drop function AllNCPathsAsLinks")
+		ctx.DB.QueryRow("drop function SumAllNCPaths")
+		ctx.DB.QueryRow("drop function GetNCFwdLinks")
+		ctx.DB.QueryRow("drop function GetNCCLinks")
+
 		ctx.DB.QueryRow("drop function getsingletonaslinkarray")
 		ctx.DB.QueryRow("drop function idempinsertnode")
 		ctx.DB.QueryRow("drop function sumfwdpaths")
@@ -1181,6 +1186,8 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
+	// Basic quick neighbour probe
+
 	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdLinks(start NodePtr,exclude NodePtr[],sttype int)\n"+
 		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
@@ -1189,7 +1196,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    lnk Link;\n" +
 		"BEGIN\n" +
 
-		"    fwdlinks =GetNeighboursByType(start,sttype);\n"+
+		"    fwdlinks = GetNeighboursByType(start,sttype);\n"+
 
 		"    IF fwdlinks IS NULL THEN\n" +
 		"        RETURN '{}';\n" +
@@ -1556,9 +1563,14 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   unicode text;\n" +
 		"   item text;\n" +
 		"BEGIN \n" +
+		"IF array_length(user_set,1) IS NULL THEN\n"+
+		"   RETURN true;\n"+
+		"END IF;\n"+
+
 		"FOREACH item IN ARRAY db_set LOOP\n" +
 		"   db_ref := array_append(db_ref,unaccent(item));\n" +
 		"END LOOP;\n" +
+
 		"FOREACH item IN ARRAY user_set LOOP\n" +
 		"   IF item = 'any' OR item = '' THEN\n"+
 		"     RETURN true;"+
@@ -1602,6 +1614,235 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	if err != nil {
 		fmt.Println("FAILED \n",qstr,err)
+	}
+
+	row.Close()
+
+	// ...................................................................
+	// Now add in the more complex context/chapter filters in searching
+	// ...................................................................
+
+        // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
+
+	qstr = "CREATE OR REPLACE FUNCTION AllNCPathsAsLinks(start NodePtr,chapter text,context text[],orientation text,maxdepth INT)\n"+
+		"RETURNS Text AS $fn$\n" +
+		"DECLARE\n" +
+		"   hop Text;\n" +
+		"   path Text;\n"+
+		"   summary_path Text[];\n"+
+		"   exclude NodePtr[] = ARRAY[start]::NodePtr[];\n" +
+		"   ret_paths Text;\n" +
+		"   startlnk Link;"+
+	"   chp text = Format('%s%s%s','%',chapter,'%');"+
+		"BEGIN\n" +
+		"startlnk := GetSingletonAsLink(start);\n"+
+		"path := Format('%s',startlnk::Text);"+
+		"ret_paths := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,context,exclude);" +
+		
+		"RETURN ret_paths; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+	
+        // select AllNCPathsAsLinks('(1,46)','chinese','{"food","example"}','fwd',4);
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// SumAllNCPaths - a filtering version of the SumAllPaths recursive helper function, slower but more powerful
+
+	qstr = "CREATE OR REPLACE FUNCTION SumAllNCPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,chapter text,context text[],exclude NodePtr[])\n"+
+		"RETURNS Text AS $fn$\n" +
+		"DECLARE \n" + 
+		"    fwdlinks Link[];\n" +
+		"    stlinks  Link[];\n" +
+		"    empty Link[] = ARRAY[]::Link[];\n" +
+		"    lnk Link;\n" +
+		"    fwd Link;\n" +
+		"    ret_paths Text;\n" +
+		"    appendix Text;\n" +
+		"    tot_path Text;\n"+
+		"BEGIN\n" +
+
+		"IF depth = maxdepth THEN\n"+
+		"  ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"  RETURN ret_paths;\n"+
+		"END IF;\n"+
+
+		// Get *All* in/out Links
+		"CASE \n" +
+		"   WHEN orientation = 'bwd' THEN\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"   WHEN orientation = 'fwd' THEN\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"   ELSE\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"END CASE;\n" +
+
+		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
+		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
+		"      exclude = array_append(exclude,lnk.Dst);\n" +
+		"      IF lnk IS NULL THEN\n" +
+		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"      ELSE\n"+
+		"         IF context is not NULL AND NOT match_context(lnk.Ctx::text[],context::text[]) THEN\n"+
+                "            CONTINUE;\n"+
+                "         END IF;\n"+
+
+		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
+		"         appendix := SumAllNCPaths(lnk,tot_path,orientation,depth+1,maxdepth,chapter,context,exclude);\n" +
+
+		"         IF appendix IS NOT NULL THEN\n"+
+		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"         ELSE\n"+
+		"            ret_paths := tot_path;\n"+
+		"         END IF;\n"+
+		"      END IF;\n"+
+		"   END IF;\n"+
+		"END LOOP;\n"+
+
+		"RETURN ret_paths; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+        // An NC/C filtering version of the neighbour scan
+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCFwdLinks(start NodePtr,chapter text,context text[],exclude NodePtr[],sttype int)\n"+
+		"RETURNS Link[] AS $fn$\n" +
+		"DECLARE \n" +
+		"    neighbours Link[];\n" +
+		"    fwdlinks Link[];\n" +
+		"    lnk Link;\n" +
+		"BEGIN\n" +
+
+		"    fwdlinks = GetNCNeighboursByType(start,chapter,sttype);\n"+
+
+		"    IF fwdlinks IS NULL THEN\n" +
+		"        RETURN '{}';\n" +
+		"    END IF;\n" +
+		"    neighbours := ARRAY[]::Link[];\n" +
+		"    FOREACH lnk IN ARRAY fwdlinks\n" +
+		"    LOOP\n"+
+
+                "      IF context is not NULL AND NOT match_context(lnk.Ctx::text[],context::text[]) THEN\n"+
+                "         CONTINUE;\n"+
+                "      END IF;\n"+
+		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
+		"         neighbours := array_append(neighbours, lnk);\n" +
+		"      END IF; \n" + 
+		"    END LOOP;\n" +
+		"    RETURN neighbours; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n")
+	
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+	
+
+
+        // This one includes an NCC chapter and context filter so slower! 
+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCCLinks(start NodePtr,exclude NodePtr[],sttype int,chapter text,context text[])\n"+
+		"RETURNS Link[] AS $fn$\n" +
+		"DECLARE \n" +
+		"    neighbours Link[];\n" +
+		"    fwdlinks Link[];\n" +
+		"    lnk Link;\n" +
+		"BEGIN\n" +
+
+		"    fwdlinks =GetNCNeighboursByType(start,chapter,sttype);\n"+
+
+		"    IF fwdlinks IS NULL THEN\n" +
+		"        RETURN '{}';\n" +
+		"    END IF;\n" +
+		"    neighbours := ARRAY[]::Link[];\n" +
+		"    FOREACH lnk IN ARRAY fwdlinks\n" +
+		"    LOOP\n"+
+                "      IF context is not NULL AND NOT match_context(lnk.Ctx,context) THEN\n"+
+                "        CONTINUE;\n"+
+                "      END IF;\n"+
+		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
+		"         neighbours := array_append(neighbours, lnk);\n" +
+		"      END IF; \n" + 
+		"    END LOOP;\n" +
+		"    RETURN neighbours; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n")
+
+
+        // This one includes an NC chapter filter
+
+	qstr = "CREATE OR REPLACE FUNCTION GetNCNeighboursByType(start NodePtr, chapter text,sttype int)\n"+
+		"RETURNS Link[] AS $fn$\n"+
+		"DECLARE \n"+
+		"    fwdlinks Link[] := Array[] :: Link[];\n"+
+		"    lnk Link := (0,1.0,Array[]::text[],(0,0));\n"+
+                "    chp text = Format('%s%s%s','%',chapter,'%');"+
+		"BEGIN\n"+
+		"   CASE sttype \n"
+	
+	for st := -EXPRESS; st <= EXPRESS; st++ {
+		qstr += fmt.Sprintf("WHEN %d THEN\n"+
+			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND Chap LIKE chp;\n",st,STTypeDBChannel(st));
+	}
+
+	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
+		"END CASE;\n" +
+		"    RETURN fwdlinks; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+        // elect GetNCNeighboursByType('(1,116)','chinese',-1);
+
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
 	}
 
 	row.Close()
@@ -2951,4 +3192,5 @@ func IsBracketedSearchTerm(src string) (bool,string) {
 
 	return retval,stripped
 }
+
 

@@ -2,6 +2,9 @@
 
 # An API for interacting with the SST graph
 
+*(These preliminary functions are unlikely to be final public functions in the final API, they
+are still in the development and research phase of testing )*
+
 Once data have been entered into a SSToryline database, we want to be able to extract it again.
 It's possible to create tools for this, but ultimately any set of tools will tend to limit the user.
 A user's imagination should be the only limit. 
@@ -203,7 +206,7 @@ func main() {
 
 </pre>
 
-## Low level wrapper functions
+## Low level wrapper functions 
 
 In general, you will want to use the special functions written for
 querying the data.  These return data into Go structures directly,
