@@ -16,16 +16,6 @@ import (
 
 //******************************************************************
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "sstoryline"
-	password = "sst_1234"
-	dbname   = "sstoryline"
-)
-
-//******************************************************************
-
 func main() {
 
 	load_arrows := false
@@ -79,7 +69,9 @@ func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext strin
 
 func SearchStoryPaths(ctx SST.PoSST,name string,start SST.NodePtr, arrows []SST.ArrowPtr,chap string,context []string) {
 
-	cone,_ := SST.GetEntireConePathsAsLinks(ctx,"any",start,8)
+	const maxdepth = 8
+
+	cone,_ := SST.GetEntireNCConePathsAsLinks(ctx,"any",start,maxdepth,chap,context)
 
 	if len(cone) < 1 {
 		return

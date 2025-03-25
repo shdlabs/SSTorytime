@@ -237,6 +237,9 @@ var (
 	NO_NODE_PTR NodePtr // see Init()
 
 	WIPE_DB bool = false
+        SILLINESS_COUNTER int
+        SILLINESS_POS int
+	SILLINESS bool
 )
 
 //******************************************************************
@@ -883,7 +886,7 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 
 			AppendDBLinkToNode(ctx,org.NPtr,dstlnk,sttype)
 			CreateDBNodeArrowNode(ctx,org.NPtr,dstlnk,sttype)
-			fmt.Print(".")
+			Waiting()
 		}
 	}
 }
@@ -2366,7 +2369,7 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 
 	// Eliminate duplicates
 
-	retval = DeDuplicate(retval)
+//	retval = DeDuplicate(retval)
 
 	return retval,len(retval)
 }
@@ -2398,7 +2401,7 @@ func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,dept
 
 	// Eliminate duplicates
 
-	retval = DeDuplicate(retval)
+//	retval = DeDuplicate(retval)
 
 	return retval,len(retval)
 }
@@ -2453,14 +2456,19 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 
 		path_start := GetDBNodeByNodePtr(ctx,alt_paths[p][0].Dst)		
 		
-		fmt.Print(prefix,p+1,": ",path_start.S)
+		start_shown := false
 
 		var format int
 		
 		for l := 1; l < len(alt_paths[p]); l++ {
 
 			if !MatchContexts(context,alt_paths[p][l].Ctx) {
-				break
+				return
+			}
+
+			if !start_shown {
+				fmt.Print(prefix,p+1,": ",path_start.S)
+				start_shown = true
 			}
 
 			NewLine(format)
@@ -2480,7 +2488,7 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 			fmt.Print(nextnode.S)
 			format += 2
 		}
-		fmt.Println("...")
+		fmt.Println(". ")
 	}
 }
 
@@ -3150,6 +3158,35 @@ func NewLine(n int) {
 	if n % 8 == 0 {
 		fmt.Println()
 	}
+}
+
+// **************************************************************************
+
+func Waiting() {
+
+	const propaganda = "IT.ISN'T.KNOWLEDGE.UNLESS.YOU.KNOW.IT.!!"
+	const interval = 3
+
+	if SILLINESS {
+		if SILLINESS_COUNTER % interval != 0 {
+			fmt.Print(".")
+		} else {
+			fmt.Print(string(propaganda[SILLINESS_POS]))
+			SILLINESS_POS++
+			if SILLINESS_POS > len(propaganda)-1 {
+				SILLINESS_POS = 0
+				SILLINESS = false
+			}
+		}
+	} else {
+		fmt.Print(".")
+	}
+
+	if SILLINESS_COUNTER % (len(propaganda)*interval*interval) == 0 {
+		SILLINESS = !SILLINESS
+	}
+
+	SILLINESS_COUNTER++
 }
 
 // **************************************************************************
