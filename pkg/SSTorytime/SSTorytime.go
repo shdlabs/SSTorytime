@@ -1633,12 +1633,12 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   exclude NodePtr[] = ARRAY[start]::NodePtr[];\n" +
 		"   ret_paths Text;\n" +
 		"   startlnk Link;"+
-	"   chp text = Format('%s%s%s','%',chapter,'%');"+
+		"   chp text = Format('%s%s%s','%',chapter,'%');"+
 		"BEGIN\n" +
 		"startlnk := GetSingletonAsLink(start);\n"+
 		"path := Format('%s',startlnk::Text);"+
 		"ret_paths := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,context,exclude);" +
-		
+
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
@@ -1823,6 +1823,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    lnk Link := (0,1.0,Array[]::text[],(0,0));\n"+
                 "    chp text = Format('%s%s%s','%',chapter,'%');"+
 		"BEGIN\n"+
+
 		"   CASE sttype \n"
 	
 	for st := -EXPRESS; st <= EXPRESS; st++ {
@@ -1832,6 +1833,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
 		"END CASE;\n" +
+
 		"    RETURN fwdlinks; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
@@ -2350,6 +2352,38 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 
 	if err != nil {
 		fmt.Println("QUERY to AllPathsAsLinks Failed",err,qstr)
+	}
+
+	var whole string
+	var retval [][]Link
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		retval = ParseLinkPath(whole)
+	}
+
+	row.Close()
+
+	// Eliminate duplicates
+
+	retval = DeDuplicate(retval)
+
+	return retval,len(retval)
+}
+
+// **************************************************************************
+
+func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth int,chapter string,context []string) ([][]Link,int) {
+
+	// orientation should be "fwd" or "bwd" else "both"
+
+	qstr := fmt.Sprintf("select AllNCPathsAsLinks from AllNCPathsAsLinks('(%d,%d)','%s',%s,'%s',%d);",
+		start.Class,start.CPtr,chapter,FormatSQLStringArray(context),orientation,depth)
+
+	row, err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("QUERY to AllNCPathsAsLinks Failed",err,qstr)
 	}
 
 	var whole string
