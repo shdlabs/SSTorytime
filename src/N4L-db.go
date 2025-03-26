@@ -1619,6 +1619,10 @@ func LinkUpStorySequence(this string) {
 			this_iptr := HandleNode(this)
 			link := GetLinkArrowByName("(then)")
 			SST.AppendLinkToNode(last_iptr,link,this_iptr)
+
+			invlink := GetLinkArrowByName(SST.ARROW_DIRECTORY[SST.INVERSE_ARROWS[link.Arr]].Short)
+			SST.AppendLinkToNode(this_iptr,invlink,last_iptr)
+
 		}
 		
 		LAST_IN_SEQUENCE = this
