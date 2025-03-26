@@ -586,6 +586,12 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 	frm := frptr.CPtr
 	stindex := ARROW_DIRECTORY[link.Arr].STAindex
 
+	if frptr.CPtr==8 && toptr.CPtr==11 {
+		fmt.Println("\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx\n")
+		fmt.Println(frptr,"\n",link,"\n",toptr)
+		fmt.Println("\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx\n")
+	}
+
 	link.Dst = toptr // fill in the last part of the reference
 
 	switch frclass {
@@ -761,7 +767,7 @@ func GraphToDB(ctx PoSST) {
 	}
 
 
-	fmt.Println("Storing Arrows...")
+	fmt.Println("\nStoring Arrows...")
 
 	for arrow := range ARROW_DIRECTORY {
 
@@ -1414,14 +1420,19 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
 		"      exclude = array_append(exclude,lnk.Dst);\n" +
 		"      IF lnk IS NULL THEN" +
+		          // set end of path as return val
 		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
-		"      ELSE"+
+		"         RETURN ret_paths;"+
+		"      ELSE\n"+
+		          // Add to the path and descend into new link
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
 		"         appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude);\n" +
+		          // when we return, we reached the end of one path
 		"         IF appendix IS NOT NULL THEN\n"+
+	                     // append full path to list of all paths, separated by newlines
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
 		"         ELSE"+
-		"            ret_paths := tot_path;"+
+		"            ret_paths := Format('%s\n%s',ret_paths,tot_path);"+
 		"         END IF;"+
 		"      END IF;"+
 		"   END IF;"+
@@ -1533,13 +1544,14 @@ func DefineStoredFunctions(ctx PoSST) {
 		"      exclude = array_append(exclude,lnk.Dst);\n" +
 		"      IF lnk IS NULL THEN\n" +
 		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"         RETURN ret_paths;"+
 		"      ELSE\n"+
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
 		"         appendix := SumAllPaths(lnk,tot_path,orientation,depth+1,maxdepth,exclude);\n" +
 		"         IF appendix IS NOT NULL THEN\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
 		"         ELSE\n"+
-		"            ret_paths := tot_path;\n"+
+		"            ret_paths := Format('%s\n%s',ret_paths,tot_path);"+
 		"         END IF;\n"+
 		"      END IF;\n"+
 		"   END IF;\n"+
@@ -2296,12 +2308,14 @@ func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr {
 
 func GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link {
 
+	// This function may be misleading as it doesn't respect paths
+
 	qstr := fmt.Sprintf("select unnest(fwdconeaslinks) from FwdConeAsLinks('(%d,%d)',%d,%d);",start.Class,start.CPtr,sttype,depth)
 
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY to FwdConeAsLinkss Failed",err)
+		fmt.Println("QUERY to FwdConeAsLinks Failed",err)
 	}
 
 	var whole string
@@ -2927,6 +2941,7 @@ func ParseLinkPath(s string) [][]Link {
 
 	var array [][]Link
 	var index int = 0
+	s = strings.TrimSpace(s)
 
 	lines := strings.Split(s,"\n")
 

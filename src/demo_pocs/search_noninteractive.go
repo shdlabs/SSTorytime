@@ -34,9 +34,9 @@ func main() {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	searchtext := "tiger"
+	searchtext := "(chengshi)"
 	chaptext := "chinese"
-	context := []string{"poem"}
+	context := []string{"city","exercise"}
 
 	Search(ctx,chaptext,context,searchtext)
 
@@ -125,7 +125,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 				
 				if alt_paths != nil {
 					
-					fmt.Printf("\n-- Forward",SST.STTypeName(sttype),"cone stories ----------------------------------\n")
+					fmt.Println("\n-- Forward",SST.STTypeName(sttype),"cone stories ----------------------------------")
 					
 					for p := 0; p < path_depth; p++ {
 						SST.PrintLinkPath(ctx,alt_paths,p,"\nStory:","",nil)

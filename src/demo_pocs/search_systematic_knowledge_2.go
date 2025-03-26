@@ -22,7 +22,7 @@ func main() {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	context := []string{"sleep","day","time"}
+	context := []string{""}
 	arrows := []string{"pe","ph"} // Always start with pinyin
 
 	Systematic(ctx,"chinese",context,"",arrows)

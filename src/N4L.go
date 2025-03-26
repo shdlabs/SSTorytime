@@ -1319,7 +1319,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		}
 
 		HandleNode(this_item)
-		LinkUpStorySequence(token)
+		LinkUpStorySequence(this_item)
 	}
 }
 
@@ -1374,19 +1374,16 @@ func IdempAddArrow(from string, frptr NodePtr, link Link,to string, toptr NodePt
 
 //**************************************************************
 
-func HandleNode(s string) NodePtr {
+func HandleNode(annotated string) NodePtr {
 
-	PVerbose("Event/item/node:",s,"in chapter",SECTION_STATE)
+	clean_ptr,clean_version := IdempAddNode(annotated)
 
-	clean_version := StripAnnotations(s)
+	PVerbose("Event/item/node:",clean_version,"in chapter",SECTION_STATE)
 
-	clean_ptr := IdempAddNode(clean_version)
-
-	// cache the ptr references during parsing
 	LINE_ITEM_REFS = append(LINE_ITEM_REFS,clean_ptr)
-
-	if len(clean_version) != len(s) {
-		AddBackAnnotations(clean_ptr,s)
+	
+	if len(clean_version) != len(annotated) {
+		AddBackAnnotations(clean_version,clean_ptr,annotated)
 	}
 
 	return clean_ptr
@@ -1394,20 +1391,22 @@ func HandleNode(s string) NodePtr {
 
 //**************************************************************
 
-func IdempAddNode(s string) NodePtr {
+func IdempAddNode(s string) (NodePtr,string) {
+
+	clean_version := StripAnnotations(s)
 
 	l := len(s)
 	c := ClassifyString(s,l)
 
 	var new_nodetext Node
-	new_nodetext.S = s
+	new_nodetext.S = clean_version
 	new_nodetext.L = l
 	new_nodetext.Chap = SECTION_STATE
 	new_nodetext.NPtr.Class = c
 
 	iptr := AppendTextToDirectory(new_nodetext)
 
-	return iptr
+	return iptr,clean_version
 }
 
 //**************************************************************
@@ -1908,10 +1907,10 @@ func LinkUpStorySequence(this string) {
 
 		if LINE_ITEM_COUNTER == 1 && LAST_IN_SEQUENCE != "" {
 			
-			PVerbose("... Sequence addition:",LAST_IN_SEQUENCE,SEQUENCE_RELN,"->",this)
+			PVerbose("* ... Sequence addition: ",LAST_IN_SEQUENCE,"-(",SEQUENCE_RELN,")->",this,"\n")
 			
-			last_iptr := HandleNode(LAST_IN_SEQUENCE)
-			this_iptr := HandleNode(this)
+			last_iptr,_ := IdempAddNode(LAST_IN_SEQUENCE)
+			this_iptr,_ := IdempAddNode(this)
 			link := GetLinkArrowByName("(then)")
 			AppendLinkToNode(last_iptr,link,this_iptr)
 
@@ -2054,7 +2053,7 @@ func StripAnnotations(fulltext string) string {
 		if !protected {
 			skip,symb := EmbeddedSymbol(preserve_unicode,r)
 			if skip > 0 {
-				r += skip
+				r += skip-1
 				if unicode.IsSpace(preserve_unicode[r]) {
 					ParseError(ERR_NON_WORD_WHITE+symb)
 				}
@@ -2070,28 +2069,28 @@ func StripAnnotations(fulltext string) string {
 
 //**************************************************************
 
-func AddBackAnnotations(nptr NodePtr,fulltext string) {
+func AddBackAnnotations(cleantext string,cleanptr NodePtr,annotated string) {
 
 	var protected bool = false
 
-	reminder := fmt.Sprintf("%.30s...",fulltext)
+	reminder := fmt.Sprintf("%.30s...",cleantext)
 	PVerbose("\n        Adding annotations from \""+reminder+"\"")
 
-	for r := 0; r < len(fulltext); r++ {
+	for r := 0; r < len(annotated); r++ {
 
-		if fulltext[r] == '"' {
+		if annotated[r] == '"' {
 			protected = !protected
-		}
-
-		if !protected {
-			skip,symb := EmbeddedSymbol([]rune(fulltext),r)
-			if skip > 0 {
-				link := GetLinkArrowByName(ANNOTATION[symb])
-				this_item := ExtractWord(fulltext,r)
-				this_iptr := HandleNode(this_item)
-				IdempAddArrow(reminder,nptr,link,this_item,this_iptr)
-				r += skip-1
-				continue
+		} else {
+			if !protected {
+				skip,symb := EmbeddedSymbol([]rune(annotated),r)
+				if skip > 0 {
+					link := GetLinkArrowByName(ANNOTATION[symb])
+					this_item := ExtractWord(annotated,r)
+					this_iptr,_ := IdempAddNode(this_item)
+					IdempAddArrow(reminder,cleanptr,link,this_item,this_iptr)
+					r += skip-1
+					continue
+				}
 			}
 		}
 	}
