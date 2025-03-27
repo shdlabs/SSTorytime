@@ -362,6 +362,30 @@ Write this:
 Now you will immediately see the left hand words that you're trying to learn, and it takes an effort to
 look to the right when you've tried to remember and want the answer.
 
+In this order, you can also easily add other annotations like examples and related notes:
+
+<pre>
+-notes on chinese
+
+:: please, thank you, thankyou ::
+
+ thankyou (eh) 谢谢 (hp) xièxiè
+
+ qǐng (ph) 请 (he) please
+   " (e.g.) qǐng zài zhèlǐ děng  (ph) 请在这里等 (he) please wait here
+   " (e.g.) qǐng jìn             (ph) 请进    (he) please enter/come in
+   " (e.g.) qǐng kàn yīxià       (ph) 请看一下 (he) please take a look
+   " (e.g.) qǐng děng yīxià      (ph) 请等一下 (he) please wait a bit
+   " (e.g.) qǐng zuò             (ph) 请坐    (he) please sit
+
+:: yes, no, negative :: 
+
+ yes       (eh) 是的 (hp) Shì de
+  "        (note) There is no simple one to one translation for yes and no
+ yes/right (eh) 对   (hp) Duì
+
+</pre>
+
 ## How relationships work
 
 A piece of text can be thought of as an item or an event.
