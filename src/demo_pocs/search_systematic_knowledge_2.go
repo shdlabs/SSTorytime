@@ -106,8 +106,8 @@ func ShowCone(ctx SST.PoSST,cone [][]SST.Link,sttype int,chap string,context []s
 
 	for s := 0; s < len(cone); s++ {
 
-		prefix := fmt.Sprintf("\n - %s Word/Phrase ",SST.STTypeName(sttype))
-		SST.PrintLinkPath(ctx,cone,s,prefix,chap,context)
+		SST.PrintLinkPath(ctx,cone,s," - ",chap,context)
+		fmt.Printf("\n        ... %s Word/Phrase \n\n",SST.STTypeName(sttype))
 	}
 
 }

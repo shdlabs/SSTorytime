@@ -2480,12 +2480,12 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 				return
 			}
 
+			NewLine(format)
+
 			if !start_shown {
 				fmt.Print(prefix,p+1,": ",path_start.S)
 				start_shown = true
 			}
-
-			NewLine(format)
 
 			nextnode := GetDBNodeByNodePtr(ctx,alt_paths[p][l].Dst)
 
