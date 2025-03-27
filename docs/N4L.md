@@ -338,6 +338,30 @@ logic to define ontologies are greatly over-constrained and make
 reasoning precise but trivial, because they can only retrieve exactly
 what you typed into the model.
 
+## A hint for learning
+
+When you are interested in learning something, say a foreign language, put the thing you are'trying to
+learn first on the line, because your eye will tend to favour the first thing on the line, and your
+brain will immediately kick in and try to process it, whereas it will easily skip over the later things
+on the line. So, for example, if you're trying to learn Chinese, as in the example above, don't write
+<pre>
+ meat (eh) 肉 (hp) Ròu
+ beef  (eh) 牛肉  (hp) Niúròu
+ lamb  (eh) 羊肉  (hp) Yángròu
+ chicken (eh)  鸡肉 (hp)  Jīròu
+</pre>
+Write this:
+<pre>
+ THING TO LEARN  (relation)   WHAT IT MEANS
+
+ ròu     (ph)  肉   (he)  meat
+ niúròu  (ph)  牛肉  (he)  beef 
+ yángròu (ph)  羊肉  (he)  lamb  
+ jīròu   (ph)  鸡肉  (he)  chicken
+</pre>
+Now you will immediately see the left hand words that you're trying to learn, and it takes an effort to
+look to the right when you've tried to remember and want the answer.
+
 ## How relationships work
 
 A piece of text can be thought of as an item or an event.
