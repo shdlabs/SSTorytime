@@ -68,8 +68,8 @@ type Node struct {
 	Chap      string  // section/chapter name in which this was added
 	NPtr      NodePtr // Pointer to self index
 
-	I [ST_TOP][]Link  // link incidence list, by arrow type
-  	                  // NOTE: carefully how offsets represent negative SSTtypes
+	I [ST_TOP][]Link  // link incidence list, by STindex
+  	                  // NOTE: carefully how STindex offsets represent negative SSTtypes
 }
 
 //**************************************************************
@@ -2827,6 +2827,10 @@ func ParseSQLArrayString(whole_array string) []string {
 		}
 
 		item = append(item,uni_array[u])
+	}
+
+	if item != nil {
+		items = append(items,string(item))
 	}
 
 	for i := range items {
