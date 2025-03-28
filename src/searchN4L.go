@@ -22,6 +22,7 @@ import (
 //******************************************************************
 
 var (
+	ARROWS []string
 	CHAPTER string
 	SUBJECT string
 	CONTEXT []string
@@ -38,9 +39,19 @@ func main() {
 	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
-	Search(ctx,CHAPTER,CONTEXT,SUBJECT,LIMIT)
+	Search(ctx,ARROWS,CHAPTER,CONTEXT,SUBJECT,LIMIT)
 
 	SST.Close(ctx)
+}
+
+
+//**************************************************************
+
+func Usage() {
+	
+	fmt.Printf("usage: searchN4L [-v] [-arrows=] [-chapter string] subject [context]\n")
+	flag.PrintDefaults()
+	os.Exit(2)
 }
 
 //**************************************************************
@@ -51,24 +62,18 @@ func Init() []string {
 
 	verbosePtr := flag.Bool("v", false,"verbose")
 	chapterPtr := flag.String("chapter", "any", "a optional string to limit to a chapter/section")
+	arrowsPtr := flag.String("arrows", "then", "a list of forward/outward arrows to start with")
 	limitPtr := flag.Int("limit", 20, "an approximate limit on the number of items returned, where applicable")
 
 	flag.Parse()
 	args := flag.Args()
 
-	if len(args) < 1 {
-		Usage()
-		os.Exit(1);
-	}
-
-	SUBJECT = args[0]
-
-	for c := 1; c < len(args); c++ {
-		CONTEXT = append(CONTEXT,args[c])
-	}
-
 	if *verbosePtr {
 		VERBOSE = true
+	}
+
+	if *arrowsPtr != "" {
+		ARROWS = strings.Split(*arrowsPtr,",")
 	}
 
 	LIMIT = *limitPtr
@@ -77,6 +82,28 @@ func Init() []string {
 		CHAPTER = *chapterPtr
 	}
 
+	if len(args) > 0 {
+		SUBJECT = args[0]
+		
+		for c := 1; c < len(args); c++ {
+			CONTEXT = append(CONTEXT,args[c])
+		}
+
+		if len(ARROWS) == 0 && len(args) < 1 {
+			Usage()
+			os.Exit(1);
+		}
+	} 
+
+	if CONTEXT == nil {
+		CONTEXT = append(CONTEXT,"")
+	}
+
+	if len(ARROWS) == 0 {
+		Usage()
+		os.Exit(1);
+	}
+	
 	SST.MemoryInit()
 
 	return args
@@ -84,170 +111,115 @@ func Init() []string {
 
 //******************************************************************
 
-func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string, limit int) {
+func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,searchtext string, limit int) {
 
-	SearchByNodes(ctx,chaptext,context,searchtext,limit)
-	SearchByArrows(ctx,chaptext,context,searchtext,limit)
-	SearchStoryPaths(ctx,chaptext,context,searchtext,limit)
+	fmt.Println()
+	fmt.Println("** PROVISIONAL SEARCH TOOL *************************************\n")
+	fmt.Println("   Searching in chapter",chapter)
+	fmt.Println("   With context",context)
+	fmt.Println("   Selected arrows",arrows)
+	fmt.Println("   Node filter",searchtext)
+
+	Systematic(ctx,chapter,context,searchtext,arrows)
 }
 
-//**************************************************************
 
-func SearchByNodes(ctx SST.PoSST, chaptext string,context []string,searchtext string, limit int) {
+//******************************************************************
+
+func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string) {
 
 	chaptext = strings.TrimSpace(chaptext)
 	searchtext = strings.TrimSpace(searchtext)
 
-	fmt.Println("--------------------------------------------------")
-	fmt.Println("Looking for relevant nodes by",searchtext)
-	fmt.Println("--------------------------------------------------")
+	var arrows []SST.ArrowPtr
 
-	var start_set []SST.NodePtr
-	
-	search_items := strings.Split(searchtext," ")
-	
-	fmt.Print("Search separately by ")
-
-	for w := range search_items {
-		fmt.Print(search_items[w],",..")
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,chaptext,search_items[w])...)
+	for a := range arrnames {
+		arr := SST.GetDBArrowByName(ctx,arrnames[a])
+		arrows = append(arrows,arr)
 	}
 
-	fmt.Println("found",len(start_set),"possible relevant nodes:")
+	nodes := SST.GetDBNodeContextsMatchingArrow(ctx,chaptext,context,searchtext,arrows)
 
-	for start := range start_set {
+	var prev string
+	var header []string
 
-		name :=  SST.GetDBNodeByNodePtr(ctx,start_set[start])
+	for cntxt := range nodes {
+		for n := 0; n < len(nodes[cntxt]); n++ {
 
-		fmt.Println()
-		fmt.Printf("#%d ",start+1)
-		fmt.Printf("(search %s => %s)\n",searchtext,name.S)
-		fmt.Println("--------------------------------------------")
+			result := SST.GetDBNodeByNodePtr(ctx,nodes[cntxt][n])
 
-		SearchPastAndFutureConeBySTType(ctx,start_set[start],SST.EXPRESS,limit) 
-		SearchPastAndFutureConeBySTType(ctx,start_set[start],SST.LEADSTO,limit) 
-		SearchPastAndFutureConeBySTType(ctx,start_set[start],SST.CONTAINS,limit) 
-		SearchPastAndFutureConeBySTType(ctx,start_set[start],SST.NEAR,limit) 
-	}
-}
-
-//**************************************************************
-
-func SearchByArrows(ctx SST.PoSST, chaptext string,context []string,searchtext string, limit int) {
-
-	// **** Look for meaning in the arrows ***
-
-	var ama map[SST.ArrowPtr][]SST.NodePtr
-	var count int
-
-	ama = SST.GetMatroidArrayByArrow(ctx,context,chaptext)
-
-	for arrowptr := range ama {
-		arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
-
-		if SST.MatchesInContext(arr_dir.Long,context) {
-
-			count++
-
-			if count > limit {
-				break
+			if cntxt != prev {
+				prev = cntxt
+				header = SST.ParseSQLArrayString(cntxt)
+				Header(header,result.Chap)
 			}
 
-			fmt.Println("\nArrow --(",arr_dir.Long,")--> points to a group of nodes with a similar role in the context of",context,"in the chapter",chaptext,"\n")
-			
-			for n := 0; n < len(ama[arrowptr]); n++ {
-				node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n])
-				SST.NewLine(n)
-				fmt.Print("..  ",node.S,",")
-				
-			}
-			fmt.Println()
-			fmt.Println("............................................")
-		}
-	}
-
-	if count == 0 {
-		fmt.Println("\n(No relevant matroid patterns matching by arrow)")
-	}
-}
-
-//**************************************************************
-
-func SearchStoryPaths(ctx SST.PoSST, chaptext string,context []string,searchtext string, limit int) {
-
-	fmt.Println()
-	fmt.Println("Check for story paths of length",limit)
-	
-	matching_arrows := SST.GetDBArrowsMatchingArrowName(ctx,searchtext)
-	
-	relns := SST.GetDBNodeArrowNodeMatchingArrowPtrs(ctx,chaptext,context,matching_arrows)
-	
-	for r := range relns {
-		
-		from := SST.GetDBNodeByNodePtr(ctx,relns[r].NFrom)
-		to := SST.GetDBNodeByNodePtr(ctx,relns[r].NTo)
-		arr := SST.ARROW_DIRECTORY[relns[r].Arr].Long
-		wgt := relns[r].Wgt
-		actx := relns[r].Ctx
-		fmt.Println("\n",r,": ",from.S,"--(",arr,")->",to.S,"\n       (... wgt",wgt,"in the contexts",actx,")")
-	}
-
-	if len(relns) == 0 {
-		fmt.Println("No stories")
-	}
-}
-
-//**************************************************************
-
-func SearchPastAndFutureConeBySTType(ctx SST.PoSST,node SST.NodePtr,sttype int,limit int) {
-		
-	// Look for both directions
-
-	allnodes := SST.GetFwdConeAsNodes(ctx,node,sttype,limit)
-	
-	if len(allnodes) > 1 {
-		
-		for l := range allnodes {
-			fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
-			fmt.Printf(" %s: '%s'\t        (in chapter %s)\n",SST.STTypeName(sttype),fullnode.S,fullnode.Chap)
-		}
-		SearchStoriesFrom(ctx,node,sttype,limit)
-	}
-
-	allnodes = SST.GetFwdConeAsNodes(ctx,node,-sttype,limit)
-
-	if len(allnodes) > 1 {
-		for l := range allnodes {
-			fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
-			fmt.Printf(" %s: '%s'\t        (in chapter %s)\n",SST.STTypeName(sttype),fullnode.S,fullnode.Chap)
-		}
-		SearchStoriesFrom(ctx,node,-sttype,limit)
-	}
-
-}
-
-//**************************************************************
-
-func SearchStoriesFrom(ctx SST.PoSST,node SST.NodePtr,sttype int,limit int) {
-
-	// Conic proper time paths
-	
-	alt_paths,num_paths := SST.GetFwdPathsAsLinks(ctx,node,sttype,limit)
-	
-	if alt_paths != nil {
-		for p := 0; p < num_paths; p++ {
-			SST.PrintLinkPath(ctx,alt_paths,p,"  Story:",CHAPTER,CONTEXT)
+			SearchStoryPaths(ctx,result.S,result.NPtr,arrows,result.Chap,context)
 		}
 	}
 }
 
 //**************************************************************
 
-func Usage() {
-	
-	fmt.Printf("usage: searchN4L [-v] [-chapter string] subject [context]\n")
-	flag.PrintDefaults()
-	os.Exit(2)
+func SearchStoryPaths(ctx SST.PoSST,name string,start SST.NodePtr, arrows []SST.ArrowPtr,chap string,context []string) {
+
+	const maxdepth = 8
+
+	fmt.Println("....................................................................................")
+
+	cone,_ := SST.GetFwdPathsAsLinks(ctx,start,1,maxdepth)
+	ShowCone(ctx,cone,1,chap,context)
+
+	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,-1,maxdepth)
+	ShowCone(ctx,cone,1,chap,context)
+
+	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,2,maxdepth)
+	ShowCone(ctx,cone,1,chap,context)
+
+	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,-2,maxdepth)
+	ShowCone(ctx,cone,1,chap,context)
+
+	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,3,maxdepth)
+	ShowCone(ctx,cone,1,chap,context)
+
+	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,-3,maxdepth)
+	ShowCone(ctx,cone,1,chap,context)
+
+	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,0,maxdepth)
+	ShowCone(ctx,cone,1,chap,context)
+}
+
+//**************************************************************
+
+func ShowCone(ctx SST.PoSST,cone [][]SST.Link,sttype int,chap string,context []string) {
+
+	if len(cone) < 1 {
+		return
+	}
+
+	for s := 0; s < len(cone); s++ {
+
+		SST.PrintLinkPath(ctx,cone,s," - ",chap,context)
+	}
+
+}
+
+//**************************************************************
+
+func Header(h []string,chap string) {
+
+	if len(h) == 0 {
+		return
+	}
+
+	fmt.Println("\n\n============================================================")
+	fmt.Println("   In chapter: \"",chap,"\"\n")
+
+	for s := range h {
+		fmt.Println("   ::",h[s],"::")
+	}
+
+	fmt.Println("\n============================================================")
 }
 
 

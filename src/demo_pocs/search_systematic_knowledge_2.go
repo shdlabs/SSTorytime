@@ -50,7 +50,6 @@ func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext strin
 	var header []string
 
 	for cntxt := range nodes {
-				
 		for n := 0; n < len(nodes[cntxt]); n++ {
 
 			result := SST.GetDBNodeByNodePtr(ctx,nodes[cntxt][n])
@@ -107,7 +106,6 @@ func ShowCone(ctx SST.PoSST,cone [][]SST.Link,sttype int,chap string,context []s
 	for s := 0; s < len(cone); s++ {
 
 		SST.PrintLinkPath(ctx,cone,s," - ",chap,context)
-		fmt.Printf("\n        ... %s Word/Phrase \n\n",SST.STTypeName(sttype))
 	}
 
 }

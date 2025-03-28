@@ -2652,19 +2652,20 @@ func AdjointLinkPath(LL []Link) []Link {
 
 // **************************************************************************
 
-func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter string,context []string) {
+func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string,context []string) {
 
-	if len(alt_paths[p]) > 1 {
+	if len(cone[p]) > 1 {
 
-		path_start := GetDBNodeByNodePtr(ctx,alt_paths[p][0].Dst)		
+		path_start := GetDBNodeByNodePtr(ctx,cone[p][0].Dst)		
 		
 		start_shown := false
 
 		var format int
+		var stpath []string
 		
-		for l := 1; l < len(alt_paths[p]); l++ {
+		for l := 1; l < len(cone[p]); l++ {
 
-			if !MatchContexts(context,alt_paths[p][l].Ctx) {
+			if !MatchContexts(context,cone[p][l].Ctx) {
 				return
 			}
 
@@ -2675,22 +2676,30 @@ func PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string,chapter s
 				start_shown = true
 			}
 
-			nextnode := GetDBNodeByNodePtr(ctx,alt_paths[p][l].Dst)
+			nextnode := GetDBNodeByNodePtr(ctx,cone[p][l].Dst)
 
 			if !SimilarString(nextnode.Chap,chapter) {
 				break
 			}
 			
-			arr := GetDBArrowByPtr(ctx,alt_paths[p][l].Arr)
-			
-			if l < len(alt_paths[p]) {
+			arr := GetDBArrowByPtr(ctx,cone[p][l].Arr)
+
+			stpath = append(stpath,STTypeName(STIndexToSTType(arr.STAindex)))
+	
+			if l < len(cone[p]) {
 				fmt.Print("  -(",arr.Long,")->  ")
 			}
 			
 			fmt.Print(nextnode.S)
 			format += 2
 		}
-		fmt.Println(". ")
+
+		fmt.Print("\n\n    Process summary:")
+
+		for s := range stpath {
+			fmt.Print(" -(",stpath[s],")-> ")
+		}
+		fmt.Println(". \n")
 	}
 }
 
@@ -3362,7 +3371,7 @@ func EscapeString(s string) string {
 
 func NewLine(n int) {
 
-	if n % 8 == 0 {
+	if n % 6 == 0 {
 		fmt.Println()
 	}
 }
