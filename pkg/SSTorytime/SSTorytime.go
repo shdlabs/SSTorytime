@@ -337,6 +337,8 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function sumfwdpaths")
 		ctx.DB.QueryRow("drop function match_context")
 		ctx.DB.QueryRow("drop function match_arrows")
+		ctx.DB.QueryRow("drop function ArrowInList")
+		ctx.DB.QueryRow("drop function GetStoryStartNodes")
 
 		ctx.DB.QueryRow("drop table Node")
 		ctx.DB.QueryRow("drop table NodeArrowNode")
@@ -1608,7 +1610,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("FAILED \n",qstr,err)
+		fmt.Println("Error defining postgres function:",qstr,err)
 	}
 
 	row.Close()
@@ -1622,6 +1624,65 @@ func DefineStoredFunctions(ctx PoSST) {
 		"      RETURN true;\n" +
 		"   END IF;\n" +
 		"RETURN false;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// Helper to find arrows by type
+
+	qstr = "CREATE OR REPLACE FUNCTION ArrowInList(arrow int,links Link[])\n"+
+		"RETURNS boolean AS $fn$\n"+
+		"DECLARE \n"+
+		"   lnk Link;\n"+
+		"BEGIN\n"+
+		"IF links IS NULL THEN\n"+
+		"   RETURN false;"+
+		"END IF;"+
+		"FOREACH lnk IN ARRAY links LOOP\n"+
+		"  IF lnk.Arr = arrow THEN\n"+
+		"     RETURN true;\n"+
+		"  END IF;\n"+
+		"END LOOP;"+
+		"RETURN false;"+
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// ***********************************
+	// Find the start of story paths, where outgoing nodes match but no incoming
+	// This means we've reached the top of a hierarchy
+	// ***********************************
+
+	// Find the node that sit's at the start/top of a causal chain
+
+	qstr =  "CREATE OR REPLACE FUNCTION GetStoryStartNodes(arrow int,inverse int,sttype int)\n"+
+		"RETURNS NodePtr[] AS $fn$\n"+
+		"DECLARE \n"+
+		"   retval nodeptr[] = ARRAY[]::nodeptr[];\n"+
+		"BEGIN\n"+
+		"   CASE sttype \n"
+	
+	for st := -EXPRESS; st <= EXPRESS; st++ {
+		qstr += fmt.Sprintf("WHEN %d THEN\n"+
+			"   SELECT array_agg(Nptr) into retval FROM Node WHERE ArrowInList(arrow,%s) AND NOT ArrowInList(inverse,%s);\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
+	}
+	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
+		"END CASE;\n" +
+		"    RETURN retval; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 
@@ -2156,6 +2217,40 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 	row.Close()
 
 	return return_value
+}
+
+// **************************************************************************
+
+func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr {
+
+	// Find the head / starting node matching an arrow sequence.
+	// It has outgoing (+sttype) but not incoming (-sttype) arrow
+
+	arrowptr := GetDBArrowsMatchingArrowName(ctx,arrow)[0]
+	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
+
+	qstr := fmt.Sprintf("select GetStoryStartNodes(%d,%d,%d)",arrowptr,INVERSE_ARROWS[arrowptr],sttype)
+
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("GetNodesStartingStoriesForArrow failed\n",qstr,err)
+		return nil
+	}
+
+	var nptrstring string
+	var matches []NodePtr
+
+	for row.Next() {		
+		err = row.Scan(&nptrstring)
+
+		matches = ParseSQLNPtrArray(nptrstring)
+
+	}
+
+	row.Close()
+
+	return matches
 }
 
 // **************************************************************************

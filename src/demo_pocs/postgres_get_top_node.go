@@ -75,34 +75,9 @@ func main() {
 
 	row.Close()
 
-	arrowptr := SST.GetDBArrowsMatchingArrowName(ctx,"then")[0]
-	inverse := SST.GetDBArrowsMatchingArrowName(ctx,"prior")[0]
-	qstr = fmt.Sprintf("select GetStoryStartNodes(%d,%d,1)",arrowptr,inverse)
+	arrow := "then"
 
-	if arrowptr != inverse-1 {
-		fmt.Println()
-	}
-
-
-	fmt.Println("Q",qstr)
-
-	row,err = ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("FAILED \n",qstr,err)
-	}
-
-	var nptrstring string
-	var matches []SST.NodePtr
-
-	for row.Next() {		
-		err = row.Scan(&nptrstring)
-
-		matches = SST.ParseSQLNPtrArray(nptrstring)
-
-	}
-
-	row.Close()
+	matches := SST.GetNodesStartingStoriesForArrow(ctx,arrow)
 
 	for p := range matches {
 
