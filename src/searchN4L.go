@@ -21,14 +21,6 @@ import (
 
 //******************************************************************
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "sstoryline"
-	password = "sst_1234"
-	dbname   = "sstoryline"
-)
-
 var (
 	CHAPTER string
 	SUBJECT string
