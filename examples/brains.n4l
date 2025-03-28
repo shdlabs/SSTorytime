@@ -1,9 +1,25 @@
 
--neuroscience notes
+- neuroscience brain
 
-: human brain :
+:: waves, oscillations ::
 
-# inspired Mitchell, Kevin J.. Free Agents: How Evolution Gave Us Free Will (p. 108). Princeton University Press. 
+alpha waves  (freq) 5-15 Hz
+         "    (state) very relaxed, light or passive attention
+beta waves  (freq) 12-35 Hz
+    "        (state) medium attention,anxiety dominant, active, external attention
+gamma waves  (freq) 32-100 Hz
+   "         (note) 40 Hz of special interest
+   "         (state) concentration
+   "  (occurs) premotor cortex
+   "  (occurs) parietal cortex
+   "  (occurs) temporal cortex
+   "  (occurs) frontal cortex
+
+delta waves  (freq) 0.5-4 Hz
+   "         (state) sleep
+theta waves (freq) 4-8 Hz
+    "      (consists of) type 1
+    "      (consists of) type 2
 
 :: structure , parts etc ::
 
@@ -39,6 +55,7 @@ columnar organization hypothesis
 column (pt) neocortex 
 column (depends on) tectum, thalamus
 
+
 // Each column is thus a functional unit designed to take in a variety of inputs, operate on them in some way, communicate with neighbouring column 
 
 
@@ -49,6 +66,9 @@ basal ganglia (where) below cortex, forebrain
 inner chamber
 
  :: memory, spacetime encoding ::
+
+place cells
+grid cells
 
 hippocampus  (role) learning and memory
      "      (role) creates temporary structured episodic record 
@@ -87,7 +107,13 @@ hippocampus (contains) physical structures/neural circuits
 
 encoding meaning as "things" is efficient conceptualisation, which is a coarse graining of spacetime pattern persistence and recurrence.
 
+:: references ::
 
+Complementary roles for hippocampus and anterior cingulate in composing continuous choice   (url) www.biorxiv.org/content/10.1101/2025.03.17.643774v1.full
 
+Left–right-alternating theta sweeps in entorhinal–hippocampal maps of space (pub by) Nature
 
-
+   " (discusses) theta waves
+   " (discusses) place cells spacetime
+  "  (discusses) Place cells (pt) hippocampus
+  "  (discusses) Grid cells (pt) entorhinal cortex 

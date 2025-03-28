@@ -64,6 +64,7 @@ const (
 	ERR_ANNOTATION_REDEFINE = "Redefinition of annotation character"
 	ERR_SIMILAR_NO_SIGN = "Arrows for similarity do not have signs, they are directionless"
 	ERR_ARROW_SELFLOOP = "Arrow's origin points to itself"
+	ERR_ARR_REDEFINITION="Redefinition of arrow "
 	ERR_NEGATIVE_WEIGHT = "Arrow relation has a negative weight, which is disallowed. Use a NOT relation if you want to signify inhibition: "
 	ERR_TOO_MANY_WEIGHTS = "More than one weight value in the arrow relation "
         ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
@@ -140,6 +141,8 @@ func main() {
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
+
+	AddMandatory()
 
 	if SUMMARIZE {
 		SummarizeGraph()
@@ -328,10 +331,12 @@ func ClassifyConfigRole(token string) {
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
+				CheckArrow(reln,BWD_ARROW)
 				BWD_INDEX = SST.InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
 				SST.InsertInverseArrowDirectory(FWD_INDEX,BWD_INDEX)
 				PVerbose("In",SECTION_STATE,"short name",reln,"for",BWD_ARROW,", direction","-")
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
+				CheckArrow(reln,FWD_ARROW)
 				FWD_INDEX = SST.InsertArrowDirectory(SECTION_STATE,reln,FWD_ARROW,"+")
 				PVerbose("In",SECTION_STATE,"short name",reln,"for",FWD_ARROW,", direction","+")
 			} else {
@@ -403,6 +408,23 @@ func ClassifyConfigRole(token string) {
 
 	default:
 		ParseError(ERR_ILLEGAL_CONFIGURATION+" "+SECTION_STATE)
+		os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func CheckArrow(alias,name string) {
+
+	prev,ok := SST.ARROW_SHORT_DIR[alias]
+	if ok {
+		ParseError(ERR_ARR_REDEFINITION+"\""+alias+"\" previous short name: "+SST.ARROW_DIRECTORY[prev].Short)
+		os.Exit(-1)
+	}
+	
+	prev,ok = SST.ARROW_LONG_DIR[name]
+	if ok {
+		ParseError(ERR_ARR_REDEFINITION+"\""+name+"\" previous long name: "+SST.ARROW_DIRECTORY[prev].Long)
 		os.Exit(-1)
 	}
 }
@@ -1015,6 +1037,18 @@ func SkipWhiteSpace(src []rune, pos int) int {
 	}
 
 	return pos
+}
+
+//**************************************************************
+
+func AddMandatory() {
+
+	//   + then the next is (then) - previous (prior)
+
+	arr := SST.InsertArrowDirectory("leadsto","then","then the next is","+")
+	inv := SST.InsertArrowDirectory("leadsto","prior","previously","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
 }
 
 //**************************************************************

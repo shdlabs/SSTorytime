@@ -5,11 +5,9 @@
 
 - story example exercise in chinese
 
- :: city, story, example, exercise in combining terms ::
+ :: _sequence_ , city, story, example, exercise in combining terms ::
 
 @title Zài chéngshì lǐ (ph) 在城市里 (he) In the city
-
-+:: _sequence_ ::
 
 Zhè shì xīngqí yī zǎoshang, tiānqì hěn lěng  (ph) 这是星期一早上，天气很冷   (he) It's a Monday morning, and the weather is cold.
         "                                    (belong) $title.1

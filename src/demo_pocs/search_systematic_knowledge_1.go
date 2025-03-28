@@ -81,8 +81,7 @@ func SearchStoryPaths(ctx SST.PoSST,name string,start SST.NodePtr, arrows []SST.
 
 	for s := 0; s < len(cone); s++ {
 
-		prefix := fmt.Sprintf("\n - Word/Phrase ")
-		SST.PrintLinkPath(ctx,cone,s,prefix,chap,context)
+		SST.PrintLinkPath(ctx,cone,s," - ",chap,context)
 	}
 
 }

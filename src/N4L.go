@@ -67,7 +67,7 @@ const (
 	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be int he form $label.n"
 	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
 	ERR_SHORT_WORD="Short word, probably a mistake: "
-
+	ERR_ARR_REDEFINITION="Redefinition of arrow "
 )
 
 //**************************************************************
@@ -254,6 +254,8 @@ func main() {
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
+
+	AddMandatory()
 
 	if SUMMARIZE {
 		SummarizeGraph()
@@ -442,9 +444,11 @@ func ClassifyConfigRole(token string) {
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
+				CheckArrow(reln,BWD_ARROW)
 				BWD_INDEX = InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
 				InsertInverseArrowDirectory(FWD_INDEX,BWD_INDEX)
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
+				CheckArrow(reln,FWD_ARROW)
 				FWD_INDEX = InsertArrowDirectory(SECTION_STATE,reln,FWD_ARROW,"+")
 			} else {
 				ParseError(ERR_BAD_ABBRV)
@@ -1090,6 +1094,20 @@ func ParseN4L(src []rune) {
 	if Dangler() {
 		ParseError(ERR_MISSING_EVENT)
 	}
+}
+
+//**************************************************************
+
+func AddMandatory() {
+
+	//   + then the next is (then) - previous (prior)
+
+	CheckArrow("then","then the next is")
+	arr := InsertArrowDirectory("leadsto","then","then the next is","+")
+	CheckArrow("prior","previously")
+	inv := InsertArrowDirectory("leadsto","prior","previously","-")
+	InsertInverseArrowDirectory(arr,inv)
+
 }
 
 //**************************************************************
@@ -1919,6 +1937,23 @@ func LinkUpStorySequence(this string) {
 		}
 		
 		LAST_IN_SEQUENCE = this
+	}
+}
+
+//**************************************************************
+
+func CheckArrow(alias,name string) {
+
+	prev,ok := ARROW_SHORT_DIR[alias]
+	if ok {
+		ParseError(ERR_ARR_REDEFINITION+"\""+alias+"\" previous short name: "+ARROW_DIRECTORY[prev].Short)
+		os.Exit(-1)
+	}
+	
+	prev,ok = ARROW_LONG_DIR[name]
+	if ok {
+		ParseError(ERR_ARR_REDEFINITION+"\""+name+"\" previous long name: "+ARROW_DIRECTORY[prev].Long)
+		os.Exit(-1)
 	}
 }
 

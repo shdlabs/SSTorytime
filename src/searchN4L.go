@@ -59,7 +59,7 @@ func Init() []string {
 
 	verbosePtr := flag.Bool("v", false,"verbose")
 	chapterPtr := flag.String("chapter", "any", "a optional string to limit to a chapter/section")
-	limitPtr := flag.Int("limit", 3, "an approximate limit on the number of items returned, where applicable")
+	limitPtr := flag.Int("limit", 20, "an approximate limit on the number of items returned, where applicable")
 
 	flag.Parse()
 	args := flag.Args()
@@ -217,7 +217,7 @@ func SearchPastAndFutureConeBySTType(ctx SST.PoSST,node SST.NodePtr,sttype int,l
 		
 		for l := range allnodes {
 			fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
-			fmt.Printf(" %s: '%s'\tin chapter %s\n",SST.STTypeName(sttype),fullnode.S,fullnode.Chap)
+			fmt.Printf(" %s: '%s'\t        (in chapter %s)\n",SST.STTypeName(sttype),fullnode.S,fullnode.Chap)
 		}
 		SearchStoriesFrom(ctx,node,sttype,limit)
 	}
@@ -227,7 +227,7 @@ func SearchPastAndFutureConeBySTType(ctx SST.PoSST,node SST.NodePtr,sttype int,l
 	if len(allnodes) > 1 {
 		for l := range allnodes {
 			fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
-			fmt.Printf(" %s: '%s'\tin chapter %s\n",SST.STTypeName(-sttype),fullnode.S,fullnode.Chap)
+			fmt.Printf(" %s: '%s'\t        (in chapter %s)\n",SST.STTypeName(sttype),fullnode.S,fullnode.Chap)
 		}
 		SearchStoriesFrom(ctx,node,-sttype,limit)
 	}
