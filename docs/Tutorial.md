@@ -3,7 +3,15 @@
 
 *(This is a provisional tutorial to help get you started using the language)*
 
+This is an unusual project, in the age of so-called Artificial Intelligence.
+It's a project about knowledge--your knowledge, not that abstract knowledge of Mankind.
+How how can you compete with AI and with other people in the information age?
+It's a bit like going to the gym to get fit. No one can do it for you, but there
+are tools to help you. So here is a methodology with tools, to improve the user experience 
+of learning.
 
+If you're here, you're likely a programmer or an IT person, so you're looking
+for simple answers in code, as software. Software is much more than code, of course.
 On one level, there is a graph database here, but that's missing the point.
 There are plenty of graph databases, but people use them poorly. This is not that.
 
