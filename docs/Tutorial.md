@@ -41,7 +41,7 @@ often how to write queries in a special language. It's quite far from how
 we think in the moment.
 
 All this commodity thinking leads to a canned soup knowledge
-cuisine. No wonder we end up with a culture of soundbytes and
+cuisine. No wonder we end up with a culture of soundbites and
 hearsay. If you want fresh organic knowledge, served up just as you like it, you have to put in the
 work of tending your crop yourself. Knowledge, after all, isn't knowledge if you don't know it.
 No one can know it for you, so it's up to you to curate it and organize it to suit yourself--perhaps
@@ -78,7 +78,7 @@ IF YOU WRITE IN ALL CAPS, YOU WILL BE REMINDED OF THE NOTE LATER!
  Other symbols can be defined with your own meanings, like >"special meanings"
 
 </pre>
-You can save this as a texttile. It's helpful, but not necessary, to use a sufficx `.n4l`.
+You can save this as a text file. It's helpful, but not necessary, to use a suffix `.n4l`.
 This file is already available in the distribution:
 <pre>
 $ cd SSTorytime
@@ -101,7 +101,7 @@ If you choose verbose output, you see more of what's going on:
 * If you use the "ditto" inverted commas under an item, you don't have to type it again.
 * You can define special symbols like = >, etc in the configuration to automatically annotate words inside a longer piece of text.
 
-That already covers a lot of possiblities!
+That already covers a lot of possibilities!
 
 ## What's the point?
 
@@ -118,12 +118,12 @@ For example, suppose you are learning French.
 </pre>
 
 * Notice that you can use accents and Unicode characters freely. 
-* Notie that you can make intuitive short names for arrows like (e.g.). You can define what these mean in the configuration. More on that later.
+* Notice that you can make intuitive short names for arrows like (e.g.). You can define what these mean in the configuration. More on that later.
 * Notice you can define many different kind of arrows with different meanings, e.g. (e.g.), (note).
 
 You start to see a pattern in the notes: usually, if you're trying to remember something, you want to see the raw
 thing, like the word for breakfast. You also want to remember how to use it, so you naturally add a couple of examples
-just after the item. N4L will connect these dots to show you related things later. But, more importanty, you don'e
+just after the item. N4L will connect these dots to show you related things later. But, more importantly, you don't
 event have to do anything with N4L except write stuff down. These notes are already your potential knowledge in the
 making--and this simple structure helps you to be systematic in writing things down. You will spend a lot of time
 just curating these notes, altering, editing, improving, and most of the value is actually there.
@@ -134,6 +134,57 @@ relevance and context. Just writing the notes is 80 percent of the job.
 * When your notes become long, it's hard to keep an good overview.
 * Once inside the database, you can present the information in different ways.
 When you upload it to a database,
-you can still find things quickly, even when you're not sitting in front of your text editor--perhaps using yur phone.
+you can still find things quickly, even when you're not sitting in front of your text editor--perhaps using your phone.
+
+From here, it's up to you how you want to proceed. If you're feeling perverse, you could add
+more languages:
+
+<pre>
+- French phrases, and other languages
+
+ petit-déjeuner (means) breakfast
+
+    "  (e.g.) Je voudrais commander le petit-déjeuner (means) I would like to order breakfast
+    "  (note) Don't forget to say please!
+
+    "  (betyr på norsk) Jeg vil bestille frokost
+    "  (中文意思是) 我想订早餐 
+
+</pre>
+
+## It's not rocket science, unless ...
+
+Writing notes isn't all that easy. It takes a certain self-discipline, but it gets easier over time.
+Forcing yourself to start is often the biggest hurdle. The news is that you can drip new notes into your
+working files occasionally over a long time. You don't have to sit down and study for hours at a time.
+On the other hand, it's only when you do make time to sit and study that you actually learn.
+
+Once again, the message is: writing it down is nice, putting it into a database is cool, but it's all
+wasted effort if you don't look at it yourself regularly. No one learned French by writing in their school
+book, or even by cramming for the exam. You only learn by using knowledge. It isn't knowledge if you don't know it. 
+
+Tt's not rocket science, unless of course it is rock science.
+<pre>
+
+--rocket science
+
+ rockets are powered projectiles
+
+ Rocket science in finance (wikipedia) "https://en.wikipedia.org/wiki/Rocket_science_(finance)"
+
+ HOW TO SPELL VONBRAUNS NAME???
+
+ Werner Von Braun (developed) V2 aircraft
+         "        (developed) NASA early rockets  
+
+ ASK FRIEND AT NASA...
+
+ Apollo Program
+ Mercury Program
+ Gemini Program ...
+
+ Space Camp movie ..
+
+</pre>
 
 

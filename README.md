@@ -24,7 +24,7 @@ thinking, and how it all fits together.  In other words, remaining in
 control of what you see and ask, rather than handing over to a batch
 job summary by an LLM text tool in which you get an answer `take it or leave it'.*
 
-
+* [A quick tutorial](docs/Tutorial.md)
 * [The Mission and Approach](docs/approach.md)
 * [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
 * [SSTorytelling](docs/Storytelling.md)
