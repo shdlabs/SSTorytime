@@ -2044,10 +2044,18 @@ func GetDBContextsMatchingName(ctx PoSST,src string) []string {
 
 	var whole string
 	var retval []string
+	var idemp = make(map[string]int)
 
 	for row.Next() {		
 		err = row.Scan(&whole)
-		retval = append(retval,whole)
+		a := ParseSQLArrayString(whole)
+		for i := range a {
+			idemp[a[i]]++
+		}
+	}
+
+	for s := range idemp {
+		retval = append(retval,s)
 	}
 
 	row.Close()
@@ -3458,7 +3466,7 @@ func EscapeString(s string) string {
 func NewLine(n int) {
 
 	if n % 6 == 0 {
-		fmt.Println()
+		fmt.Print("\n    ",)
 	}
 }
 

@@ -51,6 +51,7 @@ func Usage() {
 	
 	fmt.Printf("usage: searchN4L [-v] [-arrows=] [-chapter string] subject [context]\n")
 	flag.PrintDefaults()
+
 	os.Exit(2)
 }
 
@@ -124,8 +125,8 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 	ByArrow(ctx,chapter,context,searchtext,arrows)
 	Systematic(ctx,chapter,context,searchtext,arrows)
 
-	chaps := SST.GetDBChaptersMatchingName(ctx,searchtext)
-	ctxts := SST.GetDBContextsMatchingName(ctx,searchtext)
+	chaps := SST.GetDBChaptersMatchingName(ctx,"")
+	ctxts := SST.GetDBContextsMatchingName(ctx,"")
 	TOC(chaps,ctxts)
 }
 
@@ -333,7 +334,8 @@ func TOC(chap,cont []string) {
 	fmt.Println("\n   Contexts: \n")
 
 	for s := range cont {
-		fmt.Println("   ::",cont[s],"::")
+		SST.NewLine(s)
+		fmt.Printf(" %-19.20s ",cont[s])
 	}
 
 	fmt.Println("\n============================================================")
