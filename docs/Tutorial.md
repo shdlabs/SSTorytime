@@ -96,4 +96,44 @@ If you choose verbose output, you see more of what's going on:
 
 * First N4L reads a configuration file that's called `N4Lconfig.in` with lots of customizations.
 * Then it reads your file and chops it into parts that are related.
+* N4L thinks that each line is an event, or an item.
+* If you out something in parentheses, it treats it as a relationship or an "arrow" that points from one item to another. You can define your own arrows, and the idea is to use them to find things more easily.
+* If you use the "ditto" inverted commas under an item, you don't have to type it again.
+* You can define special symbols like = >, etc in the configuration to automatically annotate words inside a longer piece of text.
+
+That already covers a lot of possiblities!
+
+## What's the point?
+
+When you make notes, you should think about what you want to see when you look back at your notes.
+For example, suppose you are learning French. 
+
+<pre>
+- French phrases
+
+ petit-déjeuner (means) breakfast
+
+    "  (e.g.) Je voudrais commander le petit-déjeuner (means) I would like to order breakfast
+    "  (note) Don't forget to say please!
+</pre>
+
+* Notice that you can use accents and Unicode characters freely. 
+* Notie that you can make intuitive short names for arrows like (e.g.). You can define what these mean in the configuration. More on that later.
+* Notice you can define many different kind of arrows with different meanings, e.g. (e.g.), (note).
+
+You start to see a pattern in the notes: usually, if you're trying to remember something, you want to see the raw
+thing, like the word for breakfast. You also want to remember how to use it, so you naturally add a couple of examples
+just after the item. N4L will connect these dots to show you related things later. But, more importanty, you don'e
+event have to do anything with N4L except write stuff down. These notes are already your potential knowledge in the
+making--and this simple structure helps you to be systematic in writing things down. You will spend a lot of time
+just curating these notes, altering, editing, improving, and most of the value is actually there.
+
+You don't learn French by putting it in a database. You learn by revisiting it, and by remembering
+relevance and context. Just writing the notes is 80 percent of the job.
+* The N4L compiler can help you to find errors and make a good structure.
+* When your notes become long, it's hard to keep an good overview.
+* Once inside the database, you can present the information in different ways.
+When you upload it to a database,
+you can still find things quickly, even when you're not sitting in front of your text editor--perhaps using yur phone.
+
 
