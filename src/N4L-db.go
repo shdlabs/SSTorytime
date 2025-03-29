@@ -136,13 +136,13 @@ func main() {
 
 	ParseConfig(config)
 
+	AddMandatory()
+
 	for input := 0; input < len(args); input++ {
 		NewFile(args[input])
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
-
-	AddMandatory()
 
 	if SUMMARIZE {
 		SummarizeGraph()

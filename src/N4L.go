@@ -247,6 +247,8 @@ func main() {
 	config := ReadFile(CURRENT_FILE)
 	ParseConfig(config)
 
+	AddMandatory()
+
 	//SummarizeAndTestConfig()
 
 	for input := 0; input < len(args); input++ {
@@ -254,8 +256,6 @@ func main() {
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
-
-	AddMandatory()
 
 	if SUMMARIZE {
 		SummarizeGraph()
