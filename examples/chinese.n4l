@@ -27,7 +27,7 @@
  no        (eh) 没有  (hp) Méiyǒu
   "        (note) There is no simple one to one translation for yes and no
 
-no/no thanks i.e. I don't need it (eh) 不要 (hp) Bù yào
+no/no thanks i.e.I don't need it (eh) 不要 (hp) Bù yào
 
 using 不/bù versus  没有/méiyǒu (rule) 不/bù Negates in the Present and Future
    " (rule) 不/bù Negates Habitual Actions (e.g.) 我 不 吃 肉 (hp) Wǒ bù chī ròu (pe) I don't eat meat
@@ -177,8 +177,6 @@ always  (eh) 总是 (hp) Zǒng shì
 He is not only handsome but also smart  (eh) 他不但帅而且聪明 (hp) Tā bùdàn shuài érqiě cōngmíng
 
 
-
-
 -::modal, adverbs, example ::
 
 happen/occur  (eh) 发生 (hp) Fāshēng
@@ -198,33 +196,57 @@ Kěyǐ (ph) 可以 (he) can , have permission to
 Kěnéng (ph) 可能 (he) might/may/possibly
 
 
-:: conditions, conditionals ::
+:: conditions, conditionals , comparisons ::
 
-Rúguǒ (ph) 如果 (he) if 
-Dì yī (ph) 第一 (he) First
+rúguǒ (ph) 如果 (he) if 
+dì yī (ph) 第一 (he) first thing, not first of all
 
 other  (eh) 其他 (hp) Qítā
 
 except for  (eh) 除了 (hp) chú le
 In order to / for the purpose 为了 wèile
 
-Yíng (ph) 赢 (he) win
-Shū (ph) 输 (he) lose
+according to/depending on/based on  (eh) 根据 (hp) gēnjù
+
+
++:: bi uses, comparisons ::
+
+gèng (ph)  更 (he) better
+   " (e.g.) míngtiān huì gèng hǎo(ph)  明天会更好  (he) tomorrow will be better
+
+
+比较 (hp) jǐjiào  comparatively
+Jiào (ph) 较 (he) compare/more
+
+The food here is better 这里的菜比较好吃 zhèlǐ de cài bǐjiào hào chī
+
+
+@rule_cmp  bǐ ... adj/adv   (rule) is...adj/adv/older/faster/stronger...than 
+   " (e.g.) zhè jiàn chènshān bǐ nǐ de qúnzǐ guì (ph) 这件衬衫比你的裙子贵 (he) this shirt is more expensive than your skirt
+   " (e.g.) wǒ de bàba bǐ nǐ de dà (ph) 我的爸爸比你的大 (he) My dad is bigger than yours
+
+@rule_most bǐjiào... adj/adv   (rule) the adj/adv/bigger/faster/stronger one 
+   "                (e.g.) bǐjiào lǎo de shì wǒ māmā  (ph) 比较老的是我妈妈 (ph) the older one is my mother
+
+$rule_cmp.1 (see also) $rule_most.1
+
+
+yíng (ph) 赢 (he) win
+shū (ph) 输 (he) lose
 
 
 :: about self , describe people ::
 
 
-someone  (eh) 有人 (hp) Yǒurén 
-    "    (eh)  某人 (hp) Mǒu rén
+someone  (eh) 有人 (hp) yǒurén 
+    "    (eh)  某人 (hp) mǒurén
 
-I am a writer  (eh) 我是一个作家 (hp) Wǒ shì yīgè zuòjiā
+I am a writer     (eh) 我是一个作家 (hp) Wǒ shì yīgè zuòjiā
 I am a writer and music composer  (eh) 我是一名作家和音乐作曲家 (hp) Wǒ shì yī míng zuòjiā hé yīnyuè zuòqǔ jiā
 
-a composer (eh) 一名作曲家 (hp) yī míng zuòqǔ jiā
-composer (eh) 作曲家 (hp) zuòqǔ jiā
 
-what do you do for a job  (eh)  你做什么工作 (hp) Nǐ zuò shénme gōngzuò
+composer (eh) 作曲家 (hp) zuòqǔ jiā (see also)  yī míng zuòqǔ jiā (pe) a composer (eh) 一名作曲家
+
 
 ::chinese.words:: 
 
@@ -286,117 +308,126 @@ what do you do for a job  (eh)  你做什么工作 (hp) Nǐ zuò shénme gōngzu
 
 菜 (hp) Cài (pe) vegetable 
 meat (eh) 肉 (hp) ròu
-lamb  (eh) 羊肉  (hp) Yángròu
+lamb  (eh) 羊肉  (hp) yángròu
 chicken (eh)  鸡肉 (hp)  Jīròu
-pork  (eh) 猪肉  (hp) Zhūròu
-soup (eh)  汤 (hp) Tāng
-sugar (eh)  糖 (hp) Táng
+pork  (eh) 猪肉  (hp) zhūròu
+soup (eh)  汤 (hp) tāng
+sugar (eh)  糖 (hp) táng
 porridge  (eh) 粥 (hp) zhōu
-cake  (eh) 蛋糕 (hp) Dàngāo
-Fried dough sticks (ep)  Yóutiáo(ph)  油条
-soup dumplings (eh)  小笼包 (hp) Xiǎo lóng bāo
-tofu  (eh) 豆腐 (hp) Dòufu
-hotpot (eh)  火锅  (hp) Huǒguō
-fried rice (eh)  炒饭  (hp) Chǎofàn
-dumplings (eh)  饺子  (hp) Jiǎozi
-sticky rice leaf wrapped dumplings (eh)  粽子 (hp)  Zòngzi
-mocha dumplings/glutinous rice balls  (eh) 汤圆  (hp) Tāngyuán
-tofu pudding (eh)  豆腐花 (hp)  Dòufu huā 豆花  
-" (ep) Dòu huā
-bubble tea (eh)  珍珠奶茶  (hp) Zhēnzhū nǎichá
-pearls  (eh) 珍珠  (hp) Zhēnzhū
-hot and sour soup  (eh) 酸辣汤  (hp) Suān là tāng
-steamed bun  (eh) 馒头 (hp)  Mántou
-filled steam bun  (eh) 包子 (hp)  Bāozi
-braised pork rice (eh)  卤肉饭  (hp) Lǔ ròu fàn
+cake  (eh) 蛋糕 (hp) dàngāo
+Fried dough sticks (ep)  yóutiáo(ph)  油条
+
+tofu  (eh) 豆腐 (hp) dòufu
+hotpot (eh)  火锅  (hp) huǒguō
+fried rice (eh)  炒饭  (hp) chǎofàn
+
+dumplings (eh)  饺子  (hp) jiǎozi
+soup dumplings (eh)  小笼包 (hp) xiǎolóngbāo
+sticky rice leaf wrapped dumplings (eh)  粽子 (hp)  zòngzi
+mocha dumplings/glutinous rice balls  (eh) 汤圆  (hp) tāngyuán
+
+bread(he)  面包 (hp) miànbāo
+rice (he) 米 (hp) mǐ
+bag (he) 包 (hp) bāo
+ramen (he)  拉面(hp)  lāmiàn
+noodles (he)  面条 (hp) miàntiáo
+
+
+tofu pudding (eh)  豆腐花 (hp)  dòufuhuā 豆花  
+        "    (ep) dòuhuā
+bubble tea (eh)  珍珠奶茶  (hp) zhēnzhū nǎichá
+pearls  (eh) 珍珠  (hp) zhēnzhū
+hot and sour soup  (eh) 酸辣汤  (hp) suān là tāng
+
+
+filled steam bun  (eh) 包子 (hp)  bāozi
+braised pork rice (eh)  卤肉饭  (hp) lǔ ròu fàn
 peking duck  (eh) 北京烤鸭 (hp)  Běijīng kǎoyā
-kung pao chicken (eh)  宫保鸡丁  (hp) Gōng bǎo jī dīng
-spring rolls  (eh) 春卷 (hp)  Chūnjuǎn
+kung pao chicken (eh)  宫保鸡丁  (hp) gōng bǎo jī dīng
+spring rolls  (eh) 春卷 (hp)  chūnjuǎn
 hot sour soup  酸辣汤 Suān là tāng
-dimsum (eh)  点心  (hp) Diǎnxīn
+dimsum (eh)  点心  (hp) diǎnxīn
 
 ròu jiā mó (ph) 肉夹馍 (he) steamed bread bun with meat filling
 mó (ph) 馍 (he) steamed bread bun like pitta
+mántou  (ph) 馒头 (he) steamed bun 
 
 :: shopping, town, city ::
 
-bookshop (eh)  书店  (hp) Shūdiàn
-shopping mall (eh)  Shāngchǎng (hp)  商场
-quality (eh)  质量 (hp) Zhìliàng
-discount  (eh) 打折 (hp) Dǎzhé
-refund  (eh) 退款 (hp) Tuì kuǎn
-return goods  (eh) 退货 (hp) Tuìhuò
+bookshop (eh)  书店  (hp) shūdiàn
+shopping mall (eh)  shāngchǎng (hp)  商场
+quality (eh)  质量 (hp) zhìliàng
+discount  (eh) 打折 (hp) dǎzhé
+refund  (eh) 退款 (hp) tuì kuǎn
+return goods  (eh) 退货 (hp) tuìhuò
 
 
 +:: clothing, clothes :: 
 
-clothes  (eh) 衣服 (hp) Yīfú
-wear  (eh)  穿 (hp) Chuān
-put on clothes (eh)  穿上 (hp) Chuān shàng
-bring a jacket  (eh) 带一件夹克 (hp) Dài yī jiàn jiákè
+clothes  (eh) 衣服 (hp) yīfú
+wear  (eh)  穿 (hp) chuān
+put on clothes (eh)  穿上 (hp) chuān shàng
+bring a jacket  (eh) 带一件夹克 (hp) dài yījiàn jiákè
 
-Dài (ph) 带 (he) bring
-Dàizi (ph) 袋子 (he) bag
+dài (ph) 带 (he) bring
+dàizi (ph) 袋子 (he) bag
 
-sweater/jumper  (eh) 毛衣 (hp) Máoyī
-coat  (eh) 大衣 (hp) Dàyī
-jacket  (eh) 夹克 (hp) Jiákè 
-trousers  (eh) 裤子 (hp) Kùzi
-skirt/dress  (eh) 裙子 (hp) Qúnzi
-shirt  (eh) 衬衫 (hp) Chènshān
-blouse  (eh) 女式衬衫(hp)  Nǚ shì chènshān
-shoe  (eh) 鞋 (hp) Xié
-hat  (eh) 帽子(hp)  Màozi
+sweater/jumper  (eh) 毛衣 (hp) máoyī
+coat  (eh) 大衣 (hp) dàyī
+jacket  (eh) 夹克 (hp) jiákè 
+trousers  (eh) 裤子 (hp) kùzi
+skirt/dress  (eh) 裙子 (hp) qúnzi
+shirt  (eh) 衬衫 (hp) chènshān
+blouse  (eh) 女式衬衫(hp)  nǚ shì chènshān
+shoe  (eh) 鞋 (hp) xié
+hat  (eh) 帽子(hp)  màozi
 
 try on  (eh) 试试(hp)  shì shì 
-He wants to try this  (eh) 他想试试这条 (hp) Tā xiǎng shì shì zhè tiáo
+he wants to try this  (eh) 他想试试这条 (hp) tā xiǎng shì shì zhè tiáo
 
+shāngdiàn (ph) 商店 (he) shop
+jiǔdiàn (ph) 酒店 (he)  hotel 
 
-shop Shāngdiàn 商店
-hotel  (eh) 酒店(hp)  Jiǔdiàn
+have a look-see/ take a peek (eh) 看看 (hp) kànkàn
+welcome  (eh) 欢迎 (hp) huānyíng
 
-have a look-see (eh) 看看 (hp) Kàn kàn
-welcome  (eh) 欢迎 (hp) Huānyíng
+ :: help, assistance, emergency  ::
 
-need-assistance/help (eh) 帮忙 (hp) Bāngmáng
-help  (eh) 帮助 (hp)  Bāngzhù
+need-assistance/help (eh) 帮忙 (hp) bāngmáng
+help  (eh) 帮助 (hp)  bāngzhù
+Help!  (eh) 救命 (hp) jiùmìng
 
-allow  (eh)  准  (hp) Zhǔn
-let/allow/permit   (eh) 让  (hp) Ràng
+ :: permission ::
 
+allow  (eh)  准  (hp) zhǔn
+let/allow/permit   (eh) 让  (hp) ràng
 
 :: food, shopping ::
 
-Shuǐguǒ (ph) 水果 (he) fruit
-Chāoshì  (ph) 超市 (he) supermarket
-banana  (ph) 香蕉 (he) Xiāngjiāo
-apple (ph)  苹果 (he) Píngguǒ
-orange  (ph) 橙子 (he) Chéngzi
-watermelon  (ph) 西瓜 (he) Xīguā
-egg  (eh) 蛋 (hp) Dàn
-Jīdàn (ph)  鸡蛋 (he) chicken egg
-Vegetable (eh)  蔬菜 (hp)Shūcài
-Chicken  (eh) 鸡 (hp) Jī
-新鲜 (hp)Xīnxiān (pe)fresh
+shuǐguǒ (ph) 水果 (he) fruit
+chāoshì  (ph) 超市 (he) supermarket
+banana  (ph) 香蕉 (he) xiāngjiāo
+apple (ph)  苹果 (he) píngguǒ
+orange  (ph) 橙子 (he) chéngzi
+watermelon  (ph) 西瓜 (he) xīguā
+egg  (eh) 蛋 (hp) dàn
+jīdàn (ph)  鸡蛋 (he) chicken egg
+vegetable (eh)  蔬菜 (hp) shūcài
+chicken  (eh) 鸡 (hp) jī
 
-sugar(he)  糖 (hp) Táng
-salt (he) 盐 (hp) Yán
-salty (he) 咸 (hp) Xián
-sweet(he)  甜 (hp) Tián
+xīnxiān (ph) 新鲜 (he) fresh
+
+sugar(he)  糖 (hp) táng
+salt (he) 盐 (hp) yán
+salty (he) 咸 (hp) xián
+sweet(he)  甜 (hp) tián
 spicy (he) 辣 (hp) là
-bitter(he)  苦 (hp) Kǔ
-inedible(he)  难吃 (hp) Nán chī
+bitter (he)  苦 (hp) kǔ
+disgusting inedible (he)  难吃 (hp) nánchī
 
-bread(he)  面包 (hp) Miànbāo
-rice (he) 米 (hp) Mǐ
-bag (he) 包 (hp) Bāo
-ramen (he)  拉面(hp)  Lāmiàn
-noodles (he)  面条 (hp) Miàntiáo
 
-Zòngzi (ph) 粽子 (he) leaf wrapped sticky rice dumplings
-
-taro  (eh) 芋头 (hp) Yùtou
-matcha  (eh) 抹茶 (hp) Mǒchá
+taro  (eh) 芋头 (hp) yùtou
+matcha  (eh) 抹茶 (hp) mǒchá
 
 :: observation , comment ::
 
@@ -404,7 +435,7 @@ diǎnxīn (sl) duǎnxìn
 
 :: food | eating ::
 
-the taste (eh)  味道 (hp) Wèidào
+the taste (eh)  味道 (hp) wèidào
 
 ####################################
 
@@ -412,36 +443,49 @@ the taste (eh)  味道 (hp) Wèidào
 
 add  (eh) 加 (hp) Jiā
 
-Fànguǎn  (ph) 饭馆  (he) restaurant
-order food (eh)  点餐 (hp)  Diǎn cān
-Càidān (ph) 菜单 (he) menu 
-Wait (eh) 等 (hp) Děng
-Enter (eh) 进 (hp) Jìn
-Come in (eh) 进来 (hp) Jìnlái
-Mǎidān (ph) 买单 (he) pay the bill/bill please!
+fànguǎn  (ph) 饭馆  (he) restaurant
 
-tip/gratuity  (eh) 小费 (hp) Xiǎofèi
+chīhuò (ph) 吃货 (he) foodie
+
+diǎn cān (ph) 点餐 (he)  order food 
+   "     (e.g.) wǒ xiǎng diǎn cài (ph) 我想点菜 (he) I want to order food
+
+càidān (ph) 菜单 (he) menu 
+
+   " (e.g.) wǒmen méiyǒu yīngwén càidān (ph) 我们没有英文菜单 (he) We don’t have an english menu
+
+wait (eh) 等 (hp) děng
+dìngfáng (ph) 订房 (he) reservation
+    "    (e.g.) wǒmen yǒu dìngfáng     (ph) 我们有订房  (he) We have a reservation
+    "    (e.g.) wǒ yào qǔxiāo dìngfáng (ph) 我要取消订房 (he) I want to cancel the reservation
+
+
+
+zuò (ph) 坐 (he) sit 
+   (e.g.) wǒmen xiǎng zuò zài zhèlǐ (ph) 我们想坐在这里 (he) We would like to sit here
+
+
+
+
++:: come, come in, enter ::
+
+Enter (eh) 进 (hp) jìn
+Come in (eh) 进来 (hp) Jìnlái
+
+-:: come, come in, enter ::
+
+mǎidān (ph) 买单 (he) pay the bill/bill please!
+tip/gratuity  (eh) 小费 (hp) xiǎofèi
 waiter / server (eh) 服务员 (hp) fúwùyuán
 
-cheers  (eh) 干杯 (hp) Gānbēi
+cheers  (eh) 干杯 (hp) gānbēi
 
-Sit (eh) 坐 (hp) Zuò
-Menu (eh) 菜单 (hp) Càidān
-
-Liǎng wèi (ph) 两位 (he) two persons
+liǎng wèi (ph) 两位 (he) two persons
 wèi (ph) 位 (he) person count
 
-Wǒmen xiǎng zuò zài zhèlǐ (ph) 我们想坐在这里 (he) We would like to sit here
-
-Wǒ xiǎng diǎn cài (ph) 我想点菜 (he) I want to order food
-
-Wǒmen méiyǒu yīngwén càidān (ph) 我们没有英文菜单 (he) We don’t have an english menu
-
-Wǒmen yǒu dìngfáng     (ph) 我们有订房  (he) We have a reservation
-Wǒ yào qǔxiāo dìngfáng (ph) 我要取消订房 (he) I want to cancel the reservation
 
 
-Chīhuò (ph) 吃货 (he) Foodie
+
 
 ::waiting, robot ::
 
@@ -450,7 +494,7 @@ Wǒ zài děng wǒ de péngyǒu               (ph) 我在等我的朋友       (
 
 :::meals:::
 
-breakfast  (eh) 早餐  (hp) Zǎocān
+breakfast  (eh) 早餐  (hp) zǎocān
 zǎofàn    (ph) 早饭  (he) breakfast
 lunch     (eh) 午餐  (hp) Wǔcān
    "      (eh) 午饭  (hp) Wǔfàn
@@ -458,36 +502,36 @@ dinner    (eh) 晚饭 (hp) Wǎnfàn
 
 :::cooking:::
 
-Zuò fàn (ph) 做饭 (he) cook/make food/rice
-Gānfàn (ph) 干饭 (he) cooked rice
-gàn fàn (ph) 干饭 (he) have a meal foodie
-foodie  (eh) 吃货 (hp)  Chīhuò
+zuò fàn (ph) 做饭 (he) cook/make food/rice
+gānfàn  (ph) 干饭 (he) alt: cooked rice
+gànfàn  (ph) 干饭 (he) alt: have a meal foodie 
+foodie  (eh) 吃货 (hp) chīhuò
 
-drink/s (eh) 饮料 (hp)  Yǐnliào
-to drink (eh)  喝  (hp) Hē
-to eat  (eh) 吃  (hp) Chī
+drink/s (eh) 饮料 (hp)  yǐnliào
+to drink (eh)  喝  (hp) hē
+to eat  (eh) 吃  (hp) chī
 
-bowl        (eh) 碗   (hp) Wǎn
-fruit juice (eh) 果汁  (hp) Guǒzhī
+bowl        (eh) 碗   (hp) wǎn
+fruit juice (eh) 果汁  (hp) guǒzhī
 juice       (eh) 汁   (hp)  zhī
 plate       (eh) 盘子  (hp) pánzi
 bottle      (eh) 瓶子  (hp)  píngzi
-cup         (eh) 杯子  (hp) Bēizi
-knife       (eh) 刀   (hp) Dāo
-fork        (eh)  叉  (hp) Chā
+cup         (eh) 杯子  (hp) bēizi
+knife       (eh) 刀   (hp)  dāo
+fork        (eh)  叉  (hp)  chā
 spoon       (eh) 勺子  (hp) sháozǐ
-chopstick   (eh) 筷子 (hp)  Kuàizi
-    "       (eh) 勺子  (hp) Sháozi
-glass/of    (eh)  杯 (hp)  bēi
+chopstick   (eh) 筷子 (hp)  kuàizi
+    "       (eh) 勺子  (hp) sháozi
+glass/of    (eh)  杯   (hp)  bēi
 
-alcohol     (eh) 酒     (hp) Jiǔ
-beer        (eh) 啤酒    (hp) Píjiǔ
-red wine    (eh)  红酒   (hp) Hóng jiǔ
-white wine  (eh) 白葡萄酒  (hp) Bái pútáo jiǔ
-liquor      (eh) 白酒    (hp) Báijiǔ
+alcohol     (eh) 酒      (hp) jiǔ
+beer        (eh) 啤酒    (hp) píjiǔ
+red wine    (eh)  红酒   (hp) hóng jiǔ
+white wine  (eh) 白葡萄酒 (hp) bái pútáo jiǔ
+liquor      (eh) 白酒    (hp) báijiǔ
 
 full up     (eh)  饱     (hp)  bǎo
-really full  (eh) 真饱 (hp) Zhēnbǎo 
+really full  (eh) 真饱   (hp)  zhēnbǎo 
 
 
 
@@ -495,68 +539,84 @@ really full  (eh) 真饱 (hp) Zhēnbǎo
 
 :: body,  senses, body parts ::
 
-eyes  (eh) 眼睛  (hp) Yǎnjīng
-glasses (eh)  眼镜  (hp) Yǎnjìng
-wear glasses  (eh) 戴眼镜 (hp)  Dài yǎnjìng
-nose  (eh) 鼻子  (hp) Bízi
+eyes          (eh) 眼睛  (hp) yǎnjīng
+glasses       (eh)  眼镜  (hp) yǎnjìng
+wear glasses  (eh) 戴眼镜 (hp)  dài yǎnjìng
+nose  (eh) 鼻子  (hp) bízi
 ears  (eh) 耳朵  (hp) Ěrduǒ
-mouth (eh) 嘴巴  (hp) Zuǐbā
+mouth (eh) 嘴巴  (hp) zuǐbā
 
 liǎn (ph) 脸 (he) face
-miàn (ph) 面  (he) face 
-body (ep) Shēntǐ (ph) 身体 
+  "  (e.g.) nǐ de liǎn shàng nàgè yǒu dōngxī (ph) 你的脸上那个有东西 (he) there's something on your face.
 
-head  (eh) 头 (hp) Tóu
-hair  (eh) 头发 (hp) Tóufǎ
-leg  (eh) 腿 (hp) Tuǐ
-hand  (eh) 手 (hp) Shǒu
-foot  (eh) 脚 (hp) Jiǎo
-arm  (eh) 手臂 (hp) Shǒubì
-wrist  (eh) 手腕 (hp) Shǒuwàn
-wristwatch  (eh) 手表 (hp) Shǒubiǎo
-stomach/gut (ep) Dùzi (ph)  肚子
-
-+::example::
-Nǐ de liǎn shàng nàgè yǒu dōngxī (ph) 你的脸上那个有东西 (he) There's something on your face.
+miàn (ph) 面  (he) face
 
 
+shēntǐ (ph) 身体 (he) body 
 
-:: body, left, right, handed hand, handedness, feet ::
+ $PREV.3  (e.g.) wǒ de shēntǐ bùcuò (ph) 我的身体不错 (he) my body/health is in a not bad condition 
 
-your left hand  (eh) 你的左手 (hp) Nǐ de zuǒ shǒu
-your right foot  (eh) 你的右脚 (hp) Nǐ de yòu jiǎo
+head  (eh) 头 (hp) tóu
+hair  (eh) 头发 (hp) tóufǎ
+
+
++:: left, right, handed hand, handedness, feet ::
+
+leg  (eh) 腿 (hp) tuǐ
+
+hand  (eh) 手 (hp) shǒu
+  $PREV.3 (e.g.) nǐ de zuǒ shǒu  (hp) 你的左手 (he) your left hand 
+
+foot  (eh) 脚 (hp) jiǎo (e.g.) nǐ de yòu jiǎo  (ph) 你的右脚 (he) your right foot  
+
+arm  (eh) 手臂 (hp) shǒubì
+
+wrist       (eh) 手腕 (hp) shǒuwàn
+wristwatch  (eh) 手表 (hp) shǒubiǎo
+stomach/gut (ep) dùzi (ph) 肚子
+
+
+
 
 ::health::
 
-take care of  (eh) 照顾 (hp) Zhàogù
-anxious/in a hurry  (eh) 着急 (hp) Zhāojí
-fat (eh) 胖 (hp) Pàng
 
-healthy (ep) Jiànkāng (ph) 健康
-wish you good health  (eh) 祝您身体健康  (hp) Zhù nín shēntǐ jiànkāng
+zhàogù (ph) 照顾 (he) take care of 
+   "   (e.g.) wǒ xiǎng zhàogù tā (ph) 我想照顾她  (he) I want to take care of her
 
-Pàng (hp) 胖  (he) fat
 
-smoke (eh) 抽烟 (hp) Chōuyān
 
-Wǒ de shēntǐ bùcuò (ph) 我的身体不错 (he) my body/health is in a not bad condition 
 
-Please pay attention to your health (eh) 请注意健康  (hp) Qǐng zhùyì jiànkāng 
+jiànkāng (ph) 健康 (he) healthy 
+   "     (e.g.) qǐng zhùyì jiànkāng (eh) 请注意健康  (hp) Please pay attention to your health
 
-I lost 5 kilos                      (eh) 我瘦了五公斤 (hp) Wǒ shòule wǔ gōngjīn
+wish you good health  (eh) 祝您身体健康  (hp) zhù ni/nín shēntǐ jiànkāng
 
-cough  (eh) 咳嗽 (hp) Késòu
-fever  (eh) 发烧 (hp) Fāshāo
-caught a cold  (eh) 感冒 (hp) Gǎnmào
+
+
+pàng (hp) 胖  (he) fat
+
+wǒ shòule wǔ gōngjīn (eh) 我瘦了五公斤 (hp) I lost 5 kilos   
+Wǒ pàngle shí duō gōngjīn (ph) 我胖了十多公斤  (he) I gained more than ten kilograms  
+
+smoke (eh) 抽烟 (hp) chōuyān
+
+cough  (eh) 咳嗽 (hp) késòu
+fever  (eh) 发烧 (hp) fāshāo
+caught a cold  (eh) 感冒 (hp) gǎnmào
 
 
 #######################################################################
 
 :: roles, identities ::
 
-Jīqìrén (ph) 机器人 (he) robot
-Tóngzhì (ph) 同志 (he) comrade
-Sòng huò yuán (ph) 送货员 (he) delivery boy
+jīqìrén (ph) 机器人 (he) robot
+
+tóngzhì (ph) 同志 (he) comrade
+tóngxué (ph) 同学 (he) classmate 
+tóngshì (ph) 同事 (he) colleague 
+
+sòng huò yuán (ph) 送货员 (he) delivery boy
 
 
 :: places ::
@@ -569,14 +629,14 @@ Guangzhou  (eh) 广州 (hp) Guǎngzhōu
 Guangxi  (eh) 广西  (hp) Guǎngxī
 Guangdong  (eh) 广东  (hp) Guǎngdōng
 
-taipei  (eh) 台北 (hp) Táiběi
-taiwan  (eh) 台湾 (hp) Táiwān
+Taipei  (eh) 台北 (hp) Táiběi
+Taiwan  (eh) 台湾 (hp) Táiwān
 London  (eh) 伦敦 (hp) Lúndūn
-new york  (eh) 纽约 (hp) Niǔyuē
-norway  (eh) 挪威 (hp) Nuówēi
-oslo  (eh) 奥斯陆 (hp) Àosīlù
-chengdu  (eh) 成都 (hp) Chéngdū
-wuhan  (eh) 武汉 (hp) Wǔhàn
+New York  (eh) 纽约 (hp) Niǔyuē
+Norway  (eh) 挪威 (hp) Nuówēi
+Oslo  (eh) 奥斯陆 (hp) Àosīlù
+Chengdu  (eh) 成都 (hp) Chéngdū
+Wuhan  (eh) 武汉 (hp) Wǔhàn
 
 #######################################################
 
@@ -584,12 +644,11 @@ wuhan  (eh) 武汉 (hp) Wǔhàn
 
 :: sky , solar system, astronomy ::
 
-sun  (eh) 太阳 (hp) Tàiyáng
-moon  (eh) 月亮 (hp) Yuèliàng
+sun   (eh) 太阳 (hp) tàiyáng
+moon  (eh) 月亮 (hp) yuèliàng
 
-how wide is the radio telescope (eh)  射电望远镜有多宽  (hp) Shèdiàn wàngyuǎnjìng yǒu duō kuān
 
-radio telescope  (eh) 射电望远镜  (hp) Shèdiàn wàngyuǎnjìng
+radio telescope  (eh) 射电望远镜  (hp) shèdiàn wàngyuǎnjìng (e.g.) shèdiàn wàngyuǎnjìng yǒu duō kuān (pe) how wide is the radio telescope (eh)  射电望远镜有多宽 
 
 
 :: day | sky | time  ::
@@ -597,124 +656,128 @@ radio telescope  (eh) 射电望远镜  (hp) Shèdiàn wàngyuǎnjìng
 Tiān (ph) 天 (he) sky
 
 
-Jīn tiān (ph) 今天 (he) today
-Míng tiān (ph) 明天 (he) tomorrow
-Zuó tiān (ph) 昨天 (he) yesterday 
+jīn tiān (ph) 今天 (he) today
+míng tiān (ph) 明天 (he) tomorrow
+zuó tiān (ph) 昨天 (he) yesterday 
 
-Zǎo shāng  (ph) 早商 (he) morning 
-Shàng wǔ  (ph) 上午  (he) morning
-Xià wǔ    (ph) 下午  (he) afternoon
-中午  (hp) Zhōngwǔ (pe) midday/noon  
-Wǎnshàng  (ph) 晚上 (he) evening 
-
-周一  (hp)Zhōuyī (pe) Monday
-周二  (hp)Zhōu èr(pe) Tuesday 
-周三  (hp)Zhōu (pe) Wednesday 
-周日 (hp) zhōu rì (pe) Sunday
-
-
-Xīngqí yī (ph) 星期一 (he) Monday
-Xīngqí'èr (ph) 星期二 (he) Tuesday
-Xīngqírì (ph) 星期日 (he) Sunday
-Xīngqítiān (ph) 星期天 (he) Sunday
+zǎo shāng  (ph) 早商 (he) morning 
+shàng wǔ  (ph) 上午  (he) morning
+xià wǔ    (ph) 下午  (he) afternoon
+中午  (hp) zhōngwǔ (pe) midday/noon  
+wǎnshàng  (ph) 晚上 (he) evening 
 
 :: week | time ::
 
-Zhōumò  (ph) 周末 (he)  weekend
-星期  (hp) Xīngqí (pe) week
+
+周一  (hp) zhōuyī (pe) Monday
+周二  (hp) zhōu èr(pe) Tuesday 
+周三  (hp) zhōu (pe) Wednesday 
+周日  (hp) zhōu rì (pe) Sunday
+
+zhōumò  (ph) 周末 (he)  weekend
+
+xīngqí yī (ph) 星期一 (he) Monday
+xīngqí'èr (ph) 星期二 (he) Tuesday
+xīngqírì (ph) 星期日 (he) Sunday
+xīngqítiān (ph) 星期天 (he) Sunday
+
+星期  (hp) xīngqí (pe) week
 
 :: year | time ::
 
-Nián  (ph) 年 (he) year
-Jīn nián  (ph) 今年 (he) this year
-Míng nián  (ph) 明年 (he) next year
-Qù nián  (ph) 去年 (he) last year
+nián  (ph) 年 (he) year
+jīn nián  (ph) 今年 (he) this year
+míng nián  (ph) 明年 (he) next year
+qù nián  (ph) 去年 (he) last year
 
-Měi nián  (ph) 每年 (he) every year
-Xīn nián kuài lè  (ph) 新年快乐 happy new year
-Guò nián hǎo  (ph) 过年好 happy new year
+měinián  (ph) 每年 (he) every year
+xīnnián kuài lè  (ph) 新年快乐 happy new year
+guò nián hǎo  (ph) 过年好 happy new year
 
 :: hour | time ::
 
-Jǐ diǎn  (ph) 几点  (he) what time
-Jǐ suì  (ph) 几岁  (he) how old
-Jǐ gè  (ph) 几个  (he) how many
-Jǐ wèi  (ph) 几位 (he) several people/how many people
-
-Jǐ nián  (ph) 几年 (he) what year
+jǐ diǎn  (ph) 几点  (he) what time
+jǐ suì   (ph) 几岁  (he) how old
+jǐ gè    (ph) 几个  (he) how many
+jǐ wèi   (ph) 几位 (he) several people/how many people
+jǐ nián  (ph) 几年 (he) what year
 
 ###############################################################
 
 +:: time,  order, ordering::
 
 
-first/to start with (eh) 先  (hp)  Xiān
-then/next (eh) 然后  (hp) Ránhòu
-finally (eh) 最后  (hp) Zuìhòu
+first/to start with (eh) 先  (hp)  xiān
+then/next (eh) 然后  (hp) ránhòu
+finally (eh) 最后  (hp) zuìhòu
 
 zhè cì (ph) 这次 (he) this time/occasion
 cì  (ph) 次 (he) occasion or episode or time
 
-5th (eh) 第五 (hp) Dì wǔ ge
-Nth (eh) 第n个 (hp) Dì n gè
+5th (eh) 第五 (hp) dì wǔ ge
+Nth (eh) 第n个 (hp) dì n gè
 
-this is the fifth time/occasion (eh) 这是第五次 (hp) Zhè shì dì wǔ cì
+this is the fifth time/occasion (eh) 这是第五次 (hp) zhè shì dì wǔ cì
 
 
 :: time | time concepts | early , late , before, after ::
 
-Now (eh) 现在 (hp) Xiànzài
+Now (eh) 现在 (hp) xiànzài
 Zhèng (ph) 正 (he) just
 zhèngzài (ph) 正在  (he) just now, right now
 
++:: yi ::
 
- 共 (hp) Gòng (pe) altogether
-一共 (hp) Yīgòng (pe) altogether
-Yīgòng (ph) 一共 (he) altogether/in total
-Yīqǐ (ph) 一起 (he) Together
-Yǐjīng (ph) 已经 (he) already
-Yīdìng (ph) 一定 (he) must/definitely 
-He certainly won't forgive you  (eh) 他一定不会原谅你 (hp) Tā yīdìng bù huì yuánliàng nǐ
+ 共 (hp) gòng (pe) altogether
+一共 (hp) yīgòng (pe) altogether
 
-Yǐqián (ph) 以前 (he) before
-Yǐhòu (ph) 以后 (he) after
-Yībiān (ph) 一边 (he) at the same time / alongside
-Yībān (ph) 一般 (he) usually 
+yīgòng (ph) 一共 (he) altogether/in total
+yīqǐ (ph) 一起 (he) Together
+yǐjīng (ph) 已经 (he) already
+yīdìng (ph) 一定 (he) must/definitely 
+he certainly won't forgive you  (eh) 他一定不会原谅你 (hp) tā yīdìng bù huì yuánliàng nǐ
 
-early  (eh) 早 (hp) Zǎo
+yǐqián (ph) 以前 (he) before
+yǐhòu (ph) 以后 (he) after
+yībiān (ph) 一边 (he) at the same time / alongside
+yībān (ph) 一般 (he) usually 
 
-be late Chídào 迟到
-What happened to him later? (eh) 他后来怎么了 (hp) Tā hòulái zěnmeliǎo/zěnmele
-He was almost late (eh) 他几乎迟到了 (hp) tā jīhū chídàole 
++ :: early, late ::
+
+early  (eh) 早   (hp) zǎo
+chídào (ph) 迟到 (he) be late 
+What happened to him later? (eh) 他后来怎么了 (hp) tā hòulái zěnmeliǎo/zěnmele
+He was almost late (eh) 他几乎迟到了 (hp) tā jīhū chídào le 
 almost (eh)  几乎 (hp) jīhū
 
 
-ontime/punctual  (eh) 准时 (hp) Zhǔnshí
+on time/punctual  (eh) 准时 (hp) zhǔnshí
 
-Wǒ zhè duàn shíjiān (ph) 我这段时间 (he) During my time
-   " (e.g.) Wǒ zhè duàn shíjiān hěn máng (ph) 我这段时间很忙 (he) I'm very busy at this time
+wǒ zhè duàn shíjiān (ph) 我这段时间 (he) during my time
+   " (e.g.) wǒ zhè duàn shíjiān hěn máng (ph) 我这段时间很忙 (he) I'm very busy at this time
 
 
-just/only  (eh) 只是 (hp) Zhǐshì
+just/only  (eh) 只是 (hp) zhǐshì
 just i.e. just happened (eh)  刚 (hp) gāng
-he just arrived  (eh) 他刚到 (hp) Tā gāng dào
+he just arrived  (eh) 他刚到 (hp) tā gāng dào
 
-Xiànzài  (ph) 现在 (he) now 
-Xiànzài jǐdiǎn le (ph)  现在几点了 (he) what time is it now? 
-
-
-recent/ly (eh) 最近 (hp) Zuìjìn
-
-immediately  (eh) 马上 (hp) Mǎshàng
-
-Zuìjìn  (ph) 最近  (he) recently 
-Tā jīntiān zǎoshang liǎng diǎn cái huí jiā  (ph) 他今天早上两点才回家  (he) He didn't come home until two o'clock this morning / only came home
+xiànzài  (ph) 现在 (he) now 
+    "    (e.g.) xiànzài jǐdiǎn le (ph)  现在几点了 (he) what time is it now? 
 
 
 
-on time  (eh) 准时 (hp) Zhǔnshí
-Wǒ qù yóuyǒng  (ph) 我去游泳  (he) I go swimming
-Jīntiān tā yǒule yīgè xiǎoshí de yǒng  (ph) 今天他有了一个小时的泳  (he) he swam for an hour today
+
+zuìjìn (ph) 最近 (he) recent/ly 
+
+immediately  (eh) 马上 (hp) mǎshàng
+
+ 
+tā jīntiān zǎoshang liǎng diǎn cái huí jiā  (ph) 他今天早上两点才回家  (he) He didn't come home until two o'clock this morning / only came home
+
+
+
+on time  (eh) 准时 (hp) zhǔnshí
+
 
 
 seconds (eh)  秒  (hp) Miǎo
@@ -750,7 +813,7 @@ My friends drink beer when we meet on the weekends (eh)  我的朋友在周末�
 do you have time to play basketball  (eh) 你有时间打篮球吗 (hp) Nǐ yǒu shíjiān dǎ lánqiú ma
 
 I've known him for a long time  (eh) 我认识他很久了 (hp) Wǒ rènshí tā hěnjiǔle
-Jiǔ  (eh) 久 long time/old
+
 
 
 +:: often , frequency, frequent ::
@@ -758,7 +821,7 @@ Jiǔ  (eh) 久 long time/old
 frequent/often  (eh)  Chángcháng (hp)  常常
 frequent/often  (eh) 经常  (hp) Jīngcháng
 
-Shāngchǎng (sl) Chángcháng # shopping mall
+shāngchǎng (sl) chángcháng # shopping mall
 
 
 :: age ::
@@ -766,10 +829,21 @@ Shāngchǎng (sl) Chángcháng # shopping mall
 young  (eh) 年轻  (hp) Niánqīng
 old  (eh) 老  (hp) Lǎo 
 
+jiǔ  (eh) 久 long time/old
+
+
+niánqīng (ph) 年轻 (he) young 
+    " (e.g.) hěnduō niánqīng rén xíguàn zhège yóuxì (ph)  很多年轻人习惯这个游戏 (he) many young people are used to this game 
+    " (e.g.) hěnduō niánqīng rén xǐhuān zhège yóuxì (ph) 很多年轻人喜欢这 个游戏 (he) many young people know/like this game 
+
+
+
+
+
 :: fractions::
 
 máo (ph)毛 (he) tenth of a yuan
-Wǔmáo (ph) 五毛 (he) 50 cents, 0.5 yuan
+wǔmáo (ph) 五毛 (he) 50 cents, 0.5 yuan
 
 
 :: spending time, activity ,rest | relax ::
@@ -778,7 +852,6 @@ television  (eh) 电视 (hp) Diànshì
 Àihào (ph) 爱好 (he) hobby
 mahjong  (eh) 麻将 (hp) Májiàng
 
-He likes to do sports, especially swimming (eh)  他很喜欢做运动特别是游泳 (hp) Tā hěn xǐhuān zuò yùndòng tèbié shì yóuyǒng
 
 He is interested in American culture  (eh) 他对美国文化感兴趣 (hp) Tā duì měiguó wénhuà gǎn xìngqù
 
@@ -1081,50 +1154,54 @@ liú (ph) 留 (he) stay
 
 路  (hp) lù  (pe) the way/path
 
-走  (hp) Zǒu  (pe) walk
-go  (eh)去  (hp) Qù
-往  (hp) Wǎng  (pe)go/walk ..
+走  (hp) zǒu  (pe) walk
+go  (eh)去  (hp) qù
+往  (hp) wǎng  (pe)go/walk ..
 
 
-kào (ph) 靠 approach/depend on
+kào (ph) 靠 (he) approach/depend on
 kàojìn  (ph) 靠近 approach/come close 
 
 don't come near me  (eh) 别靠近我  (hp) Bié kàojìn wǒ
 
+:: sport ::
 
-run  (eh) 跑步 (hp) Pǎobù
-swim  (eh) 游泳 (hp) Yóuyǒng
-hike/mountaineering Páshān 爬山
-sport  (eh) 运动 (hp) Yùndòng
-exercise/workout (eh)  锻炼 (hp) Duànliàn
-go out  (eh) 出去 (eh) Chūqù
+yùndòng  (eh) 运动 (hp) sport 
 
-pass by / pass something  (eh) 经过 (hp) Jīngguò
-
-Rúguǒ nǐ yīzhí wǎng qián zǒu jiù huì dào gōngyuán (ph) 如果你一直往前走就会到公园  (he) If you keep walking you will reach the park
-
-:::sport:::
-
-dance (eh) 跳舞  (eh) Tiàowǔ
-
-basketball  (eh) 篮球 (hp) Lánqiú
-tennis  (eh) 网球 (hp) Wǎngqiú
-handball  (eh) 手球 (hp) Shǒuqiú 
-ride horse  (eh) 骑马 (hp) Qímǎ
-
-play  (eh) 玩 (hp) Wán
-game  (eh) 游戏 (hp) Yóuxì
-
-young 年轻 Niánqīng
-Many young people are used to this game (eh)  很多年轻人习惯这个游戏 (hp) Hěnduō niánqīng rén xíguàn zhège yóuxì
-Many young people like this game (eh) 很多年轻人喜欢这个游戏 (hp) Hěnduō niánqīng rén xǐhuān zhège yóuxì
+  "    (e.g.) tā hěn xǐhuān zuò yùndòng tèbié shì yóuyǒng (ph)  他很喜欢做运动特别是游泳 (he) He likes to do sports, especially swimming 
 
 
+pǎobù (ph) 跑步 (he) run  
+basketball  (eh) 篮球 (hp) lánqiú
+tennis  (eh) 网球 (hp) wǎngqiú
+handball  (eh) 手球 (hp) shǒuqiú 
+ride horse  (eh) 骑马 (hp) qímǎ
 
-play football  (eh) 踢足球 (hp) Tī zúqiú
-play basketball  (eh) 打篮球 (hp) Dǎ lánqiú
-play table tennis  (eh) 打乒乓球 (hp) Dǎ pīngpāng qiú
-play tennis (eh) 打网球 (hp) Dǎ wǎngqiú
+play football  (eh) 踢足球 (hp) tī zúqiú
+play basketball  (eh) 打篮球 (hp) dǎ lánqiú
+play table tennis  (eh) 打乒乓球 (hp) dǎ pīngpāng qiú
+play tennis (eh) 打网球 (hp) dǎ wǎngqiú
+
+play  (eh) 玩 (hp) wán
+game  (eh) 游戏 (hp) yóuxì
+
+hike/mountaineering páshān 爬山
+
+exercise/workout (eh)  锻炼 (hp) duànliàn
+go out           (eh) 出去 (eh) chūqù
+
+
+yóuyǒng (ph) 游泳 (he) swim 
+    "   (e.g.) wǒ qù yóuyǒng  (ph) 我去游泳  (he) I go swimming
+    "   (e.g.) jīntiān tā yǒu le yīgè xiǎoshí de yǒng  (ph) 今天他有了一个小时的泳  (he) he swam for an hour today
+
+
+jīngguò (ph) 经过 (he) pass by / pass something  
+
+rúguǒ nǐ yīzhí wǎng qián zǒu jiù huì dào gōngyuán (ph) 如果你一直往前走就会到公园  (he) If you keep walking you will reach the park
+
+
+dance (eh) 跳舞  (eh) tiàowǔ
 
 
 #######################################################
@@ -1245,10 +1322,10 @@ jetlag  (eh) 时差 (hp) Shíchā
 country  (eh) 国家 (hp) Guójiā
 
 
-international (eh) 国际 (hp) Guójì
-domestic  (eh) 国内  (hp) Guónèi
-counter/desk  (eh) 柜台  (hp) Guìtái
-tour guide  (eh) 导游  (hp) Dǎoyóu
+international (eh) 国际 (hp) guójì
+domestic  (eh) 国内  (hp) guónèi
+counter/desk  (eh) 柜台  (hp) guìtái
+tour guide  (eh) 导游  (hp) dǎoyóu
 Wǒ méiyǒu lǚyóu qiānzhèng  (ph) 我没有旅游签证  (he) I don't have a tourist visa
 
 Wǒ yào chōngzhí (ph) 我要充值 (he) I want to recharge/top up
@@ -1277,53 +1354,47 @@ bump into (eh)  遇到  (hp) Yù dào
 
 relationship (eh)  Guānxì (hp)  关系
 no matter (eh)  Méiguānxì  (hp) 没关系
-chance/opportunity (eh)  机会  (hp) Jīhuì
+chance/opportunity (eh)  机会  (hp) jīhuì
 
 ###########################################################
 
-:: feelings | emotions ::
+:: feelings | emotions , happy, sad ::
 
-happy/excited  (ep) Gāoxìng (ph) 高兴
-happy/contented  (ep) Kāixīn  (ph)开心
-
-Tā de liǎnhóng le (ph) 她的脸红了 (he) She blushed
-
-confidence (eh) 信心 (hp) Xìnxīn
-anxious (eh) 着急 (hp) Zhāojí
-nervous  (eh) 紧张 (hp) Jǐnzhāng
-
-fortunately (ep) Hǎo zài (ph) 好在
-disappointed (eh) 失望 (hp) Shīwàng 
-
-are you happy  (eh) 你快乐吗  (hp) Nǐ kuàilè ma?
-
-Come on! (eh)  加油  (hp) Jiāyóu !
-
-funny  (eh) 好笑 (hp) Hǎoxiào
-so humorous  (eh) 好幽默 (hp) Hǎo yōumò
-scary  (eh) 可怕 (hp) Kěpà 
-fear  (eh) 害怕 (hp) Hàipà
-angry  (eh) 生气 (hp) Shēngqì 
-strange  (eh) 奇怪 (hp) Qíguài
-sad  (eh) 难过 (hp) Nánguò
+happy/excited  (ep) gāoxìng (ph) 高兴
+happy/contented  (ep) kāixīn  (ph)开心
+sad  (eh) 难过 (hp) nánguò
 
 
-choose  (eh) 选择 (hp) Xuǎnzé
-serious-ly  (eh) 认真(hp)  Rènzhēn
+tā de liǎnhóng le (ph) 她的脸红了 (he) she blushed
 
-Wǒmen dōu hěn zhāojí (ph) 我们都很着急  (he) we are all anxious
-Míngtiān huì gèng hǎo(ph)  明天会更好  (he) tomorrow will be better
+confidence (eh) 信心 (hp) xìnxīn
+
+zhāojí  (ph) 着急 (he) anxious/in a hurry 
+   "    (e.g.) wǒmen dōu hěn zhāojí (ph) 我们都很着急  (he) we are all anxious
+
+nervous  (eh) 紧张 (hp) jǐnzhāng
+
+fortunately (ep) hǎo zài (ph) 好在
+disappointed (eh) 失望 (hp) shīwàng 
+
+are you happy  (eh) 你快乐吗  (hp) nǐ kuàilè ma?
+
+come on! (eh)  加油  (hp) jiāyóu !
+
+funny  (eh) 好笑 (hp) hǎoxiào
+so humorous  (eh) 好幽默 (hp) hǎo yōumò
+scary  (eh) 可怕 (hp) kěpà 
+fear  (eh) 害怕 (hp) hàipà
+angry  (eh) 生气 (hp) shēngqì 
+strange  (eh) 奇怪 (hp) qíguài
+
+
+choose  (eh) 选择 (hp) xuǎnzé
+serious-ly  (eh) 认真 (hp) rènzhēn
 
 
 
-Gèng (ph)  更 (he) better
 
-Wǒ pàngle shí duō gōngjīn (ph) 我胖了十多公斤  (he) I gained more than ten kilograms
-Wǒ de māmā qùnián sǐle (ph) 我的妈妈去年死了  (he) My mother died last year
-Qùguò sān gè nián wǒ de māmā sǐle (ph) 去过三个年我的妈妈死了  (he) My mother died three years ago
-Wǒ māmā sān nián qián qùshìle (ph) 我妈妈三年前去世了 (he) my mum died three years ago
-
-Wǒ zhāojí sǐle (ph) 我着急死了  (he) I'm worried to death
 
 I'm worried about the Chinese exam  (eh) 我为中文考试担心 (hp) Wǒ wéi zhōngwén kǎoshì dānxīn
 
@@ -1843,8 +1914,6 @@ Why is there no one in the classroom?  (eh) 为什么 教室 里 没有人 (hp) 
 
 Zhège wèntí néng jiějué ma (ph) 这个问题能解决吗 (he) Can this problem be solved?
 
-classmate  (eh) 同学 (hp) Tóngxué
-colleague  (eh) 同事 (hp) Tóngshì
 
 finish class  (eh) 下课 (hp) Xiàkè
 class start  (eh) 上课 (hp) shàngkè
@@ -1904,6 +1973,11 @@ note/notes  (eh) 笔记 (hp) Bǐjì
 paper  (eh) 纸 (hp) Zhǐ
 notebook  (eh) 笔记本 (hp) Bǐjìběn
 
+dictionary  (eh) 字典 zìdiǎn 词典 (hp) cídiǎn
+
+
+
+
 borrow  (eh) 借 (hp) Jiè
 
 my notebook is missing (eh) 我的笔记本不见了 (hp) Wǒ de bǐjìběn bùjiànle
@@ -1939,27 +2013,29 @@ Work harder  (eh) 努力一点 (hp)  Nǔlì yīdiǎn
 lazy (eh) 懒 (hp) Lǎn
 
 
-放学  (hp) Fàngxué  (pe) get off school
+放学  (hp) fàngxué  (pe) get off school
 
 Qǐchuáng (ph) 起床 (he) get up / out of bed
 
-job/task/work  (eh) 工作  (hp) Gōngzuò 
-work overtime  (eh) 加班  (hp) Jiābān
-office  (eh)  办公室  (hp) Bàngōngshì
-company (eh)  公司  (hp) Gōngsī
-institute public (eh) 单位 (hp) Dānwèi
+ 
+gōngzuò (ph) 工作  (he) job/task/work 
+    "  (e.g.) nǐ zuò shénme gōngzuò  (ph)  你做什么工作 (he) what do you do for a job
+ 
 
-agree  (eh) 同意 (hp) Tóngyì
-I got promoted  (eh) 我升职 (hp) Wǒ shēng zhí
+work overtime        (eh) 加班  (hp) jiābān
+office  (eh)  办公室  (hp) bàngōngshì
+company (eh)  公司   (hp) gōngsī
+institute public    (eh) 单位 (hp) dānwèi
 
-
-happy with/satisfied  (eh) 满意 (hp) Mǎnyì
-
-interview  (eh) 面试 (hp) Miànshì
-meeting  (eh) 开会 (hp) Kāihuì
+agree  (eh) 同意 (hp) tóngyì
+I got promoted  (eh) 我升职 (hp) wǒ shēng zhí
 
 
-according to/depending on/based on  (eh) 根据 (hp) Gēnjù
+happy with/satisfied  (eh) 满意 (hp) mǎnyì
+interview  (eh) 面试 (hp) miànshì
+meeting  (eh) 开会 (hp) kāihuì
+
+
 
 business trip  (eh) 出差 (hp) Chūchāi
 decision  (eh) 决定 (hp) Juédìng
@@ -2414,15 +2490,6 @@ dream 梦 (hp) Mèng
 story 故事 (hp) Gùshì
 
 
-:: bi uses, comparisons ::
-
-
-比较 (hp) Bǐjiào  comparatively
-Jiào (ph) 较 (he) compare/more
-
-The food here is better 这里的菜比较好吃 Zhèlǐ de cài bǐjiào hào chī
-
-The older one is my mother 比较老的是我妈妈 Bǐjiào lǎo de shì wǒ māmā
 
 
 
@@ -2539,27 +2606,32 @@ It's not a good habit to eat while watching TV  (eh) 一边看电视一边吃饭
 
 My brother likes to sing while taking a bath  (eh) 我弟弟喜欢一边洗澡一边唱歌 (hp) Wǒ dìdì xǐhuān yībiān xǐzǎo yībiān chànggē
 
-HERE TO DO
+ :: death, die ::
 
 die  (eh) 死 (hp) Sǐ
 
-dictionary  (eh) 字典 Zìdiǎn 词典 (hp) Cídiǎn
+Wǒ de māmā qùnián sǐle (ph) 我的妈妈去年死了  (he) My mother died last year
+Qùguò sān gè nián wǒ de māmā sǐle (ph) 去过三个年我的妈妈死了  (he) My mother died three years ago
+Wǒ māmā sān nián qián qùshìle (ph) 我妈妈三年前去世了 (he) my mum died three years ago
+
+Wǒ zhāojí sǐle (ph) 我着急死了  (he) I'm worried to death
 
 
 
-application  (eh) 应用 (hp) Yìngyòng
+
 recharge/top up  (eh) 充值 (hp) Chōngzhí
-Charge  (eh) 充电 (hp)  Chōngdiàn
+charge  (eh) 充电 (hp)  Chōngdiàn
 
 
 
-Guānyú (ph) 关于 (he) about
+guānyú (ph) 关于 (he) about
 
 
 :: collaboration, work ::
 
+application  (eh) 应用 (hp) yìngyòng
 
-intent/plan (eh)  打算(hp)  Dǎsuàn
+intent/plan (eh)  打算(hp)  dǎsuàn
 Nǐ dǎsuàn zuò shénme 你打算做什么 what are you going to do
 
 Nǐ zhōumò dǎsuàn zuò shénme (ph) 你周末打算做什么 (he) What are you planning to do at the weekend
@@ -2622,7 +2694,7 @@ may you be prosperous  (eh) 恭喜发财 (hp) Gōngxǐ fācái
 
 ambulance  (eh) 救护车 (hp) Jiùhù chē
 police (eh)  警察 (hp) Jǐngchá
-Help!  (eh) 救命 (hp) Jiùmìng
+
 steal  (eh) 偷 (hp) Tōu
 
 serious (eh)  严重 (hp) Yánzhòng
@@ -2754,7 +2826,7 @@ Yīnyuè shēngyīn xiǎo yīdiǎn ér bù huì yǐngxiǎng línjū (ph) 音乐�
 
 Lěng sǐle (ph) 冷死了  (he) deathly cold
 
-Wǒ xiǎng zhàogù tā (ph) 我想照顾她  (he) I want to take care of her
+
 Jiùmìng  (ph) 救命  (he) Help!
 Wǒ shòushāngle (ph) 我受伤了  (he) i am injured.
 

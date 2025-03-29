@@ -86,6 +86,17 @@ IF YOU WRITE IN ALL CAPS, YOU WILL BE REMINDED OF THE NOTE LATER!
  Other symbols can be defined with your own meanings, like >"special meanings"
 
 </pre>
+You can also refer to the previous line
+<pre>
+
+@mylabel foot (note) important concept!  # will refer to this label below
+
+  hand  (eh) 手 (hp) shǒu
+
+  $PREV.3 (e.g.) nǐ de zuǒ shǒu  (hp) 你的左手 (he) your left hand
+
+  $mylabel.1  (eh) 脚 (hp) jiǎo (e.g.) nǐ de yòu jiǎo  (ph) 你的右脚 (he) your right foot 
+</pre>
 You can save this as a text file. It's helpful, but not necessary, to use a suffix `.n4l`.
 This file is already available in the distribution:
 <pre>
