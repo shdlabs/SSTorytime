@@ -125,8 +125,15 @@ $ src/searchN4L notes
 ![Silly search](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/zerosearch.png 'blind search')
 
 <pre>
-$ src/searchN4L -chapter notes 
+$ searchN4L -chapter notes 
 
+$ cd examples; make  # add a set of examples
+
+$ searchN4L -chapter chinese -explore meat food
+
+$ searchN4L -chapter chinese browse, arrows=pe,ph
+
+$ searchN4L -chapter brain -browse arrows=occurs,freq,role
 </pre>
 
 ![Silly search](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/search.png 'more careful search')

@@ -27,6 +27,8 @@ var (
 	SUBJECT string
 	CONTEXT []string
 	VERBOSE bool
+	BROWSE bool
+	EXPLORE bool
 	LIMIT int
 )
 
@@ -63,8 +65,10 @@ func Init() []string {
 
 	verbosePtr := flag.Bool("v", false,"verbose")
 	chapterPtr := flag.String("chapter", "any", "a optional string to limit to a chapter/section")
-	arrowsPtr := flag.String("arrows", "then", "a list of forward/outward arrows to start with")
+	arrowsPtr := flag.String("arrows", "", "a list of forward/outward arrows to start with")
 	limitPtr := flag.Int("limit", 20, "an approximate limit on the number of items returned, where applicable")
+	browsePtr := flag.Bool("browse", false,"browse through all items")
+	explorePtr := flag.Bool("explore", false,"explore items")
 
 	flag.Parse()
 	args := flag.Args()
@@ -72,6 +76,15 @@ func Init() []string {
 	if *verbosePtr {
 		VERBOSE = true
 	}
+
+	if *browsePtr {
+		BROWSE = true
+	} 
+
+	if *explorePtr {
+		EXPLORE = true
+	}
+
 
 	if *arrowsPtr != "" {
 		ARROWS = strings.Split(*arrowsPtr,",")
@@ -100,6 +113,10 @@ func Init() []string {
 		CONTEXT = append(CONTEXT,"")
 	}
 
+	if ARROWS == nil {
+		ARROWS = append(ARROWS,"")
+	}
+
 	if len(ARROWS) == 0 {
 		Usage()
 		os.Exit(1);
@@ -121,9 +138,14 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 	fmt.Println("   Selected arrows",arrows)
 	fmt.Println("   Node filter",searchtext)
 
-	BroadByName(ctx,chapter,context,searchtext,arrows)
-	ByArrow(ctx,chapter,context,searchtext,arrows)
-	Systematic(ctx,chapter,context,searchtext,arrows)
+	if EXPLORE {
+		BroadByName(ctx,chapter,context,searchtext,arrows)
+		ByArrow(ctx,chapter,context,searchtext,arrows)
+	}
+
+	if BROWSE {
+		Systematic(ctx,chapter,context,searchtext,arrows)
+	}
 
 	chaps := SST.GetDBChaptersMatchingName(ctx,"")
 	ctxts := SST.GetDBContextsMatchingName(ctx,"")
@@ -184,7 +206,7 @@ func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 
 	for start := range start_set {
 
-		for sttype := -SST.EXPRESS; sttype <= SST.EXPRESS; sttype++ {
+		for sttype := SST.NEAR; sttype <= SST.EXPRESS; sttype++ {
 
 			name :=  SST.GetDBNodeByNodePtr(ctx,start_set[start])
 
@@ -199,6 +221,11 @@ func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 
 				for l := range allnodes {
 					fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
+
+					if !strings.Contains(fullnode.Chap,chaptext) {
+						continue
+					}
+
 					fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
 				}
 			
@@ -209,7 +236,7 @@ func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 					fmt.Println("\n  ",SST.STTypeName(sttype),"stories in the forward cone ----------------------------------")
 					
 					for p := 0; p < path_depth; p++ {
-						SST.PrintLinkPath(ctx,alt_paths,p,"\n   found","",nil)
+						SST.PrintLinkPath(ctx,alt_paths,p,"\n   found","",context)
 					}
 				}
 				fmt.Printf("     (END %d)\n",start+1)
