@@ -120,9 +120,98 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 	fmt.Println("   Selected arrows",arrows)
 	fmt.Println("   Node filter",searchtext)
 
+	BroadByName(ctx,chapter,context,searchtext,arrows)
+	ByArrow(ctx,chapter,context,searchtext,arrows)
 	Systematic(ctx,chapter,context,searchtext,arrows)
 }
 
+//******************************************************************
+
+func ByArrow(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string) {
+
+	chaptext = strings.TrimSpace(chaptext)
+	searchtext = strings.TrimSpace(searchtext)
+
+	// **** Look for meaning in the arrows ***
+
+	var ama map[SST.ArrowPtr][]SST.NodePtr
+	var count int
+
+	ama = SST.GetMatroidArrayByArrow(ctx,context,chaptext)
+
+	for arrowptr := range ama {
+		arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
+
+		if SST.MatchesInContext(arr_dir.Long,context) {
+
+			count++
+			fmt.Println("\nArrow --(",arr_dir.Long,")--> points to a group of nodes with a similar role in the context of",context,"in the chapter",chaptext,"\n")
+			
+			for n := 0; n < len(ama[arrowptr]); n++ {
+				node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n])
+				SST.NewLine(n)
+				fmt.Print("..  ",node.S,",")
+				
+			}
+			fmt.Println()
+			fmt.Println("............................................")
+		}
+	}
+
+	if count == 0 {
+		fmt.Println("    (No relevant matches)")
+	}
+}
+
+//******************************************************************
+
+func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string) {
+
+	const maxdepth = 5
+	
+	var start_set []SST.NodePtr
+	
+	search_items := strings.Split(searchtext," ")
+	
+	for w := range search_items {
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,chaptext,search_items[w])...)
+	}
+
+	for start := range start_set {
+
+		for sttype := -SST.EXPRESS; sttype <= SST.EXPRESS; sttype++ {
+
+			name :=  SST.GetDBNodeByNodePtr(ctx,start_set[start])
+
+			allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
+			
+			if len(allnodes) > 1 {
+				fmt.Println()
+				fmt.Println("    -------------------------------------------")
+				fmt.Printf("     #%d via %s connection\n",start+1,SST.STTypeName(sttype))
+				fmt.Printf("     (search %s => hit %s)\n",searchtext,name.S)
+				fmt.Println("    -------------------------------------------")
+
+				for l := range allnodes {
+					fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
+					fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
+				}
+			
+				alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth)
+				
+				if alt_paths != nil {
+					
+					fmt.Println("\n  ",SST.STTypeName(sttype),"stories in the forward cone ----------------------------------")
+					
+					for p := 0; p < path_depth; p++ {
+						SST.PrintLinkPath(ctx,alt_paths,p,"\n   found","",nil)
+					}
+				}
+				fmt.Printf("     (END %d)\n",start+1)
+			}
+		}
+	}
+}
 
 //******************************************************************
 

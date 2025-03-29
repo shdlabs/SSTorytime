@@ -19,24 +19,14 @@ import (
 
 //******************************************************************
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "sstoryline"
-	password = "sst_1234"
-	dbname   = "sstoryline"
-)
-
-//******************************************************************
-
 func main() {
 
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	searchtext := "(chengshi)"
-	chaptext := "chinese"
-	context := []string{"city","exercise"}
+	searchtext := "notes"
+	chaptext := ""
+	context := []string{""}
 
 	Search(ctx,chaptext,context,searchtext)
 

@@ -103,6 +103,26 @@ If you choose verbose output, you see more of what's going on:
 
 That already covers a lot of possibilities!
 
+## Browsing the results
+
+Eventually, there will be tools for scripting the search in simple ways, because the most powerful ways to search 
+are to use a programming language. You can see examples in the demos and proof of concept directory under src/demo_poc.
+But as the project progresses, you can use the searchN4L tool to play around with the result:
+
+<pre>
+$ src/searchN4L notes 
+
+</pre>
+
+![Silly search](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/zerosearch.png 'blind search')
+
+<pre>
+$ src/searchN4L -chapter notes 
+
+</pre>
+
+![Silly search](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/search.png 'more careful search')
+
 ## What's the point?
 
 When you make notes, you should think about what you want to see when you look back at your notes.
