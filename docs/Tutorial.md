@@ -193,7 +193,10 @@ more languages:
     "  (e.g.) Je voudrais commander le petit-déjeuner (means) I would like to order breakfast
     "  (note) Don't forget to say please!
 
+      # let's add Norwegian..
     "  (betyr på norsk) Jeg vil bestille frokost
+
+      # let's add Mandarin
     "  (中文意思是) 我想订早餐 
 
 </pre>
