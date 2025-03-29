@@ -2672,7 +2672,11 @@ func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string
 			NewLine(format)
 
 			if !start_shown {
-				fmt.Print(prefix,p+1,": ",path_start.S)
+				if len(cone) > 1 {
+					fmt.Print(prefix,p+1," * ",path_start.S)
+				} else {
+					fmt.Print(prefix," * ",path_start.S)
+				}
 				start_shown = true
 			}
 
@@ -2684,6 +2688,15 @@ func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string
 			
 			arr := GetDBArrowByPtr(ctx,cone[p][l].Arr)
 
+			if arr.Short == "then" {
+				fmt.Print("\n   >>> ")
+				format = 0
+			}
+
+			if arr.Short == "prior" {
+				fmt.Print("\n   <<< ")
+			}
+
 			stpath = append(stpath,STTypeName(STIndexToSTType(arr.STAindex)))
 	
 			if l < len(cone[p]) {
@@ -2694,7 +2707,7 @@ func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string
 			format += 2
 		}
 
-		fmt.Print("\n\n    Process summary:")
+		fmt.Print("\n\n    Linkage process:")
 
 		for s := range stpath {
 			fmt.Print(" -(",stpath[s],")-> ")
