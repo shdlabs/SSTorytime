@@ -123,6 +123,10 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 	BroadByName(ctx,chapter,context,searchtext,arrows)
 	ByArrow(ctx,chapter,context,searchtext,arrows)
 	Systematic(ctx,chapter,context,searchtext,arrows)
+
+	chaps := SST.GetDBChaptersMatchingName(ctx,searchtext)
+	ctxts := SST.GetDBContextsMatchingName(ctx,searchtext)
+	TOC(chaps,ctxts)
 }
 
 //******************************************************************
@@ -311,6 +315,29 @@ func Header(h []string,chap string) {
 	fmt.Println("\n============================================================")
 }
 
+//**************************************************************
+
+func TOC(chap,cont []string) {
+
+	if len(chap) == 0 && len(cont) == 0 {
+		return
+	}
+
+	fmt.Println("\n\n============================================================")
+	fmt.Println("\n   Chapters: \n")
+
+	for s := range chap {
+		fmt.Println("   - ",chap[s])
+	}
+
+	fmt.Println("\n   Contexts: \n")
+
+	for s := range cont {
+		fmt.Println("   ::",cont[s],"::")
+	}
+
+	fmt.Println("\n============================================================")
+}
 
 
 

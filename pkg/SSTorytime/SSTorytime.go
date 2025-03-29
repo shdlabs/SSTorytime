@@ -1986,6 +1986,79 @@ func DefineStoredFunctions(ctx PoSST) {
 // Retrieve
 // **************************************************************************
 
+func GetDBChaptersMatchingName(ctx PoSST,src string) []string {
+
+	var qstr string
+
+	remove_accents,stripped := IsBracketedSearchTerm(src)
+
+	if remove_accents {
+		search := "%"+stripped+"%"
+		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE unaccent(Chap) LIKE '%s'",search)
+	} else {
+		search := "%"+src+"%"
+		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE Chap LIKE '%s'",search)
+	}
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetDBChaptersMatchingName",err)
+	}
+
+	var whole string
+	var retval []string
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		retval = append(retval,whole)
+	}
+
+	sort.Strings(retval)
+	row.Close()
+	return retval
+
+}
+
+// **************************************************************************
+
+func GetDBContextsMatchingName(ctx PoSST,src string) []string {
+
+	var qstr string
+
+	remove_accents,stripped := IsBracketedSearchTerm(src)
+
+	if remove_accents {
+		search := stripped
+		qstr = fmt.Sprintf("SELECT DISTINCT Ctx FROM NodeArrowNode WHERE match_context(Ctx,'{%s}')",search)
+	} else {
+		search := src
+		qstr = fmt.Sprintf("SELECT DISTINCT Ctx FROM NodeArrowNode WHERE match_context(Ctx,'{%s}')",search)
+	}
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetDBChaptersMatchingName",err)
+	}
+
+	var whole string
+	var retval []string
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		retval = append(retval,whole)
+	}
+
+	row.Close()
+
+	sort.Strings(retval)
+	return retval
+
+}
+
+// **************************************************************************
+
 func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
 
 	var qstr string
