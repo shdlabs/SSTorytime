@@ -209,7 +209,7 @@ Once again, the message is: writing it down is nice, putting it into a database 
 wasted effort if you don't look at it yourself regularly. No one learned French by writing in their school
 book, or even by cramming for the exam. You only learn by using knowledge. It isn't knowledge if you don't know it. 
 
-Tt's not rocket science, unless of course it is rock science.
+It's not rocket science, unless of course it is rocket science.
 <pre>
 
 --rocket science
