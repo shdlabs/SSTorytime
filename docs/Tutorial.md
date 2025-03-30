@@ -89,9 +89,11 @@ IF YOU WRITE IN ALL CAPS, YOU WILL BE REMINDED OF THE NOTE LATER!
 You can also refer to the previous line
 <pre>
 
-@mylabel foot (note) important concept!  # will refer to this label below
+@mylabel foot (note) important concept!  # will refer to this label below, defined with @
 
   hand  (eh) 手 (hp) shǒu
+
+  # references are referred to with $name.position
 
   $PREV.3 (e.g.) nǐ de zuǒ shǒu  (hp) 你的左手 (he) your left hand
 

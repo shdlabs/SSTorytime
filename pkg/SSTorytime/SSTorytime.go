@@ -1586,7 +1586,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END IF;\n"+
 
 		"FOREACH item IN ARRAY db_set LOOP\n" +
-		"   db_ref := array_append(db_ref,unaccent(item));\n" +
+		"   db_ref := array_append(db_ref,lower(unaccent(item)));\n" +
 		"END LOOP;\n" +
 
 		"FOREACH item IN ARRAY user_set LOOP\n" +
@@ -1595,11 +1595,11 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   END IF;"+
 		"  unicode := replace(item,'|','');\n" +
 		"  IF unicode != item THEN\n" +
-		"     IF unicode = ANY(db_ref) THEN \n" + // unaccented unicode match
+		"     IF lower(unicode) = ANY(db_ref) THEN \n" + // unaccented unicode match
 	"        RETURN true;\n" +
 		"     END IF;\n" +
 		"  ELSE\n" +
-		"     IF item = ANY(db_set) THEN \n" + // exact match
+		"     IF lower(item) = ANY(db_set) THEN \n" + // exact match
 		"        RETURN true;\n" +
 		"     END IF;\n" +
 		"  END IF;\n" +
@@ -1733,7 +1733,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   CASE sttype \n"
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"   SELECT array_agg(Nptr) into retval FROM Node WHERE Chap LIKE chapter AND ArrowInContextList(arrow,%s,context) AND NOT ArrowInContextList(inverse,%s,context);\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
+			"   SELECT array_agg(Nptr) into retval FROM Node WHERE lower(Chap) LIKE lower(chapter) AND ArrowInContextList(arrow,%s,context) AND NOT ArrowInContextList(inverse,%s,context);\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
 	}
 	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
 		"END CASE;\n" +
@@ -1959,7 +1959,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND Chap LIKE chp;\n",st,STTypeDBChannel(st));
+			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND lower(Chap) LIKE lower(chp);\n",st,STTypeDBChannel(st));
 	}
 
 	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
@@ -1994,10 +1994,10 @@ func GetDBChaptersMatchingName(ctx PoSST,src string) []string {
 
 	if remove_accents {
 		search := "%"+stripped+"%"
-		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE unaccent(Chap) LIKE '%s'",search)
+		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE lower(unaccent(Chap)) LIKE lower('%s')",search)
 	} else {
 		search := "%"+src+"%"
-		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE Chap LIKE '%s'",search)
+		qstr = fmt.Sprintf("SELECT DISTINCT Chap FROM Node WHERE lower(Chap) LIKE lower('%s')",search)
 	}
 
 	row, err := ctx.DB.Query(qstr)
@@ -2075,10 +2075,10 @@ func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
 
 	if remove_accents {
 		search := "%"+stripped+"%"
-		qstr = fmt.Sprintf("select NPtr from Node where unaccent(S) LIKE '%s'",search)
+		qstr = fmt.Sprintf("select NPtr from Node where lower(unaccent(S)) LIKE lower('%s')",search)
 	} else {
 		search := "%"+src+"%"
-		qstr = fmt.Sprintf("select NPtr from Node where S LIKE '%s'",search)
+		qstr = fmt.Sprintf("select NPtr from Node where lower(S) LIKE lower('%s')",search)
 	}
 
 	if chap != "any" && chap != "" {
@@ -2086,10 +2086,10 @@ func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
 		remove_accents,stripped := IsBracketedSearchTerm(chap)
 		if remove_accents {
 			chapter := "%"+stripped+"%"
-			qstr += fmt.Sprintf(" AND unaccent(chap) LIKE '%s'",chapter)
+			qstr += fmt.Sprintf(" AND lower(unaccent(chap)) LIKE '%s'",chapter)
 		} else {
 			chapter := "%"+chap+"%"
-			qstr += fmt.Sprintf(" AND chap LIKE '%s'",chapter)
+			qstr += fmt.Sprintf(" AND lower(chap) LIKE '%s'",chapter)
 		}
 	}
 
@@ -2127,10 +2127,10 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,chap,nm string ,cn []string) []NodePtr {
 
 	if remove_name_accents {
 		nm_search := "%"+nm_stripped+"%"
-		nm_col = fmt.Sprintf("AND unaccent(S) LIKE '%s'",nm_search)
+		nm_col = fmt.Sprintf("AND lower(unaccent(S)) LIKE lower('%s')",nm_search)
 	} else {
 		nm_search := "%"+nm+"%"
-		nm_col = fmt.Sprintf("AND S LIKE '%s'",nm_search)
+		nm_col = fmt.Sprintf("AND lower(S) LIKE lower('%s')",nm_search)
 	}
 
 	if chap != "any" && chap != "" {
@@ -2139,10 +2139,10 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,chap,nm string ,cn []string) []NodePtr {
 
 		if remove_chap_accents {
 			chap_search := "%"+chap_stripped+"%"
-			chap_col = fmt.Sprintf("AND unaccent(chap) LIKE '%s'",chap_search)
+			chap_col = fmt.Sprintf("AND lower(unaccent(chap)) LIKE lower('%s')",chap_search)
 		} else {
 			chap_search := "%"+chap+"%"
-			chap_col = fmt.Sprintf("AND chap LIKE '%s'",chap_search)
+			chap_col = fmt.Sprintf("AND lower(chap) LIKE lower('%s')",chap_search)
 		}
 	}
 
@@ -2257,7 +2257,7 @@ func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrow
 		qstr = fmt.Sprintf("WITH matching_rel AS "+
 			" (SELECT NFrom,STType,Arr,Wgt,Ctx,NTo,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
 			"   SELECT DISTINCT NFrom,STType,Arr,Wgt,Ctx,NTo FROM matching_rel "+
-			"    JOIN Node ON nptr=nfrom WHERE match=true AND chap LIKE '%s'",context,chapter)	
+			"    JOIN Node ON nptr=nfrom WHERE match=true AND lower(chap) LIKE lower('%s')",context,chapter)	
 	}
 
 	row, err := ctx.DB.Query(qstr)
@@ -2316,7 +2316,7 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 		qstr = fmt.Sprintf("WITH matching_nodes AS \n"+
 			" (SELECT NFrom,Arr,Ctx,match_context(Ctx,%s) AS matchc,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)\n"+
 			"   SELECT NFrom,Ctx,Chap FROM matching_nodes \n"+
-			"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND Chap LIKE '%s' ORDER BY Ctx",context,arrows,chapter)
+			"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx",context,arrows,chapter)
 
 		//qstr = fmt.Sprintf("SELECT DISTINCT NFrom,Ctx,Chap FROM NodeArrowNode JOIN Node ON nptr=nfrom where chap like '%s' ORDER BY Ctx",chapter)
 
@@ -2847,7 +2847,7 @@ func GetMatroidArrayByArrow(ctx PoSST, context []string,chapter string) map[Arro
 	qstr := "SELECT arr,array_agg(DISTINCT NTo) FROM NodeArrowNode"
 
 	if context != nil {
-		qstr += fmt.Sprintf(" WHERE %s LIKE ANY(CTX)",FormatSQLStringArray(context))
+		qstr += fmt.Sprintf(" WHERE match_context(ctx,%s)",FormatSQLStringArray(context))
 	}
 
 	qstr += " GROUP BY arr"
