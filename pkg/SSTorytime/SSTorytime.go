@@ -336,6 +336,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function idempinsertnode")
 		ctx.DB.QueryRow("drop function sumfwdpaths")
 		ctx.DB.QueryRow("drop function match_context")
+		ctx.DB.QueryRow("drop function empty_path")
 		ctx.DB.QueryRow("drop function match_arrows")
 		ctx.DB.QueryRow("drop function ArrowInList")
 		ctx.DB.QueryRow("drop function GetStoryStartNodes")
@@ -1572,6 +1573,26 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
+	// Check if linkpath representation is just one item
+
+	qstr = "CREATE OR REPLACE FUNCTION empty_path(path text)\n"+
+		"RETURNS boolean AS $fn$\n" +
+		"BEGIN \n" +
+		"   IF strpos(path,';') THEN \n" + // exact match
+		"      RETURN true;\n" +
+		"   END IF;\n" +
+		"RETURN false;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
 	// Matching context strings with fuzzy criteria
 
 	qstr = "CREATE OR REPLACE FUNCTION match_context(db_set text[],user_set text[])\n"+
@@ -1580,6 +1601,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   db_ref text[];\n" +
 		"   unicode text;\n" +
 		"   item text;\n" +
+		"   try text;\n"+
 		"BEGIN \n" +
 		"IF array_length(user_set,1) IS NULL THEN\n"+
 		"   RETURN true;\n"+
@@ -1594,15 +1616,11 @@ func DefineStoredFunctions(ctx PoSST) {
 		"     RETURN true;"+
 		"   END IF;"+
 		"  unicode := replace(item,'|','');\n" +
-		"  IF unicode != item THEN\n" +
-		"     IF lower(unicode) = ANY(db_ref) THEN \n" + // unaccented unicode match
-	"        RETURN true;\n" +
+		"  FOREACH try IN ARRAY db_ref LOOP\n"+
+		"     IF length(substring(try from lower(unicode))) > 3 THEN \n" + // unaccented unicode match
+	        "        RETURN true;\n" +
 		"     END IF;\n" +
-		"  ELSE\n" +
-		"     IF lower(item) = ANY(db_set) THEN \n" + // exact match
-		"        RETURN true;\n" +
-		"     END IF;\n" +
-		"  END IF;\n" +
+		"  END LOOP;"+
 		"END LOOP;\n" +
 		"RETURN false;\n" +
 		"END ;\n" +
@@ -2229,7 +2247,6 @@ func GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr {
 	}
 
 	for a := range ARROW_DIRECTORY {
-
 		if SimilarString(s,ARROW_DIRECTORY[a].Long) || SimilarString(s,ARROW_DIRECTORY[a].Short) {
 			list = append(list,ARROW_DIRECTORY[a].Ptr)
 		}
@@ -2362,29 +2379,35 @@ func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr {
 	// Find the head / starting node matching an arrow sequence.
 	// It has outgoing (+sttype) but not incoming (-sttype) arrow
 
-	arrowptr := GetDBArrowsMatchingArrowName(ctx,arrow)[0]
-	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
-
-	qstr := fmt.Sprintf("select GetStoryStartNodes(%d,%d,%d)",arrowptr,INVERSE_ARROWS[arrowptr],sttype)
-
-	row,err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("GetNodesStartingStoriesForArrow failed\n",qstr,err)
-		return nil
-	}
-
-	var nptrstring string
 	var matches []NodePtr
 
-	for row.Next() {		
-		err = row.Scan(&nptrstring)
+	arrowlist := GetDBArrowsMatchingArrowName(ctx,arrow)
 
-		matches = ParseSQLNPtrArray(nptrstring)
+	for aptr := range arrowlist {
 
+		arrowptr:= arrowlist[aptr]
+		sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
+
+		qstr := fmt.Sprintf("select GetStoryStartNodes(%d,%d,%d)",arrowptr,INVERSE_ARROWS[arrowptr],sttype)
+		
+		row,err := ctx.DB.Query(qstr)
+
+		if err != nil {
+			fmt.Println("GetNodesStartingStoriesForArrow failed\n",qstr,err)
+			return nil
+		}
+		
+		var nptrstring string
+		
+		for row.Next() {		
+			err = row.Scan(&nptrstring)
+			
+			matches = append(matches,ParseSQLNPtrArray(nptrstring)...)
+			
+		}
+
+		row.Close()
 	}
-
-	row.Close()
 
 	return matches
 }
@@ -2397,32 +2420,36 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,co
 	// Find the head / starting node matching an arrow sequence.
 	// It has outgoing (+sttype) but not incoming (-sttype) arrow
 
-	arrowptr := GetDBArrowsMatchingArrowName(ctx,arrow)[0]
-	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
-
-	chp := "%"+chapter+"%"
-	cntx := FormatSQLStringArray(context)
-
-	qstr := fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s',%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,chp,cntx)
-
-	row,err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
-		return nil
-	}
-
-	var nptrstring string
 	var matches []NodePtr
 
-	for row.Next() {		
-		err = row.Scan(&nptrstring)
+	arrowlist := GetDBArrowsMatchingArrowName(ctx,arrow)
 
-		matches = ParseSQLNPtrArray(nptrstring)
+	for aptr := range arrowlist {
 
+		arrowptr:= arrowlist[aptr]
+		sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
+
+		chp := "%"+chapter+"%"
+		cntx := FormatSQLStringArray(context)
+
+		qstr := fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s',%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,chp,cntx)
+		row,err := ctx.DB.Query(qstr)
+		
+		if err != nil {
+			fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
+			return nil
+		}
+		
+		var nptrstring string
+		
+		for row.Next() {		
+			err = row.Scan(&nptrstring)
+			
+			matches = append(matches,ParseSQLNPtrArray(nptrstring)...)
+		}
+
+		row.Close()
 	}
-
-	row.Close()
 
 	return matches
 }
