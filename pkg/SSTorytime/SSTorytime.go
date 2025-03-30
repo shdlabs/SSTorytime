@@ -2238,6 +2238,23 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 
 // **************************************************************************
 
+func GetDBArrowsWithArrowName(ctx PoSST,s string) ArrowPtr {
+
+	if ARROW_DIRECTORY_TOP == 0 {
+		DownloadArrowsFromDB(ctx)
+	}
+
+	for a := range ARROW_DIRECTORY {
+		if s == ARROW_DIRECTORY[a].Long || s == ARROW_DIRECTORY[a].Short {
+			return ARROW_DIRECTORY[a].Ptr
+		}
+	}
+
+	return -1
+}
+
+// **************************************************************************
+
 func GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr {
 
 	var list []ArrowPtr
@@ -2381,33 +2398,27 @@ func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr {
 
 	var matches []NodePtr
 
-	arrowlist := GetDBArrowsMatchingArrowName(ctx,arrow)
+	arrowptr := GetDBArrowsWithArrowName(ctx,arrow)
 
-	for aptr := range arrowlist {
+	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
 
-		arrowptr:= arrowlist[aptr]
-		sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
-
-		qstr := fmt.Sprintf("select GetStoryStartNodes(%d,%d,%d)",arrowptr,INVERSE_ARROWS[arrowptr],sttype)
+	qstr := fmt.Sprintf("select GetStoryStartNodes(%d,%d,%d)",arrowptr,INVERSE_ARROWS[arrowptr],sttype)
 		
-		row,err := ctx.DB.Query(qstr)
-
-		if err != nil {
-			fmt.Println("GetNodesStartingStoriesForArrow failed\n",qstr,err)
-			return nil
-		}
-		
-		var nptrstring string
-		
-		for row.Next() {		
-			err = row.Scan(&nptrstring)
-			
-			matches = append(matches,ParseSQLNPtrArray(nptrstring)...)
-			
-		}
-
-		row.Close()
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("GetNodesStartingStoriesForArrow failed\n",qstr,err)
+		return nil
 	}
+	
+	var nptrstring string
+	
+	for row.Next() {		
+		err = row.Scan(&nptrstring)
+		matches = ParseSQLNPtrArray(nptrstring)
+	}
+	
+	row.Close()
 
 	return matches
 }
@@ -2422,35 +2433,30 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,co
 
 	var matches []NodePtr
 
-	arrowlist := GetDBArrowsMatchingArrowName(ctx,arrow)
+	arrowptr := GetDBArrowsWithArrowName(ctx,arrow)
 
-	for aptr := range arrowlist {
+	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
 
-		arrowptr:= arrowlist[aptr]
-		sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
-
-		chp := "%"+chapter+"%"
-		cntx := FormatSQLStringArray(context)
-
-		qstr := fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s',%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,chp,cntx)
-		row,err := ctx.DB.Query(qstr)
-		
-		if err != nil {
-			fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
-			return nil
-		}
-		
-		var nptrstring string
-		
-		for row.Next() {		
-			err = row.Scan(&nptrstring)
-			
-			matches = append(matches,ParseSQLNPtrArray(nptrstring)...)
-		}
-
-		row.Close()
+	chp := "%"+chapter+"%"
+	cntx := FormatSQLStringArray(context)
+	
+	qstr := fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s',%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,chp,cntx)
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
+		return nil
 	}
-
+	
+	var nptrstring string
+	
+	for row.Next() {		
+		err = row.Scan(&nptrstring)
+		
+		matches = ParseSQLNPtrArray(nptrstring)
+	}
+	
+	row.Close()
 	return matches
 }
 

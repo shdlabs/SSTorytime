@@ -20,8 +20,11 @@ func main() {
 	ctx := SST.Open(load_arrows)
 
 	chapter := ""
-        context := []string{"WaVEs"}
+        context := []string{"waves"}
+
 	arrow := "freq"
+
+	fmt.Println("\nLook for nodes starting some thread with a arrow ",arrow,"in the context",context)
 
         matches1 := SST.GetNCCNodesStartingStoriesForArrow(ctx,arrow,chapter,context)
 
@@ -29,8 +32,10 @@ func main() {
 
                 n := SST.GetDBNodeByNodePtr(ctx,matches1[p])
 
-                fmt.Println("Context story start with",n.S,"in",n.Chap)
+                fmt.Println("-start with",n.S,"in",n.Chap)
         }
+
+	fmt.Println("\nLook for node startinga thread with arrow",arrow,"regardlss of context")
 
         matches2 := SST.GetNodesStartingStoriesForArrow(ctx,arrow)
 
@@ -38,7 +43,7 @@ func main() {
 
                 n := SST.GetDBNodeByNodePtr(ctx,matches2[p])
 
-                fmt.Println("Plain story start with",n.S,"in",n.Chap)
+                fmt.Println("-start with",n.S,"in",n.Chap)
         }
 
 	SST.Close(ctx)
