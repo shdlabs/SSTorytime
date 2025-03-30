@@ -229,6 +229,11 @@ For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/
 
 * `GetDBNodeByContext(ctx PoSST,chap string,cn []string,searchtext string) map[[]string][]NodePtr` - returns a hash map of nodes, whose map key is a context array and whose value is a list of node pointers, filtered by the search text.
 
+
+* `GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr` - Find a list of nodes that have sequences starting with the named link type, i.e. yes forwards but nothing backwards.
+
+* `GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,context []string) []NodePtr` - Find a list of nodes that have sequences starting with the named link type, filtered by chapter and context, i.e. yes forwards but nothing backwards.
+
 * `GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr` - Find a list of arrows matching the given name as a substring.
 
 * `GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chapter string,cn []string,arrows []ArrowPtr) []NodeArrowNode` - Get a list of NodeArrowNode relations that involve the given arrow pointer type.
@@ -250,7 +255,11 @@ For examples, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src
 
 * `GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link` - as above, but returning data as Link structures that contain both arrow and node information.
 
+* `GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth int) ([][]Link,int)` - return a set of nodes in teh causal cone, by orientation, to a given depth (forwards, backwards, or both)
+
 * `GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) ([][]Link,int)` - return the set of `proper time' paths expanding perpendicularly to the cirumferential/spatial layers. This is a form of path integral representation.
+
+* `AdjointLinkPath(LL []Link) []Link` - find the adjoint path of a link path, i.e. backwards path with all links reverse meanings.
 
 * `PrintLinkPath(ctx PoSST, alt_paths [][]Link, p int, prefix string)` - display a path structure returned above.
 
