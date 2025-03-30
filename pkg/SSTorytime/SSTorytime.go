@@ -2464,6 +2464,10 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,co
 
 func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 
+	if ARROW_DIRECTORY_TOP == 0 {
+		DownloadArrowsFromDB(ctx)
+	}
+
 	ptr, ok := ARROW_SHORT_DIR[name]
 	
 	// If not, then check longname
@@ -2472,8 +2476,6 @@ func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 		ptr, ok = ARROW_LONG_DIR[name]
 		
 		if !ok {
-			DownloadArrowsFromDB(ctx)
-
 			ptr, ok = ARROW_SHORT_DIR[name]
 			
 			// If not, then check longname

@@ -254,6 +254,11 @@ func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext strin
 
 	var arrows []SST.ArrowPtr
 
+	if arrnames[0] == "" {
+		fmt.Println("\nTo browse, you need to specify some arrows with -arrows=")
+		os.Exit(-1)
+	}
+
 	for a := range arrnames {
 		arr := SST.GetDBArrowByName(ctx,arrnames[a])
 		arrows = append(arrows,arr)
