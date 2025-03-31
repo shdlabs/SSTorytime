@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
+	"unicode"
 	"sort"
 
 	_ "github.com/lib/pq"
@@ -27,6 +27,10 @@ const (
 	ERR_ILLEGAL_LINK_CLASS="ILLEGAL LINK CLASS"
 	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
 	ERR_MEMORY_DB_ARROW_MISMATCH = "Arrows in database are not in synch (shouldn't happen)"
+
+	SCREENWIDTH = 60
+	RIGHTMARGIN = 5
+	LEFTMARGIN = 5
 
 	NEAR = 0
 	LEADSTO = 1   // +/-
@@ -2204,21 +2208,31 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 		return GetNodeFromPtr(im_nptr)
 	}
 
-	qstr := fmt.Sprintf("select L,S,Chap from Node where NPtr='(%d,%d)'::NodePtr",db_nptr.Class,db_nptr.CPtr)
+	cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
+
+	qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr",cols,db_nptr.Class,db_nptr.CPtr)
 
 	row, err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("GetDBNodeByNodePointer Failed:",err)
-	}
 
 	var n Node
 	var count int = 0
 
-	n.NPtr = db_nptr
+	if err != nil {
+		fmt.Println("GetDBNodeByNodePointer Failed:",err)
+		return n
+	}
 
-	for row.Next() {		
-		err = row.Scan(&n.L,&n.S,&n.Chap)
+	n.NPtr = db_nptr
+	var whole [ST_TOP]string
+
+	// NB, there seems to be a bug in the SQL package, which cannot always populate the links, so try not to
+	//     rely on this and work around when needed using GetEntireCone(any,2..) separately
+
+	for row.Next() {
+		err = row.Scan(&n.L,&n.S,&n.Chap,&whole[0],&whole[1],&whole[2],&whole[3],&whole[4],&whole[5],&whole[6])
+		for i := 0; i < ST_TOP; i++ {
+			n.I[i] = ParseLinkArray(whole[i])
+		}
 		count++
 	}
 
@@ -2768,6 +2782,87 @@ func AdjointLinkPath(LL []Link) []Link {
 
 // **************************************************************************
 
+func NextLinkArrow(ctx PoSST,path []Link,arrows []ArrowPtr) string {
+
+	var rstring string
+
+	if len(path) > 1 {
+
+		for l := 1; l < len(path); l++ {
+
+			if !MatchArrows(arrows,path[l].Arr) {
+				break
+			}
+
+			nextnode := GetDBNodeByNodePtr(ctx,path[l].Dst)
+			
+			arr := GetDBArrowByPtr(ctx,path[l].Arr)
+			
+			if l < len(path) {
+				rstring += fmt.Sprint("  -(",arr.Long,")->  ")
+			}
+			
+			rstring += fmt.Sprint(nextnode.S)
+		}
+	}
+
+	return rstring
+}
+
+// **************************************************************************
+// Presentation on command line
+// **************************************************************************
+
+func PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int) {
+
+	node := GetDBNodeByNodePtr(ctx,nptr)		
+
+	ShowText(node.S,width)
+
+	// Start with properties of node, within orbit
+
+	neigh,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,2)
+
+	var notes [ST_TOP][]string
+
+	for stindex := 0; stindex < ST_TOP; stindex++ {		
+		for lnk := range neigh {
+			if neigh[lnk] != nil && len(neigh[lnk]) > 1 {
+				ln := neigh[lnk][1]
+				arrow := GetDBArrowByPtr(ctx,ln.Arr)
+				if arrow.STAindex == stindex {
+					prop := GetDBNodeByNodePtr(ctx,ln.Dst)
+					notes[stindex] = append(notes[stindex],fmt.Sprintf(" -    %s - %s\n",arrow.Long,prop.S))
+				}
+			}
+		}
+	}
+
+	PrintLinkNotes(notes,EXPRESS)
+	PrintLinkNotes(notes,-EXPRESS)
+	PrintLinkNotes(notes,-CONTAINS)
+	PrintLinkNotes(notes,LEADSTO)
+	PrintLinkNotes(notes,-LEADSTO)
+	PrintLinkNotes(notes,NEAR)
+
+	fmt.Println()
+}
+
+// **************************************************************************
+
+func PrintLinkNotes(notes [ST_TOP][]string,sttype int) {
+
+	t := STTypeToSTIndex(sttype)
+
+	for n := range notes[t] {		
+		text := Indent(LEFTMARGIN) + notes[t][n]
+		ShowText(text,SCREENWIDTH)
+	}
+
+}
+
+// **************************************************************************
+
 func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string,context []string) {
 
 	if len(cone[p]) > 1 {
@@ -2830,35 +2925,6 @@ func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string
 		}
 		fmt.Println(". \n")
 	}
-}
-
-// **************************************************************************
-
-func NextLinkArrow(ctx PoSST,path []Link,arrows []ArrowPtr) string {
-
-	var rstring string
-
-	if len(path) > 1 {
-
-		for l := 1; l < len(path); l++ {
-
-			if !MatchArrows(arrows,path[l].Arr) {
-				break
-			}
-
-			nextnode := GetDBNodeByNodePtr(ctx,path[l].Dst)
-			
-			arr := GetDBArrowByPtr(ctx,path[l].Arr)
-			
-			if l < len(path) {
-				rstring += fmt.Sprint("  -(",arr.Long,")->  ")
-			}
-			
-			rstring += fmt.Sprint(nextnode.S)
-		}
-	}
-
-	return rstring
 }
 
 // **************************************************************************
@@ -3232,8 +3298,16 @@ func ParseSQLLinkString(s string) Link {
     	s = strings.Replace(s,")","",-1)
 	s = strings.Replace(s,"\"\"",";",-1)
 	s = strings.Replace(s,"\"","",-1)
+	s = strings.Replace(s,"\\","",-1)
 	
         items := strings.Split(s,",")
+
+	for i := 0; i < len(items); i++ {
+		items[i] = strings.Replace(items[i],"{","",-1)
+		items[i] = strings.Replace(items[i],"}","",-1)
+		items[i] = strings.Replace(items[i],";","",-1)
+		items[i] = strings.TrimSpace(items[i])
+	}
 
 	// Arrow type
 	fmt.Sscanf(items[0],"%d",&l.Arr)
@@ -3246,10 +3320,6 @@ func ParseSQLLinkString(s string) Link {
 	var array []string
 
 	for i := 2; i <= len(items)-3; i++ {
-		items[i] = strings.Replace(items[i],"{","",-1)
-		items[i] = strings.Replace(items[i],"}","",-1)
-		items[i] = strings.Replace(items[i],";","",-1)
-		items[i] = strings.TrimSpace(items[i])
 		array = append(array,items[i])
 	}
 
@@ -3261,6 +3331,28 @@ func ParseSQLLinkString(s string) Link {
 	fmt.Sscanf(items[len(items)-1],"%d",&l.Dst.CPtr)
 
 	return l
+}
+
+//**************************************************************
+
+func ParseLinkArray(s string) []Link {
+
+	var array []Link
+
+	s = strings.TrimSpace(s)
+
+	if len(s) == 0 {
+		return array
+	}
+
+	strarray := strings.Split(s,"\n")
+
+	for i := 0; i < len(strarray); i++ {
+		link := ParseSQLLinkString(strarray[i])
+		array = append(array,link)
+	}
+	
+	return array
 }
 
 //**************************************************************
@@ -3392,6 +3484,15 @@ func STIndexToSTType(stindex int) int {
 
 // **************************************************************************
 
+func STTypeToSTIndex(stindex int) int {
+
+	// Convert shifted array index to symmetrical type
+
+	return stindex + ST_ZERO
+}
+
+// **************************************************************************
+
 func STTypeName(sttype int) string {
 
 	switch sttype {
@@ -3402,7 +3503,7 @@ func STTypeName(sttype int) string {
 	case -LEADSTO:
 		return "-comes from"
 	case NEAR:
-		return "Similarity"
+		return "=Similarity"
 	case LEADSTO:
 		return "+leads to"
 	case CONTAINS:
@@ -3494,6 +3595,61 @@ func EscapeString(s string) string {
 
 	// Don't do this here, move to SQLEscape()
 	return s
+}
+
+//****************************************************************************
+
+func ShowText(s string, width int) {
+
+	var linecounter int
+	var indent string = Indent(LEFTMARGIN)
+
+	if width < 40 {
+		width = SCREENWIDTH
+	}
+
+	runes := []rune(s)
+	
+	linecounter = 0
+
+	for r := 0; r < len(runes); r++ {
+		
+		if unicode.IsSpace(runes[r]) && linecounter > width-RIGHTMARGIN {
+			if runes[r] != '\n' {
+				fmt.Print("\n",indent)
+				linecounter = 0
+				continue
+			} else {
+				linecounter = 0
+			}
+		}
+		if unicode.IsPunct(runes[r]) && linecounter > width-RIGHTMARGIN {
+			if runes[r] != '\n' {
+				fmt.Print("\n",indent)
+				linecounter = 0
+				continue
+			} else {
+				linecounter = 0
+			}
+		}
+		fmt.Print(string(runes[r]))
+		linecounter++
+		
+	}
+	fmt.Println()
+}
+
+//****************************************************************************
+
+func Indent(indent int) string {
+
+	spc := ""
+
+	for i := 0; i < indent; i++ {
+		spc += " "
+	}
+
+	return spc
 }
 
 //****************************************************************************
