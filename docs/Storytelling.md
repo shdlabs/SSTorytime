@@ -272,7 +272,11 @@ Everyone knows about flow charts. These can be rather trivial, or very complicat
 
 Start (next) Find Door (next) $question.1
 
+ :: yes ::   # conditionals are basically context
+
  $question.1 (next if yes) Open Door (next) End
+
+ :: no ::
 
  $question.1 (next if no)  Get key (next) $question.1
 

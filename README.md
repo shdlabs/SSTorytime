@@ -30,6 +30,7 @@ job summary by an LLM text tool in which you get an answer `take it or leave it'
 * [SSTorytelling](docs/Storytelling.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
 * [searchN4L - preliminary search/testing tool](docs/searchN4L.md)
+* [Related work and links](docs/outreach.md)
 
 ## History
 
