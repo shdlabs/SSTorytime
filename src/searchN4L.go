@@ -137,6 +137,9 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 	fmt.Println("   With context",context)
 	fmt.Println("   Selected arrows",arrows)
 	fmt.Println("   Node filter",searchtext)
+	fmt.Println("\n")
+
+	EventSearch(ctx,chapter,context,searchtext)
 
 	if EXPLORE {
 		BroadByName(ctx,chapter,context,searchtext,arrows)
@@ -150,6 +153,21 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 	chaps := SST.GetDBChaptersMatchingName(ctx,"")
 	ctxts := SST.GetDBContextsMatchingName(ctx,"")
 	TOC(chaps,ctxts)
+}
+
+
+//******************************************************************
+
+func EventSearch(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
+	
+	nptrs := SST.GetDBNodePtrMatchingName(ctx,chaptext,searchtext)
+
+	for nptr := range nptrs {
+		fmt.Print(nptr,": ")
+		SST.PrintNodeOrbit(ctx,nptrs[nptr],100)
+
+
+	}
 }
 
 //******************************************************************
@@ -226,7 +244,8 @@ func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 						continue
 					}
 
-					fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
+					//fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
+					SST.PrintNodeOrbit(ctx,allnodes[l],SST.SCREENWIDTH)
 				}
 			
 				alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth)
