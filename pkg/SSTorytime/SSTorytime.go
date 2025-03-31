@@ -28,7 +28,7 @@ const (
 	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
 	ERR_MEMORY_DB_ARROW_MISMATCH = "Arrows in database are not in synch (shouldn't happen)"
 
-	SCREENWIDTH = 60
+	SCREENWIDTH = 100
 	RIGHTMARGIN = 5
 	LEFTMARGIN = 5
 
@@ -3601,6 +3601,7 @@ func EscapeString(s string) string {
 
 func ShowText(s string, width int) {
 
+	var spacecounter int
 	var linecounter int
 	var indent string = Indent(LEFTMARGIN)
 
@@ -3608,7 +3609,26 @@ func ShowText(s string, width int) {
 		width = SCREENWIDTH
 	}
 
+	// Check is the string has a large number of spaces, in which case it's
+	// probably preformatted,
+
 	runes := []rune(s)
+
+	for r := 0; r < len(runes); r++ {
+		if unicode.IsSpace(runes[r]) {
+			spacecounter++
+		}
+	} 
+
+	if len(runes) > SCREENWIDTH - LEFTMARGIN - RIGHTMARGIN {
+		if spacecounter > len(runes) / 3 {
+			fmt.Println()
+			fmt.Println(s)
+			return
+		}
+	}
+
+	// Format
 	
 	linecounter = 0
 

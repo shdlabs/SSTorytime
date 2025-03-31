@@ -152,6 +152,7 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 
 	chaps := SST.GetDBChaptersMatchingName(ctx,"")
 	ctxts := SST.GetDBContextsMatchingName(ctx,"")
+
 	TOC(chaps,ctxts)
 }
 
