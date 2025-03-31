@@ -53,7 +53,7 @@ const (
 	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
-	ERR_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference"
+	ERR_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference. Close any space after a quote..."
 	ERR_ANNOTATION_BAD = "Annotation marker should be short mark of non-space, non-alphanumeric character "
 	ERR_BAD_ABBRV = "abbreviation out of place"
 	ERR_BAD_ALIAS_REFERENCE = "Alias references start from $name.1"

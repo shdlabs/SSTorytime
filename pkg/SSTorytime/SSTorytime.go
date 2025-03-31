@@ -2818,6 +2818,7 @@ func PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int) {
 	node := GetDBNodeByNodePtr(ctx,nptr)		
 
 	ShowText(node.S,width)
+	fmt.Println()
 
 	// Start with properties of node, within orbit
 
@@ -3629,7 +3630,7 @@ func ShowText(s string, width int) {
 	}
 
 	// Format
-	
+
 	linecounter = 0
 
 	for r := 0; r < len(runes); r++ {
@@ -3656,7 +3657,6 @@ func ShowText(s string, width int) {
 		linecounter++
 		
 	}
-	fmt.Println()
 }
 
 //****************************************************************************

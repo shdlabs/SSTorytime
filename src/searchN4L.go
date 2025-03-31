@@ -164,10 +164,8 @@ func EventSearch(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 	nptrs := SST.GetDBNodePtrMatchingName(ctx,chaptext,searchtext)
 
 	for nptr := range nptrs {
-		fmt.Print(nptr,": ")
+		fmt.Print("\n",nptr,": ")
 		SST.PrintNodeOrbit(ctx,nptrs[nptr],100)
-
-
 	}
 }
 
