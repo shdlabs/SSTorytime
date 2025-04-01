@@ -51,6 +51,8 @@ search_contrawave
 search_noninteractive
 search_systematic_knowledge_1
 search_systematic_knowledge_2
+search_boundary_nodes 
+search_coarse_grain
 
 # tags
 TAGS
