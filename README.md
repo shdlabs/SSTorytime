@@ -14,9 +14,11 @@
 
 * See the [Medium article introduction](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
 
-This project aims to make knowledge capture, querying, and dissemination easy for humans
-for general use. AI can only capture knowledge from humans, so even if we
-want to use AI, we'd better get the knowledge representations right.
+This project aims to enable an intuitive but semi-formal approach to
+note taking and reasoning, for knowledge capture, querying, and
+dissemination of individual thinking easy, for humans and general use. (AI can only
+capture knowledge from humans, so even if we want to use AI, we'd
+better get the knowledge representations right.)
 
 *Imagine being able to take notes easily, work with them, and later be
 able to "rummage around" in everything to understand what you were
