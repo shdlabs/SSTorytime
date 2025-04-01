@@ -12,7 +12,7 @@ Here is a list of links to possibly related projects and information about note 
 * [Notion](https://www.notion.com/) - workspace application?
 * [Obsidian](https://obsidian.md/) - laptop application
 * [Foam](https://foambubble.github.io/foam/) - organize research
-* [Logseq] (https://logseq.com/) - "logical sequence", notes, flashcards -- *** similar ideas for humans
+* [Logseq](https://logseq.com/) - "logical sequence", notes, flashcards -- *** similar ideas for humans
 * [Joplin](https://joplinapp.org/) - app, multimedia, hosted sharing
 * [Siyuan](https://github.com/siyuan-note/siyuan) - temple, grudge or quaternion?? Markdown
 * [Annytype](https://anytype.io/) - app
