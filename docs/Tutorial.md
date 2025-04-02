@@ -91,7 +91,9 @@ You can also refer to the previous line
 
 @mylabel foot (note) important concept!  # will refer to this label below, defined with @
 
-  hand  (eh) 手 (hp) shǒu
+  # english  to  hanzi   to   pinyin  & back to (english)
+
+    hand    (eh)   手    (hp)  shǒu     (pe)     $THIS.1  
 
   # references are referred to with $name.position
 
