@@ -33,7 +33,6 @@ func main() {
 	// Contra colliding wavefronts as path integral solver
 
 	const maxdepth = 4
-	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var count int
 	var left_paths, right_paths [][]SST.Link
@@ -42,7 +41,7 @@ func main() {
 	chapter := "slit"
 
 	start_bc := []string{"start"}
-	end_bc := []string{"target_3"}
+	end_bc := []string{"target_1","target_2","target_3"}
 
 /*	context := []string{""}
 	chapter := "slit"
@@ -68,6 +67,11 @@ func main() {
 	// Find the path matrix
 
 	var solutions [][]SST.Link
+
+	var ldepth,rdepth int = 1,1
+
+	fmt.Println("\n  Left start_set",ldepth,":",ShowNode(ctx,leftptrs))
+	fmt.Println("  Right end_targets",rdepth,":",ShowNode(ctx,rightptrs))
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
@@ -163,24 +167,27 @@ func WaveFrontsOverlap(ctx SST.PoSST,left_paths,right_paths [][]SST.Link,Lnum,Rn
 	
 	for lp := range incidence {
 
-		rp := incidence[lp]
+		for alternative := range incidence[lp] {
 
-		var LRsplice []SST.Link		
+			rp := incidence[lp][alternative]
 
-		LRsplice = LeftJoin(LRsplice,left_paths[lp])
-		adjoint := SST.AdjointLinkPath(right_paths[rp])
-		LRsplice = RightComplementJoin(LRsplice,adjoint)
-
-		fmt.Printf("...SPLICE PATHS L%d with R%d.....\n",lp,rp)
-		fmt.Println("Left tendril",ShowNodePath(ctx,left_paths[lp]))
-		fmt.Println("Right tendril",ShowNodePath(ctx,right_paths[rp]))
-		fmt.Println("Right adjoint:",ShowNodePath(ctx,adjoint))
-		fmt.Println(".....................\n")
-
-		if IsDAG(LRsplice) {
-			solutions = append(solutions,LRsplice)
-		} else {
-			loops = append(loops,LRsplice)
+			var LRsplice []SST.Link		
+			
+			LRsplice = LeftJoin(LRsplice,left_paths[lp])
+			adjoint := SST.AdjointLinkPath(right_paths[rp])
+			LRsplice = RightComplementJoin(LRsplice,adjoint)
+			
+			fmt.Printf("...SPLICE PATHS L%d with R%d.....\n",lp,rp)
+			fmt.Println("Left tendril",ShowNodePath(ctx,left_paths[lp]))
+			fmt.Println("Right tendril",ShowNodePath(ctx,right_paths[rp]))
+			fmt.Println("Right adjoint:",ShowNodePath(ctx,adjoint))
+			fmt.Println(".....................\n")
+			
+			if IsDAG(LRsplice) {
+				solutions = append(solutions,LRsplice)
+			} else {
+				loops = append(loops,LRsplice)
+			}
 		}
 	}
 
@@ -205,9 +212,9 @@ func WaveFront(path [][]SST.Link,num int) []SST.NodePtr {
 
 // **********************************************************
 
-func NodesOverlap(ctx SST.PoSST,left,right []SST.NodePtr) map[int]int {
+func NodesOverlap(ctx SST.PoSST,left,right []SST.NodePtr) map[int][]int {
 
-	var LRsplice = make(map[int]int)
+	var LRsplice = make(map[int][]int)
 	var list string
 
 	// Return coordinate pairs of partial paths to splice
@@ -217,7 +224,7 @@ func NodesOverlap(ctx SST.PoSST,left,right []SST.NodePtr) map[int]int {
 			if left[l] == right[r] {
 				node := SST.GetDBNodeByNodePtr(ctx,left[l])
 				list += node.S+", "
-				LRsplice[l] = r
+				LRsplice[l] = append(LRsplice[l],r)
 			}
 		}
 	}

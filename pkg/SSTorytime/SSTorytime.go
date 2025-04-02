@@ -1908,126 +1908,29 @@ func DefineStoredFunctions(ctx PoSST) {
 	qstr = "CREATE OR REPLACE FUNCTION AllSuperNCPathsAsLinks(start NodePtr[],chapter text,context text[],orientation text,maxdepth INT)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
-		"   hop Text;\n" +
+		"   root Text;\n" +
 		"   path Text;\n"+
 		"   node NodePtr;"+
 		"   summary_path Text[];\n"+
 		"   exclude NodePtr[] = start;\n" +
 		"   ret_paths Text;\n" +
 		"   startlnk Link;"+
-		"   startlinks Link[];"+
 		"   chp text = Format('%s%s%s','%',chapter,'%');"+
 		"BEGIN\n" +
 
 		// Aggregate array of starting set
 		"FOREACH node IN ARRAY start LOOP\n"+
 		"   startlnk := GetSingletonAsLink(node);\n"+
-		"   startlinks = array_append(startlinks,startlnk);\n"+
+		"   path := Format('%s',startlnk::Text);"+
+		"   root := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,context,exclude);" +
+		"ret_paths := Format('%s\n%s',ret_paths,root);\n"+
 		"END LOOP;"+
-
-		"path := Format('%s',startlnk::Text);"+
-		"ret_paths := SumAllSuperNCPaths(startlinks,path,orientation,1,maxdepth,chapter,context,exclude);" +
 
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 	
         // select AllNCPathsAsLinks('(1,46)','chinese','{"food","example"}','fwd',4);
-
-	row,err = ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("Error defining postgres function:",qstr,err)
-	}
-
-	row.Close()
-
-
-	// SumAllNCPaths - a filtering version of the SumAllPaths recursive helper function, slower but more powerful
-
-	qstr = "CREATE OR REPLACE FUNCTION SumAllSuperNCPaths(startset Link[],path TEXT,orientation text,depth int, maxdepth INT,chapter text,context text[],exclude NodePtr[])\n"+
-		"RETURNS Text AS $fn$\n" +
-		"DECLARE \n" + 
-		"    fwdlinks Link[];\n" +
-		"    stlinks  Link[];\n" +
-		"    empty Link[] = ARRAY[]::Link[];\n" +
-		"    lnk Link;\n" +
-		"    fwd Link;\n" +
-		"    start Link;\n" +
-		"    ret_paths Text;\n" +
-		"    appendix Text;\n" +
-		"    tot_path Text;\n"+
-		"BEGIN\n" +
-
-		"IF depth = maxdepth THEN\n"+
-		"  ret_paths := Format('%s\n%s',ret_paths,path);\n"+
-		"  RETURN ret_paths;\n"+
-		"END IF;\n"+
-
-		// Get *All* in/out Links
-		"FOREACH start IN ARRAY startset LOOP\n"+
-		" CASE \n" +
-		"   WHEN orientation = 'bwd' THEN\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"   WHEN orientation = 'fwd' THEN\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"   ELSE\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		" END CASE;\n" +
-		"END LOOP;\n"+
-
-		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
-		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
-		"      exclude = array_append(exclude,lnk.Dst);\n" +
-		"      IF lnk IS NULL THEN\n" +
-		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
-		"      ELSE\n"+
-		"         IF context is not NULL AND NOT match_context(lnk.Ctx::text[],context::text[]) THEN\n"+
-                "            CONTINUE;\n"+
-                "         END IF;\n"+
-
-		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
-		"         appendix := SumAllNCPaths(lnk,tot_path,orientation,depth+1,maxdepth,chapter,context,exclude);\n" +
-
-		"         IF appendix IS NOT NULL THEN\n"+
-		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
-		"         ELSE\n"+
-		"            ret_paths := tot_path;\n"+
-		"         END IF;\n"+
-		"      END IF;\n"+
-		"   END IF;\n"+
-		"END LOOP;\n"+
-
-		"RETURN ret_paths; \n" +
-		"END ;\n" +
-		"$fn$ LANGUAGE plpgsql;\n"
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -2978,21 +2881,24 @@ func WaveFrontsOverlap(ctx PoSST,left_paths,right_paths [][]Link,Lnum,Rnum,ldept
 	rightfront := WaveFront(right_paths,Rnum)
 
 	incidence := NodesOverlap(ctx,leftfront,rightfront)
-	
+
 	for lp := range incidence {
 
-		rp := incidence[lp]
+		for alternative := range incidence[lp] {
 
-		var LRsplice []Link		
+			rp := incidence[lp][alternative]
 
-		LRsplice = LeftJoin(LRsplice,left_paths[lp])
-		adjoint := AdjointLinkPath(right_paths[rp])
-		LRsplice = RightComplementJoin(LRsplice,adjoint)
+			var LRsplice []Link		
+			
+			LRsplice = LeftJoin(LRsplice,left_paths[lp])
+			adjoint := AdjointLinkPath(right_paths[rp])
+			LRsplice = RightComplementJoin(LRsplice,adjoint)
 
-		if IsDAG(LRsplice) {
-			solutions = append(solutions,LRsplice)
-		} else {
-			loops = append(loops,LRsplice)
+			if IsDAG(LRsplice) {
+				solutions = append(solutions,LRsplice)
+			} else {
+				loops = append(loops,LRsplice)
+			}
 		}
 	}
 
@@ -3016,9 +2922,9 @@ func WaveFront(path [][]Link,num int) []NodePtr {
 
 // **********************************************************
 
-func NodesOverlap(ctx PoSST,left,right []NodePtr) map[int]int {
+func NodesOverlap(ctx PoSST,left,right []NodePtr) map[int][]int {
 
-	var LRsplice = make(map[int]int)
+	var LRsplice = make(map[int][]int)
 	var list string
 
 	// Return coordinate pairs of partial paths to splice
@@ -3028,9 +2934,13 @@ func NodesOverlap(ctx PoSST,left,right []NodePtr) map[int]int {
 			if left[l] == right[r] {
 				node := GetDBNodeByNodePtr(ctx,left[l])
 				list += node.S+", "
-				LRsplice[l] = r
+				LRsplice[l] = append(LRsplice[l],r)
 			}
 		}
+	}
+
+	if len(list) > 0 {
+		fmt.Println("  (i.e. waves impinge",len(LRsplice),"times at: ",list,")\n")
 	}
 
 	return LRsplice

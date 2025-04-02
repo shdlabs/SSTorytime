@@ -38,7 +38,7 @@ func main() {
 	chapter := "slit"
 
 	start_bc := []string{"start"}
-	end_bc := []string{"target_3"}
+	end_bc := []string{"target_1","target_2","target_3"}
 
 /*	context := []string{""}
 	chapter := "slit"
@@ -84,7 +84,6 @@ func main() {
 }
 
 //******************************************************************
-// **********************************************************
 
 func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
