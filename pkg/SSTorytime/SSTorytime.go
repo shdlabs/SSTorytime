@@ -332,6 +332,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function getneighboursbytype")
 		ctx.DB.QueryRow("drop function getsingletonaslink")
 		ctx.DB.QueryRow("drop function AllNCPathsAsLinks")
+		ctx.DB.QueryRow("drop function AllSuperNCPathsAsLinks")
 		ctx.DB.QueryRow("drop function SumAllNCPaths")
 		ctx.DB.QueryRow("drop function GetNCFwdLinks")
 		ctx.DB.QueryRow("drop function GetNCCLinks")
@@ -1897,6 +1898,145 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
+	// ...................................................................
+	// Now add in the more complex context/chapter filters in searching
+	// ...................................................................
+
+        // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
+        // with a start set of more than one node
+
+	qstr = "CREATE OR REPLACE FUNCTION AllSuperNCPathsAsLinks(start NodePtr[],chapter text,context text[],orientation text,maxdepth INT)\n"+
+		"RETURNS Text AS $fn$\n" +
+		"DECLARE\n" +
+		"   hop Text;\n" +
+		"   path Text;\n"+
+		"   node NodePtr;"+
+		"   summary_path Text[];\n"+
+		"   exclude NodePtr[] = start;\n" +
+		"   ret_paths Text;\n" +
+		"   startlnk Link;"+
+		"   startlinks Link[];"+
+		"   chp text = Format('%s%s%s','%',chapter,'%');"+
+		"BEGIN\n" +
+
+		// Aggregate array of starting set
+		"FOREACH node IN ARRAY start LOOP\n"+
+		"   startlnk := GetSingletonAsLink(node);\n"+
+		"   startlinks = array_append(startlinks,startlnk);\n"+
+		"END LOOP;"+
+
+		"path := Format('%s',startlnk::Text);"+
+		"ret_paths := SumAllSuperNCPaths(startlinks,path,orientation,1,maxdepth,chapter,context,exclude);" +
+
+		"RETURN ret_paths; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+	
+        // select AllNCPathsAsLinks('(1,46)','chinese','{"food","example"}','fwd',4);
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+
+	// SumAllNCPaths - a filtering version of the SumAllPaths recursive helper function, slower but more powerful
+
+	qstr = "CREATE OR REPLACE FUNCTION SumAllSuperNCPaths(startset Link[],path TEXT,orientation text,depth int, maxdepth INT,chapter text,context text[],exclude NodePtr[])\n"+
+		"RETURNS Text AS $fn$\n" +
+		"DECLARE \n" + 
+		"    fwdlinks Link[];\n" +
+		"    stlinks  Link[];\n" +
+		"    empty Link[] = ARRAY[]::Link[];\n" +
+		"    lnk Link;\n" +
+		"    fwd Link;\n" +
+		"    start Link;\n" +
+		"    ret_paths Text;\n" +
+		"    appendix Text;\n" +
+		"    tot_path Text;\n"+
+		"BEGIN\n" +
+
+		"IF depth = maxdepth THEN\n"+
+		"  ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"  RETURN ret_paths;\n"+
+		"END IF;\n"+
+
+		// Get *All* in/out Links
+		"FOREACH start IN ARRAY startset LOOP\n"+
+		" CASE \n" +
+		"   WHEN orientation = 'bwd' THEN\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"   WHEN orientation = 'fwd' THEN\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"   ELSE\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		" END CASE;\n" +
+		"END LOOP;\n"+
+
+		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
+		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
+		"      exclude = array_append(exclude,lnk.Dst);\n" +
+		"      IF lnk IS NULL THEN\n" +
+		"         ret_paths := Format('%s\n%s',ret_paths,path);\n"+
+		"      ELSE\n"+
+		"         IF context is not NULL AND NOT match_context(lnk.Ctx::text[],context::text[]) THEN\n"+
+                "            CONTINUE;\n"+
+                "         END IF;\n"+
+
+		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
+		"         appendix := SumAllNCPaths(lnk,tot_path,orientation,depth+1,maxdepth,chapter,context,exclude);\n" +
+
+		"         IF appendix IS NOT NULL THEN\n"+
+		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
+		"         ELSE\n"+
+		"            ret_paths := tot_path;\n"+
+		"         END IF;\n"+
+		"      END IF;\n"+
+		"   END IF;\n"+
+		"END LOOP;\n"+
+
+		"RETURN ret_paths; \n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
         // An NC/C filtering version of the neighbour scan
 
 	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCFwdLinks(start NodePtr,chapter text,context text[],exclude NodePtr[],sttype int)\n"+
@@ -2698,11 +2838,6 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 	}
 
 	row.Close()
-
-	// Eliminate duplicates
-
-//	retval = DeDuplicate(retval)
-
 	return retval,len(retval)
 }
 
@@ -2730,34 +2865,279 @@ func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,dept
 	}
 
 	row.Close()
-
-	// Eliminate duplicates
-
-//	retval = DeDuplicate(retval)
-
 	return retval,len(retval)
 }
 
 // **************************************************************************
 
-func DeDuplicate(links [][]Link) [][]Link {
+func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string) ([][]Link,int) {
+	// orientation should be "fwd" or "bwd" else "both"
 
-	var trimmed [][]Link
+	qstr := fmt.Sprintf("select AllSuperNCPathsAsLinks(%s,'%s',%s,'%s',%d);",FormatSQLNodePtrArray(start),
+		chapter,FormatSQLStringArray(context),orientation,depth)
 
-	var done = make(map[NodePtr]bool)
+	row, err := ctx.DB.Query(qstr)
 
-	for l := 0; l < len(links); l++ {
-
-		if done[links[l][0].Dst] {
-			continue
-		} else {
-			done[links[l][0].Dst] = true
-		}
-		trimmed = append(trimmed,links[l])
+	if err != nil {
+		fmt.Println("QUERY to AllSuperNCPathsAsLinks Failed",err,qstr)
 	}
-	return trimmed
+
+	var whole string
+	var retval [][]Link
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		retval = ParseLinkPath(whole)
+	}
+
+	row.Close()
+	return retval,len(retval)
 }
 
+// **************************************************************************
+// Transition/path integral matrix
+// **************************************************************************
+
+func GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,context []string,maxdepth int) ([][]Link,[][]NodePtr) {
+
+	var left_paths, right_paths [][]Link
+	var ldepth,rdepth int = 1,1
+	var Lnum,Rnum int
+	var solutions [][]Link
+
+	if start_set == nil || end_set == nil {
+		return nil,nil
+	}
+
+	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
+
+		left_paths,Lnum = GetEntireNCSuperConePathsAsLinks(ctx,"fwd",start_set,ldepth,chapter,context)
+		right_paths,Rnum = GetEntireNCSuperConePathsAsLinks(ctx,"bwd",end_set,rdepth,chapter,context)		
+
+		solutions,_ = WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+
+		if len(solutions) > 0 {
+			break
+		}
+
+		if turn % 2 == 0 {
+			ldepth++
+		} else {
+			rdepth++
+		}
+	}
+
+	// Calculate the supernode layer sets S[path][depth], factoring process symmetries
+
+	var supernodes [][]NodePtr
+
+	for depth := 0; depth < maxdepth*2; depth++ {
+
+		for p_i := 0; p_i < len(solutions); p_i++ {
+
+			if depth == len(solutions[p_i])-1 {
+				supernodes = Together(supernodes,solutions[p_i][depth].Dst,solutions[p_i][depth].Dst)
+			}
+
+			if depth > len(solutions[p_i])-1 {
+				continue
+			}
+
+			supernodes = Together(supernodes,solutions[p_i][depth].Dst,solutions[p_i][depth].Dst)
+
+			for p_j := p_i+1; p_j < len(solutions); p_j++ {
+
+				if depth < 1 || depth > len(solutions[p_j])-2 {
+					break
+				}
+
+				if solutions[p_i][depth-1].Dst == solutions[p_j][depth-1].Dst && 
+				   solutions[p_i][depth+1].Dst == solutions[p_j][depth+1].Dst {
+					   supernodes = Together(supernodes,solutions[p_i][depth].Dst,solutions[p_j][depth].Dst)
+				}
+			}
+		}		
+	}
+
+	return solutions,supernodes	
+}
+
+// **********************************************************
+
+func WaveFrontsOverlap(ctx PoSST,left_paths,right_paths [][]Link,Lnum,Rnum,ldepth,rdepth int) ([][]Link,[][]Link) {
+
+	// The wave front consists of Lnum and Rnum points left_paths[len()-1].
+	// Any of the
+
+	var solutions [][]Link
+	var loops [][]Link
+
+	// Start expanding the waves from left and right, one step at a time, alternately
+
+	leftfront := WaveFront(left_paths,Lnum)
+	rightfront := WaveFront(right_paths,Rnum)
+
+	incidence := NodesOverlap(ctx,leftfront,rightfront)
+	
+	for lp := range incidence {
+
+		rp := incidence[lp]
+
+		var LRsplice []Link		
+
+		LRsplice = LeftJoin(LRsplice,left_paths[lp])
+		adjoint := AdjointLinkPath(right_paths[rp])
+		LRsplice = RightComplementJoin(LRsplice,adjoint)
+
+		if IsDAG(LRsplice) {
+			solutions = append(solutions,LRsplice)
+		} else {
+			loops = append(loops,LRsplice)
+		}
+	}
+
+	return solutions,loops
+}
+
+// **********************************************************
+
+func WaveFront(path [][]Link,num int) []NodePtr {
+
+	// assemble the cross cutting nodeptrs of the wavefronts
+
+	var front []NodePtr
+
+	for l := 0; l < num; l++ {
+		front = append(front,path[l][len(path[l])-1].Dst)
+	}
+
+	return front
+}
+
+// **********************************************************
+
+func NodesOverlap(ctx PoSST,left,right []NodePtr) map[int]int {
+
+	var LRsplice = make(map[int]int)
+	var list string
+
+	// Return coordinate pairs of partial paths to splice
+
+	for l := 0; l < len(left); l++ {
+		for r := 0; r < len(right); r++ {
+			if left[l] == right[r] {
+				node := GetDBNodeByNodePtr(ctx,left[l])
+				list += node.S+", "
+				LRsplice[l] = r
+			}
+		}
+	}
+
+	return LRsplice
+}
+
+// **********************************************************
+
+func LeftJoin(LRsplice,seq []Link) []Link {
+
+	for i := 0; i < len(seq); i++ {
+
+		LRsplice = append(LRsplice,seq[i])
+	}
+
+	return LRsplice
+}
+
+// **********************************************************
+
+func RightComplementJoin(LRsplice,adjoint []Link) []Link {
+
+	// len(seq)-1 matches the last node of right join
+	// when we invert, links and destinations are shifted
+
+	for j := 1; j < len(adjoint); j++ {
+		LRsplice = append(LRsplice,adjoint[j])
+	}
+
+	return LRsplice
+}
+
+// **********************************************************
+
+func IsDAG(seq []Link) bool {
+
+	var freq = make(map[NodePtr]int)
+
+	for i := range seq {
+		freq[seq[i].Dst]++
+	}
+
+	for n := range freq {
+		if freq[n] > 1 {
+			return false
+		}
+	}
+
+	return true
+}
+
+// **********************************************************
+
+func Together(matroid [][]NodePtr,n1 NodePtr,n2 NodePtr) [][]NodePtr {
+
+        // matroid [snode][member]
+
+	if len(matroid) == 0 {
+		var newsuper []NodePtr
+		newsuper = append(newsuper,n1)
+		if n1 != n2 {
+			newsuper = append(newsuper,n2)
+		}
+		matroid = append(matroid,newsuper)
+		return matroid
+	}
+
+	for i := range matroid {
+		if InNodeSet(matroid[i],n1) || InNodeSet(matroid[i],n2) {
+			matroid[i] = IdempAddNodePtr(matroid[i],n1)
+			matroid[i] = IdempAddNodePtr(matroid[i],n2)
+			return matroid
+		}
+	}
+
+	var newsuper []NodePtr
+
+	newsuper = IdempAddNodePtr(newsuper,n1)
+	newsuper = IdempAddNodePtr(newsuper,n2)
+	matroid = append(matroid,newsuper)
+
+	return matroid
+}
+
+// **********************************************************
+
+func IdempAddNodePtr(set []NodePtr, n NodePtr) []NodePtr {
+
+	if !InNodeSet(set,n) {
+		set = append(set,n)
+	}
+	return set
+}
+
+// **********************************************************
+
+func InNodeSet(list []NodePtr,node NodePtr) bool {
+
+	for n := range list {
+		if list[n] == node {
+			return true
+		}
+	}
+	return false
+}
+
+// **************************************************************************
+// Path tools
 // **************************************************************************
 
 func AdjointLinkPath(LL []Link) []Link {
@@ -3276,6 +3656,28 @@ func FormatSQLStringArray(array []string) string {
 	
 	for i := 0; i < len(array); i++ {
 		ret += fmt.Sprintf("\"%s\"",SQLEscape(array[i]))
+	    if i < len(array)-1 {
+	    ret += ", "
+	    }
+        }
+
+	ret += " }' "
+
+	return ret
+}
+
+// **************************************************************************
+
+func FormatSQLNodePtrArray(array []NodePtr) string {
+
+        if len(array) == 0 {
+		return "'{ }'"
+        }
+
+	var ret string = "'{ "
+	
+	for i := 0; i < len(array); i++ {
+		ret += fmt.Sprintf("\"(%d,%d)\"",array[i].Class,array[i].CPtr)
 	    if i < len(array)-1 {
 	    ret += ", "
 	    }

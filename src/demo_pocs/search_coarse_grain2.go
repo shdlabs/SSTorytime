@@ -32,17 +32,33 @@ func main() {
 
 	// Contra colliding wavefronts as path integral solver
 
-	const maxdepth = 5
+	const maxdepth = 4
 	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var count int
 	var left_paths, right_paths [][]SST.Link
 
-	start_bc := "A1"
-	end_bc := "B6"
+	context := []string{""}
+	chapter := "slit"
 
-	leftptrs := SST.GetDBNodePtrMatchingName(ctx,"",start_bc)
-	rightptrs := SST.GetDBNodePtrMatchingName(ctx,"",end_bc)
+	start_bc := []string{"start"}
+	end_bc := []string{"target_3"}
+
+/*	context := []string{""}
+	chapter := "slit"
+
+	start_bc := []string{"A1"}
+	end_bc := []string{"B6"}*/
+
+	var leftptrs,rightptrs []SST.NodePtr
+
+	for n := range start_bc {
+		leftptrs = append(leftptrs,SST.GetDBNodePtrMatchingName(ctx,"",start_bc[n])...)
+	}
+
+	for n := range end_bc {
+		rightptrs = append(rightptrs,SST.GetDBNodePtrMatchingName(ctx,"",end_bc[n])...)
+	}
 
 	if leftptrs == nil || rightptrs == nil {
 		fmt.Println("No paths available from end points")
@@ -55,9 +71,9 @@ func main() {
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireConePathsAsLinks(ctx,"fwd",leftptrs[0],ldepth)
-		right_paths,Rnum = SST.GetEntireConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth)		
-		
+		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",leftptrs,ldepth,chapter,context)
+		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",rightptrs,rdepth,chapter,context)		
+
 		solutions,_ = WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
@@ -70,6 +86,7 @@ func main() {
 			}
 			count++
 			fmt.Println("-------------------------------------------")
+			break
 		}
 
 		if turn % 2 == 0 {
