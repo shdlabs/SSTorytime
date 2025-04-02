@@ -2801,7 +2801,7 @@ func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodeP
 // Transition/path integral matrix
 // **************************************************************************
 
-func GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,context []string,maxdepth int) ([][]Link,[][]NodePtr) {
+func GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,context []string,maxdepth int) [][]Link {
 
 	var left_paths, right_paths [][]Link
 	var ldepth,rdepth int = 1,1
@@ -2809,7 +2809,7 @@ func GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,
 	var solutions [][]Link
 
 	if start_set == nil || end_set == nil {
-		return nil,nil
+		return nil
 	}
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
@@ -2832,9 +2832,16 @@ func GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,
 
 	// Calculate the supernode layer sets S[path][depth], factoring process symmetries
 
+	return solutions
+}
+
+// **************************************************************************
+
+func GetPathTransverseSuperNodes(ctx PoSST,solutions [][]Link,maxdepth int) [][]NodePtr {
+
 	var supernodes [][]NodePtr
 
-	for depth := 0; depth < maxdepth*2; depth++ {
+	for depth := 0; depth < maxdepth; depth++ {
 
 		for p_i := 0; p_i < len(solutions); p_i++ {
 
@@ -2862,7 +2869,7 @@ func GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,
 		}		
 	}
 
-	return solutions,supernodes	
+	return supernodes	
 }
 
 // **********************************************************

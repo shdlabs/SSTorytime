@@ -56,9 +56,11 @@ func main() {
 		end_set = append(end_set,SST.GetDBNodePtrMatchingName(ctx,"",end_bc[n])...)
 	}
 
-	solutions,supernodes := SST.GetPathsAndSymmetries(ctx,start_set,end_set,chapter,context,maxdepth)
+	solutions := SST.GetPathsAndSymmetries(ctx,start_set,end_set,chapter,context,maxdepth)
 
 	var count int
+
+	// ***** paths ****
 
 	fmt.Println("-- T R E E ----------------------------------")
 	fmt.Println("Path solution",count,"from",start_bc,"to",end_bc)
@@ -69,6 +71,10 @@ func main() {
 	}
 	count++
 	fmt.Println("-------------------------------------------")
+
+	// **** Process symmetries ***
+
+	supernodes := SST.GetPathTransverseSuperNodes(ctx,solutions,maxdepth)
 
 	fmt.Println("Look for coarse grains, final matroid:",len(supernodes))
 
