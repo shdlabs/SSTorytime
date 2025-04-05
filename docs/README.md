@@ -24,7 +24,7 @@ Once you've installed the dependencies: Go programming language, Postgres databa
 <pre>
 $ make
 $ cd examples
-$ ../src/N4L-db -u chinese*n4l Mary.n4l doors.n4l cluedo.n4l brains.n4l
+$ ../src/N4L-db -u chinese*n4l Mary.n4l doors.n4l doubleslit.n4l brains.n4l
 
 2442:N4L chinese.n4l WARNING: Found a note to self in the text (ZZZZZZZZ) at line 2442 
 
