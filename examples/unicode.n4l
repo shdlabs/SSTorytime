@@ -1,8 +1,15 @@
 
 --unicode notes stub
 
+  :: general ::
 
- :: go, golang, programming ::
+  Unicode is a "two-byte per character" way of encoding text for all kinds of alphabets and non-alphabetic languages.
+
+  Unicode is like a modern ASCII character set.
+
+  There are often several ways to represent the same string. For example, an é [e-acute] can be represented in a string as a single rune ["\u00e9"] or an ’e' followed by an acute accent [“e\u0301”]. According to the Unicode standard, these two are “canonically equivalent” and should be treated as equal.
+
+ :: programmming methods, go, golang, programming ::
 
  # Unicode is key to text based representation, so we'd better get it right
 
@@ -10,7 +17,7 @@
       "             (note) https:/stackoverflow.com/questions/26722450/remove-diacritics-using-go
 
 
-There are often several ways to represent the same string. For example, an é [e-acute] can be represented in a string as a single rune ["\u00e9"] or an ’e' followed by an acute accent [“e\u0301”]. According to the Unicode standard, these two are “canonically equivalent” and should be treated as equal.
+  :: gotchas ::
 
 Using a byte-to-byte comparison to determine equality would clearly not give the right result for these two strings. Unicode defines a set of normal forms such that if two strings are canonically equivalent and are normalized to the same normal form, their byte representations are the same.
 
@@ -21,7 +28,10 @@ Unicode also defines a “compatibility equivalence” to equate characters that
 Canonical equivalence 	NFC 	NFD
 Compatibility equivalence 	NFKC 	NFKD"
 
-  removing accents and diacritics
+  ::  removing accents and diacritics ::
+
+  The unaccent package in postgres
+         "    (in linux pkg) postgres-contrib
 
 # this contains parentheses so we have to quote it
 
@@ -35,44 +45,15 @@ The compatibility normal forms, NFKC and NFKD, will map many visually nearly ide
     "golang.org/x/text/transform"      (resource)        "
     "golang.org/x/text/unicode/norm"   (resource)        "
 
+'The internet standard for comparing strings of different character sets is called "PRECIS" i.e. Preparation, Enforcement, and Comparison of Internationalized Strings in Application Protocols and is documented in RFC7564. There is also a Go implementation at golang.org/x/text/secure/precis.'
 
-"The internet standard for comparing strings of different character sets is called "PRECIS" i.e. Preparation, Enforcement, and Comparison of Internationalized Strings in Application Protocols and is documented in RFC7564. There is also a Go implementation at golang.org/x/text/secure/precis."
+  :: how to deal in postgres ::
 
+     "unaccent()" function (for) removing accents from unicode in postgres database
 
+     $PREV.2  (e.g.) "RETURN translate($1, 'éçàêè...', 'ecaee...') ;"
+	"     (e.g.)   "select S from Node where translate(S,'ǎáà','aaa') like '%shang%';
 
+  introduction to database issues (url) "https://www.enterprisedb.com/blog/unicode-normalization-postgresql-13"
 
-  :: postgres ::
-
- https:/www.enterprisedb.com/blog/unicode-normalization-postgresql-13
-
- https:/tapoueh.org/blog/2017/07/playing-with-unicode/
-
- "RETURN translate($1, 'éçàêè...', 'ecaee...') ;"
-
-
-  "select S from Node where translate(S,'ǎáà','aaa') like '%shang%';
-                        s                         
---------------------------------------------------
- Wǒ de lǎobǎn shàng gè yuè méiyǒu gěi wǒ gōngzī
- Wǎnshàng
- Mǎshàng
- shàngkè
- Chuān shàng
- Jīntiān wǎnshàng zài yīyàng dì dìfāng ..
- Zài shàngmiàn
- diàntī zhèngzài shàngshēng
- Nǐ méi qù shàngbān ma?
- WRONG: Wǒ shàng gè zhōumò *bù* gēn tā jiànmiàn
- Tā jīntiān zǎoshang liǎng diǎn cái huí jiā
- Zhàopiàn zài jiàzǐ shàng
- Shù shàng yǒu liù zhǐ niǎo
- Zhuōzǐ shàng yǒuyī běn shū
- Měi gè xuéshēng xūyào shàng kēxué kè
- Hēibǎn shàng xiě shénme wǒ kàn bù qīngchǔ
- Kètáng shàng bùyào shuōhuà
- Chīfàn yǐhòu yīdìng yào mǎshàng
- Xièxiè. Zuótiān zài shàngbān. Wàngle huífù nǐ le
-(19 rows)  "
-
-
-
+                   "              (url) "https://tapoueh.org/blog/2017/07/playing-with-unicode/"
