@@ -595,12 +595,6 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 	frm := frptr.CPtr
 	stindex := ARROW_DIRECTORY[link.Arr].STAindex
 
-	if frptr.CPtr==8 && toptr.CPtr==11 {
-		fmt.Println("\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx\n")
-		fmt.Println(frptr,"\n",link,"\n",toptr)
-		fmt.Println("\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx\n")
-	}
-
 	link.Dst = toptr // fill in the last part of the reference
 
 	switch frclass {
@@ -953,6 +947,32 @@ func UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr) {
 	}
 
 	row.Close()
+}
+
+//**************************************************************
+
+func IdempDBAddArrow(ctx PoSST,from Node,link Link,to Node) {
+
+	frptr := from.NPtr
+	toptr := to.NPtr
+
+	if frptr == toptr {
+		fmt.Println("Self-loops are not allowed",from.S)
+		os.Exit(-1)
+	}
+
+	sttype := STIndexToSTType(ARROW_DIRECTORY[link.Arr].STAindex)
+
+	AppendDBLinkToNode(ctx,frptr,link,sttype)
+
+	// Double up the reverse definition for easy indexing of both in/out arrows
+	// But be careful not the make the graph undirected by mistake
+
+	var invlink Link
+	invlink.Arr = INVERSE_ARROWS[link.Arr]
+	invlink.Wgt = link.Wgt
+	invlink.Dst = frptr
+	AppendDBLinkToNode(ctx,toptr,invlink,-sttype)
 }
 
 // **************************************************************************
