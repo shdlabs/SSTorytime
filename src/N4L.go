@@ -465,7 +465,9 @@ func ClassifyConfigRole(token string) {
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"both")
+				index := InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"both")
+				InsertInverseArrowDirectory(index,index)
+
 			} else {
 				PVerbose(SECTION_STATE,"abbreviation out of place")
 			}

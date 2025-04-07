@@ -354,7 +354,8 @@ func ClassifyConfigRole(token string) {
 			reln = strings.TrimSpace(reln)
 
 			if LINE_ITEM_STATE == HAVE_MINUS {
-				SST.InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"both")
+				index := SST.InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"both")
+				SST.InsertInverseArrowDirectory(index,index)
 				PVerbose("In",SECTION_STATE,reln,"for",BWD_ARROW,", direction","both")
 			} else {
 				PVerbose(SECTION_STATE,"abbreviation out of place")
