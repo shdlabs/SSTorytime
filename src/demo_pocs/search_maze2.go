@@ -56,7 +56,7 @@ func main() {
 
 			np = SST.CreateDBNode(ctx, np)
 			nt = SST.CreateDBNode(ctx, nt)
-			SST.IdempDBAddArrow(ctx,np,lnk,nt)
+			SST.IdempDBAddLink(ctx,np,lnk,nt)
 
 			cptr++
 		}

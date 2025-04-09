@@ -215,7 +215,7 @@ basic workhorses. You will not normally use these.
 For example, [see demo](https://github.com/markburgess/SSTorytime/blob/main/src/demo_pocs/postgres_stories.go).
 
 * `CreateDBNode(ctx PoSST, n Node) Node` - idempotently create a node and return its database pointer structure.
-* `IdempDBAddArrow(ctx PoSST,frptr NodePtr,link Link,toptr NodePtr)`
+* `IdempDBAddLink(ctx PoSST,frptr NodePtr,link Link,toptr NodePtr)`
 
 * `AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool` - idempotently attach an outgoing link to a Node.
 * `UploadArrowToDB(ctx PoSST,arrow ArrowPtr)` - define an arrow in the arrow directory.

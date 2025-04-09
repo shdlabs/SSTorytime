@@ -951,7 +951,7 @@ func UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr) {
 
 //**************************************************************
 
-func IdempDBAddArrow(ctx PoSST,from Node,link Link,to Node) {
+func IdempDBAddLink(ctx PoSST,from Node,link Link,to Node) {
 
 	frptr := from.NPtr
 	toptr := to.NPtr

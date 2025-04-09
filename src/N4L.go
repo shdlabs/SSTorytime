@@ -1308,7 +1308,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 		last_reln := LINE_RELN_CACHE["THIS"][LINE_RELN_COUNTER-1]
 		last_iptr := LINE_ITEM_REFS[LINE_ITEM_COUNTER-2]
 		this_iptr := HandleNode(this_item)
-		IdempAddArrow(last_item,last_iptr,last_reln,this_item,this_iptr)
+		IdempAddLink(last_item,last_iptr,last_reln,this_item,this_iptr)
 		CheckSection()
 
 	case ROLE_CONTEXT:
@@ -1366,7 +1366,7 @@ func StoreAlias(name string) {
 
 //**************************************************************
 
-func IdempAddArrow(from string, frptr NodePtr, link Link,to string, toptr NodePtr) {
+func IdempAddLink(from string, frptr NodePtr, link Link,to string, toptr NodePtr) {
 
 	// Add a link index cache pointer directly to a from node
 
@@ -2124,7 +2124,7 @@ func AddBackAnnotations(cleantext string,cleanptr NodePtr,annotated string) {
 					link := GetLinkArrowByName(ANNOTATION[symb])
 					this_item := ExtractWord(annotated,r)
 					this_iptr,_ := IdempAddNode(this_item)
-					IdempAddArrow(reminder,cleanptr,link,this_item,this_iptr)
+					IdempAddLink(reminder,cleanptr,link,this_item,this_iptr)
 					r += skip-1
 					continue
 				}
