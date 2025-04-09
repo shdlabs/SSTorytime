@@ -262,6 +262,8 @@ func Open(load_arrows bool) PoSST {
 	var ctx PoSST
 	var err error
 
+	// Replace this with a private file
+
 	const (
 		host     = "localhost"
 		port     = 5432
