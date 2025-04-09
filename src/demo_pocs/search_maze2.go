@@ -54,8 +54,8 @@ func main() {
 			lnk.Arr = SST.GetDBArrowsWithArrowName(ctx,"connects to")
 			lnk.Dst = nt.NPtr
 
-			np = SST.CreateDBNode(ctx, np)
-			nt = SST.CreateDBNode(ctx, nt)
+			np = SST.IdempDBAddNode(ctx, np)
+			nt = SST.IdempDBAddNode(ctx, nt)
 			SST.IdempDBAddLink(ctx,np,lnk,nt)
 
 			cptr++

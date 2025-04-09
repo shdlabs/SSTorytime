@@ -53,9 +53,17 @@ func main() {
 
 			lnk.Arr = SST.GetDBArrowsWithArrowName(ctx,"fwd")
 			lnk.Dst = nt.NPtr
+			lnk.Ctx = []string{"maze"}
 
-			np = SST.CreateDBNode(ctx, np)
-			nt = SST.CreateDBNode(ctx, nt)
+			// More appropriate high level functions
+
+			np = SST.IdempDBAddNode(ctx, np)
+			nt = SST.IdempDBAddNode(ctx, nt)
+
+			// Functions for use when controlling lower level
+			//np = SST.CreateDBNode(ctx, np)
+			//nt = SST.CreateDBNode(ctx, nt)
+
 			SST.IdempDBAddLink(ctx,np,lnk,nt)
 
 			cptr++
@@ -84,18 +92,20 @@ func Solve(ctx SST.PoSST) {
 	start_bc := "a7"
 	end_bc := "i6"
 
-	leftptrs := SST.GetDBNodePtrMatchingName(ctx,"",start_bc)
-	rightptrs := SST.GetDBNodePtrMatchingName(ctx,"",end_bc)
+	leftptrs := SST.GetDBNodePtrMatchingName(ctx,"maze",start_bc)
+	rightptrs := SST.GetDBNodePtrMatchingName(ctx,"maze",end_bc)
 
 	if leftptrs == nil || rightptrs == nil {
 		fmt.Println("No paths available from end points")
 		return
 	}
 
+	cntx := []string{"maze"}
+
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireConePathsAsLinks(ctx,"fwd",leftptrs[0],ldepth)		
-		right_paths,Rnum = SST.GetEntireConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth)		
+		left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(ctx,"fwd",leftptrs[0],ldepth,"maze",cntx)		
+		right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth,"maze",cntx)		
 		
 		solutions,loop_corrections := WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
