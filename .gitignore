@@ -55,6 +55,10 @@ search_boundary_nodes
 search_coarse_grain
 search_coarse_grain2
 search_coarse_grain_api
+postgres_testdb
+search_maze
+search_maze2
+search_wardley
 
 # tags
 TAGS

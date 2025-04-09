@@ -76,5 +76,28 @@ for f in fail_*.in; do
    fi
 done
 
+#
+# Now look at database
+#
+
+DB_TEST_PROG="../src/demo_pocs/postgres_testdb"
+
+if $DB_TEST_PROG > /dev/null; 
+   then 
+      echo -e "${GREEN} database ok ${END}"
+
+      TESTPROG=../src/demo_pocs/search_maze
+
+      if $TESTPROG > /dev/null; 
+         then 
+            echo -e "${GREEN} basic database functions ok ${END}"
+       else 
+            echo -e "${RED} database functions NOT ok ${END}"
+       fi
+else 
+      echo -e "${RED} DATABASE NOT CONFIGURED ${END}"
+
+fi
+
 
 

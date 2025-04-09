@@ -5,6 +5,7 @@ all: src/N4L.go test
 
 test: src/N4L
 	(cd src; make)
+	(cd src/demo_pocs; make)
 	(cd tests; make)
 clean:
 	rm -f *~
