@@ -543,6 +543,55 @@ func AppendTextToDirectory(event Node) NodePtr {
 
 //**************************************************************
 
+func IdempDBAddNode(ctx PoSST,n Node) Node {
+
+	// alternative for np = SST.CreateDBNode(ctx, np)
+	// without assuming management/control of the Nptr increments
+
+	var qstr string
+
+	// No need to trust the values, ignore/overwrite CPtr
+
+        n.L,n.NPtr.Class = StorageClass(n.S)
+
+	es := SQLEscape(n.S)
+	ec := SQLEscape(n.Chap)
+
+	// Wrap BEGIN/END a single transaction
+
+	qstr = fmt.Sprintf("SELECT IdempAppendNode(%d,%d,'%s','%s')",n.L,n.NPtr.Class,es,ec)
+
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		s := fmt.Sprint("Failed to add node",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+		return n
+	}
+
+	var whole string
+	var cl,ch int
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
+	}
+
+	n.NPtr.Class = cl
+	n.NPtr.CPtr = ClassedNodePtr(ch)
+
+	row.Close()
+
+	return n
+
+}
+
+//**************************************************************
+
 func IdempAddChapterToNode(class int,cptr ClassedNodePtr,chap string) {
 
 	/* In the DB version, we have handle chapter collisions
@@ -958,6 +1007,8 @@ func IdempDBAddLink(ctx PoSST,from Node,link Link,to Node) {
 	frptr := from.NPtr
 	toptr := to.NPtr
 
+	link.Dst = toptr // it might have changed, so override
+
 	if frptr == toptr {
 		fmt.Println("Self-loops are not allowed",from.S)
 		os.Exit(-1)
@@ -1067,12 +1118,36 @@ func DefineStoredFunctions(ctx PoSST) {
 		"BEGIN\n" +
 		"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN\n" +
 		"     INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap) VALUES (iszchani,icptri,iLi,iSi,ichapi);" +
-		"  end if;\n" +
-		"      return query SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
+		"  END IF;\n" +
+		"  RETURN QUERY SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;";
 
 	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	qstr = "CREATE OR REPLACE FUNCTION IdempAppendNode(iLi INT, iszchani INT, iSi TEXT, ichapi TEXT)\n" +
+		"RETURNS TABLE (    \n" +
+		"    ret_cptr INTEGER," +
+		"    ret_channel INTEGER" +
+		") AS $fn$ " +
+		"DECLARE \n" +
+		"    icptri INT = 0;" +
+		"BEGIN\n" +
+		"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN\n" +
+		"     SELECT max((Nptr).CPtr) INTO icptri FROM Node WHERE (Nptr).Chan=iszchani;\n"+
+		"     INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap) VALUES (iszchani,icptri+1,iLi,iSi,ichapi);" +
+		"  END IF;\n" +
+		"  RETURN QUERY SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;";
+
+	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
@@ -1631,6 +1706,10 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   try text;\n"+
 		"BEGIN \n" +
 		"IF array_length(user_set,1) IS NULL THEN\n"+
+		"   RETURN true;\n"+
+		"END IF;\n"+
+
+		"IF array_length(db_set,1) IS NULL THEN\n"+
 		"   RETURN true;\n"+
 		"END IF;\n"+
 
