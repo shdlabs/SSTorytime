@@ -59,6 +59,7 @@ postgres_testdb
 search_maze
 search_maze2
 search_wardley
+json
 
 # tags
 TAGS

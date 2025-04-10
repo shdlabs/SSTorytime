@@ -13,6 +13,7 @@ import (
 	"strings"
 	"unicode"
 	"sort"
+	"encoding/json"
 
 	_ "github.com/lib/pq"
 
@@ -196,6 +197,8 @@ type NodePtr struct {
 	CPtr  ClassedNodePtr // index of within name class lane
 }
 
+//**************************************************************
+
 type ClassedNodePtr int  // Internal pointer type of size-classified text
 
 //**************************************************************
@@ -208,7 +211,11 @@ type ArrowDirectory struct {
 	Ptr     ArrowPtr
 }
 
+//**************************************************************
+
 type ArrowPtr int // ArrowDirectory index
+
+//**************************************************************
 
 const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS ArrowDirectory " +
 	"(    " +
@@ -253,6 +260,15 @@ var (
 type PoSST struct {
 
    DB *sql.DB
+}
+
+//******************************************************************
+
+type Notes struct {
+
+	Arrow  string
+	Dst    NodePtr
+	Text   string
 }
 
 //******************************************************************
@@ -3208,6 +3224,36 @@ func NextLinkArrow(ctx PoSST,path []Link,arrows []ArrowPtr) string {
 }
 
 // **************************************************************************
+
+func GetNodeNotes(ctx PoSST,nptr NodePtr) [ST_TOP][]Notes {
+
+	// Start with properties of node, within orbit
+
+	neigh,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,2)
+
+	var notes [ST_TOP][]Notes
+
+	for stindex := 0; stindex < ST_TOP; stindex++ {		
+		for lnk := range neigh {
+			if neigh[lnk] != nil && len(neigh[lnk]) > 1 {
+				ln := neigh[lnk][1]
+				arrow := GetDBArrowByPtr(ctx,ln.Arr)
+				if arrow.STAindex == stindex {
+					txt := GetDBNodeByNodePtr(ctx,ln.Dst)
+					var nt Notes
+					nt.Arrow = arrow.Long
+					nt.Dst = ln.Dst
+					nt.Text = txt.S
+					notes[stindex] = append(notes[stindex],nt)
+				}
+			}
+		}
+	}
+
+	return notes
+}
+
+// **************************************************************************
 // Presentation on command line
 // **************************************************************************
 
@@ -3218,24 +3264,7 @@ func PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int) {
 	ShowText(node.S,width)
 	fmt.Println()
 
-	// Start with properties of node, within orbit
-
-	neigh,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,2)
-
-	var notes [ST_TOP][]string
-
-	for stindex := 0; stindex < ST_TOP; stindex++ {		
-		for lnk := range neigh {
-			if neigh[lnk] != nil && len(neigh[lnk]) > 1 {
-				ln := neigh[lnk][1]
-				arrow := GetDBArrowByPtr(ctx,ln.Arr)
-				if arrow.STAindex == stindex {
-					prop := GetDBNodeByNodePtr(ctx,ln.Dst)
-					notes[stindex] = append(notes[stindex],fmt.Sprintf(" -    %s - %s\n",arrow.Long,prop.S))
-				}
-			}
-		}
-	}
+	notes := GetNodeNotes(ctx,nptr)
 
 	PrintLinkNotes(notes,EXPRESS)
 	PrintLinkNotes(notes,-EXPRESS)
@@ -3249,12 +3278,13 @@ func PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int) {
 
 // **************************************************************************
 
-func PrintLinkNotes(notes [ST_TOP][]string,sttype int) {
+func PrintLinkNotes(notes [ST_TOP][]Notes,sttype int) {
 
 	t := STTypeToSTIndex(sttype)
 
 	for n := range notes[t] {		
-		text := Indent(LEFTMARGIN) + notes[t][n]
+		txt := fmt.Sprintf(" -    (%s) - %s\n",notes[t][n].Arrow,notes[t][n].Text)
+		text := Indent(LEFTMARGIN) + txt
 		ShowText(text,SCREENWIDTH)
 	}
 
@@ -3325,6 +3355,29 @@ func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string
 		fmt.Println(". \n")
 	}
 }
+
+// **************************************************************************
+// Presentation in JSON
+// **************************************************************************
+
+func JSONNodeOrbit(ctx PoSST, nptr NodePtr) string {
+
+	node := GetDBNodeByNodePtr(ctx,nptr)
+
+	name, _ := json.Marshal(node.S)
+	jstr := fmt.Sprintf("Text: %s\n",string(name))
+
+	notes := GetNodeNotes(ctx,nptr)
+
+	for stindex := range notes {
+		title := STTypeDBChannel(STIndexToSTType(stindex))
+		encoded, _ := json.Marshal(notes[stindex])
+		jstr += fmt.Sprintf("%s: %s\n",title,string(encoded))
+	}
+
+	return jstr
+}
+
 
 // **************************************************************************
 // Retrieve Analysis
