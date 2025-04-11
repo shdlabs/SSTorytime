@@ -32,6 +32,7 @@ nav {
 }
 
 /* Style the list inside the menu */
+
 nav ul {
   list-style-type: none;
   padding: 0;
@@ -73,20 +74,37 @@ footer {
 </head>
 <body>
 
-
+<page>
 <header>
-
+<h2>SSTorytime app</h2>
 </header>
 
 <section>
   <nav>
-    <ul id="chapters"></ul>
+
+<form id="search">
+  <p>
+    <label for="subject">Name...</label>
+    <input type="text" id="name" name="name" value="" />
+  </p>
+  <p>
+    <label for="chapter">Chapter</label>
+    <input type="text" id="chapter" name="chapter" />
+  </p>
+  <p>
+    <label for="chapter">Hints ...</label>
+    <input type="text" id="context" name="context" />
+  </p>
+  <input type="submit" value="Submit" />
+</form>
 
     <ul>
       <li><a href="#">chapter 1</a></li>
       <li><a href="#">chapter 2</a></li>
       <li><a href="#">chapter 3</a></li>
     </ul>
+
+
   </nav>
 
   <article>
@@ -98,12 +116,12 @@ footer {
 <footer>
   <p>Footer</p>
 </footer>
-
+</page>
 <script>
 
 /***********************************************************/
 
-async function populate() 
+async function DoPage() 
 {
 let requestURL = 'http://localhost:8080';
 let request = new Request(requestURL);
@@ -111,7 +129,7 @@ let response = await fetch(request);
 let mynote = await response.json();
 
 DoHeader(mynote);
-DoOther(mynote)
+DoPanel(mynote)
 }
 
 /***********************************************************/
@@ -152,35 +170,45 @@ return parent
 function DoHeader(obj) 
 {
 let header = document.querySelector('header');
-let myH2 = document.createElement('h2');
-let title = obj.matches[0]
+let titlebar = document.createElement('h2');
+titlebar.id = "header_root";
 
-if (title.L < 40)
+if (obj.matches == null)
    {
-   myH2.textContent = obj.matches[0].Text;
+   return;
+   }
+
+let title = obj.matches[0].Text;
+
+if (title.length < 40)
+   {
+   titlebar.textContent = title;
    } 
 else 
    {
-   myH2.textContent = "Excerpt ...";
+   titlebar.textContent = "Excerpt ...";
    }
-
-header.appendChild(myH2);
+header.appendChild(titlebar);
 }
 
 /***********************************************************/
 
-function DoOther(obj) 
+function DoPanel(obj) 
 {
 let section = document.querySelector('article');
+
+let panel = document.createElement('p');
+panel.id = "main_root";
+section.appendChild(panel);
 
 for (let match of obj.matches) 
    {
    let parent = document.createElement('content');
-   let myH2 = document.createElement('h1');
+   let from_text = document.createElement('h1');
    let el = document.createElement('p');
 
-   myH2.textContent = match.Text;
-   parent.appendChild(myH2);
+   from_text.textContent = match.Text;
+   parent.appendChild(from_text);
 
    if (match.Im3 != null)
       {
@@ -230,13 +258,61 @@ for (let match of obj.matches)
          }
       }
 
-   section.appendChild(parent);
+   panel.appendChild(parent);
    }
 }
 
 /***********************************************************/
 
-populate();
+function RegQuery()
+{
+const form = document.querySelector("#search");
+
+async function sendData() {
+
+  let formData = new FormData(form);
+
+  fetch("http://localhost:8080", { method: "POST", body: formData })
+   .then(response => {
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+    return response.json();
+  })
+    .then((resp) => {
+      console.log("resp from server ", resp);
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null) 
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoPanel(resp);
+    })
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+// Take over form submission
+form.addEventListener("submit", (event) => { event.preventDefault();  sendData(); });
+}
+
+/***********************************************************/
+
+DoPage();
+RegQuery();
 
 </script>
 

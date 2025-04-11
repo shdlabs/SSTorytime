@@ -34,9 +34,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Vary", "Origin")
 	
 	switch r.Method {
-
-	case "GET":                // will be cached
-		HandleGet(w,r)
+	case "POST":
+		name := r.FormValue("name")
+		chapter := r.FormValue("chapter")
+		context := r.FormValue("context")
+		HandleGet(w,r,name,chapter,context)
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
@@ -44,13 +46,19 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 // *********************************************************************
 
-func HandleGet(w http.ResponseWriter, r *http.Request) {
+func HandleGet(w http.ResponseWriter, r *http.Request,name,chapter,context string) {
 
 	// Get reply
 
 	w.Header().Set("Content-Type", "application/json")
 
-	nptrs := SST.GetDBNodePtrMatchingName(CTX,"","no")
+	fmt.Println("Matching...",name,chapter,context)
+
+	if name == "" {
+		name = "fish"
+	}
+
+	nptrs := SST.GetDBNodePtrMatchingName(CTX,chapter,name)
 	
 	w.Write([]byte("{ \"matches\" : ["))
 	
@@ -63,6 +71,7 @@ func HandleGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write([]byte("] }"))
+	fmt.Println("Replace sent")
 }
 
 
