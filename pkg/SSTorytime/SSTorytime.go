@@ -3372,8 +3372,11 @@ func JSONNodeOrbit(ctx PoSST, nptr NodePtr) string {
 	notes := GetNodeNotes(ctx,nptr)
 
 	for stindex := 0; stindex < len(notes); stindex++ {
+
 		title := STTypeDBChannel(STIndexToSTType(stindex))
+
 		encoded, _ := json.Marshal(notes[stindex])
+
 		jstr += fmt.Sprintf("\"%s\" : %s",title,string(encoded))
 		if stindex != len(notes)-1 {
 			jstr += ",\n"

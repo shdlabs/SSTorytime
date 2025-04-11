@@ -160,6 +160,8 @@ else
       el2.style.padding = '10px';
       }
    parent.appendChild(el2);
+   let br = document.createElement('br');
+   parent.appendChild(br);
    }
 
 return parent
@@ -215,6 +217,7 @@ for (let match of obj.matches)
       for (let ngh of match.Im3) 
          {
          parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
          }
       }
 
@@ -223,6 +226,7 @@ for (let match of obj.matches)
      for (let ngh of match.Ie3) 
         {
         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+        panel.appendChild(parent);
         }
      }
 
@@ -231,6 +235,16 @@ for (let match of obj.matches)
       for (let ngh of match.Im2) 
          {
          parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
+         }
+      }
+
+   if (match.Ic2 != null)
+      {
+      for (let ngh of match.Ic2) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
          }
       }
 
@@ -239,6 +253,7 @@ for (let match of obj.matches)
       for (let ngh of match.Il1) 
          {
          parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
          }
       }
 
@@ -247,6 +262,7 @@ for (let match of obj.matches)
       for (let ngh of match.Im1) 
          {
          parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
          }
       }
 
@@ -255,10 +271,9 @@ for (let match of obj.matches)
       for (let ngh of match.In0) 
          {
          parent = PrintLink(parent,ngh.Arrow,ngh.Text)
+         panel.appendChild(parent);
          }
       }
-
-   panel.appendChild(parent);
    }
 }
 
@@ -274,13 +289,17 @@ async function sendData() {
 
   fetch("http://localhost:8080", { method: "POST", body: formData })
    .then(response => {
+
     if (!response.ok) {
       throw new Error('network returns error');
     }
+
     return response.json();
+
   })
     .then((resp) => {
-      console.log("resp from server ", resp);
+
+      console.log("CHECK",JSON.stringify(resp, null, 2))
 
       let prevh = document.getElementById("header_root");
 
@@ -299,6 +318,7 @@ async function sendData() {
       DoHeader(resp);
       DoPanel(resp);
     })
+
     .catch((error) => {
       // Handle error
       console.log("error ", error);
