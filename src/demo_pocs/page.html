@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>CSS Template</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style the header */
+header {
+  background-color: #666;
+  padding: 20px;
+  text-align: center;
+  font-size: 35px;
+  color: white;
+}
+
+/* Create two columns/boxes that floats next to each other */
+nav {
+  float: left;
+  width: 20%;
+  height: 400px; /* only for demonstration, should be removed */
+  background: #ccc;
+  padding: 20px;
+}
+
+/* Style the list inside the menu */
+nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+article {
+  float: left;
+  padding: 20px;
+  width: 80%;
+  font-size: 25px;
+  background-color: #f1f1f1;
+  /* height: 300px; /* only for demonstration, should be removed */
+}
+
+
+/* Clear floats after the columns */
+section::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Style the footer */
+footer {
+  background-color: #777;
+  padding: 10px;
+  text-align: center;
+  color: white;
+}
+
+/* Responsive layout - makes the two columns/boxes stack on top of each other instead of next to each other, on small screens */
+@media (max-width: 600px) {
+  nav, article {
+    width: 100%;
+    height: auto;
+  }
+}
+</style>
+</head>
+<body>
+
+
+<header>
+
+</header>
+
+<section>
+  <nav>
+    <ul id="chapters"></ul>
+
+    <ul>
+      <li><a href="#">chapter 1</a></li>
+      <li><a href="#">chapter 2</a></li>
+      <li><a href="#">chapter 3</a></li>
+    </ul>
+  </nav>
+
+  <article>
+
+  </article>
+
+</section>
+
+<footer>
+  <p>Footer</p>
+</footer>
+
+<script>
+
+/***********************************************************/
+
+async function populate() 
+{
+let requestURL = 'http://localhost:8080';
+let request = new Request(requestURL);
+let response = await fetch(request);
+let mynote = await response.json();
+
+DoHeader(mynote);
+DoOther(mynote)
+}
+
+/***********************************************************/
+
+function PrintLink(parent,arrow,str) 
+{
+if (str.includes("\n"))
+   {
+   let el = document.createElement('p');
+   el.textContent = `( ${arrow} )  `;
+   parent.appendChild(el);
+
+   let el2 = document.createElement('pre');
+   el2.textContent = str;
+   parent.appendChild(el2);
+   }
+else
+   {
+   let el = document.createElement('a');
+   el.textContent = `( ${arrow} )  `;
+   el.style.fontFamily = 'Verdana';
+   parent.appendChild(el);
+   let el2 = document.createElement('a');
+   el2.textContent = str;
+   if (str.length < 20)
+      {
+      el2.style.fontSize = '200%';
+      el2.style.padding = '10px';
+      }
+   parent.appendChild(el2);
+   }
+
+return parent
+}
+
+/***********************************************************/
+
+function DoHeader(obj) 
+{
+let header = document.querySelector('header');
+let myH2 = document.createElement('h2');
+let title = obj.matches[0]
+
+if (title.L < 40)
+   {
+   myH2.textContent = obj.matches[0].Text;
+   } 
+else 
+   {
+   myH2.textContent = "Excerpt ...";
+   }
+
+header.appendChild(myH2);
+}
+
+/***********************************************************/
+
+function DoOther(obj) 
+{
+let section = document.querySelector('article');
+
+for (let match of obj.matches) 
+   {
+   let parent = document.createElement('content');
+   let myH2 = document.createElement('h1');
+   let el = document.createElement('p');
+
+   myH2.textContent = match.Text;
+   parent.appendChild(myH2);
+
+   if (match.Im3 != null)
+      {
+      for (let ngh of match.Im3) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         }
+      }
+
+  if (match.Ie3 != null)
+     {
+     for (let ngh of match.Ie3) 
+        {
+        parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+        }
+     }
+
+   if (match.Im2 != null)
+      {
+      for (let ngh of match.Im2) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         }
+      }
+
+   if (match.Il1 != null)
+      {
+      for (let ngh of match.Il1) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         }
+      }
+
+   if (match.Im1 != null)
+      {
+      for (let ngh of match.Im1) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         }
+      }
+
+   if (match.In0 != null)
+      {
+      for (let ngh of match.In0) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text)
+         }
+      }
+
+   section.appendChild(parent);
+   }
+}
+
+/***********************************************************/
+
+populate();
+
+</script>
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
