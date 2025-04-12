@@ -3387,6 +3387,58 @@ func JSONNodeOrbit(ctx PoSST, nptr NodePtr) string {
 	return jstr
 }
 
+// **************************************************************************
+
+func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
+
+	var jstr string = "{\n"
+
+	for p := 0; p < len(cone); p++ {
+
+		path_start := GetDBNodeByNodePtr(ctx,cone[p][0].Dst)		
+		
+		start_shown := false
+
+		var path []string
+		
+		for l := 1; l < len(cone[p]); l++ {
+
+			if !MatchContexts(context,cone[p][l].Ctx) {
+				return "\n}\n"
+			}
+
+			if !start_shown {
+				path = append(path,path_start.S)
+				start_shown = true
+			}
+
+			nextnode := GetDBNodeByNodePtr(ctx,cone[p][l].Dst)
+
+			if !SimilarString(nextnode.Chap,chapter) {
+				break
+			}
+			
+			arr := GetDBArrowByPtr(ctx,cone[p][l].Arr)
+	
+			if l < len(cone[p]) {
+				path = append(path,arr.Long)
+			}
+			
+			path = append(path,nextnode.S)
+		}
+
+		encoded, _ := json.Marshal(path)
+		jstr += fmt.Sprintf("\"%d\" : %s",p,string(encoded))
+
+		if p < len(cone)-1 {
+			jstr += ",\n"
+		}
+	}
+
+	jstr += "\n}\n"
+
+	return jstr
+}
 
 // **************************************************************************
 // Retrieve Analysis

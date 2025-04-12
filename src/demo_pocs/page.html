@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>CSS Template</title>
+<title>SSTorytime Simple viewer</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
@@ -119,11 +119,13 @@ footer {
 </page>
 <script>
 
+var API_SERVER = 'http://localhost:8080/Orbit';
+
 /***********************************************************/
 
 async function DoPage() 
 {
-let requestURL = 'http://localhost:8080';
+let requestURL = API_SERVER;
 let request = new Request(requestURL);
 let response = await fetch(request);
 let mynote = await response.json();
@@ -287,7 +289,7 @@ async function sendData() {
 
   let formData = new FormData(form);
 
-  fetch("http://localhost:8080", { method: "POST", body: formData })
+  fetch(API_SERVER, { method: "POST", body: formData })
    .then(response => {
 
     if (!response.ok) {
