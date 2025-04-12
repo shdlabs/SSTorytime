@@ -102,7 +102,8 @@ footer {
     <label for="chapter">Hints ...</label>
     <input type="text" id="context" name="context" />
   </p>
-  <input type="submit" value="Submit" />
+  <input type="submit" id="pathsubmit" value="Paths" />
+  <input type="submit" id="orbitsubmit" value="Orbits" />
 </form>
 
     <ul>
@@ -393,7 +394,7 @@ async function sendorbitData() {
          }
 
       DoHeader(resp);
-      DoPanel(resp);
+      DoOrbitPanel(resp);
     })
 
     .catch((error) => {
@@ -403,7 +404,8 @@ async function sendorbitData() {
 }
 
 // Take over form submission
-form.addEventListener("submit", (event) => { event.preventDefault();  sendorbitData(); });
+button = document.getElementById('orbitsubmit'),
+button.addEventListener("click", (event) => { event.preventDefault();  sendorbitData(); });
 }
 
 /***********************************************************/
@@ -455,13 +457,14 @@ async function sendconeData() {
 }
 
 // Take over form submission
-form.addEventListener("submit", (event) => { event.preventDefault();  sendconeData(); });
+button = document.getElementById('pathsubmit'),
+button.addEventListener("click", (event) => { event.preventDefault();  sendconeData(); });
 }
 
 /***********************************************************/
 
 DoPage();
-//OrbitQuery();
+OrbitQuery();
 ConeQuery();
 
 </script>
