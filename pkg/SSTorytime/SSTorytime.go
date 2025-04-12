@@ -3391,7 +3391,7 @@ func JSONNodeOrbit(ctx PoSST, nptr NodePtr) string {
 
 func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 
-	var jstr string = "{\n"
+	var jstr string = "["
 
 	for p := 0; p < len(cone); p++ {
 
@@ -3404,7 +3404,7 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 		for l := 1; l < len(cone[p]); l++ {
 
 			if !MatchContexts(context,cone[p][l].Ctx) {
-				return "\n}\n"
+				return "]"
 			}
 
 			if !start_shown {
@@ -3428,14 +3428,14 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 		}
 
 		encoded, _ := json.Marshal(path)
-		jstr += fmt.Sprintf("\"%d\" : %s",p,string(encoded))
+		jstr += fmt.Sprintf("%s",string(encoded))
 
 		if p < len(cone)-1 {
 			jstr += ",\n"
 		}
 	}
 
-	jstr += "\n}\n"
+	jstr += "]"
 
 	return jstr
 }

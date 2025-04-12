@@ -40,13 +40,20 @@ nav ul {
 
 article {
   float: left;
-  padding: 20px;
+  padding: 10px;
   width: 80%;
   font-size: 25px;
   background-color: #f1f1f1;
   /* height: 300px; /* only for demonstration, should be removed */
 }
 
+article p {
+  padding: 10px;
+}
+
+article a {
+  padding: 10px;
+}
 
 /* Clear floats after the columns */
 section::after {
@@ -119,19 +126,19 @@ footer {
 </page>
 <script>
 
-var API_SERVER = 'http://localhost:8080/Orbit';
+var API_SERVER = 'http://localhost:8080';
 
 /***********************************************************/
 
 async function DoPage() 
 {
-let requestURL = API_SERVER;
+let requestURL = API_SERVER+"/Orbit";
 let request = new Request(requestURL);
 let response = await fetch(request);
 let mynote = await response.json();
 
 DoHeader(mynote);
-DoPanel(mynote)
+DoOrbitPanel(mynote)
 }
 
 /***********************************************************/
@@ -156,6 +163,7 @@ else
    parent.appendChild(el);
    let el2 = document.createElement('a');
    el2.textContent = str;
+   el2.style.fontFamily = 'Times';
    if (str.length < 20)
       {
       el2.style.fontSize = '200%';
@@ -166,6 +174,54 @@ else
    parent.appendChild(br);
    }
 
+return parent
+}
+
+/***********************************************************/
+
+function PrintPath(parent,array) 
+{
+for (let path = 0; path < array.length; path++)
+   {
+   for (let i = 0; i < array[path].length; i++)
+      {
+      if (i % 2 == 0) // node
+         {
+         let str = array[path][i]
+
+         if (str.includes("\n"))
+            {
+            let el = document.createElement('p');
+            el.textContent = `( ${arrow} )  `;
+            parent.appendChild(el);
+
+            let el2 = document.createElement('pre');
+            el2.textContent = str;
+            parent.appendChild(el2);
+            }
+         else
+            {
+            let el2 = document.createElement('a');
+            el2.textContent = str;
+            el2.style.fontFamily = 'Times New Roman';
+            if (str.length < 20)
+               {
+               el2.style.fontSize = '150%';
+               el2.style.padding = '10px';
+               }
+            parent.appendChild(el2);
+            }
+         }
+      else // arrow 
+         {
+         let arrow = array[path][i]
+         let el = document.createElement('a');
+         el.textContent = `( ${arrow} )  `;
+         el.style.fontFamily = 'Verdana';
+         parent.appendChild(el);
+         }
+      }
+   }
 return parent
 }
 
@@ -197,7 +253,7 @@ header.appendChild(titlebar);
 
 /***********************************************************/
 
-function DoPanel(obj) 
+function DoOrbitPanel(obj) 
 {
 let section = document.querySelector('article');
 
@@ -281,15 +337,34 @@ for (let match of obj.matches)
 
 /***********************************************************/
 
-function RegQuery()
+function DoConePanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+console.log(obj)
+
+for (let nptr of obj.paths) 
+   {
+   let parent = document.createElement('article');
+   parent = PrintPath(parent,nptr.Il1);
+   panel.appendChild(parent);
+   }
+}
+
+/***********************************************************/
+
+function OrbitQuery()
 {
 const form = document.querySelector("#search");
 
-async function sendData() {
+async function sendorbitData() {
 
   let formData = new FormData(form);
 
-  fetch(API_SERVER, { method: "POST", body: formData })
+  fetch(API_SERVER+"/Orbit", { method: "POST", body: formData })
    .then(response => {
 
     if (!response.ok) {
@@ -328,13 +403,66 @@ async function sendData() {
 }
 
 // Take over form submission
-form.addEventListener("submit", (event) => { event.preventDefault();  sendData(); });
+form.addEventListener("submit", (event) => { event.preventDefault();  sendorbitData(); });
+}
+
+/***********************************************************/
+
+function ConeQuery()
+{
+const form = document.querySelector("#search");
+
+async function sendconeData() {
+
+  let formData = new FormData(form);
+
+  fetch(API_SERVER+"/Cone", { method: "POST", body: formData })
+   .then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+  })
+    .then((resp) => {
+
+      console.log("CHECK",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null)
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoConePanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+// Take over form submission
+form.addEventListener("submit", (event) => { event.preventDefault();  sendconeData(); });
 }
 
 /***********************************************************/
 
 DoPage();
-RegQuery();
+//OrbitQuery();
+ConeQuery();
 
 </script>
 
