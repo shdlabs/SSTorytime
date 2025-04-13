@@ -153,6 +153,24 @@ $ searchN4L -chapter brain -browse arrows=occurs,freq,role
 
 ![Silly search](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/search.png 'more careful search')
 
+## A prototype web interface
+
+You can play around with a prototype web interface. Install your data, then go to the `src/demos_poc`
+directory and run `go run http_server.go`. Then you can connect by loading `page.html`
+
+<pre>
+mark% go run http_server.go
+Listening at http://localhost:8080
+
+
+</pre>
+You should see a webpage:
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp2.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp3.png 'Testing a web interface')
+
+
 ## What's the point?
 
 When you make notes, you should think about what you want to see when you look back at your notes.
