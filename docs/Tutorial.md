@@ -115,7 +115,7 @@ When you run this, you'll see something like this:
 
 If you choose verbose output, you see more of what's going on:
 
-![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/verbose.png 'Verbse output')
+![A Flow Chart is a knowledge representation](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/verbose.png 'Verbose output')
 
 * First N4L reads a configuration file that's called `N4Lconfig.in` with lots of customizations.
 * Then it reads your file and chops it into parts that are related.
