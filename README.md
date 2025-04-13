@@ -23,7 +23,7 @@ dissemination of individual thinking easy, for humans and general use. (AI can o
 capture knowledge from humans, so even if we want to use AI, we'd
 better get the knowledge representations right.)
 
-[Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
 
 *Imagine being able to take notes easily, work with them, and later be
 able to "rummage around" in everything to understand what you were
