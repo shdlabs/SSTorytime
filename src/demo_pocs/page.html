@@ -104,6 +104,7 @@ footer {
   </p>
   <input type="submit" id="pathsubmit" value="Paths" />
   <input type="submit" id="orbitsubmit" value="Orbits" />
+  <input type="submit" id="browsesubmit" value="Browse" />
 </form>
 
     <ul>
@@ -234,12 +235,16 @@ let header = document.querySelector('header');
 let titlebar = document.createElement('h2');
 titlebar.id = "header_root";
 
-if (obj.matches == null)
-   {
-   return;
-   }
+let title = "app";
 
-let title = obj.matches[0].Text;
+if (obj.matches != null)
+   {
+   title = obj.matches[0].Text;
+   }
+else if (obj.chapter != null)
+   {
+   title =  obj.chapter + " :: " + obj.context + " :: "
+   }
 
 if (title.length < 40)
    {
@@ -247,8 +252,11 @@ if (title.length < 40)
    } 
 else 
    {
-   titlebar.textContent = "Excerpt ...";
+   titlebar.textContent = title.slice(0.40) + "...";
    }
+
+   titlebar.style.fontSize = "70%"
+
 header.appendChild(titlebar);
 }
 
@@ -352,6 +360,49 @@ for (let nptr of obj.paths)
    let parent = document.createElement('article');
    parent = PrintPath(parent,nptr.Il1);
    panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im1);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im2);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Ic2);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Ie3);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im3);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.In0);
+   panel.appendChild(parent);
+   }
+}
+
+/***********************************************************/
+
+function DoBrowsePanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+console.log(obj)
+
+for (let nptr of obj.nptrs) 
+   {
+   let parent = document.createElement('article');
+   parent = PrintPath(parent,nptr.Il1);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im1);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im2);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Ic2);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Ie3);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im3);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.In0);
+   panel.appendChild(parent);
    }
 }
 
@@ -377,7 +428,7 @@ async function sendorbitData() {
   })
     .then((resp) => {
 
-      console.log("CHECK",JSON.stringify(resp, null, 2))
+      console.log("CHECK ORBIT",JSON.stringify(resp, null, 2))
 
       let prevh = document.getElementById("header_root");
 
@@ -430,7 +481,7 @@ async function sendconeData() {
   })
     .then((resp) => {
 
-      console.log("CHECK",JSON.stringify(resp, null, 2))
+      console.log("CHECK CONE",JSON.stringify(resp, null, 2))
 
       let prevh = document.getElementById("header_root");
 
@@ -463,10 +514,63 @@ button.addEventListener("click", (event) => { event.preventDefault();  sendconeD
 
 /***********************************************************/
 
+function BrowseQuery()
+{
+const form = document.querySelector("#search");
+
+async function sendbrowseData() {
+
+  let formData = new FormData(form);
+
+  fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
+   .then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+  })
+    .then((resp) => {
+
+      console.log("CHECK BROWSE",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null)
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoBrowsePanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+// Take over form submission
+button = document.getElementById('browsesubmit'),
+button.addEventListener("click", (event) => { event.preventDefault();  sendbrowseData(); });
+}
+
+/***********************************************************/
+
 DoPage();
 OrbitQuery();
 ConeQuery();
-
+BrowseQuery();
 </script>
 
 
