@@ -223,18 +223,18 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 		arrows = append(arrows,arr)
 	}
 
-	nodes := SST.GetDBNodeContextsMatchingArrow(CTX,chaptext,context,"",arrows)
+	qnodes := SST.GetDBNodeContextsMatchingArrow(CTX,chaptext,context,"",arrows)
 
 	w.Header().Set("Content-Type", "application/json")
 
-	EncodeBrowsing(w,r,nodes,arrows,section,chaptext,context)
+	EncodeBrowsing(w,r,qnodes,arrows,section,chaptext,context)
 
 	fmt.Println("Reply Systematic Browser sent")
 }
 
 //**************************************************************
 
-func EncodeBrowsing(w http.ResponseWriter, r *http.Request,nptrmap map[string][]SST.NodePtr,arrows []SST.ArrowPtr,section int,chapter string,context []string) {
+func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr,arrows []SST.ArrowPtr,section int,chapter string,context []string) {
 
 	// Policy for ordering and search depth along each vector
 
@@ -251,51 +251,48 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,nptrmap map[string][]
 
 	fmt.Println("Looking for section",section)
 
-	for cntxt := range nptrmap {
+	for q := range qnodes {
 
-		for n := 0; n < len(nptrmap[cntxt]); n++ {
-
-			if cntxt != prev {
-				prev = cntxt
-				secnr++
-
-				if secnr > section {
-					multicone += "]\n}\n"
-					w.Write([]byte(multicone))
-					fmt.Println(multicone)
-					return
+		if qnodes[q].Context != prev {
+			prev = qnodes[q].Context
+			secnr++
+			
+			if secnr > section {
+				multicone += "]\n}\n"
+				w.Write([]byte(multicone))
+				fmt.Println(multicone)
+				return
 				}
-			}
-				
-			if secnr == section {
-				if !headerdone {
-					multicone += fmt.Sprintf("{ \"section\" : \"%d\",\n",section)
-					multicone += fmt.Sprintf("  \"chapter\" : \"%s\",\n",chapter)
-					multicone += fmt.Sprintf("  \"context\" : \"%v\",\n",CleanCtx(cntxt))
-					multicone += fmt.Sprintf("  \"nptrs\" : [ ")
-					headerdone = true
-				}
-
-				thiscone := fmt.Sprintf("%s\n { \"NPtr\" : \"%v\",\n",comma,nptrmap[cntxt][n])
-				comma = ","
-				
-				for i := range order {
-					sttype := order[i]
-					cone,_ := SST.GetFwdPathsAsLinks(CTX,nptrmap[cntxt][n],sttype,maxdepth[i])
-					json := SST.JSONCone(CTX,cone,chapter,context)
-					thiscone += fmt.Sprintf("\"%s\" : %s ",SST.STTypeDBChannel(sttype),json)
-					
-					if i < len(order)-1 {
-						thiscone += ",\n"
-					} else {
-						thiscone += "}"
-					}
-				}
-				
-				multicone += thiscone
+		}
+		
+		if secnr == section {
+			if !headerdone {
+				multicone += fmt.Sprintf("{ \"section\" : \"%d\",\n",section)
+				multicone += fmt.Sprintf("  \"chapter\" : \"%s\",\n",qnodes[q].Chapter)
+				multicone += fmt.Sprintf("  \"context\" : \"%v\",\n",CleanCtx(qnodes[q].Context))
+				multicone += fmt.Sprintf("  \"nptrs\" : [ ")
+				headerdone = true
 			}
 			
+			thiscone := fmt.Sprintf("%s\n { \"NPtr\" : \"%v\",\n",comma,qnodes[q].NPtr)
+			comma = ","
+			
+			for i := range order {
+				sttype := order[i]
+				cone,_ := SST.GetFwdPathsAsLinks(CTX,qnodes[q].NPtr,sttype,maxdepth[i])
+				json := SST.JSONCone(CTX,cone,chapter,context)
+				thiscone += fmt.Sprintf("\"%s\" : %s ",SST.STTypeDBChannel(sttype),json)
+				
+				if i < len(order)-1 {
+					thiscone += ",\n"
+				} else {
+					thiscone += "}"
+				}
+			}
+			
+			multicone += thiscone
 		}
+		
 	}
 }
 
@@ -316,6 +313,7 @@ func CleanCtx(c string) string {
 	c = strings.Replace(c,"{","",-1)
 	c = strings.Replace(c,"}","",-1)
 	c = strings.Replace(c,","," ",-1)
+	c = strings.Replace(c,"\"","\\\"",-1)
 	return c
 }
 

@@ -44,24 +44,20 @@ func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext strin
 		arrows = append(arrows,arr)
 	}
 
-	nodes := SST.GetDBNodeContextsMatchingArrow(ctx,chaptext,context,searchtext,arrows)
+	qnodes := SST.GetDBNodeContextsMatchingArrow(ctx,chaptext,context,searchtext,arrows)
 
-	var prev string
+	var prev   string
 	var header []string
 
-	for cntxt := range nodes {
-		for n := 0; n < len(nodes[cntxt]); n++ {
-
-			result := SST.GetDBNodeByNodePtr(ctx,nodes[cntxt][n])
-
-			if cntxt != prev {
-				prev = cntxt
-				header = SST.ParseSQLArrayString(cntxt)
-				Header(header,result.Chap)
-			}
-
-			SearchStoryPaths(ctx,result.S,result.NPtr,arrows,result.Chap,context)
+	for q := range qnodes {
+		if qnodes[q].Context != prev {
+			prev = qnodes[q].Context
+			header = SST.ParseSQLArrayString(qnodes[q].Context)
+			Header(header,qnodes[q].Chapter)
 		}
+		
+		result := SST.GetDBNodeByNodePtr(ctx,qnodes[q].NPtr)
+		SearchStoryPaths(ctx,result.S,result.NPtr,arrows,result.Chap,context)
 	}
 }
 

@@ -92,6 +92,17 @@ type NodeArrowNode struct {
 
 //**************************************************************
 
+type QNodePtr struct {
+
+	// A Qualified NodePtr 
+
+	NPtr    NodePtr
+	Context string  // array in string form
+	Chapter string
+}
+
+//**************************************************************
+
 type STTypeMatroid struct {
 
 	NFrom NodePtr
@@ -2508,7 +2519,7 @@ func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrow
 
 // **************************************************************************
 
-func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext string,arrow []ArrowPtr) map[string][]NodePtr {
+func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext string,arrow []ArrowPtr) []QNodePtr {
 
 	var qstr string
 
@@ -2526,8 +2537,6 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 			"   SELECT NFrom,Ctx,Chap FROM matching_nodes \n"+
 			"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx",context,arrows,chapter)
 
-		//qstr = fmt.Sprintf("SELECT DISTINCT NFrom,Ctx,Chap FROM NodeArrowNode JOIN Node ON nptr=nfrom where chap like '%s' ORDER BY Ctx",chapter)
-
 	}
 	
 	row, err := ctx.DB.Query(qstr)
@@ -2536,8 +2545,9 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 		fmt.Println("GetDBNodeArrowNodeByContext Failed:",err,qstr)
 	}
 
-	var return_value = make(map[string][]NodePtr)
+	var return_value []QNodePtr
 
+	var qptr QNodePtr
 	var nptr NodePtr
 	var nctx string
 	var nchap string
@@ -2555,7 +2565,11 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 			header = nctx
 		}
 
-		return_value[header] = append(return_value[header],nptr)
+		qptr.NPtr = nptr
+		qptr.Chapter = nchap
+		qptr.Context = nctx
+
+		return_value = append(return_value,qptr)
 	}
 
 	row.Close()
