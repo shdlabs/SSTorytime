@@ -59,20 +59,22 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,name,chapter,context str
 	if name == "" {
 		name = "fish"
 	}
-
+	
 	nptrs := SST.GetDBNodePtrMatchingName(CTX,chapter,name)
 	
-	w.Write([]byte("{ \"matches\" : ["))
+	orbit := fmt.Sprintf("{ \"matches\" : [")
 	
 	for n := 0; n < len(nptrs); n++ {
-		reply := []byte(SST.JSONNodeOrbit(CTX, nptrs[n]))
-		w.Write(reply)
+		orbit += SST.JSONNodeOrbit(CTX, nptrs[n])
 		if n != len(nptrs)-1 {
-			w.Write([]byte(",\n"))
+			orbit += ",\n"
 		}
 	}
-
-	w.Write([]byte("] }"))
+	
+	orbit += "] }"
+	
+	w.Write([]byte(orbit))
+	fmt.Println(orbit)
 	fmt.Println("Reply Orbit sent")
 }
 
@@ -121,11 +123,12 @@ func HandleCone(w http.ResponseWriter, r *http.Request,name,chapter,context stri
 
 	// Encode
 
-	multicone := "{ \"paths\" : [\n" 
+	multicone  := "{ \"paths\" : [\n"
 
 	for n := 0; n < len(nptrs); n++ {
 
 		thiscone := fmt.Sprintf(" { \"NPtr\" : \"%v\",\n",nptrs[n])
+		thiscone += fmt.Sprintf("   \"Text\" : \"%s\",\n",name)
 		empty := true
 
 		for i := range order {
@@ -142,7 +145,7 @@ func HandleCone(w http.ResponseWriter, r *http.Request,name,chapter,context stri
 			if i < len(order)-1 {
 				thiscone += ",\n"
 			} else {
-				thiscone += "}\n"
+				thiscone += "\n}"
 			}
 		}
 
@@ -158,7 +161,7 @@ func HandleCone(w http.ResponseWriter, r *http.Request,name,chapter,context stri
 	multicone += "]\n}\n"
 
 	w.Write([]byte(multicone))
-
+	fmt.Println(multicone)
 	fmt.Println("Reply Cone sent")
 }
 
@@ -169,7 +172,7 @@ func SystematicHandler(w http.ResponseWriter, r *http.Request) {
 	GenHeader(w,r)
 
 	fmt.Println("Browse response handler")
-	var secnr int = 2
+	var secnr int = 1
 
 	switch r.Method {
 	case "POST","GET":
@@ -189,34 +192,21 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 
 	chaptext = strings.TrimSpace(chaptext)
 
-	arrstr = strings.Replace(arrstr,","," ",-1)
-	arrnames := strings.Split(arrstr," ")
+	arrnames,nzarr := Str2Array(arrstr)
+	context,_ := Str2Array(cntstr)
 
-	for a := 0; a < len(arrnames); a++ {
-		arrnames[a] = strings.TrimSpace(arrnames[a])
-	}
-
-	cntstr = strings.Replace(arrstr,","," ",-1)
-	context := strings.Split(cntstr," ")
-
-	for c := 0; c < len(context); c++ {
-		context[c] = strings.TrimSpace(context[c])
-	}
-
-	if section == 0 {
+	if section <= 0 {
 		section = 1
 	}
 
-	fmt.Println("Matching...Browse(",chaptext,context,")")
+	fmt.Println("Matching...Browse(",section,chaptext,context,arrnames,")",len(arrnames))
 
-	arrnames = []string{"pe","ph"}
-
-	var arrows []SST.ArrowPtr
-
-	if arrnames[0] == "" {
+	if nzarr == 0 {
 		fmt.Println("No arrows defined for browsing")
 		return
 	}
+
+	var arrows []SST.ArrowPtr
 
 	for a := range arrnames {
 		arr := SST.GetDBArrowByName(CTX,arrnames[a])
@@ -229,7 +219,7 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 
 	EncodeBrowsing(w,r,qnodes,arrows,section,chaptext,context)
 
-	fmt.Println("Reply Systematic Browser sent")
+	fmt.Printf("Reply Systematic Browser page %d sent\n",section)
 }
 
 //**************************************************************
@@ -291,8 +281,7 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 			}
 			
 			multicone += thiscone
-		}
-		
+		}		
 	}
 }
 
@@ -317,6 +306,26 @@ func CleanCtx(c string) string {
 	return c
 }
 
+// *********************************************************************
+
+func Str2Array(s string) ([]string,int) {
+
+	var non_zero int
+
+	s = strings.Replace(s,","," ",-1)
+	s = strings.Replace(s,"\"","\\\"",-1)
+
+	arr := strings.Split(s," ")
+
+	for a := 0; a < len(arr); a++ {
+		arr[a] = strings.TrimSpace(arr[a])
+		if len(arr[a]) > 0 {
+			non_zero++
+		}
+	}
+
+	return arr,non_zero
+}
 
 
 

@@ -25,23 +25,16 @@ header {
 /* Create two columns/boxes that floats next to each other */
 nav {
   float: left;
-  width: 20%;
-  height: 400px; /* only for demonstration, should be removed */
+  width: 100%;
+  height: 50px; /* only for demonstration, should be removed */
   background: #ccc;
   padding: 20px;
-}
-
-/* Style the list inside the menu */
-
-nav ul {
-  list-style-type: none;
-  padding: 0;
 }
 
 article {
   float: left;
   padding: 10px;
-  width: 80%;
+  width: 100%;
   font-size: 25px;
   background-color: #f1f1f1;
   /* height: 300px; /* only for demonstration, should be removed */
@@ -90,29 +83,21 @@ footer {
   <nav>
 
 <form id="search">
-  <p>
-    <label for="subject">Name...</label>
+    <label for="subject">Thought</label>
     <input type="text" id="name" name="name" value="" />
-  </p>
-  <p>
+
     <label for="chapter">Chapter</label>
     <input type="text" id="chapter" name="chapter" />
-  </p>
-  <p>
-    <label for="chapter">Hints ...</label>
+
+    <label for="chapter">Filters ...</label>
     <input type="text" id="context" name="context" />
-  </p>
+
+    <label for="chapter">Arrow ties</label>
+    <input type="text" id="arrnames" name="arrnames" />
   <input type="submit" id="pathsubmit" value="Paths" />
   <input type="submit" id="orbitsubmit" value="Orbits" />
   <input type="submit" id="browsesubmit" value="Browse" />
 </form>
-
-    <ul>
-      <li><a href="#">chapter 1</a></li>
-      <li><a href="#">chapter 2</a></li>
-      <li><a href="#">chapter 3</a></li>
-    </ul>
-
 
   </nav>
 
@@ -147,6 +132,11 @@ DoOrbitPanel(mynote)
 
 function PrintLink(parent,arrow,str) 
 {
+if (arrow == null)
+   {
+   arrow = "broken arrow"
+   }
+
 if (str.includes("\n"))
    {
    let el = document.createElement('p');
@@ -193,9 +183,9 @@ for (let path = 0; path < array.length; path++)
 
          if (str.includes("\n"))
             {
-            let el = document.createElement('p');
-            el.textContent = `( ${arrow} )  `;
-            parent.appendChild(el);
+            //let el = document.createElement('p');
+            //el.textContent = `( ${arrow} )  `;
+            //parent.appendChild(el);
 
             let el2 = document.createElement('pre');
             el2.textContent = str;
@@ -241,7 +231,11 @@ if (obj.matches != null)
    {
    title = obj.matches[0].Text;
    }
-else if (obj.chapter != null)
+else if (obj.paths != null)
+   {
+   title = obj.paths[0].Text
+   }
+else
    {
    title =  obj.chapter + " :: " + obj.context + " :: "
    }
@@ -341,6 +335,8 @@ for (let match of obj.matches)
          panel.appendChild(parent);
          }
       }
+   let hr = document.createElement('hr');
+   panel.appendChild(hr);
    }
 }
 
@@ -372,6 +368,8 @@ for (let nptr of obj.paths)
    panel.appendChild(parent);
    parent = PrintPath(parent,nptr.In0);
    panel.appendChild(parent);
+   let hr = document.createElement('hr');
+   parent.appendChild(hr);
    }
 }
 
@@ -403,6 +401,8 @@ for (let nptr of obj.nptrs)
    panel.appendChild(parent);
    parent = PrintPath(parent,nptr.In0);
    panel.appendChild(parent);
+   let hr = document.createElement('hr');
+   parent.appendChild(hr);
    }
 }
 

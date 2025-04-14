@@ -3417,7 +3417,7 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 		for l := 1; l < len(cone[p]); l++ {
 
 			if !MatchContexts(context,cone[p][l].Ctx) {
-				return "]"
+				return "[]"
 			}
 
 			if !start_shown {
