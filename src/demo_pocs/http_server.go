@@ -179,7 +179,8 @@ func SystematicHandler(w http.ResponseWriter, r *http.Request) {
 		arrnames := r.FormValue("arrnames")
 		chapter := r.FormValue("chapter")
 		context := r.FormValue("context")
-		fmt.Sscanf(r.FormValue("section"),"%d",&secnr)
+		pg := r.FormValue("pagenr")
+		fmt.Sscanf(pg,"%d",&secnr)
 		HandleSystematic(w,r,secnr,chapter,context,arrnames)
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
@@ -231,7 +232,6 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 	order    := []int{0,1,-1,2,-2,3,-3}
 	maxdepth := []int{2,4,4,2,2,2,2}
 	headerdone := false
-
 	var secnr int
 	var prev string = ""
 	var multicone string

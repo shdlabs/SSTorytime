@@ -2523,24 +2523,19 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 
 	var qstr string
 
-	if cn == nil {
-		return nil
-	} else {
-		context := FormatSQLStringArray(cn)
-		chapter := "%"+chap+"%"
-		arrows := FormatSQLIntArray(Arrow2Int(arrow))
-		
-		// sufficient to search NFrom to get all nodes in context, as +/- relations complete
-
-		qstr = fmt.Sprintf("WITH matching_nodes AS \n"+
-			" (SELECT NFrom,Arr,Ctx,match_context(Ctx,%s) AS matchc,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)\n"+
-			"   SELECT NFrom,Ctx,Chap FROM matching_nodes \n"+
-			"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx",context,arrows,chapter)
-
-	}
+	context := FormatSQLStringArray(cn)
+	chapter := "%"+chap+"%"
+	arrows := FormatSQLIntArray(Arrow2Int(arrow))
 	
+	// sufficient to search NFrom to get all nodes in context, as +/- relations complete
+	
+	qstr = fmt.Sprintf("WITH matching_nodes AS \n"+
+		" (SELECT NFrom,Arr,Ctx,match_context(Ctx,%s) AS matchc,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)\n"+
+		"   SELECT NFrom,Ctx,Chap FROM matching_nodes \n"+
+		"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx",context,arrows,chapter)
+
 	row, err := ctx.DB.Query(qstr)
-	
+
 	if err != nil {
 		fmt.Println("GetDBNodeArrowNodeByContext Failed:",err,qstr)
 	}
@@ -2552,7 +2547,6 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 	var nctx string
 	var nchap string
 	var nptrs string
-	var header string
 
 	for row.Next() {		
 
@@ -2560,11 +2554,6 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 		nchap = ""
 		err = row.Scan(&nptrs,&nctx,&nchap)
 		fmt.Sscanf(nptrs,"(%d,%d)",&nptr.Class,&nptr.CPtr)
-
-		if nctx != header {
-			header = nctx
-		}
-
 		qptr.NPtr = nptr
 		qptr.Chapter = nchap
 		qptr.Context = nctx
@@ -2573,7 +2562,6 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 	}
 
 	row.Close()
-
 	return return_value
 }
 

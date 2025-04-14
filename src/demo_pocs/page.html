@@ -15,11 +15,16 @@ body {
 
 /* Style the header */
 header {
-  background-color: #666;
+  background-color: #669;
   padding: 20px;
   text-align: center;
   font-size: 35px;
   color: white;
+}
+
+h1 {
+  font-size: 35px;
+  color: #5599cc;
 }
 
 /* Create two columns/boxes that floats next to each other */
@@ -94,9 +99,13 @@ footer {
 
     <label for="chapter">Arrow ties</label>
     <input type="text" id="arrnames" name="arrnames" />
+
   <input type="submit" id="pathsubmit" value="Paths" />
   <input type="submit" id="orbitsubmit" value="Orbits" />
   <input type="submit" id="browsesubmit" value="Browse" />
+  <input type="submit" id="dec" value="Previous" />
+  <input type="submit" id="inc" value="Next" />
+
 </form>
 
   </nav>
@@ -115,6 +124,17 @@ footer {
 
 var API_SERVER = 'http://localhost:8080';
 
+// Disable ENTER submission
+
+window.addEventListener('keydown',function(event)
+   {
+   if(event.keyCode == 13) 
+      {
+      event.preventDefault();
+      return false;
+      }
+   });
+
 /***********************************************************/
 
 async function DoPage() 
@@ -125,7 +145,14 @@ let response = await fetch(request);
 let mynote = await response.json();
 
 DoHeader(mynote);
-DoOrbitPanel(mynote)
+DoOrbitPanel(mynote) // Start in orbit
+
+let nav = document.getElementById("search");
+
+let counter = document.createElement('span');
+counter.innerHTML=1
+counter.id="counter"
+nav.appendChild(counter);
 }
 
 /***********************************************************/
@@ -408,7 +435,7 @@ for (let nptr of obj.nptrs)
 
 /***********************************************************/
 
-function OrbitQuery()
+function OrbitHandler()
 {
 const form = document.querySelector("#search");
 
@@ -461,7 +488,7 @@ button.addEventListener("click", (event) => { event.preventDefault();  sendorbit
 
 /***********************************************************/
 
-function ConeQuery()
+function ConeHandler()
 {
 const form = document.querySelector("#search");
 
@@ -514,15 +541,15 @@ button.addEventListener("click", (event) => { event.preventDefault();  sendconeD
 
 /***********************************************************/
 
-function BrowseQuery()
+function BrowseHandler()
 {
 const form = document.querySelector("#search");
 
 async function sendbrowseData() {
 
-  let formData = new FormData(form);
+let formData = new FormData(form);
 
-  fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
+fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
    .then(response => {
 
     if (!response.ok) {
@@ -567,10 +594,129 @@ button.addEventListener("click", (event) => { event.preventDefault();  sendbrows
 
 /***********************************************************/
 
+function IncHandler() 
+{
+   async function sendincData() 
+   {
+   let form = document.getElementById("search")
+   let formData = new FormData(form);
+
+   // Update *****
+   let pagenr = document.getElementById('counter').innerHTML;
+   pagenr++;  
+   document.getElementById('counter').innerHTML = pagenr;
+
+   formData.set("pagenr",pagenr)
+
+   fetch(API_SERVER+"/Browse", { method: "POST", body: formData }).then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+   }).then((resp) => {
+
+      console.log("CHECK INC",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null)
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoBrowsePanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+button = document.getElementById("inc"),
+button.addEventListener("click", (event) => { event.preventDefault();  sendincData(); });
+}
+
+/***********************************************************/
+
+function DecHandler() 
+{  
+   async function senddecData() 
+   {
+   let form = document.getElementById("search")
+   let formData = new FormData(form);
+
+   // Update *****
+   let pagenr = document.getElementById('counter').innerHTML;
+
+   if (pagenr != 1) 
+      {
+      pagenr--;  
+      }
+
+   document.getElementById('counter').innerHTML = pagenr;
+   formData.set("pagenr",pagenr)
+
+   fetch(API_SERVER+"/Browse", { method: "POST", body: formData }).then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+   }).then((resp) => {
+
+      console.log("CHECK DEC",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null)
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoBrowsePanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+button = document.getElementById("dec"),
+button.addEventListener("click", (event) => { event.preventDefault();  senddecData(); });
+}
+
+/***********************************************************/
+
 DoPage();
-OrbitQuery();
-ConeQuery();
-BrowseQuery();
+OrbitHandler();
+ConeHandler();
+BrowseHandler();
+IncHandler();
+DecHandler();
+
 </script>
 
 
