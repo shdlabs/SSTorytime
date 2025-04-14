@@ -1046,7 +1046,7 @@ func AddMandatory() {
 
 	//   + then the next is (then) - previous (prior)
 
-	arr := SST.InsertArrowDirectory("leadsto","then","then the next is","+")
+	arr := SST.InsertArrowDirectory("leadsto","then","then","+")
 	inv := SST.InsertArrowDirectory("leadsto","prior","previously","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
