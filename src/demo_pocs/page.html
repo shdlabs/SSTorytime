@@ -545,11 +545,12 @@ function BrowseHandler()
 {
 const form = document.querySelector("#search");
 
-async function sendbrowseData() {
+   async function sendbrowseData() {
 
-let formData = new FormData(form);
+   let formData = new FormData(form);
+   document.getElementById('counter').innerHTML = 1;
 
-fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
+   fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
    .then(response => {
 
     if (!response.ok) {
@@ -558,7 +559,7 @@ fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
 
     return response.json();
 
-  })
+   })
     .then((resp) => {
 
       console.log("CHECK BROWSE",JSON.stringify(resp, null, 2))
@@ -584,7 +585,7 @@ fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
     .catch((error) => {
       // Handle error
       console.log("error ", error);
-    });
+   });
 }
 
 // Take over form submission
