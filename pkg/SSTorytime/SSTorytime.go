@@ -964,6 +964,8 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 
 	CreateDBNode(ctx, org)
 
+	var empty Link
+
 	for stindex := range org.I {
 
 		for lnk := range org.I[stindex] {
@@ -975,6 +977,10 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 			CreateDBNodeArrowNode(ctx,org.NPtr,dstlnk,sttype)
 			Waiting()
 		}
+
+		empty.Dst = org.NPtr
+		CreateDBNodeArrowNode(ctx,org.NPtr,empty,0)
+		Waiting()
 	}
 }
 
@@ -1772,6 +1778,9 @@ func DefineStoredFunctions(ctx PoSST) {
 	qstr = "CREATE OR REPLACE FUNCTION match_arrows(arr int,user_set int[])\n"+
 		"RETURNS boolean AS $fn$\n" +
 		"BEGIN \n" +
+		"   IF array_length(user_set,1) = 1 THEN \n" + // empty arrows
+                "      RETURN true;"+
+		"   END IF;"+
 		"   IF arr = ANY(user_set) THEN \n" + // exact match
 		"      RETURN true;\n" +
 		"   END IF;\n" +
@@ -2526,13 +2535,16 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 	context := FormatSQLStringArray(cn)
 	chapter := "%"+chap+"%"
 	arrows := FormatSQLIntArray(Arrow2Int(arrow))
-	
+
 	// sufficient to search NFrom to get all nodes in context, as +/- relations complete
 	
 	qstr = fmt.Sprintf("WITH matching_nodes AS \n"+
 		" (SELECT NFrom,Arr,Ctx,match_context(Ctx,%s) AS matchc,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)\n"+
 		"   SELECT NFrom,Ctx,Chap FROM matching_nodes \n"+
 		"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx",context,arrows,chapter)
+
+	fmt.Println(qstr)
+	
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -2659,7 +2671,6 @@ func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 			if !ok {
 				ptr, ok = ARROW_LONG_DIR[name]
 				fmt.Println(ERR_NO_SUCH_ARROW,"("+name+")")
-				os.Exit(-1)
 			}
 		}
 	}

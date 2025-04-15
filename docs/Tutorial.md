@@ -162,12 +162,29 @@ directory and run `go run http_server.go`. Then you can connect by loading `page
 mark% go run http_server.go
 Listening at http://localhost:8080
 
-
 </pre>
 You should see a webpage:
 
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
+
+There are several text areas and several buttons. Not all of text areas are used with all buttons.
+* **Orbits** yields a description of a "thought" and its cloud of nearest relationships.
+* **Paths** yields a trail starting from a "thought"
+* **Browse**,**Previous**, and **Next**, are used when reading through notes from start to finish in a systematic order, page by page. 
+
+To search for anything matching a substring, enter a search string into Thought.
+If you want to limit the search to a particular section of notes and any specific context terms, you can
+add those to reduce the number of hits. For Orbits and Paths, the largest number of hits
+will come from leaving Chapter and Context blank.
+
+To read systematically, enter chapter and a set of arrows by which to select the kind of item you're
+searching for. For example, if you want to read notes, then enter "notes" into the arrows.
+If you are searching Chinese language with an emphasis on pinyin, then enter "ph,pe" or "ph pe"
+into the arrow ties text field and hit Browse. Use Next and Previous to walk through the different contexts within that chapter. If there is only one context, then 
+
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp2.png 'Testing a web interface')
+
+
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp3.png 'Testing a web interface')
 
 

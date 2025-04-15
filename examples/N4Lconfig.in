@@ -20,7 +20,7 @@
  	+ evolved into (evolved)    - evolved from (evolvedfrom)
  	+ determines (det)  - is determined by (detby)
 
-        + is followed by (next) - is preceded by (prev)    
+        ## RESERVED + is followed by (next) - is preceded by (prev)    
 
 //        + and next (then) - previous (prior)
 
@@ -149,8 +149,9 @@
  # Here we see type classifiers in action
 
  + is called (called) - name of (pname)
- + has url (url) - is a URL for (isurl)
- + has image (img) - is an image for (isimg)
+
+ # RESERVED + has url (url) - is a URL for (isurl)
+ # RESERVED + has image (img) - is an image for (isimg)
 
  + has frequency (freq) - is the frequency of (isfreq)
  + is characterized by (state) - is a/the state of (stateof)

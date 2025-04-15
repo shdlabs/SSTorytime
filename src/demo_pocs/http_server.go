@@ -193,7 +193,7 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 
 	chaptext = strings.TrimSpace(chaptext)
 
-	arrnames,nzarr := Str2Array(arrstr)
+	arrnames,_ := Str2Array(arrstr)
 	context,_ := Str2Array(cntstr)
 
 	if section <= 0 {
@@ -201,11 +201,6 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 	}
 
 	fmt.Println("Matching...Browse(",section,chaptext,context,arrnames,")",len(arrnames))
-
-	if nzarr == 0 {
-		fmt.Println("No arrows defined for browsing")
-		return
-	}
 
 	var arrows []SST.ArrowPtr
 
@@ -259,7 +254,7 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 			if !headerdone {
 				multicone += fmt.Sprintf("{ \"section\" : \"%d\",\n",section)
 				multicone += fmt.Sprintf("  \"chapter\" : \"%s\",\n",qnodes[q].Chapter)
-				multicone += fmt.Sprintf("  \"context\" : \"%v\",\n",CleanCtx(qnodes[q].Context))
+				multicone += fmt.Sprintf("  \"context\" : \"%v\",\n",CleanText(qnodes[q].Context))
 				multicone += fmt.Sprintf("  \"nptrs\" : [ ")
 				headerdone = true
 			}
@@ -297,7 +292,7 @@ func GenHeader(w http.ResponseWriter, r *http.Request) {
 
 // *********************************************************************
 
-func CleanCtx(c string) string {
+func CleanText(c string) string {
 
 	c = strings.Replace(c,"{","",-1)
 	c = strings.Replace(c,"}","",-1)
@@ -312,10 +307,11 @@ func Str2Array(s string) ([]string,int) {
 
 	var non_zero int
 
-	s = strings.Replace(s,","," ",-1)
-	s = strings.Replace(s,"\"","\\\"",-1)
+	s = strings.Replace(s,"{","",-1)
+	s = strings.Replace(s,"}","",-1)
+	s = strings.Replace(s,"\"","",-1)
 
-	arr := strings.Split(s," ")
+	arr := strings.Split(s,",")
 
 	for a := 0; a < len(arr); a++ {
 		arr[a] = strings.TrimSpace(arr[a])
