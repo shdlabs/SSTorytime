@@ -254,7 +254,22 @@ Here A,B,C,D,E stand for unicode strings. Reserved symbols:
 Literal parentheses can be quoted. There should be no whitespace after the initial quote
 of a quoted string.
 
-## Sequence mode ##
+## Reserved relation names
+
+For the purpose of automating sequence capture and rendering of multimedia objects,
+the following relation types are reserved:
+
+<pre>
+   leadsto:
+      + then (then) - prior
+
+   properties::
+      + has url   (url) - is a URL for (isurl)
+      + has image (img) - is an image for (isimg)
+
+</pre>
+
+## Sequence mode
 
 Sometimes it's useful to link items together into a chain or sequence.
 By adding the sequence directive to a context. From the example of the Mary had a little lamb above:

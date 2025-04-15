@@ -245,9 +245,9 @@ func main() {
 
 	NewFile("N4Lconfig.in")
 	config := ReadFile(CURRENT_FILE)
-	ParseConfig(config)
 
 	AddMandatory()
+	ParseConfig(config)
 
 	//SummarizeAndTestConfig()
 
@@ -1104,10 +1104,18 @@ func AddMandatory() {
 
 	//   + then the next is (then) - previous (prior)
 
-	CheckArrow(SEQUENCE_RELN,SEQUENCE_RELN)
 	arr := InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-	CheckArrow("prior","previously")
-	inv := InsertArrowDirectory("leadsto","prior","previously","-")
+	inv := InsertArrowDirectory("leadsto","prev","previously","-")
+	InsertInverseArrowDirectory(arr,inv)
+
+	// for rendering from the database in a web browser
+
+	arr = InsertArrowDirectory("properties","url","has URL","+")
+        inv = InsertArrowDirectory("properties","isurl","is a URL for","-")
+	InsertInverseArrowDirectory(arr,inv)
+
+	arr = InsertArrowDirectory("properties","img","has image","+")
+        inv = InsertArrowDirectory("properties","isimg","is an image for","-")
 	InsertInverseArrowDirectory(arr,inv)
 
 }

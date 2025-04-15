@@ -131,12 +131,10 @@ func main() {
 	args := Init()
 
 	NewFile("N4Lconfig.in")
-
 	config := ReadFile(CURRENT_FILE)
 
-	ParseConfig(config)
-
 	AddMandatory()
+	ParseConfig(config)
 
 	for input := 0; input < len(args); input++ {
 		NewFile(args[input])
@@ -1047,17 +1045,17 @@ func AddMandatory() {
 	//   + then the next is (then) - previous (prior)
 
 	arr := SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-	inv := SST.InsertArrowDirectory("leadsto","prior","previously","-")
+	inv := SST.InsertArrowDirectory("leadsto","prev","previously","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
 	// for rendering from the database in a web browser
 
-	arr = SST.InsertArrowDirectory("properties","has URL","url","+")
-        inv = SST.InsertArrowDirectory("properties","is a URL for","isurl","-")
+	arr = SST.InsertArrowDirectory("properties","url","has URL","+")
+        inv = SST.InsertArrowDirectory("properties","isurl","is a URL for","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
-	arr = SST.InsertArrowDirectory("properties","has image","img","+")
-        inv = SST.InsertArrowDirectory("properties","is an image for","isimg","-")
+	arr = SST.InsertArrowDirectory("properties","img","has image","+")
+        inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
 }
