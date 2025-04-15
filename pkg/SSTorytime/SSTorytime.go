@@ -103,7 +103,7 @@ type QNodePtr struct {
 
 //**************************************************************
 
-type STTypeMatroid struct {
+type STTypeAppointment struct {
 
 	NFrom NodePtr
 	STType int
@@ -112,7 +112,7 @@ type STTypeMatroid struct {
 
 //**************************************************************
 
-type ArrowMatroid struct {
+type ArrowAppointment struct {
 
 	NFrom NodePtr
 	Arr ArrowPtr
@@ -3445,7 +3445,7 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 // Retrieve Analysis
 // **************************************************************************
 
-func GetMatroidArrayByArrow(ctx PoSST, context []string,chapter string) map[ArrowPtr][]NodePtr {
+func GetAppointmentArrayByArrow(ctx PoSST, context []string,chapter string) map[ArrowPtr][]NodePtr {
 
           /* arr |             x             
             -----+---------------------------
@@ -3470,7 +3470,7 @@ func GetMatroidArrayByArrow(ctx PoSST, context []string,chapter string) map[Arro
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err,qstr)
+		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err,qstr)
 	}
 
 	var arry string
@@ -3489,7 +3489,7 @@ func GetMatroidArrayByArrow(ctx PoSST, context []string,chapter string) map[Arro
 
 // **************************************************************************
 
-func GetMatroidArrayBySSType(ctx PoSST) map[int][]NodePtr {
+func GetAppointmentArrayBySSType(ctx PoSST) map[int][]NodePtr {
 
 
           /* sttype |             array_agg             
@@ -3507,7 +3507,7 @@ func GetMatroidArrayBySSType(ctx PoSST) map[int][]NodePtr {
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err)
 	}
 
 	var arry string
@@ -3526,7 +3526,7 @@ func GetMatroidArrayBySSType(ctx PoSST) map[int][]NodePtr {
 
 // **************************************************************************
 
-func GetMatroidHistogramByArrow(ctx PoSST) map[ArrowPtr]int {
+func GetAppointmentHistogramByArrow(ctx PoSST) map[ArrowPtr]int {
 
 /* arr | count 
 -----+-------
@@ -3543,7 +3543,7 @@ func GetMatroidHistogramByArrow(ctx PoSST) map[ArrowPtr]int {
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err)
 	}
 
 	var freq int
@@ -3562,7 +3562,7 @@ func GetMatroidHistogramByArrow(ctx PoSST) map[ArrowPtr]int {
 
 // **************************************************************************
 
-func GetMatroidHistogramBySSType(ctx PoSST) map[int]int {
+func GetAppointmentHistogramBySSType(ctx PoSST) map[int]int {
 
 /* sttype | x 
 --------+---
@@ -3578,7 +3578,7 @@ func GetMatroidHistogramBySSType(ctx PoSST) map[int]int {
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err)
 	}
 
 	var freq int
@@ -3594,7 +3594,7 @@ func GetMatroidHistogramBySSType(ctx PoSST) map[int]int {
 
 // **************************************************************************
 
-func GetMatroidNodesByArrow(ctx PoSST) []ArrowMatroid {
+func GetAppointmentNodesByArrow(ctx PoSST) []ArrowAppointment {
 
 /*  nfrom | arr | array_agg 
 -------+-----+-----------
@@ -3615,12 +3615,12 @@ func GetMatroidNodesByArrow(ctx PoSST) []ArrowMatroid {
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetMatroidArrayByArrow Failed",err)
+		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err)
 	}
 
 	var nptr,arry string
-	var retval []ArrowMatroid
-	var this ArrowMatroid
+	var retval []ArrowAppointment
+	var this ArrowAppointment
 
 	for row.Next() {		
 		err = row.Scan(&nptr,&this.Arr,&arry)
@@ -3636,7 +3636,7 @@ func GetMatroidNodesByArrow(ctx PoSST) []ArrowMatroid {
 
 // **************************************************************************
 
-func GetMatroidNodesBySTType(ctx PoSST) []STTypeMatroid {
+func GetAppointmentNodesBySTType(ctx PoSST) []STTypeAppointment {
 
 /*  nfrom | sttype | array_agg 
 -------+--------+-----------
@@ -3657,11 +3657,11 @@ func GetMatroidNodesBySTType(ctx PoSST) []STTypeMatroid {
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetMatroidArrayBySTType Failed",err)
+		fmt.Println("QUERY GetAppointmentArrayBySTType Failed",err)
 	}
 
-	var retval []STTypeMatroid
-	var this STTypeMatroid
+	var retval []STTypeAppointment
+	var this STTypeAppointment
 	var nptr,arr,arry string
 
 	for row.Next() {		

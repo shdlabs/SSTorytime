@@ -33,29 +33,29 @@ func main() {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	UseGetMatroidArrayByArrow(ctx)
-	UseGetMatroidArrayBySSType(ctx)
-	UseGetMatroidHistogramByArrow(ctx)
-	UseGetMatroidHistogramBySSType(ctx)
-	UseGetMatroidNodesByArrow(ctx)
-	UseGetMatroidNodesBySTType(ctx)
+	UseGetAppointmentArrayByArrow(ctx)
+	UseGetAppointmentArrayBySSType(ctx)
+	UseGetAppointmentHistogramByArrow(ctx)
+	UseGetAppointmentHistogramBySSType(ctx)
+	UseGetAppointmentNodesByArrow(ctx)
+	UseGetAppointmentNodesBySTType(ctx)
 
 	SST.Close(ctx)
 }
 
 //******************************************************************
 
-func UseGetMatroidArrayByArrow(ctx SST.PoSST) {
+func UseGetAppointmentArrayByArrow(ctx SST.PoSST) {
 
 	context := []string{"any"}
 	chapter := "any"
 
 	var ama map[SST.ArrowPtr][]SST.NodePtr
 
-	ama = SST.GetMatroidArrayByArrow(ctx,context,chapter)
+	ama = SST.GetAppointmentArrayByArrow(ctx,context,chapter)
 
 	fmt.Println("--------------------------------------------------")
-	fmt.Println("FEATURE: GetMatroidArrayByArrow:")
+	fmt.Println("FEATURE: GetAppointmentArrayByArrow:")
 	fmt.Println("--------------------------------------------------")
 
 	for arrowptr := range ama {
@@ -75,14 +75,14 @@ func UseGetMatroidArrayByArrow(ctx SST.PoSST) {
 
 //******************************************************************
 
-func UseGetMatroidArrayBySSType(ctx SST.PoSST) {
+func UseGetAppointmentArrayBySSType(ctx SST.PoSST) {
 
 	var ams map[int][]SST.NodePtr
 
-	ams = SST.GetMatroidArrayBySSType(ctx)
+	ams = SST.GetAppointmentArrayBySSType(ctx)
 
 	fmt.Println("--------------------------------------------------")
-	fmt.Println("FEATURE: GetMatroidArrayBySTType:")
+	fmt.Println("FEATURE: GetAppointmentArrayBySTType:")
 	fmt.Println("--------------------------------------------------")
 
 	for sttype := range ams {
@@ -101,12 +101,12 @@ func UseGetMatroidArrayBySSType(ctx SST.PoSST) {
 
 //******************************************************************
 
-func UseGetMatroidHistogramByArrow(ctx SST.PoSST) {
+func UseGetAppointmentHistogramByArrow(ctx SST.PoSST) {
 
 	var ha map[SST.ArrowPtr]int
-	ha = SST.GetMatroidHistogramByArrow(ctx)
+	ha = SST.GetAppointmentHistogramByArrow(ctx)
 	fmt.Println("*****************************************************")
-	fmt.Println("FEATURE: GetMatroidHistogramByArrow")
+	fmt.Println("FEATURE: GetAppointmentHistogramByArrow")
 	fmt.Println("*****************************************************")
 
 	fmt.Println("The relative prevalence of things pointed out by the graph relations:\n")
@@ -120,12 +120,12 @@ func UseGetMatroidHistogramByArrow(ctx SST.PoSST) {
 
 //******************************************************************
 
-func UseGetMatroidHistogramBySSType(ctx SST.PoSST) {
+func UseGetAppointmentHistogramBySSType(ctx SST.PoSST) {
 
 	var hs map[int]int
-	hs = SST.GetMatroidHistogramBySSType(ctx)
+	hs = SST.GetAppointmentHistogramBySSType(ctx)
 	fmt.Println("*****************************************************")
-	fmt.Println("FEATURE: GetMatroidHistogramBySTType")
+	fmt.Println("FEATURE: GetAppointmentHistogramBySTType")
 	fmt.Println("*****************************************************")
 
 	fmt.Println("The relative prevalence of things pointed out by spacetime process:\n")
@@ -138,13 +138,13 @@ func UseGetMatroidHistogramBySSType(ctx SST.PoSST) {
 
 //******************************************************************
 
-func UseGetMatroidNodesByArrow(ctx SST.PoSST) {
+func UseGetAppointmentNodesByArrow(ctx SST.PoSST) {
 
-	var ma []SST.ArrowMatroid
-	ma = SST.GetMatroidNodesByArrow(ctx)
+	var ma []SST.ArrowAppointment
+	ma = SST.GetAppointmentNodesByArrow(ctx)
 
 	fmt.Println("*****************************************************")
-	fmt.Println("FEATURE: GetMatroidNodesByArrow")
+	fmt.Println("FEATURE: GetAppointmentNodesByArrow")
 	fmt.Println("*****************************************************")
 
 	for a := range ma {
@@ -163,12 +163,12 @@ func UseGetMatroidNodesByArrow(ctx SST.PoSST) {
 
 //******************************************************************
 
-func UseGetMatroidNodesBySTType(ctx SST.PoSST) {
+func UseGetAppointmentNodesBySTType(ctx SST.PoSST) {
 
-	var ms []SST.STTypeMatroid
-	ms = SST.GetMatroidNodesBySTType(ctx)
+	var ms []SST.STTypeAppointment
+	ms = SST.GetAppointmentNodesBySTType(ctx)
 	fmt.Println("*****************************************************")
-	fmt.Println("FEATURE: GetMatroidNodesBySTType")
+	fmt.Println("FEATURE: GetAppointmentNodesBySTType")
 	fmt.Println("*****************************************************")
 
 	for s := range ms {

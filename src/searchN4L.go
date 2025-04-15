@@ -181,7 +181,7 @@ func ByArrow(ctx SST.PoSST, chaptext string,context []string,searchtext string,a
 	var ama map[SST.ArrowPtr][]SST.NodePtr
 	var count int
 
-	ama = SST.GetMatroidArrayByArrow(ctx,context,chaptext)
+	ama = SST.GetAppointmentArrayByArrow(ctx,context,chaptext)
 
 	for arrowptr := range ama {
 		arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
