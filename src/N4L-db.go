@@ -1046,8 +1046,18 @@ func AddMandatory() {
 
 	//   + then the next is (then) - previous (prior)
 
-	arr := SST.InsertArrowDirectory("leadsto","then","then","+")
+	arr := SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
 	inv := SST.InsertArrowDirectory("leadsto","prior","previously","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
+	// for rendering from the database in a web browser
+
+	arr = SST.InsertArrowDirectory("properties","has URL","url","+")
+        inv = SST.InsertArrowDirectory("properties","is a URL for","isurl","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
+	arr = SST.InsertArrowDirectory("properties","has image","img","+")
+        inv = SST.InsertArrowDirectory("properties","is an image for","isimg","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
 }

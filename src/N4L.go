@@ -1104,8 +1104,8 @@ func AddMandatory() {
 
 	//   + then the next is (then) - previous (prior)
 
-	CheckArrow("then","then the next is")
-	arr := InsertArrowDirectory("leadsto","then","then","+")
+	CheckArrow(SEQUENCE_RELN,SEQUENCE_RELN)
+	arr := InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
 	CheckArrow("prior","previously")
 	inv := InsertArrowDirectory("leadsto","prior","previously","-")
 	InsertInverseArrowDirectory(arr,inv)

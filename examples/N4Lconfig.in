@@ -150,6 +150,7 @@
 
  + is called (called) - name of (pname)
  + has url (url) - is a URL for (isurl)
+ + has image (img) - is an image for (isimg)
 
  + has frequency (freq) - is the frequency of (isfreq)
  + is characterized by (state) - is a/the state of (stateof)
