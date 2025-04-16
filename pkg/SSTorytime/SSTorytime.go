@@ -3412,6 +3412,12 @@ func JSONNodeOrbit(ctx PoSST, nptr NodePtr) string {
 
 func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 
+        type WebPath struct {
+		NPtr NodePtr
+		Arr  ArrowPtr
+		Name string
+	}
+
 	var jstr string = "["
 
 	for p := 0; p < len(cone); p++ {
@@ -3420,7 +3426,7 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 		
 		start_shown := false
 
-		var path []string
+		var path []WebPath
 		
 		for l := 1; l < len(cone[p]); l++ {
 
@@ -3435,17 +3441,27 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 			}
 			
 			if !start_shown {
-				path = append(path,path_start.S)
+				var ws WebPath
+				ws.Name = path_start.S
+				ws.NPtr = cone[p][0].Dst
+				path = append(path,ws)
 				start_shown = true
 			}
 
 			arr := GetDBArrowByPtr(ctx,cone[p][l].Arr)
 	
 			if l < len(cone[p]) {
-				path = append(path,arr.Long)
+				var wl WebPath
+				wl.Name = arr.Long
+				wl.Arr = cone[p][l].Arr
+				path = append(path,wl)
 			}
-			
-			path = append(path,nextnode.S)
+
+			var wn WebPath
+			wn.Name = nextnode.S
+			wn.NPtr = cone[p][l].Dst
+			path = append(path,wn)
+
 		}
 
 		encoded, _ := json.Marshal(path)

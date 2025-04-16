@@ -147,6 +147,7 @@ func HandleCone(w http.ResponseWriter, r *http.Request,name,chapter,context stri
 		for i := range order {
 			sttype := order[i]
 			cone,span := SST.GetFwdPathsAsLinks(CTX,nptrs[n],sttype,maxdepth[i])
+
 			json := SST.JSONCone(CTX,cone,chapter,cntxt)
 
 			if span > 0 {

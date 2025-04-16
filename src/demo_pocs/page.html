@@ -260,12 +260,13 @@ for (let path = 0; path < array.length; path++)
       {
       if (i % 2 == 0) // node
          {
-         let str = array[path][i]
+         let str = array[path][i].Name;
+         let NPtr = array[path][i].NPtr;
 
          if (str.includes("\n"))
             {
             let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+            text_link.onclick = function() { sendlinkData(NPtr.Class,NPtr.CPtr); };
             let pre = document.createElement('pre');
             pre.textContent = str;
             text_link.appendChild(pre);
@@ -274,8 +275,8 @@ for (let path = 0; path < array.length; path++)
          else
             {
             let text_link = document.createElement('a');
+            text_link.onclick = function() { sendlinkData(NPtr.Class,NPtr.CPtr); };
             let text = document.createElement('i');
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
             text.textContent = str;
             text.style.fontFamily = 'Times New Roman';
 
@@ -286,12 +287,13 @@ for (let path = 0; path < array.length; path++)
                }
 
             text_link.appendChild(text);
-            parent.appendChild(text);
+            parent.appendChild(text_link);
             }
          }
       else // arrow 
          {
-         let arrow = array[path][i]
+         let arrow = array[path][i].Name
+         let arrptr = array[path][i].Arr
          let arrow_link = document.createElement('a');
          arrow_link.textContent = `( ${arrow} )  `;
          arrow_link.style.fontFamily = 'Verdana';
