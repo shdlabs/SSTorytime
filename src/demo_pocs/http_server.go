@@ -118,7 +118,7 @@ func HandleCone(w http.ResponseWriter, r *http.Request,name,chapter,context stri
 	// Policy for ordering and search depth along each vector
 
 	order    := []int{0,1,-1,2,-2,3,-3}
-	maxdepth := []int{2,4,4,2,2,2,2}
+	maxdepth := []int{2,8, 2,2, 2,3, 2}
 	var count int
 
 	// Encode
@@ -208,6 +208,7 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 		arr := SST.GetDBArrowByName(CTX,arrnames[a])
 		arrows = append(arrows,arr)
 	}
+	fmt.Println(arrnames,arrows)
 
 	qnodes := SST.GetDBNodeContextsMatchingArrow(CTX,chaptext,context,"",arrows)
 
@@ -225,7 +226,7 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 	// Policy for ordering and search depth along each vector
 
 	order    := []int{0,1,-1,2,-2,3,-3}
-	maxdepth := []int{2,4,4,2,2,2,2}
+	maxdepth := []int{2,8, 2,2, 2,3, 2}
 	headerdone := false
 	var secnr int
 	var prev string = ""
