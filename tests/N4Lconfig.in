@@ -6,8 +6,6 @@
  	# Define arrow causal directions ... left to right
  	# what does A -----> B mean, and what is its opposite?
 
-        + empty (debug) - adjoint empty (adjdebug)
-
         + leads to (lt) - arriving from (af)
 
  	# causal order, preconditions, succession
@@ -75,7 +73,7 @@
 
  :: chinese language ::
 
- 	+ english for pinyin (ep) - pinyin for english (pe)  
+ 	+ pinyin for english (pe) - english for pinyin (ep) 
  	+ pinyin for hanzi (ph) - hanzi for pinyin (hp)
  	+ hanzi for english (he) - english for hanzi (eh)
  	+ english for Norwegian (en) - Norwegian for english (ne)
