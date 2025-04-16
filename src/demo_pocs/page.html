@@ -15,7 +15,7 @@ body {
 
 /* Style the header */
 header {
-  background-color: #669;
+  background-color: darkblue;
   padding: 20px;
   text-align: center;
   font-size: 35px;
@@ -47,10 +47,39 @@ article {
 
 article p {
   padding: 10px;
+color: green;
+}
+
+article pre {
+   color: green;
 }
 
 article a {
   padding: 10px;
+}
+
+a:hover {
+  color: orange;
+}
+
+.arrow {
+ color: darkred;
+}
+
+a:not(.arrow):hover{
+  color: #999999;
+}
+
+i:hover{
+  color: #999999;
+}
+
+h1:not(.arrow):hover{
+  color: #777777;
+}
+
+pre:hover{
+  color: #999999;
 }
 
 /* Clear floats after the columns */
@@ -117,7 +146,7 @@ footer {
 </section>
 
 <footer>
-  <p>Footer</p>
+  <p>SSTorytime project sponsored by NLnet.nl</p>
 </footer>
 </page>
 <script>
@@ -166,29 +195,42 @@ if (arrow == null)
 
 if (str.includes("\n"))
    {
-   let el = document.createElement('p');
-   el.textContent = `( ${arrow} )  `;
-   parent.appendChild(el);
+   // arrow
+   let arrow_link = document.createElement('a');
+   arrow_link.textContent = `( ${arrow} )  `;
+   arrow_link.className = 'arrow';
+   arrow_link.style.fontFamily = 'Verdana';
+   parent.appendChild(arrow_link);
 
-   let el2 = document.createElement('pre');
-   el2.textContent = str;
-   parent.appendChild(el2);
+   // pre formatted text
+   let text_link = document.createElement('a');
+   let pre = document.createElement('pre');
+   pre.textContent = str;
+   text_link.appendChild(pre);
+   text_link.className = 'text';
+   parent.appendChild(text_link);
    }
 else
    {
-   let el = document.createElement('a');
-   el.textContent = `( ${arrow} )  `;
-   el.style.fontFamily = 'Verdana';
-   parent.appendChild(el);
-   let el2 = document.createElement('a');
-   el2.textContent = str;
-   el2.style.fontFamily = 'Times';
+   // arrow
+   let arrow_link = document.createElement('a');
+   arrow_link.textContent = `( ${arrow} )  `;
+   parent.appendChild(arrow_link);
+   arrow_link.className = 'arrow';
+   arrow_link.style.fontFamily = 'Verdana';
+
+   // plain text
+   let text_link = document.createElement('a');
+   text_link.textContent = str;
+   text_link.className = 'text';
+   text_link.style.fontFamily = 'Times';
    if (str.length < 20)
       {
-      el2.style.fontSize = '200%';
-      el2.style.padding = '10px';
+      text_link.style.fontSize = '200%';
+      text_link.style.padding = '10px';
       }
-   parent.appendChild(el2);
+   parent.appendChild(text_link);
+
    let br = document.createElement('br');
    parent.appendChild(br);
    }
@@ -202,6 +244,10 @@ function PrintPath(parent,array)
 {
 for (let path = 0; path < array.length; path++)
    {
+   if (array[path] == null)
+      {
+      continue;
+      }
    for (let i = 0; i < array[path].length; i++)
       {
       if (i % 2 == 0) // node
@@ -210,37 +256,49 @@ for (let path = 0; path < array.length; path++)
 
          if (str.includes("\n"))
             {
-            //let el = document.createElement('p');
-            //el.textContent = `( ${arrow} )  `;
-            //parent.appendChild(el);
-
-            let el2 = document.createElement('pre');
-            el2.textContent = str;
-            parent.appendChild(el2);
+            let text_link = document.createElement('a');
+            //text_link.href = "http...";
+            let pre = document.createElement('pre');
+            pre.textContent = str;
+            text_link.appendChild(pre);
+            parent.appendChild(text_link);
             }
          else
             {
-            let el2 = document.createElement('a');
-            el2.textContent = str;
-            el2.style.fontFamily = 'Times New Roman';
+            let text_link = document.createElement('a');
+            let text = document.createElement('i');
+            //text_link.href = "http...";
+            text.textContent = str;
+            text.style.fontFamily = 'Times New Roman';
+
             if (str.length < 20)
                {
-               el2.style.fontSize = '150%';
-               el2.style.padding = '10px';
+               text.style.fontSize = '150%';
+               text.style.padding = '10px';
                }
-            parent.appendChild(el2);
+
+            text_link.appendChild(text);
+            parent.appendChild(text);
             }
          }
       else // arrow 
          {
          let arrow = array[path][i]
-         let el = document.createElement('a');
-         el.textContent = `( ${arrow} )  `;
-         el.style.fontFamily = 'Verdana';
-         parent.appendChild(el);
+         let arrow_link = document.createElement('a');
+         arrow_link.textContent = `( ${arrow} )  `;
+         arrow_link.style.fontFamily = 'Verdana';
+         arrow_link.className = 'arrow';
+         //arrow_link.style.href = 'http...';
+         parent.appendChild(arrow_link);
          }
       }
    }
+
+let spacer = document.createElement('class');
+spacer.textContent = '*';
+spacer.fontSize = '200%';
+parent.appendChild(spacer);
+
 return parent
 }
 
@@ -286,26 +344,39 @@ header.appendChild(titlebar);
 function DoOrbitPanel(obj) 
 {
 let section = document.querySelector('article');
-
 let panel = document.createElement('p');
 panel.id = "main_root";
 section.appendChild(panel);
 
 for (let match of obj.matches) 
    {
-   let parent = document.createElement('content');
-   let from_text = document.createElement('h1');
-   let el = document.createElement('p');
-
-   from_text.textContent = match.Text;
-   parent.appendChild(from_text);
+   let child = document.createElement('content');
+   if (match.Text.includes("\n"))
+      {
+      let from_link = document.createElement('a');
+      let from_text = document.createElement('pre');
+      from_text.nameClass = "text";
+      from_text.textContent = match.Text;
+      from_link.appendChild(from_text);
+      from_link.nameClass = "text";
+      child.appendChild(from_link);
+      }
+   else
+      {
+      let from_link = document.createElement('a');
+      let from_text = document.createElement('h1');
+      from_text.textContent = match.Text;
+      from_link.appendChild(from_text);
+      from_link.nameClass = "text";
+      child.appendChild(from_link);
+      }
 
    if (match.Im3 != null)
       {
       for (let ngh of match.Im3) 
          {
-         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
-         panel.appendChild(parent);
+         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         panel.appendChild(child);
          }
       }
 
@@ -313,8 +384,8 @@ for (let match of obj.matches)
      {
      for (let ngh of match.Ie3) 
         {
-        parent = PrintLink(parent,ngh.Arrow,ngh.Text);
-        panel.appendChild(parent);
+        child = PrintLink(child,ngh.Arrow,ngh.Text);
+        panel.appendChild(child);
         }
      }
 
@@ -322,8 +393,8 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Im2) 
          {
-         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
-         panel.appendChild(parent);
+         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         panel.appendChild(child);
          }
       }
 
@@ -331,8 +402,8 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Ic2) 
          {
-         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
-         panel.appendChild(parent);
+         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         panel.appendChild(child);
          }
       }
 
@@ -340,8 +411,8 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Il1) 
          {
-         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
-         panel.appendChild(parent);
+         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         panel.appendChild(child);
          }
       }
 
@@ -349,8 +420,8 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Im1) 
          {
-         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
-         panel.appendChild(parent);
+         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         panel.appendChild(child);
          }
       }
 
@@ -358,8 +429,8 @@ for (let match of obj.matches)
       {
       for (let ngh of match.In0) 
          {
-         parent = PrintLink(parent,ngh.Arrow,ngh.Text)
-         panel.appendChild(parent);
+         child = PrintLink(child,ngh.Arrow,ngh.Text)
+         panel.appendChild(child);
          }
       }
    let hr = document.createElement('hr');
@@ -380,7 +451,7 @@ console.log(obj)
 
 for (let nptr of obj.paths) 
    {
-   let parent = document.createElement('article');
+   let parent = document.createElement('content');
    parent = PrintPath(parent,nptr.Il1);
    panel.appendChild(parent);
    parent = PrintPath(parent,nptr.Im1);
