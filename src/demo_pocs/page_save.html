@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>SSTorytime Simple viewer</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style the header */
+header {
+  background-color: #53b;
+  padding: 20px;
+  text-align: center;
+  font-size: 35px;
+  color: white;
+}
+
+h1 {
+  font-size: 35px;
+  color: #5599cc;
+}
+
+/* Create two columns/boxes that floats next to each other */
+nav {
+  float: left;
+  width: 100%;
+  height: 50px; /* only for demonstration, should be removed */
+  background: #ccc;
+  padding: 20px;
+}
+
+article {
+  float: left;
+  padding: 10px;
+  width: 100%;
+  font-size: 25px;
+  background-color: #f1f1f1;
+  /* height: 300px; /* only for demonstration, should be removed */
+}
+
+article p {
+  padding: 10px;
+}
+
+article pre {
+   color: green;
+}
+
+article a {
+  padding: 10px;
+}
+
+a:hover {
+  color: #0055FF;
+}
+
+.text a.link {
+}
+
+
+.text a:hover {
+   color: magneta;
+}
+
+a:not(.text):hover{
+  color: #FF0000;
+}
+
+
+/* Clear floats after the columns */
+section::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Style the footer */
+footer {
+  background-color: #777;
+  padding: 10px;
+  text-align: center;
+  color: white;
+}
+
+/* Responsive layout - makes the two columns/boxes stack on top of each other instead of next to each other, on small screens */
+@media (max-width: 600px) {
+  nav, article {
+    width: 100%;
+    height: auto;
+  }
+}
+</style>
+</head>
+<body>
+
+<page>
+<header>
+<h2>SSTorytime app</h2>
+</header>
+
+<section>
+  <nav>
+
+<form id="search">
+    <label for="subject">Thought</label>
+    <input type="text" id="name" name="name" value="" />
+
+    <label for="chapter">Chapter</label>
+    <input type="text" id="chapter" name="chapter" />
+
+    <label for="chapter">Filters ...</label>
+    <input type="text" id="context" name="context" />
+
+    <label for="chapter">Arrow ties</label>
+    <input type="text" id="arrnames" name="arrnames" />
+
+  <input type="submit" id="pathsubmit" value="Paths" />
+  <input type="submit" id="orbitsubmit" value="Orbits" />
+  <input type="submit" id="browsesubmit" value="Browse" />
+  <input type="submit" id="dec" value="Previous" />
+  <input type="submit" id="inc" value="Next" />
+
+</form>
+
+  </nav>
+
+  <article>
+
+  </article>
+
+</section>
+
+<footer>
+  <p>SSTorytime project sponsored by NLnet.nl</p>
+</footer>
+</page>
+<script>
+
+var API_SERVER = 'http://localhost:8080';
+
+// Disable ENTER submission
+
+window.addEventListener('keydown',function(event)
+   {
+   if(event.keyCode == 13) 
+      {
+      event.preventDefault();
+      return false;
+      }
+   });
+
+/***********************************************************/
+
+async function DoPage() 
+{
+let requestURL = API_SERVER+"/Orbit";
+let request = new Request(requestURL);
+let response = await fetch(request);
+let mynote = await response.json();
+
+DoHeader(mynote);
+DoOrbitPanel(mynote) // Start in orbit
+
+let nav = document.getElementById("search");
+
+let counter = document.createElement('span');
+counter.innerHTML=1
+counter.id="counter"
+nav.appendChild(counter);
+}
+
+/***********************************************************/
+
+function PrintLink(parent,arrow,str) 
+{
+if (arrow == null)
+   {
+   arrow = "broken arrow"
+   }
+
+if (str.includes("\n"))
+   {
+   let el = document.createElement('a');
+   el.textContent = `( ${arrow} )  `;
+   parent.appendChild(el);
+
+   let el2 = document.createElement('pre');
+   el2.textContent = str;
+   el.className = 'text';
+   parent.appendChild(el2);
+   }
+else
+   {
+   let el = document.createElement('a');
+   el.textContent = `( ${arrow} )  `;
+   el.className = 'arrow';
+   el.style.fontFamily = 'Verdana';
+   parent.appendChild(el);
+
+   let el2 = document.createElement('a');
+   el2.textContent = str;
+   el.className = 'text';
+   el2.style.fontFamily = 'Times';
+   if (str.length < 20)
+      {
+      el2.style.fontSize = '200%';
+      el2.style.padding = '10px';
+      }
+   parent.appendChild(el2);
+   let br = document.createElement('br');
+   parent.appendChild(br);
+   }
+
+return parent
+}
+
+/***********************************************************/
+
+function PrintPath(parent,array) 
+{
+for (let path = 0; path < array.length; path++)
+   {
+   if (array[path] == null)
+      {
+      continue;
+      }
+   for (let i = 0; i < array[path].length; i++)
+      {
+      if (i % 2 == 0) // node
+         {
+         let str = array[path][i]
+
+         if (str.includes("\n"))
+            {
+            let el2 = document.createElement('pre');
+            el2.textContent = str;
+            parent.appendChild(el2);
+            }
+         else
+            {
+            let el2 = document.createElement('a');
+            //el2.href = "http...";
+            el2.textContent = str;
+            el2.style.fontFamily = 'Times New Roman';
+
+            if (str.length < 20)
+               {
+               el2.style.fontSize = '150%';
+               el2.style.padding = '10px';
+               }
+
+            parent.appendChild(el2);
+            }
+         }
+      else // arrow 
+         {
+         let arrow = array[path][i]
+         let el = document.createElement('a');
+         el.textContent = `( ${arrow} )  `;
+         el.style.fontFamily = 'Verdana';
+         el.className = 'arrow';
+         //el.style.href = 'http...';
+         parent.appendChild(el);
+         }
+      }
+   }
+
+let el3 = document.createElement('class');
+el3.textContent = '*';
+el3.fontSize = '200%';
+parent.appendChild(el3);
+
+return parent
+}
+
+/***********************************************************/
+
+function DoHeader(obj) 
+{
+let header = document.querySelector('header');
+let titlebar = document.createElement('h2');
+titlebar.id = "header_root";
+
+let title = "app";
+
+if (obj.matches != null)
+   {
+   title = obj.matches[0].Text;
+   }
+else if (obj.paths != null)
+   {
+   title = obj.paths[0].Text
+   }
+else
+   {
+   title =  obj.chapter + " :: " + obj.context + " :: "
+   }
+
+if (title.length < 40)
+   {
+   titlebar.textContent = title;
+   } 
+else 
+   {
+   titlebar.textContent = title.slice(0.40) + "...";
+   }
+
+   titlebar.style.fontSize = "70%"
+
+header.appendChild(titlebar);
+}
+
+/***********************************************************/
+
+function DoOrbitPanel(obj) 
+{
+let section = document.querySelector('article');
+
+let panel = document.createElement('p');
+panel.id = "main_root";
+section.appendChild(panel);
+
+for (let match of obj.matches) 
+   {
+   let parent = panel; //document.createElement('content');
+   if (match.Text.includes("\n"))
+      {
+      let from_text = document.createElement('pre');
+      from_text.nameClass = "text";
+      from_text.textContent = match.Text;
+      parent.appendChild(from_text);
+      }
+   else
+      {
+      let from_link = document.createElement('a');
+      let from_text = document.createElement('h1');
+      from_text.textContent = match.Text;
+      from_link.appendChild(from_text);
+      from_link.nameClass = "text";
+      parent.appendChild(from_link);
+      }
+
+   if (match.Im3 != null)
+      {
+      for (let ngh of match.Im3) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
+         }
+      }
+
+  if (match.Ie3 != null)
+     {
+     for (let ngh of match.Ie3) 
+        {
+        parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+        panel.appendChild(parent);
+        }
+     }
+
+   if (match.Im2 != null)
+      {
+      for (let ngh of match.Im2) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
+         }
+      }
+
+   if (match.Ic2 != null)
+      {
+      for (let ngh of match.Ic2) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
+         }
+      }
+
+   if (match.Il1 != null)
+      {
+      for (let ngh of match.Il1) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
+         }
+      }
+
+   if (match.Im1 != null)
+      {
+      for (let ngh of match.Im1) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text);
+         panel.appendChild(parent);
+         }
+      }
+
+   if (match.In0 != null)
+      {
+      for (let ngh of match.In0) 
+         {
+         parent = PrintLink(parent,ngh.Arrow,ngh.Text)
+         panel.appendChild(parent);
+         }
+      }
+   let hr = document.createElement('hr');
+   panel.appendChild(hr);
+   }
+}
+
+/***********************************************************/
+
+function DoConePanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+console.log(obj)
+
+for (let nptr of obj.paths) 
+   {
+   let parent = document.createElement('content');
+   parent = PrintPath(parent,nptr.Il1);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im1);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im2);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Ic2);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Ie3);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im3);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.In0);
+   panel.appendChild(parent);
+   let hr = document.createElement('hr');
+   parent.appendChild(hr);
+   }
+}
+
+/***********************************************************/
+
+function DoBrowsePanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+console.log(obj)
+
+for (let nptr of obj.nptrs) 
+   {
+   let parent = document.createElement('article');
+   parent = PrintPath(parent,nptr.Il1);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im1);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im2);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Ic2);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Ie3);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.Im3);
+   panel.appendChild(parent);
+   parent = PrintPath(parent,nptr.In0);
+   panel.appendChild(parent);
+   let hr = document.createElement('hr');
+   parent.appendChild(hr);
+   }
+}
+
+/***********************************************************/
+
+function OrbitHandler()
+{
+const form = document.querySelector("#search");
+
+async function sendorbitData() {
+
+  let formData = new FormData(form);
+
+  fetch(API_SERVER+"/Orbit", { method: "POST", body: formData })
+   .then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+  })
+    .then((resp) => {
+
+      console.log("CHECK ORBIT",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null) 
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoOrbitPanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+// Take over form submission
+button = document.getElementById('orbitsubmit'),
+button.addEventListener("click", (event) => { event.preventDefault();  sendorbitData(); });
+}
+
+/***********************************************************/
+
+function ConeHandler()
+{
+const form = document.querySelector("search");
+
+async function sendconeData() {
+
+  let formData = new FormData(form);
+
+  fetch(API_SERVER+"/Cone", { method: "POST", body: formData })
+   .then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+  })
+    .then((resp) => {
+
+      console.log("CHECK CONE",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null)
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoConePanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+// Take over form submission
+button = document.getElementById('pathsubmit'),
+button.addEventListener("click", (event) => { event.preventDefault();  sendconeData(); });
+}
+
+/***********************************************************/
+
+function BrowseHandler()
+{
+const form = document.querySelector("#search");
+
+   async function sendbrowseData() {
+
+   let formData = new FormData(form);
+   document.getElementById('counter').innerHTML = 1;
+
+   fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
+   .then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+   })
+    .then((resp) => {
+
+      console.log("CHECK BROWSE",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null)
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoBrowsePanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+   });
+}
+
+// Take over form submission
+button = document.getElementById('browsesubmit'),
+button.addEventListener("click", (event) => { event.preventDefault();  sendbrowseData(); });
+}
+
+/***********************************************************/
+
+function IncHandler() 
+{
+   async function sendincData() 
+   {
+   let form = document.getElementById("search")
+   let formData = new FormData(form);
+
+   // Update *****
+   let pagenr = document.getElementById('counter').innerHTML;
+   pagenr++;  
+   document.getElementById('counter').innerHTML = pagenr;
+
+   formData.set("pagenr",pagenr)
+
+   fetch(API_SERVER+"/Browse", { method: "POST", body: formData }).then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+   }).then((resp) => {
+
+      console.log("CHECK INC",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null)
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoBrowsePanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+button = document.getElementById("inc"),
+button.addEventListener("click", (event) => { event.preventDefault();  sendincData(); });
+}
+
+/***********************************************************/
+
+function DecHandler() 
+{  
+   async function senddecData() 
+   {
+   let form = document.getElementById("search")
+   let formData = new FormData(form);
+
+   // Update *****
+   let pagenr = document.getElementById('counter').innerHTML;
+
+   if (pagenr != 1) 
+      {
+      pagenr--;  
+      }
+
+   document.getElementById('counter').innerHTML = pagenr;
+   formData.set("pagenr",pagenr)
+
+   fetch(API_SERVER+"/Browse", { method: "POST", body: formData }).then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+   }).then((resp) => {
+
+      console.log("CHECK DEC",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null)
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoBrowsePanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+button = document.getElementById("dec"),
+button.addEventListener("click", (event) => { event.preventDefault();  senddecData(); });
+}
+
+/***********************************************************/
+
+DoPage();
+OrbitHandler();
+ConeHandler();
+BrowseHandler();
+IncHandler();
+DecHandler();
+
+</script>
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+

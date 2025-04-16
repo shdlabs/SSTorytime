@@ -964,6 +964,7 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 
 	CreateDBNode(ctx, org)
 
+	const nolink = 999
 	var empty Link
 
 	for stindex := range org.I {
@@ -978,8 +979,7 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 			Waiting()
 		}
 
-		empty.Dst = org.NPtr
-		CreateDBNodeArrowNode(ctx,org.NPtr,empty,0)
+		CreateDBNodeArrowNode(ctx,org.NPtr,empty,nolink)
 		Waiting()
 	}
 }
@@ -1070,6 +1070,10 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 	if sttype < -EXPRESS || sttype > EXPRESS {
 		fmt.Println(ERR_ST_OUT_OF_BOUNDS,sttype)
 		os.Exit(-1)
+	}
+
+	if n1ptr == lnk.Dst {
+		return false
 	}
 
 	//                       Arr,Wgt,Ctx,  Dst
@@ -1317,6 +1321,9 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"    FOREACH lnk IN ARRAY fwdlinks\n" +
 		"    LOOP\n"+
+		"      IF lnk.Arr = 0 THEN\n"+
+		"         CONTINUE;"+
+		"      END IF;\n"+
 		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
 		"         neighbours := array_append(neighbours, lnk.dst);\n" +
 		"      END IF; \n" +
@@ -1352,6 +1359,9 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    neighbours := ARRAY[]::Link[];\n" +
 		"    FOREACH lnk IN ARRAY fwdlinks\n" +
 		"    LOOP\n"+
+		"      IF lnk.Arr = 0 THEN\n"+
+		"         CONTINUE;"+
+		"      END IF;\n"+
 		"      IF exclude is not NULL AND NOT lnk.dst=ANY(exclude) THEN\n" +
 		"         neighbours := array_append(neighbours, lnk);\n" +
 		"      END IF; \n" + 
@@ -2543,9 +2553,6 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 		"   SELECT NFrom,Ctx,Chap FROM matching_nodes \n"+
 		"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx",context,arrows,chapter)
 
-	fmt.Println(qstr)
-	
-
 	row, err := ctx.DB.Query(qstr)
 
 	if err != nil {
@@ -3419,17 +3426,17 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 				return "[]"
 			}
 
-			if !start_shown {
-				path = append(path,path_start.S)
-				start_shown = true
-			}
-
 			nextnode := GetDBNodeByNodePtr(ctx,cone[p][l].Dst)
 
 			if !SimilarString(nextnode.Chap,chapter) {
 				break
 			}
 			
+			if !start_shown {
+				path = append(path,path_start.S)
+				start_shown = true
+			}
+
 			arr := GetDBArrowByPtr(ctx,cone[p][l].Arr)
 	
 			if l < len(cone[p]) {
