@@ -70,6 +70,10 @@ a:not(.arrow):hover{
   color: #999999;
 }
 
+hr {
+color: #cccccc;
+}
+
 i:hover{
   color: #999999;
 }
@@ -186,7 +190,7 @@ nav.appendChild(counter);
 
 /***********************************************************/
 
-function PrintLink(parent,arrow,str) 
+function PrintLink(parent,arrow,str,nclass,ncptr) 
 {
 if (arrow == null)
    {
@@ -204,6 +208,8 @@ if (str.includes("\n"))
 
    // pre formatted text
    let text_link = document.createElement('a');
+   text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+
    let pre = document.createElement('pre');
    pre.textContent = str;
    text_link.appendChild(pre);
@@ -215,12 +221,14 @@ else
    // arrow
    let arrow_link = document.createElement('a');
    arrow_link.textContent = `( ${arrow} )  `;
+
    parent.appendChild(arrow_link);
    arrow_link.className = 'arrow';
    arrow_link.style.fontFamily = 'Verdana';
 
    // plain text
    let text_link = document.createElement('a');
+   text_link.onclick = function() { sendlinkData(nclass,ncptr); };
    text_link.textContent = str;
    text_link.className = 'text';
    text_link.style.fontFamily = 'Times';
@@ -257,7 +265,7 @@ for (let path = 0; path < array.length; path++)
          if (str.includes("\n"))
             {
             let text_link = document.createElement('a');
-            //text_link.href = "http...";
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
             let pre = document.createElement('pre');
             pre.textContent = str;
             text_link.appendChild(pre);
@@ -267,7 +275,7 @@ for (let path = 0; path < array.length; path++)
             {
             let text_link = document.createElement('a');
             let text = document.createElement('i');
-            //text_link.href = "http...";
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
             text.textContent = str;
             text.style.fontFamily = 'Times New Roman';
 
@@ -354,6 +362,8 @@ for (let match of obj.matches)
    if (match.Text.includes("\n"))
       {
       let from_link = document.createElement('a');
+      from_link.onclick = function() { sendlinkData(match.NClass,match.NCptr); };
+
       let from_text = document.createElement('pre');
       from_text.nameClass = "text";
       from_text.textContent = match.Text;
@@ -364,6 +374,7 @@ for (let match of obj.matches)
    else
       {
       let from_link = document.createElement('a');
+      from_link.onclick = function() { sendlinkData(match.NClass,match.NCptr); };
       let from_text = document.createElement('h1');
       from_text.textContent = match.Text;
       from_link.appendChild(from_text);
@@ -375,7 +386,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Im3) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
          }
       }
@@ -384,7 +395,7 @@ for (let match of obj.matches)
      {
      for (let ngh of match.Ie3) 
         {
-        child = PrintLink(child,ngh.Arrow,ngh.Text);
+        child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
         panel.appendChild(child);
         }
      }
@@ -393,7 +404,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Im2) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
          }
       }
@@ -402,7 +413,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Ic2) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
          }
       }
@@ -411,7 +422,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Il1) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
          }
       }
@@ -420,7 +431,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Im1) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text);
+         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
          }
       }
@@ -429,7 +440,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.In0) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text)
+         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr)
          panel.appendChild(child);
          }
       }
@@ -508,7 +519,7 @@ for (let nptr of obj.nptrs)
 
 function OrbitHandler()
 {
-const form = document.querySelector("#search");
+let form = document.querySelector("#search");
 
 async function sendorbitData() {
 
@@ -561,7 +572,7 @@ button.addEventListener("click", (event) => { event.preventDefault();  sendorbit
 
 function ConeHandler()
 {
-const form = document.querySelector("#search");
+let form = document.querySelector("#search");
 
 async function sendconeData() {
 
@@ -778,6 +789,54 @@ function DecHandler()
 
 button = document.getElementById("dec"),
 button.addEventListener("click", (event) => { event.preventDefault();  senddecData(); });
+}
+
+/***********************************************************/
+
+async function sendlinkData(nclass,ncptr)
+{
+  let formData = new FormData();
+  formData.set("nclass",nclass)
+  formData.set("ncptr",ncptr)
+
+console.log(formData);
+
+  fetch(API_SERVER+"/Orbit", { method: "POST", body: formData })
+   .then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+  })
+    .then((resp) => {
+
+      console.log("CHECK ORBIT",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null) 
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoOrbitPanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
 }
 
 /***********************************************************/

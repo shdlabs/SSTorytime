@@ -21,6 +21,7 @@ func main() {
 	CTX = SST.Open(true)	
 
 	http.HandleFunc("/Orbit", OrbitHandler)
+	http.HandleFunc("/NPtrOrbit", OrbitHandler)
 	http.HandleFunc("/Cone", ConeHandler)
 	http.HandleFunc("/Browse", SystematicHandler)
 	fmt.Println("Listening at http://localhost:8080")
@@ -37,10 +38,29 @@ func OrbitHandler(w http.ResponseWriter, r *http.Request) {
 	
 	switch r.Method {
 	case "POST","GET":
-		name := r.FormValue("name")
+		nclass := r.FormValue("nclass")
+		ncptr := r.FormValue("ncptr")
 		chapter := r.FormValue("chapter")
 		context := r.FormValue("context")
-		HandleOrbit(w,r,name,chapter,context)
+		name := r.FormValue("name")
+
+		if nclass == "" || ncptr == "" {
+			if name == "" {
+				name = "fish"
+			}
+			fmt.Println("Matching Orbit by name(",name,chapter,context,")")
+			nptrs := SST.GetDBNodePtrMatchingName(CTX,chapter,name)
+			HandleOrbit(w,r,nptrs,chapter,context)
+		} else {
+			fmt.Println("Matching Orbit by NPtr(",nclass,ncptr,chapter,context,")")
+			var nptrs []SST.NodePtr
+			var nptr SST.NodePtr
+			fmt.Sscanf(nclass,"%d",&nptr.Class)
+			fmt.Sscanf(ncptr,"%d",&nptr.CPtr)
+			nptrs = append(nptrs,nptr)
+			HandleOrbit(w,r,nptrs,chapter,context)
+		}
+
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
@@ -48,19 +68,12 @@ func OrbitHandler(w http.ResponseWriter, r *http.Request) {
 
 // *********************************************************************
 
-func HandleOrbit(w http.ResponseWriter, r *http.Request,name,chapter,context string) {
+func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,chapter,context string) {
 
 	chapter = strings.TrimSpace(chapter)
 
 	w.Header().Set("Content-Type", "application/json")
 
-	fmt.Println("Matching OrbitNCC(",name,chapter,context,")")
-
-	if name == "" {
-		name = "fish"
-	}
-	
-	nptrs := SST.GetDBNodePtrMatchingName(CTX,chapter,name)
 	
 	orbit := fmt.Sprintf("{ \"matches\" : [")
 	
