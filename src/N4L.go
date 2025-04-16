@@ -339,8 +339,8 @@ func NewFile(filename string) {
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
 	LINE_NUM = 1
-	LINE_ITEM_CACHE["THIS"] = nil
-	LINE_RELN_CACHE["THIS"] = nil
+	LINE_ITEM_CACHE = make(map[string][]string)
+	LINE_RELN_CACHE = make(map[string][]Link)
 	LINE_ITEM_REFS = nil
 	LINE_ITEM_COUNTER = 1
 	LINE_RELN_COUNTER = 0

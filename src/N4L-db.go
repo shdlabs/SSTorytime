@@ -224,8 +224,8 @@ func NewFile(filename string) {
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
 	LINE_NUM = 1
-	LINE_ITEM_CACHE["THIS"] = nil
-	LINE_RELN_CACHE["THIS"] = nil
+	LINE_ITEM_CACHE = make(map[string][]string)
+	LINE_RELN_CACHE = make(map[string][]SST.Link)
 	LINE_ITEM_REFS = nil
 	LINE_ITEM_COUNTER = 1
 	LINE_RELN_COUNTER = 0
@@ -1044,8 +1044,14 @@ func AddMandatory() {
 
 	//   + then the next is (then) - previous (prior)
 
-	arr := SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-	inv := SST.InsertArrowDirectory("leadsto","prev","previously","-")
+	arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
+	inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
+	//   + then the next is (then) - previous (prior)
+
+	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
+	inv = SST.InsertArrowDirectory("leadsto","prev","previously","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
 	// for rendering from the database in a web browser
