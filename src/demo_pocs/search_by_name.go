@@ -36,7 +36,7 @@ func main() {
 	chapter := "chinese"
 	name := "lamb"
 
-	nptrs := SST.GetDBNodePtrMatchingNCC(ctx,chapter,name,cntx)
+	nptrs := SST.GetDBNodePtrMatching(ctx,chapter,name,cntx,nil)
 
 	fmt.Println("RETURNED",nptrs)
 

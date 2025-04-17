@@ -1788,7 +1788,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	qstr = "CREATE OR REPLACE FUNCTION match_arrows(arr int,user_set int[])\n"+
 		"RETURNS boolean AS $fn$\n" +
 		"BEGIN \n" +
-		"   IF array_length(user_set,1) = 1 THEN \n" + // empty arrows
+		"   IF array_length(user_set,1) IS NULL THEN \n" + // empty arrows
                 "      RETURN true;"+
 		"   END IF;"+
 		"   IF arr = ANY(user_set) THEN \n" + // exact match
@@ -2128,8 +2128,6 @@ func DefineStoredFunctions(ctx PoSST) {
 	}
 
 	row.Close()
-	
-
 
         // This one includes an NCC chapter and context filter so slower! 
 
@@ -2332,7 +2330,7 @@ func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
 
 // **************************************************************************
 
-func GetDBNodePtrMatchingNCC(ctx PoSST,chap,nm string ,cn []string) []NodePtr {
+func GetDBNodePtrMatching(ctx PoSST,chap,nm string,cn []string,arrow []ArrowPtr) []NodePtr {
 
 	// Match name, context, chapter
 
@@ -2365,12 +2363,15 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,chap,nm string ,cn []string) []NodePtr {
 	_,cn_stripped := IsBracketedSearchList(cn)
 	context = FormatSQLStringArray(cn_stripped)
 
-	qstr := fmt.Sprintf("WITH matching_nodes AS "+
-		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
-		"     SELECT DISTINCT nfrom FROM matching_nodes "+
-		"      JOIN Node ON nptr=nfrom WHERE match=true %s %s",
-		context,nm_col,chap_col)
+	arrows := FormatSQLIntArray(Arrow2Int(arrow))
 
+	qstr := fmt.Sprintf("WITH matching_nodes AS "+
+		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)"+
+		"     SELECT DISTINCT nfrom FROM matching_nodes "+
+		"      JOIN Node ON nptr=nfrom WHERE match=true AND matcha=true %s %s",
+		context,arrows,nm_col,chap_col)
+
+fmt.Println(qstr)
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
@@ -3793,13 +3794,13 @@ func ParseSQLArrayString(whole_array string) []string {
 
 func FormatSQLIntArray(array []int) string {
 
-	sort.Slice(array, func(i, j int) bool {
-		return array[i] < array[j]
-	})
-
         if len(array) == 0 {
 		return "'{ }'"
         }
+
+	sort.Slice(array, func(i, j int) bool {
+		return array[i] < array[j]
+	})
 
 	var ret string = "'{ "
 	
