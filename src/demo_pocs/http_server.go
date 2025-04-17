@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"os"
 
         SST "SSTorytime"
 )
@@ -20,12 +21,37 @@ func main() {
 
 	CTX = SST.Open(true)	
 
+	http.HandleFunc("/",PageHandler)
 	http.HandleFunc("/Orbit", OrbitHandler)
 	http.HandleFunc("/NPtrOrbit", OrbitHandler)
 	http.HandleFunc("/Cone", ConeHandler)
 	http.HandleFunc("/Browse", SystematicHandler)
 	fmt.Println("Listening at http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
+}
+
+// *********************************************************************
+
+func PageHandler(w http.ResponseWriter, r *http.Request) {
+
+	GenHeader(w,r)
+
+	switch r.Method {
+	case "GET":
+
+		w.Header().Set("Content-Type", "text/html")
+		page,err := os.ReadFile("./page.html")
+
+		if err != nil {
+			fmt.Println("Can't find ./page.html")
+			os.Exit(-1)
+		}
+
+		w.Write(page)
+
+	default:
+		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
+	}
 }
 
 // *********************************************************************
