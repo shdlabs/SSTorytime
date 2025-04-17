@@ -59,7 +59,7 @@ article img {
   padding: 30px;
   border-radius: 60%;
   width: auto;
-  max-height: 300px;
+  max-height: 400px;
   float: right;
 }
 
@@ -281,7 +281,7 @@ return parent
 
 function IsImage(str,arrow)
 {
-if (arrow == "has image")
+if (arrow == "has image" || arrow == "is an image for")
    {
    if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/")
       {
@@ -455,6 +455,7 @@ for (let match of obj.matches)
       from_link.onclick = function() { sendlinkData(match.NClass,match.NCptr); };
       let from_text = document.createElement('h1');
       from_text.textContent = match.Text;
+
       if (match.Text.length > 100)
          {
          from_text.style.fontSize = "100%";
@@ -470,6 +471,13 @@ for (let match of obj.matches)
          {
          child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
+
+         if (IsImage(match.Text,ngh.Arrow))
+            {
+            let img = document.createElement('img')
+            img.src = match.Text;
+            panel.appendChild(img);
+            }
          }
       }
 
@@ -901,10 +909,8 @@ button.addEventListener("click", (event) => { event.preventDefault();  senddecDa
 async function sendlinkData(nclass,ncptr)
 {
   let formData = new FormData();
-  formData.set("nclass",nclass)
-  formData.set("ncptr",ncptr)
-
-console.log(formData);
+  formData.set("nclass",nclass);
+  formData.set("ncptr",ncptr);
 
   fetch(API_SERVER+"/Orbit", { method: "POST", body: formData })
    .then(response => {
