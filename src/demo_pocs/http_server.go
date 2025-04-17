@@ -73,7 +73,6 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,chap
 	chapter = strings.TrimSpace(chapter)
 
 	w.Header().Set("Content-Type", "application/json")
-
 	
 	orbit := fmt.Sprintf("{ \"matches\" : [")
 	

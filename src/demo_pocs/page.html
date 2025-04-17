@@ -61,6 +61,7 @@ article pre {
 
 article a {
   padding: 10px;
+color: darkgreen;
 }
 
 a:hover {
@@ -305,11 +306,13 @@ for (let path = 0; path < array.length; path++)
 
          let arrow = array[path][i].Name
          let arrptr = array[path][i].Arr
+
          if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
             {
             let hr = document.createElement('p');
             parent.appendChild(hr);
             }
+
          let arrow_link = document.createElement('a');
          arrow_link.textContent = `( ${arrow} )  `;
          arrow_link.style.fontFamily = 'Verdana';
