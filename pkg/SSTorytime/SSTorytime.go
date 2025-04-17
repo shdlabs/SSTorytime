@@ -1974,41 +1974,45 @@ func DefineStoredFunctions(ctx PoSST) {
 		"  RETURN ret_paths;\n"+
 		"END IF;\n"+
 
+		// We order the link types to respect the geometry of the temporal links
+		// so that (then) will always come last for visual sensemaking
+
 		// Get *All* in/out Links
 		"CASE \n" +
 		"   WHEN orientation = 'bwd' THEN\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   WHEN orientation = 'fwd' THEN\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   ELSE\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+
 		"END CASE;\n" +
 
 		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +

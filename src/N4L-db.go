@@ -1051,7 +1051,7 @@ func AddMandatory() {
 	//   + then the next is (then) - previous (prior)
 
 	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-	inv = SST.InsertArrowDirectory("leadsto","prev","previously","-")
+	inv = SST.InsertArrowDirectory("leadsto","prev","follows on from","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
 	// for rendering from the database in a web browser

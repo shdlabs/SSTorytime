@@ -1105,7 +1105,7 @@ func AddMandatory() {
 	//   + then the next is (then) - previous (prior)
 
 	arr := InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-	inv := InsertArrowDirectory("leadsto","prev","previously","-")
+	inv := InsertArrowDirectory("leadsto","prev","follows on from","-")
 	InsertInverseArrowDirectory(arr,inv)
 
 	// for rendering from the database in a web browser

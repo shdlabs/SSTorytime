@@ -104,7 +104,8 @@ func ConeHandler(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		chapter := r.FormValue("chapter")
 		context := r.FormValue("context")
-		HandleCone(w,r,name,chapter,context)
+		//HandleCone(w,r,name,chapter,context)
+		HandleEntireCone(w,r,name,chapter,context)
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
@@ -130,8 +131,8 @@ func HandleCone(w http.ResponseWriter, r *http.Request,name,chapter,context stri
 
 	// Policy for ordering and search depth along each vector
 
-	order    := []int{0,1,-1,2,-2,3,-3}
-	maxdepth := []int{2,8, 2,2, 2,3, 2}
+	order    := []int{-1,0,2,-2,3,-3,1}
+	maxdepth := []int{ 2,2,3, 3,2, 3,8}
 	var count int
 
 	// Encode
@@ -162,6 +163,66 @@ func HandleCone(w http.ResponseWriter, r *http.Request,name,chapter,context stri
 				thiscone += "\n}"
 			}
 		}
+
+		if !empty {
+			if count > 0 {
+				thiscone = "\n,"+thiscone
+			}
+			multicone += thiscone
+			count++
+		}
+	}
+
+	multicone += "]\n}\n"
+
+	w.Write([]byte(multicone))
+	fmt.Println(multicone)
+	fmt.Println("Reply Cone sent")
+}
+
+// *********************************************************************
+
+func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,context string) {
+
+	chapter = strings.TrimSpace(chapter)
+	name = strings.TrimSpace(name)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	fmt.Println("Matching...ConeNCC(",name,chapter,context,")")
+
+	if name == "" {
+		name = "lamb"
+	}
+
+	nptrs := SST.GetDBNodePtrMatchingName(CTX,chapter,name)
+	cntxt := strings.Split(context," ")
+
+	// Policy for ordering and search depth along each vector
+
+	maxdepth := 8
+	var count int
+
+	// Encode
+
+	multicone  := "{ \"paths\" : [\n"
+
+	for n := 0; n < len(nptrs); n++ {
+
+		thiscone := fmt.Sprintf(" { \"NPtr\" : \"%v\",\n",nptrs[n])
+		thiscone += fmt.Sprintf("   \"Text\" : \"%s\",\n",name)
+		empty := true
+
+		cone,span := SST.GetEntireConePathsAsLinks(CTX,"any",nptrs[n],maxdepth)
+		
+		json := SST.JSONCone(CTX,cone,chapter,cntxt)
+		
+		if span > 0 {
+			empty = false
+		}
+		
+		thiscone += fmt.Sprintf("\"Entire\" : %s ",json)		
+		thiscone += "\n}"
 
 		if !empty {
 			if count > 0 {
