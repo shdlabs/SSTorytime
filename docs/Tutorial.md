@@ -163,7 +163,7 @@ mark% go run http_server.go
 Listening at http://localhost:8080
 
 </pre>
-You should see a webpage:
+If you load the test `page.html` into a browser, you should see a webpage, something like this:
 
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
 
