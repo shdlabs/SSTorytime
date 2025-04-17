@@ -16,7 +16,13 @@ go env -w GO111MODULE=off
 
 * [Related series about semantic spacetime](https://mark-burgess-oslo-mb.medium.com/list/semantic-spacetime-and-data-analytics-28e9649c0ade)
 
+## Troubleshooting
 
+Note that the "hard part" of this is getting Go(lang) to work properly. There have been issues since
+the introduction of modules. If you don't install from the go download, it might be due to local differences
+in yoour Linux. See this issue post:
+
+* [Can't Build Issue](https://github.com/markburgess/SSTorytime/issues/1)
 
 ## Running on a GNU/Linux distribution
 
