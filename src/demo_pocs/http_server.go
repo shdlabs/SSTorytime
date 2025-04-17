@@ -103,8 +103,9 @@ func ConeHandler(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		chapter := r.FormValue("chapter")
 		context := r.FormValue("context")
+		arrnames := r.FormValue("arrnames")
 		//HandleCone(w,r,name,chapter,context)
-		HandleEntireCone(w,r,name,chapter,context)
+		HandleEntireCone(w,r,name,chapter,context,arrnames)
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
@@ -181,25 +182,30 @@ func HandleCone(w http.ResponseWriter, r *http.Request,name,chapter,context stri
 
 // *********************************************************************
 
-func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,context string) {
+func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr,arrstr string) {
 
 	chapter = strings.TrimSpace(chapter)
 	name = strings.TrimSpace(name)
 
-	w.Header().Set("Content-Type", "application/json")
+	arrnames,_ := Str2Array(arrstr)
+	cntxt,_ := Str2Array(cntstr)
 
-	fmt.Println("Matching...ConeNCC(",name,chapter,context,")")
+	var arrows []SST.ArrowPtr
 
-	if name == "" {
-		name = "lamb"
+	for a := range arrnames {
+		if len(arrnames[a]) > 1 {
+			arr := SST.GetDBArrowByName(CTX,arrnames[a])
+			arrows = append(arrows,arr)
+		}
 	}
 
-	nptrs := SST.GetDBNodePtrMatchingName(CTX,chapter,name)
-	cntxt := strings.Split(context," ")
+	w.Header().Set("Content-Type", "application/json")
 
-	// Policy for ordering and search depth along each vector
+	fmt.Println("Matching...EntireCone(",name,chapter,cntxt,arrows,")")
 
-	maxdepth := 8
+	nptrs := SST.GetDBNodePtrMatching(CTX,chapter,name,cntxt,arrows)
+
+	maxdepth := 20
 	var count int
 
 	// Encode
@@ -282,7 +288,6 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 		arr := SST.GetDBArrowByName(CTX,arrnames[a])
 		arrows = append(arrows,arr)
 	}
-	fmt.Println(arrnames,arrows)
 
 	qnodes := SST.GetDBNodeContextsMatchingArrow(CTX,chaptext,context,"",arrows)
 
@@ -381,7 +386,6 @@ func CleanText(c string) string {
 func Str2Array(s string) ([]string,int) {
 
 	var non_zero int
-
 	s = strings.Replace(s,"{","",-1)
 	s = strings.Replace(s,"}","",-1)
 	s = strings.Replace(s,"\"","",-1)

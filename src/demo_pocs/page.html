@@ -22,6 +22,7 @@ header {
   color: white;
 }
 
+
 #spacer::after{
     content: "\a";
     white-space: pre;
@@ -51,8 +52,15 @@ article {
 }
 
 article p {
-  //padding: 10px;
-color: green;
+   color: green;
+}
+
+article img {
+  padding: 30px;
+  border-radius: 60%;
+  width: auto;
+  max-height: 300px;
+  float: right;
 }
 
 article pre {
@@ -129,7 +137,7 @@ footer {
   <nav>
 
 <form id="search">
-    <label for="subject">Thought</label>
+    <label for="subject">Text</label>
     <input type="text" id="name" name="name" value="" />
 
     <label for="chapter">Chapter</label>
@@ -138,13 +146,14 @@ footer {
     <label for="chapter">Filters ...</label>
     <input type="text" id="context" name="context" />
 
+    <input type="submit" id="orbitsubmit" value="Orbits" />
+    <input type="submit" id="pathsubmit" value="Paths" />
     <label for="chapter">Arrow ties</label>
     <input type="text" id="arrnames" name="arrnames" />
 
-  <input type="submit" id="pathsubmit" value="Paths" />
-  <input type="submit" id="orbitsubmit" value="Orbits" />
-  <input type="submit" id="browsesubmit" value="Browse" />
+
   <input type="submit" id="dec" value="Previous" />
+  <input type="submit" id="browsesubmit" value="Browse" />
   <input type="submit" id="inc" value="Next" />
 
 </form>
@@ -235,8 +244,22 @@ else
    arrow_link.style.fontFamily = 'Verdana';
 
    // plain text
-   let text_link = document.createElement('a');
-   text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+   let text_link = document.createElement('a')
+
+   if (IsURL(str,arrow))
+      {
+      text_link.href=str;
+      }
+   else if (IsImage(str,arrow))
+      {
+      let img = document.createElement('img')
+      img.src = str;
+      parent.appendChild(img);
+      }
+   else
+      { 
+      text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+      }
    text_link.textContent = str;
    text_link.className = 'text';
    text_link.style.fontFamily = 'Times';
@@ -252,6 +275,36 @@ else
    }
 
 return parent
+}
+
+/***********************************************************/
+
+function IsImage(str,arrow)
+{
+if (arrow == "has image")
+   {
+   if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/")
+      {
+      return true;
+      }
+   }
+
+return false
+}
+
+/***********************************************************/
+
+function IsURL(str,arrow)
+{
+if (arrow == "has URL")
+   {
+   if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/")
+      {
+      return true;
+      }
+   }
+
+return false
 }
 
 /***********************************************************/

@@ -2371,7 +2371,7 @@ func GetDBNodePtrMatching(ctx PoSST,chap,nm string,cn []string,arrow []ArrowPtr)
 		"      JOIN Node ON nptr=nfrom WHERE match=true AND matcha=true %s %s",
 		context,arrows,nm_col,chap_col)
 
-fmt.Println(qstr)
+fmt.Println(qstr,"ARR",arrows)
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
