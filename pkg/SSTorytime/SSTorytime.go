@@ -1154,7 +1154,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		") AS $fn$ " +
 		"DECLARE \n" +
 		"BEGIN\n" +
-		"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN\n" +
+		"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE lower(s) = lower(iSi)) THEN\n" +
 		"     INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap) VALUES (iszchani,icptri,iLi,iSi,ichapi);" +
 		"  END IF;\n" +
 		"  RETURN QUERY SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
@@ -2544,7 +2544,7 @@ func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrow
 
 // **************************************************************************
 
-func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext string,arrow []ArrowPtr) []QNodePtr {
+func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext string,arrow []ArrowPtr,page int) []QNodePtr {
 
 	var qstr string
 
@@ -2552,12 +2552,15 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 	chapter := "%"+chap+"%"
 	arrows := FormatSQLIntArray(Arrow2Int(arrow))
 
+	const hits_per_page = 30
+	offset := (page-1) * hits_per_page;
+
 	// sufficient to search NFrom to get all nodes in context, as +/- relations complete
 	
 	qstr = fmt.Sprintf("WITH matching_nodes AS \n"+
-		" (SELECT NFrom,Arr,Ctx,match_context(Ctx,%s) AS matchc,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)\n"+
+		" (SELECT DISTINCT NFrom,Arr,Ctx,match_context(Ctx,%s) AS matchc,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)\n"+
 		"   SELECT NFrom,Ctx,Chap FROM matching_nodes \n"+
-		"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx",context,arrows,chapter)
+		"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx DESC OFFSET %d LIMIT %d",context,arrows,chapter,offset,hits_per_page)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -2581,6 +2584,11 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 		fmt.Sscanf(nptrs,"(%d,%d)",&nptr.Class,&nptr.CPtr)
 		qptr.NPtr = nptr
 		qptr.Chapter = nchap
+
+		if nctx == "" {
+			nctx = "(no context)"
+		}
+
 		qptr.Context = nctx
 
 		return_value = append(return_value,qptr)

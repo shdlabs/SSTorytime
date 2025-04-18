@@ -225,8 +225,6 @@ if (arrow == null)
 let box = document.createElement('div');
 box.id = "radius-" + radius;
 
-console.log(box.id);
-
 if (str.includes("\n"))
    {
    // arrow
@@ -396,8 +394,8 @@ for (let path = 0; path < array.length; path++)
          }
       }
 
-   let spacer = document.createElement('hr');
-   parent.appendChild(spacer);
+   //let spacer = document.createElement('hr');
+   //parent.appendChild(spacer);
    }
 
 return parent
@@ -622,24 +620,25 @@ section.appendChild(panel);
 
 for (let nptr of obj.nptrs) 
    {
-   let parent = document.createElement('article');
-   parent = PrintPath(parent,nptr.Il1);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Im1);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Im2);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Ic2);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Ie3);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Im3);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.In0);
-   panel.appendChild(parent);
-   let hr = document.createElement('hr');
-   parent.appendChild(hr);
+   let item = document.createElement('p');
+
+   item = PrintPath(item,nptr.Il1);
+   panel.appendChild(item);
+   item = PrintPath(item,nptr.Im1);
+   panel.appendChild(item);
+   item = PrintPath(item,nptr.Im2);
+   panel.appendChild(item);
+   item = PrintPath(item,nptr.Ic2);
+   panel.appendChild(item);
+   item = PrintPath(item,nptr.Ie3);
+   panel.appendChild(item);
+   item = PrintPath(item,nptr.Im3);
+   panel.appendChild(item);
+   item = PrintPath(item,nptr.In0);
+   panel.appendChild(item);
    }
+let spacer = document.createElement('hr');
+panel.appendChild(spacer);
 }
 
 /***********************************************************/
