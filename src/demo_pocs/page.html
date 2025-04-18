@@ -72,6 +72,14 @@ article a {
 color: darkgreen;
 }
 
+#radius-1 {
+   margin-left: 50px;
+}
+
+#radius-2 {
+   margin-left: 150px;
+}
+
 a:hover {
   color: orange;
 }
@@ -207,12 +215,17 @@ nav.appendChild(counter);
 
 /***********************************************************/
 
-function PrintLink(parent,arrow,str,nclass,ncptr) 
+function PrintLink(parent,radius,arrow,str,nclass,ncptr) 
 {
 if (arrow == null)
    {
    arrow = "broken arrow"
    }
+
+let box = document.createElement('div');
+box.id = "radius-" + radius;
+
+console.log(box.id);
 
 if (str.includes("\n"))
    {
@@ -221,7 +234,7 @@ if (str.includes("\n"))
    arrow_link.textContent = `( ${arrow} )  `;
    arrow_link.className = 'arrow';
    arrow_link.style.fontFamily = 'Verdana';
-   parent.appendChild(arrow_link);
+   box.appendChild(arrow_link);
 
    // pre formatted text
    let text_link = document.createElement('a');
@@ -231,7 +244,7 @@ if (str.includes("\n"))
    pre.textContent = str;
    text_link.appendChild(pre);
    text_link.className = 'text';
-   parent.appendChild(text_link);
+   box.appendChild(text_link);
    }
 else
    {
@@ -239,7 +252,7 @@ else
    let arrow_link = document.createElement('a');
    arrow_link.textContent = `( ${arrow} )  `;
 
-   parent.appendChild(arrow_link);
+   box.appendChild(arrow_link);
    arrow_link.className = 'arrow';
    arrow_link.style.fontFamily = 'Verdana';
 
@@ -254,7 +267,7 @@ else
       {
       let img = document.createElement('img')
       img.src = str;
-      parent.appendChild(img);
+      box.appendChild(img);
       }
    else
       { 
@@ -268,11 +281,13 @@ else
       text_link.style.fontSize = '200%';
       text_link.style.padding = '10px';
       }
-   parent.appendChild(text_link);
+   box.appendChild(text_link);
 
    let br = document.createElement('br');
-   parent.appendChild(br);
+   box.appendChild(br);
    }
+
+parent.appendChild(box);
 
 return parent
 }
@@ -465,11 +480,31 @@ for (let match of obj.matches)
       child.appendChild(from_link);
       }
 
+  // The order is important. Start with coming from
+
+   if (match.Im1 != null)
+      {
+      for (let ngh of match.Im1) 
+         {
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         panel.appendChild(child);
+         }
+      }
+
+   if (match.In0 != null)
+      {
+      for (let ngh of match.In0) 
+         {
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr)
+         panel.appendChild(child);
+         }
+      }
+
    if (match.Im3 != null)
       {
       for (let ngh of match.Im3) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
 
          if (IsImage(match.Text,ngh.Arrow))
@@ -485,7 +520,7 @@ for (let match of obj.matches)
      {
      for (let ngh of match.Ie3) 
         {
-        child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+        child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
         panel.appendChild(child);
         }
      }
@@ -494,7 +529,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Im2) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
          }
       }
@@ -503,7 +538,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Ic2) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
          }
       }
@@ -512,28 +547,12 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Il1) 
          {
-         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
          panel.appendChild(child);
          }
       }
 
-   if (match.Im1 != null)
-      {
-      for (let ngh of match.Im1) 
-         {
-         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
-         panel.appendChild(child);
-         }
-      }
-
-   if (match.In0 != null)
-      {
-      for (let ngh of match.In0) 
-         {
-         child = PrintLink(child,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr)
-         panel.appendChild(child);
-         }
-      }
+   // End with going to...
 
    let hr = document.createElement('hr');
    panel.appendChild(hr);
@@ -548,8 +567,6 @@ let section = document.querySelector('article');
 let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
-
-console.log(obj)
 
 for (let nptr of obj.paths) 
    {
@@ -603,8 +620,6 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
-console.log(obj)
-
 for (let nptr of obj.nptrs) 
    {
    let parent = document.createElement('article');
@@ -648,8 +663,6 @@ async function sendorbitData() {
 
   })
     .then((resp) => {
-
-      console.log("CHECK ORBIT",JSON.stringify(resp, null, 2))
 
       let prevh = document.getElementById("header_root");
 
@@ -701,8 +714,6 @@ async function sendconeData() {
 
   })
     .then((resp) => {
-
-      console.log("CHECK CONE",JSON.stringify(resp, null, 2))
 
       let prevh = document.getElementById("header_root");
 

@@ -275,8 +275,9 @@ type PoSST struct {
 
 //******************************************************************
 
-type Notes struct {
+type Orbit struct {
 
+	Radius int
 	Arrow  string
 	Dst    NodePtr
 	Text   string
@@ -3249,26 +3250,59 @@ func NextLinkArrow(ctx PoSST,path []Link,arrows []ArrowPtr) string {
 
 // **************************************************************************
 
-func GetNodeNotes(ctx PoSST,nptr NodePtr) [ST_TOP][]Notes {
+func GetNodeOrbit(ctx PoSST,nptr NodePtr) [ST_TOP][]Orbit {
 
 	// Start with properties of node, within orbit
 
-	neigh,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,2)
+	const probe_radius = 3
+	const nearest = 1
 
-	var notes [ST_TOP][]Notes
+	// radius = 0 is the starting node
 
-	for stindex := 0; stindex < ST_TOP; stindex++ {		
-		for lnk := range neigh {
-			if neigh[lnk] != nil && len(neigh[lnk]) > 1 {
-				ln := neigh[lnk][1]
-				arrow := GetDBArrowByPtr(ctx,ln.Arr)
+	neigh,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,probe_radius)
+
+	var notes [ST_TOP][]Orbit
+
+	// Organize by the leading nearest-neighbour link type
+
+	for stindex := 0; stindex < ST_TOP; stindex++ {
+
+		for pth := range neigh {
+
+			if neigh[pth] != nil && len(neigh[pth]) > 1 {
+
+				start := neigh[pth][nearest]
+				arrow := GetDBArrowByPtr(ctx,start.Arr)
+
 				if arrow.STAindex == stindex {
-					txt := GetDBNodeByNodePtr(ctx,ln.Dst)
-					var nt Notes
+					txt := GetDBNodeByNodePtr(ctx,start.Dst)
+					var nt Orbit
 					nt.Arrow = arrow.Long
-					nt.Dst = ln.Dst
+					nt.Dst = start.Dst
 					nt.Text = txt.S
+					nt.Radius = 1
 					notes[stindex] = append(notes[stindex],nt)
+
+					arprev := STIndexToSTType(arrow.STAindex)
+
+					for more := 2; more < probe_radius && more < len(neigh[pth]); more++ {
+
+						next := neigh[pth][more]
+						nextarrow := GetDBArrowByPtr(ctx,next.Arr)
+						subtxt := GetDBNodeByNodePtr(ctx,next.Dst)
+
+						nt.Arrow = nextarrow.Long
+						nt.Dst = next.Dst
+						nt.Text = subtxt.S
+						nt.Radius = more
+
+						arthis := STIndexToSTType(nextarrow.STAindex)
+						// No backtracking
+						if arthis != -arprev {	
+							notes[stindex] = append(notes[stindex],nt)
+							arprev = arthis
+						}
+					}
 				}
 			}
 		}
@@ -3288,21 +3322,21 @@ func PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int) {
 	ShowText(node.S,width)
 	fmt.Println()
 
-	notes := GetNodeNotes(ctx,nptr)
+	notes := GetNodeOrbit(ctx,nptr)
 
-	PrintLinkNotes(notes,EXPRESS)
-	PrintLinkNotes(notes,-EXPRESS)
-	PrintLinkNotes(notes,-CONTAINS)
-	PrintLinkNotes(notes,LEADSTO)
-	PrintLinkNotes(notes,-LEADSTO)
-	PrintLinkNotes(notes,NEAR)
+	PrintLinkOrbit(notes,EXPRESS)
+	PrintLinkOrbit(notes,-EXPRESS)
+	PrintLinkOrbit(notes,-CONTAINS)
+	PrintLinkOrbit(notes,LEADSTO)
+	PrintLinkOrbit(notes,-LEADSTO)
+	PrintLinkOrbit(notes,NEAR)
 
 	fmt.Println()
 }
 
 // **************************************************************************
 
-func PrintLinkNotes(notes [ST_TOP][]Notes,sttype int) {
+func PrintLinkOrbit(notes [ST_TOP][]Orbit,sttype int) {
 
 	t := STTypeToSTIndex(sttype)
 
@@ -3395,7 +3429,7 @@ func JSONNodeOrbit(ctx PoSST, nptr NodePtr) string {
 	jstr += fmt.Sprintf("\"NClass\" : %d,\n",node.NPtr.Class)
 	jstr += fmt.Sprintf("\"NCptr\" : %d,\n",node.NPtr.CPtr)
 
-	notes := GetNodeNotes(ctx,nptr)
+	notes := GetNodeOrbit(ctx,nptr)
 
 	for stindex := 0; stindex < len(notes); stindex++ {
 
