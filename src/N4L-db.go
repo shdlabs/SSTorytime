@@ -45,6 +45,9 @@ const (
 
 	WORD_MISTAKE_LEN = 3 // a string shorter than this is probably a mistake
 
+	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
+	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
+
 	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
 	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
@@ -54,8 +57,6 @@ const (
 	ERR_MISMATCH_QUOTE = "Apparent missing or mismatch in ', \" or ( )"
 	ERR_ILLEGAL_CONFIGURATION = "Error in configuration, no such section"
 	ERR_BAD_LABEL_OR_REF = "Badly formed label or reference (@label becomes $label.n) in "
-	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
-	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	ERR_ILLEGAL_QUOTED_STRING_OR_REF = "WARNING: Something wrong, bad quoted string or mistaken back reference. Close any space after a quote..."
 	ERR_ANNOTATION_BAD = "Annotation marker should be short mark of non-space, non-alphanumeric character "
 	ERR_BAD_ABBRV = "abbreviation out of place"
@@ -1356,7 +1357,7 @@ func IdempAddNode(s string) (SST.NodePtr,string) {
 	new_nodetext.Chap = SECTION_STATE
 	new_nodetext.NPtr.Class = c
 
-	iptr := SST.AppendTextToDirectory(new_nodetext)
+	iptr := SST.AppendTextToDirectory(new_nodetext,ParseError)
 
 	return iptr,clean_version
 }

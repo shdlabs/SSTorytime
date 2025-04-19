@@ -130,80 +130,10 @@ func ConeHandler(w http.ResponseWriter, r *http.Request) {
 		chapter := r.FormValue("chapter")
 		context := r.FormValue("context")
 		arrnames := r.FormValue("arrnames")
-		//HandleCone(w,r,name,chapter,context)
 		HandleEntireCone(w,r,name,chapter,context,arrnames)
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
-}
-
-// *********************************************************************
-
-func HandleCone(w http.ResponseWriter, r *http.Request,name,chapter,context string) {
-
-	chapter = strings.TrimSpace(chapter)
-	name = strings.TrimSpace(name)
-
-	w.Header().Set("Content-Type", "application/json")
-
-	fmt.Println("Matching...ConeNCC(",name,chapter,context,")")
-
-	if name == "" {
-		name = "lamb"
-	}
-
-	nptrs := SST.GetDBNodePtrMatchingName(CTX,chapter,name)
-	cntxt := strings.Split(context," ")
-
-	// Policy for ordering and search depth along each vector
-
-	order    := []int{-1,0,2,-2,3,-3,1}
-	maxdepth := []int{ 2,2,3, 3,2, 3,8}
-	var count int
-
-	// Encode
-
-	multicone  := "{ \"paths\" : [\n"
-
-	for n := 0; n < len(nptrs); n++ {
-
-		thiscone := fmt.Sprintf(" { \"NPtr\" : \"%v\",\n",nptrs[n])
-		thiscone += fmt.Sprintf("   \"Text\" : \"%s\",\n",name)
-		empty := true
-
-		for i := range order {
-			sttype := order[i]
-			cone,span := SST.GetFwdPathsAsLinks(CTX,nptrs[n],sttype,maxdepth[i])
-
-			json := SST.JSONCone(CTX,cone,chapter,cntxt)
-
-			if span > 0 {
-				empty = false
-			}
-
-			thiscone += fmt.Sprintf("\"%s\" : %s ",SST.STTypeDBChannel(sttype),json)
-
-			if i < len(order)-1 {
-				thiscone += ",\n"
-			} else {
-				thiscone += "\n}"
-			}
-		}
-
-		if !empty {
-			if count > 0 {
-				thiscone = "\n,"+thiscone
-			}
-			multicone += thiscone
-			count++
-		}
-	}
-
-	multicone += "]\n}\n"
-
-	w.Write([]byte(multicone))
-	fmt.Println(multicone)
-	fmt.Println("Reply Cone sent")
 }
 
 // *********************************************************************

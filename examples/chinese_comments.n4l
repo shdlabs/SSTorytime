@@ -9,14 +9,14 @@
                  西北 xīběi         北 Běi         东北 dōngběi  
                |                                              |
                |                                              |
- 西边 xībian      西 Xī               o            东 Dōng       东边 Dōngbian
+ 西边 xībian      西 Xī               o            东 dōng       东边 dōngbian
                                  这里 zhèlǐ                    
                |                                              |
                |                                              |
-                 西南 xīnán         南 Nán         东南 dōngnán 
+                 西南 xīnán         南 nán         东南 dōngnán 
                 ----------------------------------------------
-                                南边 Nánbian
-                                南方 Nánfāng"
+                                南边 nánbian
+                                南方 nánfāng"
  
   "  (cont) north
   "  (cont) south
@@ -25,13 +25,13 @@
 :: similar sounds, phonetics ::
 
 
-Kuàizi (ph) 筷子 (he) chopsticks
+kuàizi (ph) 筷子 (he) chopsticks
 kuài   (ph) 块 (he) yuan / quid
-Kuàilè (ph) 快乐 (he) happy
+kuàilè (ph) 快乐 (he) happy
 
 块 (sounds like) 快 (sl) 筷   // don't confuse these
 
-  Diǎnxīn (sl)  Duǎnxìn
+  diǎnxīn (sl)  duǎnxìn
 
   zuì (sounds like,0.4)  shuì , shéi 
 
@@ -40,34 +40,34 @@ Kuàilè (ph) 快乐 (he) happy
   zou  (sl) zuo (ll) zou
   zou (sl) zao (ll) zuo
 
-Zǒu (sl) Zòu
-Zǒu 走 (he) walk
-Zǒu 走 (pe) walk
-  "      (has) Zǒu
+zǒu (sl) zòu
+zǒu 走 (he) walk
+zǒu 走 (pe) walk
+  "      (has) zǒu
   "     (has) 走
 
 #########
 
-Zòu 奏 (he) play perform music on an instrument
-Zòu 奏 (pe) play perform music on an instrument
-   "     (has) Zòu
+zòu 奏 (he) play perform music on an instrument
+zòu 奏 (pe) play perform music on an instrument
+   "     (has) zòu
    "     (has) 奏
 
-Zòuyuè (ph) 奏乐 (he) play music
+zòuyuè (ph) 奏乐 (he) play music
 
 ################
 
   zuo  (sl) zhuo
-  zhuo (ll) Zhao
+  zhuo (ll) zhao
   zhuo (sl) zhou
   zhuo (ll) zhou
 
 
 #####
 
-Zǎo 早 (sl) zào 造  
-Zǎo 早 (has) Zǎo
-Zǎo 早 (has) 早
+zǎo 早 (sl) zào 造  
+zǎo 早 (has) zǎo
+zǎo 早 (has) 早
   "  (he) morning/early
   "  (pe) morning/early
 
@@ -87,14 +87,14 @@ Zǎo 早 (has) 早
 
 #################
 
-  Zuò fàn (sl) Zǎofàn
+  zuò fàn (sl) zǎofàn
 
 // this should scale ok, as we know strings of length > 3 are generally unique 
 
-Huì (sl) huí (sl) huǐ 
+huì (sl) huí (sl) huǐ 
   会 (sl) 回 (sl) 悔
 
- dǔchē (sl)  Dǎchē       // traffic, get a cab
+ dǔchē (sl)  dǎchē       // traffic, get a cab
  堵车 (sounds like) 打车
 
 

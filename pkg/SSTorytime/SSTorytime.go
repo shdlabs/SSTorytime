@@ -28,6 +28,7 @@ const (
 	ERR_ILLEGAL_LINK_CLASS="ILLEGAL LINK CLASS"
 	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
 	ERR_MEMORY_DB_ARROW_MISMATCH = "Arrows in database are not in synch (shouldn't happen)"
+	WARN_DIFFERENT_CAPITALS = "WARNING: Another capitalization exists"
 
 	SCREENWIDTH = 100
 	RIGHTMARGIN = 5
@@ -489,26 +490,13 @@ func GetNodeFromPtr(frptr NodePtr) Node {
 
 //**************************************************************
 
-func AppendTextToDirectory(event Node) NodePtr {
+func AppendTextToDirectory(event Node,ErrFunc func(string)) NodePtr {
 
 	var cnode_slot ClassedNodePtr = -1
 	var ok bool = false
 	var node_alloc_ptr NodePtr
 
-	switch event.NPtr.Class {
-	case N1GRAM:
-		cnode_slot,ok = NODE_DIRECTORY.N1grams[event.S]
-	case N2GRAM:
-		cnode_slot,ok = NODE_DIRECTORY.N2grams[event.S]
-	case N3GRAM:
-		cnode_slot,ok = NODE_DIRECTORY.N3grams[event.S]
-	case LT128:
-		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT128,event)
-	case LT1024:
-		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT1024,event)
-	case GT1024:
-		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.GT1024,event)
-	}
+	cnode_slot,ok = CheckExistingOrAltCaps(event,ErrFunc)
 
 	node_alloc_ptr.Class = event.NPtr.Class
 
@@ -567,6 +555,73 @@ func AppendTextToDirectory(event Node) NodePtr {
 	}
 
 	return NO_NODE_PTR
+}
+
+//**************************************************************
+
+func CheckExistingOrAltCaps(event Node,ErrFunc func(string)) (ClassedNodePtr,bool) {
+
+	var cnode_slot ClassedNodePtr = -1
+	var ok bool = false
+	ignore_caps := false
+
+	switch event.NPtr.Class {
+	case N1GRAM:
+		cnode_slot,ok = NODE_DIRECTORY.N1grams[event.S]
+	case N2GRAM:
+		cnode_slot,ok = NODE_DIRECTORY.N2grams[event.S]
+	case N3GRAM:
+		cnode_slot,ok = NODE_DIRECTORY.N3grams[event.S]
+	case LT128:
+		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT128,event,ignore_caps)
+	case LT1024:
+		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.LT1024,event,ignore_caps)
+	case GT1024:
+		cnode_slot,ok = LinearFindText(NODE_DIRECTORY.GT1024,event,ignore_caps)
+	}
+
+	if ok {
+		return cnode_slot,ok
+	} else {
+		// Check for alternative caps
+
+		ignore_caps = true
+		alternative_caps := false
+		
+		switch event.NPtr.Class {
+		case N1GRAM:
+			for key := range NODE_DIRECTORY.N1grams {
+				if strings.ToLower(key) == strings.ToLower(event.S) {
+					alternative_caps = true
+				}
+			}
+		case N2GRAM:
+			for key := range NODE_DIRECTORY.N2grams {
+				if strings.ToLower(key) == strings.ToLower(event.S) {
+					alternative_caps = true
+				}
+			}
+		case N3GRAM:
+			for key := range NODE_DIRECTORY.N3grams {
+				if strings.ToLower(key) == strings.ToLower(event.S) {
+					alternative_caps = true
+				}
+			}
+
+		case LT128:
+			_,alternative_caps = LinearFindText(NODE_DIRECTORY.LT128,event,ignore_caps)
+		case LT1024:
+			_,alternative_caps = LinearFindText(NODE_DIRECTORY.LT1024,event,ignore_caps)
+		case GT1024:
+			_,alternative_caps = LinearFindText(NODE_DIRECTORY.GT1024,event,ignore_caps)
+		}
+
+		if alternative_caps {
+			ErrFunc(WARN_DIFFERENT_CAPITALS+" ("+event.S+")")
+		}
+
+	}
+	return cnode_slot,ok
 }
 
 //**************************************************************
@@ -695,7 +750,7 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 
 //**************************************************************
 
-func LinearFindText(in []Node,event Node) (ClassedNodePtr,bool) {
+func LinearFindText(in []Node,event Node,ignore_caps bool) (ClassedNodePtr,bool) {
 
 	for i := 0; i < len(in); i++ {
 
@@ -703,8 +758,14 @@ func LinearFindText(in []Node,event Node) (ClassedNodePtr,bool) {
 			continue
 		}
 
-		if in[i].S == event.S {
-			return ClassedNodePtr(i),true
+		if ignore_caps {
+			if strings.ToLower(in[i].S) == strings.ToLower(event.S) {
+				return ClassedNodePtr(i),true
+			}
+		} else {
+			if in[i].S == event.S {
+				return ClassedNodePtr(i),true
+			}
 		}
 	}
 
@@ -2722,7 +2783,7 @@ func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 
 func CacheNode(n Node) {
 
-	NODE_CACHE[n.NPtr] = AppendTextToDirectory(n)
+	NODE_CACHE[n.NPtr] = AppendTextToDirectory(n,RunErr)
 }
 
 // **************************************************************************
@@ -2892,6 +2953,11 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 	}
 
 	row.Close()
+
+	sort.Slice(retval, func(i,j int) bool {
+		return len(retval[i]) < len(retval[j])
+	})
+
 	return retval,len(retval)
 }
 
@@ -4208,6 +4274,17 @@ func MatchesInContext(s string,context []string) bool {
 
 // **************************************************************************
 // Misc tools
+// **************************************************************************
+
+func RunErr(message string) {
+
+	const red = "\033[31;1;1m"
+	const endred = "\033[0m"
+
+	fmt.Println("SSTorytime",message,endred)
+
+}
+
 // **************************************************************************
 
 func EscapeString(s string) string {
