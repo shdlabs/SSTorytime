@@ -3500,6 +3500,7 @@ func JSONNodeOrbit(ctx PoSST, nptr NodePtr) string {
 
 	jstr := fmt.Sprintf("{\n\"Text\" : %s,\n",string(name))
 	jstr += fmt.Sprintf("\"L\" : %d,\n",node.L)
+	jstr += fmt.Sprintf("\"Chap\" : \"%s\",\n",node.Chap)
 	jstr += fmt.Sprintf("\"NClass\" : %d,\n",node.NPtr.Class)
 	jstr += fmt.Sprintf("\"NCptr\" : %d,\n",node.NPtr.CPtr)
 

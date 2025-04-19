@@ -16,28 +16,26 @@ body {
 /* Style the header */
 header {
   background-color: darkblue;
-  padding: 20px;
+  padding: 15px;
   text-align: center;
   font-size: 35px;
   color: white;
 }
 
 
-#spacer::after{
-    content: "\a";
-    white-space: pre;
-}
-
 h1 {
   font-size: 35px;
   color: #5599cc;
+  padding: 0px;
+  margin: 0px;
+line-height: 10px;
 }
 
 /* Create two columns/boxes that floats next to each other */
 nav {
   float: left;
   width: 100%;
-  height: 50px; /* only for demonstration, should be removed */
+  height: 60px;
   background: #ccc;
   padding: 20px;
 }
@@ -53,6 +51,12 @@ article {
 
 article p {
    color: green;
+   line-height: 20px;
+padding: 20px;
+}
+
+article div {
+ margin-bottom: 20px;
 }
 
 article img {
@@ -69,7 +73,7 @@ article pre {
 
 article a {
   padding: 10px;
-color: darkgreen;
+  color: darkgreen;
 }
 
 #radius-1 {
@@ -89,6 +93,7 @@ a:hover {
 }
 
 a:not(.arrow):hover{
+
   color: #999999;
 }
 
@@ -102,19 +107,11 @@ i:hover{
 }
 
 h1:not(.arrow):hover{
-  padding: 0pt;
   color: #777777;
 }
 
 pre:hover{
   color: #999999;
-}
-
-/* Clear floats after the columns */
-section::after {
-  content: "";
-  display: table;
-  clear: both;
 }
 
 /* Style the footer */
@@ -260,6 +257,8 @@ else
    if (IsURL(str,arrow))
       {
       text_link.href=str;
+      text_link.target="_blank";
+      text_link.rel="noopener";
       }
    else if (IsImage(str,arrow))
       {
@@ -385,12 +384,6 @@ for (let path = 0; path < array.length; path++)
          arrow_link.className = 'arrow';
          //arrow_link.style.href = 'http...';
          parent.appendChild(arrow_link);
-
-         if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
-            {
-            let hr = document.createElement('p');
-            parent.appendChild(hr);
-            }
          }
       }
 
@@ -477,6 +470,10 @@ for (let match of obj.matches)
       from_link.nameClass = "text";
       child.appendChild(from_link);
       }
+
+  let chapter = document.createElement('div');
+  chapter.textContent = match.Chap;
+  child.appendChild(chapter);
 
   // The order is important. Start with coming from
 
