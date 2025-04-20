@@ -3419,9 +3419,17 @@ func PrintLinkOrbit(notes [ST_TOP][]Orbit,sttype int) {
 	t := STTypeToSTIndex(sttype)
 
 	for n := range notes[t] {		
-		txt := fmt.Sprintf(" -    (%s) - %s\n",notes[t][n].Arrow,notes[t][n].Text)
-		text := Indent(LEFTMARGIN) + txt
-		ShowText(text,SCREENWIDTH)
+
+		if notes[t][n].Ctx != "" {
+			txt := fmt.Sprintf(" -    (%s) - %s  .. %s\n",notes[t][n].Arrow,notes[t][n].Text,notes[t][n].Ctx)
+			text := Indent(LEFTMARGIN) + txt
+			ShowText(text,SCREENWIDTH)
+		} else {
+			txt := fmt.Sprintf(" -    (%s) - %s\n",notes[t][n].Arrow,notes[t][n].Text)
+			text := Indent(LEFTMARGIN) + txt
+			ShowText(text,SCREENWIDTH)
+		}
+
 	}
 
 }
