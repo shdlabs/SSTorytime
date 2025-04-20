@@ -143,8 +143,8 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 	chapter = strings.TrimSpace(chapter)
 	name = strings.TrimSpace(name)
 
-	arrnames,_ := Str2Array(arrstr)
-	cntxt,_ := Str2Array(cntstr)
+	arrnames,_ := SST.Str2Array(arrstr)
+	cntxt,_ := SST.Str2Array(cntstr)
 
 	var arrows []SST.ArrowPtr
 
@@ -170,8 +170,9 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 
 	for n := 0; n < len(nptrs); n++ {
 
-		thiscone := fmt.Sprintf(" { \"NPtr\" : \"%v\",\n",nptrs[n])
-		thiscone += fmt.Sprintf("   \"Text\" : \"%s\",\n",name)
+		thiscone := fmt.Sprintf(" { \"NClass\" : %d,\n",nptrs[n].Class)
+		thiscone += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptrs[n].CPtr)
+		thiscone += fmt.Sprintf("   \"Title\" : \"%s\",\n",name)
 		empty := true
 
 		cone,span := SST.GetEntireConePathsAsLinks(CTX,"any",nptrs[n],maxdepth)
@@ -229,8 +230,8 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 
 	chaptext = strings.TrimSpace(chaptext)
 
-	arrnames,_ := Str2Array(arrstr)
-	context,_ := Str2Array(cntstr)
+	arrnames,_ := SST.Str2Array(arrstr)
+	context,_ := SST.Str2Array(cntstr)
 
 	if section <= 0 {
 		section = 1
@@ -282,7 +283,10 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 			headerdone = true
 		}
 		
-		thiscone := fmt.Sprintf("%s\n { \"NPtr\" : \"%v\",\n",comma,qnodes[q].NPtr)
+		s := SST.GetDBNodeByNodePtr(CTX,qnodes[q].NPtr).S
+		thiscone := fmt.Sprintf("%s\n { \"NClass\" : %d,\n",comma,qnodes[q].NPtr.Class)
+		thiscone += fmt.Sprintf(" \"NCPtr\" :%d,\n",qnodes[q].NPtr.CPtr)
+		thiscone += fmt.Sprintf(" \"Title\" : \"%s\", ",s)
 		comma = ","
 		
 		for i := range order {
@@ -325,27 +329,6 @@ func CleanText(c string) string {
 	c = strings.Replace(c,","," ",-1)
 	c = strings.Replace(c,"\"","\\\"",-1)
 	return c
-}
-
-// *********************************************************************
-
-func Str2Array(s string) ([]string,int) {
-
-	var non_zero int
-	s = strings.Replace(s,"{","",-1)
-	s = strings.Replace(s,"}","",-1)
-	s = strings.Replace(s,"\"","",-1)
-
-	arr := strings.Split(s,",")
-
-	for a := 0; a < len(arr); a++ {
-		arr[a] = strings.TrimSpace(arr[a])
-		if len(arr[a]) > 0 {
-			non_zero++
-		}
-	}
-
-	return arr,non_zero
 }
 
 

@@ -84,6 +84,14 @@ article a {
    margin-left: 150px;
 }
 
+#cntxt {
+  fontSize: 50%;
+}
+
+#errormesg {
+  padding: 50px;
+}
+
 a:hover {
   color: orange;
 }
@@ -212,7 +220,7 @@ nav.appendChild(counter);
 
 /***********************************************************/
 
-function PrintLink(parent,radius,arrow,str,nclass,ncptr) 
+function PrintLink(parent,radius,arrow,str,nclass,ncptr,ctx) 
 {
 if (arrow == null)
    {
@@ -279,7 +287,13 @@ else
       text_link.style.padding = '10px';
       }
    box.appendChild(text_link);
-
+   if (ctx.length > 0)
+      {
+      let cntx = document.createElement('i');
+      cntx.id = "cntxt";
+      cntx.textContent = " in " + ctx;
+      box.appendChild(cntx);
+      }
    let br = document.createElement('br');
    box.appendChild(br);
    }
@@ -330,17 +344,29 @@ if (array.length < 1)
 
 for (let path = 0; path < array.length; path++)
    {
+   if (array[path] == null)
+     {
+     continue;
+     }
+
    for (let i = 0; i < array[path].length; i++)
       {
       if (i % 2 == 0) // node
          {
          let str = array[path][i].Name;
-         let NPtr = array[path][i].NPtr;
+         let ncptr = array[path][i].NCPtr;
+         let nclass = array[path][i].NClass;
+
+         if (array[path][i].NPtr != null)
+            {
+            ncptr = array[path][i].NPtr.CPtr;
+            nclass = array[path][i].NPtr.Class;
+            }
 
          if (str.includes("\n"))
             {
             let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(NPtr.Class,NPtr.CPtr); };
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
             let pre = document.createElement('pre');
             pre.textContent = str;
             text_link.appendChild(pre);
@@ -349,7 +375,7 @@ for (let path = 0; path < array.length; path++)
          else
             {
             let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(NPtr.Class,NPtr.CPtr); };
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
             let text = document.createElement('i');
             text.textContent = str;
             text.style.fontFamily = 'Times New Roman';
@@ -381,6 +407,7 @@ for (let path = 0; path < array.length; path++)
          let arrow_link = document.createElement('a');
          arrow_link.textContent = `( ${arrow} )  `;
          arrow_link.style.fontFamily = 'Verdana';
+
          arrow_link.className = 'arrow';
          //arrow_link.style.href = 'http...';
          parent.appendChild(arrow_link);
@@ -404,13 +431,15 @@ titlebar.id = "header_root";
 
 let title = "app";
 
+console.log(obj)
+
 if (obj.matches != null)
    {
    title = obj.matches[0].Text;
    }
 else if (obj.paths != null)
    {
-   title = obj.paths[0].Text
+   title = obj.paths[0].Title
    }
 else
    {
@@ -439,6 +468,13 @@ let section = document.querySelector('article');
 let panel = document.createElement('span');
 panel.id = "main_root";
 section.appendChild(panel);
+
+if (obj.matches == null)
+   {
+   let child = document.createElement('content');
+   from_text.textContent = "No orbit matches";
+   from_link.appendChild(from_text);
+   }
 
 for (let match of obj.matches) 
    {
@@ -481,7 +517,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Im1) 
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
@@ -490,7 +526,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.In0) 
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr)
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx)
          panel.appendChild(child);
          }
       }
@@ -499,7 +535,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Im3) 
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
 
          if (IsImage(match.Text,ngh.Arrow))
@@ -515,7 +551,7 @@ for (let match of obj.matches)
      {
      for (let ngh of match.Ie3) 
         {
-        child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+        child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
         panel.appendChild(child);
         }
      }
@@ -524,7 +560,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Im2) 
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
@@ -533,7 +569,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Ic2) 
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
@@ -542,7 +578,7 @@ for (let match of obj.matches)
       {
       for (let ngh of match.Il1) 
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr);
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
@@ -556,37 +592,6 @@ for (let match of obj.matches)
 
 /***********************************************************/
 
-function DoConePanel(obj) 
-{
-let section = document.querySelector('article');
-let panel = document.createElement('div');
-panel.id = "main_root";
-section.appendChild(panel);
-
-for (let nptr of obj.paths) 
-   {
-   let parent = document.createElement('content');
-   parent = PrintPath(parent,nptr.Il1);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Im1);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Im2);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Ic2);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Ie3);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.Im3);
-   panel.appendChild(parent);
-   parent = PrintPath(parent,nptr.In0);
-   panel.appendChild(parent);
-   let hr = document.createElement('hr');
-   parent.appendChild(hr);
-   }
-}
-
-/***********************************************************/
-
 function DoEntireConePanel(obj) 
 {
 let section = document.querySelector('article');
@@ -594,10 +599,16 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
-console.log(obj)
-
 for (let nptr of obj.paths) 
    {
+   let nclass = nptr.NClass;
+   let ncptr = nptr.NCPtr;
+   let item = document.createElement('p');
+   let link = document.createElement('a');
+   link.textContent = nptr.Title;
+   link.onclick = function() { sendlinkData(nclass,ncptr); };
+   item.appendChild(link);
+
    let parent = document.createElement('content');
    parent = PrintPath(parent,nptr.Entire);
    panel.appendChild(parent);
@@ -617,7 +628,13 @@ section.appendChild(panel);
 
 for (let nptr of obj.nptrs) 
    {
+   let nclass = nptr.NClass;
+   let ncptr = nptr.NCPtr;
    let item = document.createElement('p');
+   let link = document.createElement('a');
+   link.onclick = function() { sendlinkData(nclass,ncptr); };
+   link.textContent = nptr.Title;
+   item.appendChild(link);
 
    item = PrintPath(item,nptr.Il1);
    panel.appendChild(item);
@@ -681,7 +698,13 @@ async function sendorbitData() {
     .catch((error) => {
       // Handle error
       console.log("error ", error);
-    });
+     let section = document.querySelector('article');
+     let text = document.createElement('h2');
+     section.textContent = "Error in orbit";
+     section.id = "errormesg"
+     section.appendChild(text);
+
+   });
 }
 
 // Take over form submission
@@ -733,6 +756,12 @@ async function sendconeData() {
     .catch((error) => {
       // Handle error
       console.log("error ", error);
+     let section = document.querySelector('article');
+     let text = document.createElement('h2');
+     section.textContent = "Error in cone";
+     section.id = "errormesg"
+     section.appendChild(text);
+
     });
 }
 
@@ -787,6 +816,13 @@ const form = document.querySelector("#search");
     .catch((error) => {
       // Handle error
       console.log("error ", error);
+
+     let section = document.querySelector('article');
+     let text = document.createElement('h2');
+     section.textContent = "Error in browsing";
+     section.id = "errormesg"
+     section.appendChild(text);
+
    });
 }
 

@@ -281,6 +281,7 @@ type Orbit struct {
 	Radius int
 	Arrow  string
 	Dst    NodePtr
+	Ctx    string
 	Text   string
 }
 
@@ -2433,7 +2434,6 @@ func GetDBNodePtrMatching(ctx PoSST,chap,nm string,cn []string,arrow []ArrowPtr)
 		"      JOIN Node ON nptr=nfrom WHERE match=true AND matcha=true %s %s",
 		context,arrows,nm_col,chap_col)
 
-fmt.Println(qstr,"ARR",arrows)
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
@@ -2465,9 +2465,11 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 		return GetNodeFromPtr(im_nptr)
 	}
 
-	cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
+        // Doesn't quite work in go sql
+	//cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
+	//qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr",cols,db_nptr.Class,db_nptr.CPtr)
 
-	qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr",cols,db_nptr.Class,db_nptr.CPtr)
+	qstr := fmt.Sprintf("select L,S,Chap from Node where NPtr='(%d,%d)'::NodePtr",db_nptr.Class,db_nptr.CPtr)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -2486,7 +2488,8 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 	//     rely on this and work around when needed using GetEntireCone(any,2..) separately
 
 	for row.Next() {
-		err = row.Scan(&n.L,&n.S,&n.Chap,&whole[0],&whole[1],&whole[2],&whole[3],&whole[4],&whole[5],&whole[6])
+		//err = row.Scan(&n.L,&n.S,&n.Chap,&whole[0],&whole[1],&whole[2],&whole[3],&whole[4],&whole[5],&whole[6])
+		err = row.Scan(&n.L,&n.S,&n.Chap)
 		for i := 0; i < ST_TOP; i++ {
 			n.I[i] = ParseLinkArray(whole[i])
 		}
@@ -3367,6 +3370,7 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr) [ST_TOP][]Orbit {
 
 						nt.Arrow = nextarrow.Long
 						nt.Dst = next.Dst
+						nt.Ctx = Array2Str(next.Ctx)
 						nt.Text = subtxt.S
 						nt.Radius = more
 
@@ -3833,6 +3837,43 @@ func GetAppointmentNodesBySTType(ctx PoSST) []STTypeAppointment {
 func SQLEscape(s string) string {
 
 	return strings.Replace(s, `'`, `''`, -1)
+}
+
+// **************************************************************************
+
+func Array2Str(arr []string) string {
+
+	var s string
+
+	for a := 0; a < len(arr); a++ {
+		s += arr[a]
+		if a < len(arr)-1 {
+			s += ", "
+		}
+	}
+
+	return s
+}
+
+// **************************************************************************
+
+func Str2Array(s string) ([]string,int) {
+
+	var non_zero int
+	s = strings.Replace(s,"{","",-1)
+	s = strings.Replace(s,"}","",-1)
+	s = strings.Replace(s,"\"","",-1)
+
+	arr := strings.Split(s,",")
+
+	for a := 0; a < len(arr); a++ {
+		arr[a] = strings.TrimSpace(arr[a])
+		if len(arr[a]) > 0 {
+			non_zero++
+		}
+	}
+
+	return arr,non_zero
 }
 
 // **************************************************************************
