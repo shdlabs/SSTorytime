@@ -703,7 +703,7 @@ func IdempAddChapterToNode(class int,cptr ClassedNodePtr,chap string) {
 	if strings.Contains(node.Chap,chap) {
 		return
 	}
-
+	
 	newchap := node.Chap + "," + chap
 
 	switch class {
