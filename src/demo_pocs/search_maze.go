@@ -12,6 +12,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
         SST "SSTorytime"
 )
@@ -52,6 +53,12 @@ func main() {
 			nt.Chap = "maze"
 
 			lnk.Arr = SST.GetDBArrowsWithArrowName(ctx,"fwd")
+
+			if lnk.Arr < 0 {
+				fmt.Println("Arrow not yet defined in the database")
+				os.Exit(-1)
+			}
+
 			lnk.Dst = nt.NPtr
 			lnk.Ctx = []string{"maze"}
 

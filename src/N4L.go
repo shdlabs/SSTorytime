@@ -44,6 +44,7 @@ const (
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	WARN_DIFFERENT_CAPITALS = "WARNING: Another capitalization exists"
+	WARN_CHAPTER_CLASS_MIXUP="WARNING: possible space between class cancellation -:: <class> :: ambiguous chapter name, in: "
 
 	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
@@ -1338,6 +1339,7 @@ func AssessGrammarCompletions(token string, prior_state int) {
 
 	case ROLE_SECTION:
 		Box("Set chapter/section: ->",this_item)
+		CheckChapter(this_item)
 		SECTION_STATE = this_item
 
 	default:
@@ -1362,6 +1364,16 @@ func CheckLineAlias(token string) {
 
 	if token[0] == '@' && len(contig) == 1 {
 		ParseError(ERR_BAD_LABEL_OR_REF+token)
+		os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func CheckChapter(name string) {
+
+	if name[0] == ':' {
+		ParseError(WARN_CHAPTER_CLASS_MIXUP+name)
 		os.Exit(-1)
 	}
 }

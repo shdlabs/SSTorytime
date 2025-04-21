@@ -41,6 +41,12 @@ func main() {
 	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
+	if SUBJECT == "" {
+		fmt.Println("\nTo browse everything use: --browse everything..\n")
+		Usage()
+		os.Exit(1);
+	}
+
 	Search(ctx,ARROWS,CHAPTER,CONTEXT,SUBJECT,LIMIT)
 
 	SST.Close(ctx)
@@ -138,6 +144,10 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 	fmt.Println("   Selected arrows",arrows)
 	fmt.Println("   Node filter",searchtext)
 	fmt.Println("\n")
+
+	if BROWSE && searchtext == "everything" {
+		searchtext = ""
+	}
 
 	EventSearch(ctx,chapter,context,searchtext)
 

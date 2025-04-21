@@ -312,6 +312,16 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 
 // *********************************************************************
 
+func TOC(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr) {
+
+//	toc := JSONTableOfContext(CTX,..)
+
+//	fmt.Println(toc)
+
+}
+
+// *********************************************************************
+
 func GenHeader(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	origin := r.Header.Get("Origin")

@@ -1110,6 +1110,11 @@ func IdempDBAddLink(ctx PoSST,from Node,link Link,to Node) {
 		os.Exit(-1)
 	}
 
+	if link.Arr < 0 {
+		fmt.Println("No arrows have yet been defined, so you can't rely on the arrow names")
+		os.Exit(-1)
+	}
+
 	sttype := STIndexToSTType(ARROW_DIRECTORY[link.Arr].STAindex)
 
 	AppendDBLinkToNode(ctx,frptr,link,sttype)
@@ -2294,7 +2299,6 @@ func GetDBChaptersMatchingName(ctx PoSST,src string) []string {
 	sort.Strings(retval)
 	row.Close()
 	return retval
-
 }
 
 // **************************************************************************
@@ -3601,6 +3605,64 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 	jstr += "]"
 
 	return jstr
+}
+
+// **************************************************************************
+
+func JSON_TableOfContents(ctx PoSST,chap string,cn []string) map[string][]string {
+
+	chap_col := ""
+
+	if chap != "any" && chap != "" {
+
+		remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chap)
+
+		if remove_chap_accents {
+			chap_search := "%"+chap_stripped+"%"
+			chap_col = fmt.Sprintf("AND lower(unaccent(chap)) LIKE lower('%s')",chap_search)
+		} else {
+			chap_search := "%"+chap+"%"
+			chap_col = fmt.Sprintf("AND lower(chap) LIKE lower('%s')",chap_search)
+		}
+	}
+
+	_,cn_stripped := IsBracketedSearchList(cn)
+	context := FormatSQLStringArray(cn_stripped)
+
+	qstr := fmt.Sprintf("WITH matching_nodes AS "+
+		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
+		"     SELECT DISTINCT chap,ctx FROM matching_nodes "+
+		"      JOIN Node ON nptr=nfrom WHERE match=true %s",
+		context,chap_col)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY TableOfContents Failed",err,qstr)
+	}
+
+	var rchap,rcontext string
+	var prev string = "vvv"
+	var rctx []string
+	var retval = make(map[string][]string)
+
+	for row.Next() {		
+		err = row.Scan(&rchap,&rcontext)
+		rctx = append(rctx,ParseSQLArrayString(rcontext)...)
+
+		if prev == "vvv" {
+			prev = rchap
+		}
+
+		if prev != rchap {
+			retval[prev] = rctx
+			rctx = nil
+			prev = rchap
+		}
+	}
+
+	row.Close()
+	return retval
 }
 
 // **************************************************************************

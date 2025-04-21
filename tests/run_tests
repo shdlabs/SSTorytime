@@ -121,7 +121,7 @@ if $DB_TEST_PROG > /dev/null;
          then 
             echo -e "${GREEN} basic database functions ok ${END}"
        else 
-            echo -e "${RED} database functions NOT ok ${END}"
+            echo -e "${RED} database functions NOT ok ${END} (try running (cd examples; make) first)"
        fi
 else 
       echo -e "${RED} DATABASE NOT CONFIGURED ${END}"
