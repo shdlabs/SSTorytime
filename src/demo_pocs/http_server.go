@@ -26,6 +26,7 @@ func main() {
 	http.HandleFunc("/NPtrOrbit", OrbitHandler)
 	http.HandleFunc("/Cone", ConeHandler)
 	http.HandleFunc("/Browse", SystematicHandler)
+	http.HandleFunc("/TOC", TableOfContents)
 	fmt.Println("Listening at http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
@@ -312,12 +313,24 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 
 // *********************************************************************
 
-func TOC(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr) {
+func TableOfContents(w http.ResponseWriter, r *http.Request) {
 
-//	toc := JSONTableOfContext(CTX,..)
+	GenHeader(w,r)
 
-//	fmt.Println(toc)
+	fmt.Println("TableOfContents handler")
 
+	switch r.Method {
+	case "POST","GET":
+		chapter := r.FormValue("chapter")
+		cntstr := r.FormValue("context")
+		context,_ := SST.Str2Array(cntstr)
+
+		toc := SST.JSON_TableOfContents(CTX,chapter,context)
+		w.Write([]byte(toc))
+		fmt.Println(toc)
+	default:
+		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
+	}
 }
 
 // *********************************************************************

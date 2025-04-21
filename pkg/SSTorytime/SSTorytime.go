@@ -3609,7 +3609,7 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 
 // **************************************************************************
 
-func JSON_TableOfContents(ctx PoSST,chap string,cn []string) map[string][]string {
+func JSON_TableOfContents(ctx PoSST,chap string,cn []string) string {
 
 	chap_col := ""
 
@@ -3642,7 +3642,7 @@ func JSON_TableOfContents(ctx PoSST,chap string,cn []string) map[string][]string
 	}
 
 	var rchap,rcontext string
-	var retval = make(map[string][]string)
+	var toc = make(map[string][]string)
 
 	for row.Next() {		
 		err = row.Scan(&rchap,&rcontext)
@@ -3650,13 +3650,53 @@ func JSON_TableOfContents(ctx PoSST,chap string,cn []string) map[string][]string
 		chps := strings.Split(rchap,",")
 		for c := range chps {
 			rc := chps[c]
-			fmt.Println(rc,rcontext)
-			retval[rc] = append(retval[rc],ParseSQLArrayString(rcontext)...)
-	}
+			cn := ParseSQLArrayString(rcontext)
+			for s := 0; s < len(cn); s++ {
+				cn[s] = strings.Replace(cn[s]," ","-",-1)
+				toc[rc] = append(toc[rc],cn[s])
+			}
+		}
 	}
 
+	// JSON
+
+	json_toc := "{ \"TOC\": ["
+	var order []string
+
+	for keys := range toc {
+		order = append(order,keys)
+	}
+
+	sort.Strings(order)
+
+	for key := 0; key < len(order); key++ {
+		json_toc += fmt.Sprintf("{\n\"Chapter\": \"%s\",\n",order[key])
+
+		var idemp = make(map[string]bool)
+		var list []string
+
+		for s := range toc[order[key]] {
+			idemp[toc[order[key]][s]] = true
+		}
+		
+		for vals := range idemp {
+			list = append(list,vals)
+		}
+
+		sort.Strings(list)
+		arr,_ := json.Marshal(list)
+
+		json_toc += fmt.Sprintf("\"Contexts\": %s\n",string(arr))
+		json_toc += "}"
+		if key != len(order)-1 {
+			json_toc += ",\n"
+		}
+	}
+
+	json_toc += " ]}"
+	
 	row.Close()
-	return retval
+	return json_toc
 }
 
 // **************************************************************************
@@ -4573,7 +4613,7 @@ func IsBracketedSearchTerm(src string) (bool,string) {
 
 	decomp := strings.TrimSpace(src)
 
-	if len(decomp) == 0{
+	if len(decomp) == 0 {
 		return false, ""
 	}
 

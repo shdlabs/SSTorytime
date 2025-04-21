@@ -40,6 +40,22 @@ nav {
   padding: 20px;
 }
 
+#toc-submit {
+   float : right;
+   margin_top: 0px;
+}
+
+#toc-panel {
+
+}
+
+#toc-elem {
+  color: grey;
+  font-size: 70%;
+  word-spacing: 20px;
+  margin: 10px;
+}
+
 article {
   float: left;
   padding: 0px;
@@ -52,7 +68,7 @@ article {
 article p {
    color: green;
    line-height: 20px;
-padding: 20px;
+   padding: 20px;
 }
 
 article div {
@@ -74,6 +90,7 @@ article pre {
 article a {
   padding: 10px;
   color: darkgreen;
+  margin-top: 20px;
 }
 
 #radius-1 {
@@ -125,7 +142,7 @@ pre:hover{
 /* Style the footer */
 footer {
   background-color: #777;
-  padding: 10px;
+  padding: 20px;
   text-align: center;
   color: white;
 }
@@ -150,7 +167,7 @@ footer {
   <nav>
 
 <form id="search">
-    <label for="subject">Text</label>
+    <label for="subject">Search</label>
     <input type="text" id="name" name="name" value="" />
 
     <label for="chapter">Chapter</label>
@@ -158,18 +175,17 @@ footer {
 
     <label for="chapter">Filters ...</label>
     <input type="text" id="context" name="context" />
-
-    <input type="submit" id="orbitsubmit" value="Orbits" />
-    <input type="submit" id="pathsubmit" value="Paths" />
     <label for="chapter">Arrow ties</label>
     <input type="text" id="arrnames" name="arrnames" />
 
-
-  <input type="submit" id="dec" value="Previous" />
-  <input type="submit" id="browsesubmit" value="Browse" />
-  <input type="submit" id="inc" value="Next" />
-
+    <input type="submit" id="orbitsubmit" value="Orbits" />
+    <input type="submit" id="pathsubmit" value="Paths" />
+    <input type="submit" id="dec" value="Previous" />
+    <input type="submit" id="browsesubmit" value="Browse" />
+    <input type="submit" id="inc" value="Next" />
+    <input type="submit" id="toc-submit" name="TOC" value="TOC" />
 </form>
+
 
   </nav>
 
@@ -657,6 +673,43 @@ panel.appendChild(spacer);
 
 /***********************************************************/
 
+function DoTOCPanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+for (let chp of obj.TOC) 
+   {
+   let link = document.createElement('a');
+   let item = document.createElement('h1');
+   link.onclick = function() { sendlinkData(nclass,ncptr); };
+   item.textContent = chp.Chapter;
+   link.appendChild(item);
+   panel.appendChild(link);
+
+   let chap = document.createElement('p');
+   chap.id = "toc-panel";
+
+   for (let ctx of chp.Contexts)
+      {
+      let sitem = document.createElement('div');
+      sitem.textContent = ctx;
+      sitem.id = "toc-elem";
+      chap.appendChild(sitem);
+      }
+
+   panel.appendChild(chap)
+   let spacer = document.createElement('hr');
+   panel.appendChild(spacer);
+   }
+}
+
+/***********************************************************/
+// handlers
+/***********************************************************/
+
 function OrbitHandler()
 {
 let form = document.querySelector("#search");
@@ -995,12 +1048,70 @@ async function sendlinkData(nclass,ncptr)
 
 /***********************************************************/
 
+function TOCHandler()
+{
+let form = document.querySelector("#search");
+
+async function sendTOCData() {
+
+  let formData = new FormData(form);
+
+  fetch(API_SERVER+"/TOC", { method: "POST", body: formData })
+   .then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+  })
+    .then((resp) => {
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null) 
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      //DoHeader(resp);
+      DoTOCPanel(resp);
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+     let section = document.querySelector('article');
+     let text = document.createElement('h2');
+     section.textContent = "Error in TOC";
+     section.id = "errormesg"
+     section.appendChild(text);
+
+   });
+}
+
+// Take over form submission
+button = document.getElementById('toc-submit'),
+button.addEventListener("click", (event) => { event.preventDefault();  sendTOCData(); });
+}
+
+/***********************************************************/
+
 DoPage();
 OrbitHandler();
 ConeHandler();
 BrowseHandler();
 IncHandler();
 DecHandler();
+TOCHandler();
 
 </script>
 
