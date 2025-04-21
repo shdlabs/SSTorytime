@@ -3642,23 +3642,17 @@ func JSON_TableOfContents(ctx PoSST,chap string,cn []string) map[string][]string
 	}
 
 	var rchap,rcontext string
-	var prev string = "vvv"
-	var rctx []string
 	var retval = make(map[string][]string)
 
 	for row.Next() {		
 		err = row.Scan(&rchap,&rcontext)
-		rctx = append(rctx,ParseSQLArrayString(rcontext)...)
 
-		if prev == "vvv" {
-			prev = rchap
-		}
-
-		if prev != rchap {
-			retval[prev] = rctx
-			rctx = nil
-			prev = rchap
-		}
+		chps := strings.Split(rchap,",")
+		for c := range chps {
+			rc := chps[c]
+			fmt.Println(rc,rcontext)
+			retval[rc] = append(retval[rc],ParseSQLArrayString(rcontext)...)
+	}
 	}
 
 	row.Close()
