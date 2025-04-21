@@ -519,8 +519,11 @@ func ResolveAliasedItem(token string) string {
 
 	// split $alias.n into (alias string,n int)
 
-	if len(token) < 1 {
-		return ""
+	var contig string
+	fmt.Sscanf(token,"%s",&contig)
+	
+	if len(contig) == 1 {
+		return token
 	}
 
 	split := strings.Split(token[1:],".")
@@ -1200,10 +1203,10 @@ func ClassifyTokenRole(token string) {
 		LINE_ITEM_STATE = ROLE_LINE_ALIAS
 		token  = strings.TrimSpace(token)
 		LINE_ALIAS = token[1:]
-		CheckLineAlias(LINE_ALIAS)
+		CheckLineAlias(token)
 
 	case '$':
-		CheckLineAlias(token[1:])
+		CheckLineAlias(token)
 		actual := ResolveAliasedItem(token)
 		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],actual)
 		PVerbose("fyi, line reference",token,"resolved to",actual)
@@ -1276,13 +1279,15 @@ func AssessGrammarCompletions(token string, prior_state int) {
 
 //**************************************************************
 
-func CheckLineAlias(s string) {
+func CheckLineAlias(token string) {
 
-	if strings.Contains(s,"$") || strings.Contains(s,"@") {
-		ParseError(ERR_BAD_LABEL_OR_REF+s)
+	var contig string
+	fmt.Sscanf(token,"%s",&contig)
+	
+	if token[0] == '@' && len(contig) == 1 {
+		ParseError(ERR_BAD_LABEL_OR_REF+token)
 		os.Exit(-1)
 	}
-
 }
 
 //**************************************************************

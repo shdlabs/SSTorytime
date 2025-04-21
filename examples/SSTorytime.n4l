@@ -1,0 +1,32 @@
+
+- notes about SSTorytime in N4L
+
+
+  :: setup, get started ::
+
+  SSTorytime  (depends on) postgres
+       "      (depends on) "postgres_contrib package for unaccent() function"
+       "      (depends on) go
+       "      (note) this made for Linux but doesn't depend on anything specific to Linux
+       "      (has feature) supports all languages in Unicode (note) languages that don't use spaces between words may have some issues
+
+ postgres (depends on) postgres configuration
+     "    (depends on) create the SST database (e.g.) "$ sudo su -
+$ su - postgres
+$ psql
+# CREATE user sstoryline password 'sst_1234' superuser;
+# CREATE DATABASE sstoryline;
+# CREATE DATABASE newdb;
+# GRANT ALL PRIVILEGES ON DATABASE sstoryline TO sstoryline;
+# GRANT ALL PRIVILEGES ON DATABASE newdb TO sstoryline;
+# CREATE EXTENSION UNACCENT;"
+
+     "  (depends on) open for local connections (e.g.) "# File pg_hba.conf, locate for your distribution (you might have to search for it):
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# "local" is for Unix domain socket connections only
+local   all             all                                     peer
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            password
+# IPv6 local connections:
+host    all             all             ::1/128                 password"
