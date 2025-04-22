@@ -67,12 +67,12 @@ article {
 
 article p {
    color: green;
-   line-height: 20px;
-   padding: 20px;
+   //line-height: 20px;
+   padding: 10px;
 }
 
 article div {
- margin-bottom: 20px;
+ margin-bottom: 10px;
 }
 
 article img {
@@ -90,7 +90,7 @@ article pre {
 article a {
   padding: 10px;
   color: darkgreen;
-  margin-top: 20px;
+  margin-top: 5px;
 }
 
 #radius-1 {
@@ -188,12 +188,12 @@ MathJax.Hub.Config({
     <label for="chapter">Arrow ties</label>
     <input type="text" id="arrnames" name="arrnames" />
 
-    <input type="submit" id="orbitsubmit" value="Orbits" />
-    <input type="submit" id="pathsubmit" value="Paths" />
-    <input type="submit" id="dec" value="Previous" />
+    <input type="submit" id="orbitsubmit"  value="Orbits" />
+    <input type="submit" id="pathsubmit"   value="Paths" />
+    <input type="submit" id="dec"          value="Previous" />
     <input type="submit" id="browsesubmit" value="Browse" />
-    <input type="submit" id="inc" value="Next" />
-    <input type="submit" id="toc-submit" name="TOC" value="TOC" />
+    <input type="submit" id="inc"          value="Next" />
+    <input type="submit" id="toc-submit"   value="TOC" />
 </form>
 
 
@@ -475,11 +475,17 @@ console.log(obj)
 
 if (obj.matches != null)
    {
-   title = obj.matches[0].Text;
+   if (obj.matches[0] != null)
+      {
+      title = obj.matches[0].Text;
+      }
    }
 else if (obj.paths != null)
    {
-   title = obj.paths[0].Title
+   if (obj.paths[0] != null)
+      {
+      title = obj.paths[0].Title
+      }
    }
 else
    {
@@ -873,22 +879,6 @@ const form = document.querySelector("#search");
 
    })
     .then((resp) => {
-
-      console.log("CHECK BROWSE",JSON.stringify(resp, null, 2))
-
-      let prevh = document.getElementById("header_root");
-
-      if (prevh != null)
-         {
-         prevh.remove();
-         }
-
-      let prevm = document.getElementById("main_root");
-
-      if (prevm != null) 
-         {
-         prevm.remove();
-         }
 
       DoHeader(resp);
       DoBrowsePanel(resp);

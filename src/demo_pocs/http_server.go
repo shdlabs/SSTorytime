@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"os"
+	"encoding/json"
 
         SST "SSTorytime"
 )
@@ -287,7 +288,8 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 		s := SST.GetDBNodeByNodePtr(CTX,qnodes[q].NPtr).S
 		thiscone := fmt.Sprintf("%s\n { \"NClass\" : %d,\n",comma,qnodes[q].NPtr.Class)
 		thiscone += fmt.Sprintf(" \"NCPtr\" :%d,\n",qnodes[q].NPtr.CPtr)
-		thiscone += fmt.Sprintf(" \"Title\" : \"%s\", ",s)
+		title,_ := json.Marshal(s)
+		thiscone += fmt.Sprintf(" \"Title\" : %s,\n",string(title))
 		comma = ","
 		
 		for i := range order {
