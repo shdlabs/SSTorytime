@@ -2485,7 +2485,6 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 		return n
 	}
 
-	n.NPtr = db_nptr
 	var whole [ST_TOP]string
 
 	// NB, there seems to be a bug in the SQL package, which cannot always populate the links, so try not to
@@ -2511,6 +2510,7 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 		CacheNode(n)
 	}
 
+	n.NPtr = db_nptr
 	return n
 }
 
@@ -3517,8 +3517,8 @@ func JSONNodeOrbit(ctx PoSST, nptr NodePtr) string {
 	jstr := fmt.Sprintf("{\n\"Text\" : %s,\n",string(name))
 	jstr += fmt.Sprintf("\"L\" : %d,\n",node.L)
 	jstr += fmt.Sprintf("\"Chap\" : \"%s\",\n",node.Chap)
-	jstr += fmt.Sprintf("\"NClass\" : %d,\n",node.NPtr.Class)
-	jstr += fmt.Sprintf("\"NCptr\" : %d,\n",node.NPtr.CPtr)
+	jstr += fmt.Sprintf("\"NClass\" : %d,\n",nptr.Class)
+	jstr += fmt.Sprintf("\"NCPtr\" : %d,\n",nptr.CPtr)
 
 	notes := GetNodeOrbit(ctx,nptr)
 
