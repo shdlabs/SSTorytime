@@ -2627,7 +2627,7 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext
 	
 	qstr = fmt.Sprintf("WITH matching_nodes AS \n"+
 		" (SELECT DISTINCT NFrom,Arr,Ctx,match_context(Ctx,%s) AS matchc,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)\n"+
-		"   SELECT NFrom,Ctx,Chap FROM matching_nodes \n"+
+		"   SELECT DISTINCT NFrom,Ctx,Chap FROM matching_nodes \n"+
 		"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx DESC OFFSET %d LIMIT %d",context,arrows,chapter,offset,hits_per_page)
 
 	row, err := ctx.DB.Query(qstr)

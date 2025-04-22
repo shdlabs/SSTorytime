@@ -6,9 +6,47 @@
 
   SSTorytime  (depends on) postgres
        "      (depends on) "postgres_contrib package for unaccent() function"
-       "      (depends on) go
-       "      (note) this made for Linux but doesn't depend on anything specific to Linux
-       "      (has feature) supports all languages in Unicode (note) languages that don't use spaces between words may have some issues
+       "      (depends on) go programming language
+       "      (note) made with Linux but doesn't depend on anything specific to Linux
+       "      (has feature) supports all human languages in Unicode (note) languages that don't use spaces between words may have some issues
+
+
+   :: motivation, _sequence_ ::
+
+  The goal is to implement useful search patterns for a graph structure in an efficient way.
+
+  Because database connection is slow, we do as much as possible to reduce that amount of data sent over the wire by performing all processing internally. (note) This has the tradeoff of using a slow script language in the database kernel.
+
+  Loading data into a database, with validation, is slow. Retrieving is much faster.
+
+  A graph is basically a structure with an index at every node. There are two modes of use: random access lookup for starting a search--which SQL is already good at, and exploring, path tracing, following leads from that starting point like hypertext.
+
+  Most graph databases don't give any guidance in modelling or searching. They are based on SQL random access search, but this is not how we need to use graphs. 
+
+  Graphs are for following paths with different meanings - or "semantics".
+
+  
+ -::_sequence_::
+
+
+
+  :: uses, use-cases ::
+
+  Making notes (note) Notes are a lot more concise than prose or spoken language. 
+        "      (note) Notes are condensed intent, without flowery elaboration to cloud it.
+        "      (note) AI and LLMs produce fluid language, which is not in note form.
+  Incident reporting with causal commentary
+  Risk procedure documentation
+  SRE problem diagnosis methods
+  HOW-TO sequences and recipes
+  Language learning
+  Fact based cramming  
+
+  Forensic fact assimilation and reasoning.
+
+
+
+  :: technical details ::
 
  postgres (depends on) postgres configuration
      "    (depends on) create the SST database (e.g.) "$ sudo su -
@@ -32,3 +70,45 @@ host    all             all             127.0.0.1/32            password
 host    all             all             ::1/128                 password"
 
  # to finish ...
+
+
+
+
+ stored procedures/functions in postgres
+
+    "   (note)  uses a language that looks a lot like SQL but is markedly different - beware! (has name) PLpgSQL
+    "   (e.g.)  "FUNCTION SumFwdPaths(start link, path text, orientation text, depth integer, maxdepth integer, exclude nodeptr[])
+ DECLARE
+     fwdlinks Link[];
+     empty Link[] = ARRAY[]::Link[];
+     lnk Link;
+     fwd Link;
+     ret_paths Text;
+     appendix Text;
+     tot_path Text;
+ BEGIN
+ IF depth = maxdepth THEN
+   ret_paths := Format('%s\n%s',ret_paths,path);
+   RETURN ret_paths;
+ END IF;
+ fwdlinks := GetFwdLinks(start.Dst,exclude,sttype);
+ FOREACH lnk IN ARRAY fwdlinks LOOP
+    IF NOT lnk.Dst = ANY(exclude) THEN
+       exclude = array_append(exclude,lnk.Dst);
+       IF lnk IS NULL THEN
+         ret_paths := Format('%s\n%s',ret_paths,path);
+          RETURN ret_paths;
+      ELSE
+          tot_path := Format('%s;%s',path,lnk::Text);
+          appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude);
+          IF appendix IS NOT NULL THEN
+             ret_paths := Format('%s\n%s',ret_paths,appendix);
+          ELSE
+            ret_paths := Format('%s\n%s',ret_paths,tot_path);
+         END IF;
+      END IF;   
+END IF;
+END LOOP;
+RETURN ret_paths;
+END;"    (ex)  A recursive search in SQL
+ 
