@@ -1105,13 +1105,13 @@ func ParseN4L(src []rune) {
 
 func AddMandatory() {
 
-	//   + then the next is (then) - previous (prior)
-
-	arr := InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-	inv := InsertArrowDirectory("leadsto","prev","follows on from","-")
+	arr := InsertArrowDirectory("leadsto","empty","debug","+")
+	inv := InsertArrowDirectory("leadsto","void","unbug","-")
 	InsertInverseArrowDirectory(arr,inv)
 
-	// for rendering from the database in a web browser
+	arr = InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
+	inv = InsertArrowDirectory("leadsto","prev","follows on from","-")
+	InsertInverseArrowDirectory(arr,inv)
 
 	arr = InsertArrowDirectory("properties","url","has URL","+")
         inv = InsertArrowDirectory("properties","isurl","is a URL for","-")
@@ -1121,6 +1121,9 @@ func AddMandatory() {
         inv = InsertArrowDirectory("properties","isimg","is an image for","-")
 	InsertInverseArrowDirectory(arr,inv)
 
+	arr = InsertArrowDirectory("properties","math","has math' expression","+")
+        inv = InsertArrowDirectory("properties","ismath","is a math' expression for","-")
+	InsertInverseArrowDirectory(arr,inv)
 }
 
 //**************************************************************

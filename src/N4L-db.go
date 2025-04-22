@@ -1047,19 +1047,13 @@ func SkipWhiteSpace(src []rune, pos int) int {
 
 func AddMandatory() {
 
-	//   + then the next is (then) - previous (prior)
-
 	arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
 	inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
-	//   + then the next is (then) - previous (prior)
-
 	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
 	inv = SST.InsertArrowDirectory("leadsto","prev","follows on from","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
-
-	// for rendering from the database in a web browser
 
 	arr = SST.InsertArrowDirectory("properties","url","has URL","+")
         inv = SST.InsertArrowDirectory("properties","isurl","is a URL for","-")
@@ -1069,6 +1063,9 @@ func AddMandatory() {
         inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
+	arr = SST.InsertArrowDirectory("properties","math","has math' expression","+")
+        inv = SST.InsertArrowDirectory("properties","ismath","is a math' expression for","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
 }
 
 //**************************************************************
