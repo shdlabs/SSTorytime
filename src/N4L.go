@@ -1120,10 +1120,6 @@ func AddMandatory() {
 	arr = InsertArrowDirectory("properties","img","has image","+")
         inv = InsertArrowDirectory("properties","isimg","is an image for","-")
 	InsertInverseArrowDirectory(arr,inv)
-
-	arr = InsertArrowDirectory("properties","math","has math' expression","+")
-        inv = InsertArrowDirectory("properties","ismath","is a math' expression for","-")
-	InsertInverseArrowDirectory(arr,inv)
 }
 
 //**************************************************************
@@ -2144,6 +2140,10 @@ func ResolveAliasedItem(token string) string {
 		return token
 	}
 
+	if contig == "$$" {
+		return token
+	}
+
 	split := strings.Split(token[1:],".")
 
 	if len(split) < 2 {
@@ -2237,6 +2237,13 @@ func EmbeddedSymbol(fulltext []rune,offset int) (int,string) {
 		for r := 0; r < len(uni) && r+offset < len(fulltext); r++ {
 			if uni[r] != fulltext[offset+r] {
 				match = false
+				continue
+			}
+
+			// No space between marker and text
+			if unicode.IsSpace(fulltext[offset+r+1]) {
+				match = false
+				continue
 			}
 		} 
 

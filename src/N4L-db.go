@@ -527,6 +527,10 @@ func ResolveAliasedItem(token string) string {
 		return token
 	}
 
+	if contig == "$$" {
+		return token
+	}
+
 	split := strings.Split(token[1:],".")
 
 	if len(split) < 2 {
@@ -1061,10 +1065,6 @@ func AddMandatory() {
 
 	arr = SST.InsertArrowDirectory("properties","img","has image","+")
         inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
-	SST.InsertInverseArrowDirectory(arr,inv)
-
-	arr = SST.InsertArrowDirectory("properties","math","has math' expression","+")
-        inv = SST.InsertArrowDirectory("properties","ismath","is a math' expression for","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 }
 
@@ -1764,8 +1764,15 @@ func EmbeddedSymbol(fulltext []rune,offset int) (int,string) {
 		for r := 0; r < len(uni) && r+offset < len(fulltext); r++ {
 			if uni[r] != fulltext[offset+r] {
 				match = false
+				continue
 			}
-		} 
+
+			// No space between marker and text
+			if unicode.IsSpace(fulltext[offset+r+1]) {
+				match = false
+				continue
+			}
+		}
 
 		if match {
 			return len(an),an
