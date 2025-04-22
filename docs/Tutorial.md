@@ -187,6 +187,11 @@ into the arrow ties text field and hit Browse. Use Next and Previous to walk thr
 
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp3.png 'Testing a web interface')
 
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp4.png 'Testing a web interface')
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp5.png 'Testing a web interface')
+
+
 
 ## What's the point?
 

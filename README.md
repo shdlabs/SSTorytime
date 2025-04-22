@@ -51,6 +51,9 @@ was built into CFEngine 3, but later removed again when `the market wasn't ready
 the concepts using a variety of technologies, including my own. In this latest version, I'm
 combining those lessons to make a version that builds on standard Postgres.
 
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp4.png 'Testing a web interface')
+
 Knowledge capture requires tools for collecting factual notes, data
 relationships, and structures for representing and organizing them, so
 that they can be found easily. Many mistakes have been made around
