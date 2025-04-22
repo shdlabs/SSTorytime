@@ -154,7 +154,8 @@
 
  # RESERVED + has url (url) - is a URL for (isurl)
  # RESERVED + has image (img) - is an image for (isimg)
- # RESERVED + has math expression (math) - is math for (ismath)
+
+ + is expressed in formula (formula) - is a formula for (isformula)
 
  + has frequency (freq) - is the frequency of (isfreq)
  + is characterized by (state) - is a/the state of (stateof)

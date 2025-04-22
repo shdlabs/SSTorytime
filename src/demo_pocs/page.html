@@ -155,6 +155,16 @@ footer {
   }
 }
 </style>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+
+
+</script>
+<script type="text/javascript" id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
 </head>
 <body>
 
@@ -199,11 +209,6 @@ footer {
   <p>SSTorytime project sponsored by NLnet.nl</p>
 </footer>
 </page>
-
-
-<script type="text/javascript" id="MathJax-script" async
- src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-</script>
 
 <script>
 /* MB SSTorytime poc/demo code - to be cleaned up and improved by an expert.. */
@@ -336,6 +341,18 @@ if (arrow == "has image" || arrow == "is an image for")
       {
       return true;
       }
+   }
+
+return false
+}
+
+/***********************************************************/
+
+function IsMath(str,arrow)
+{
+if (arrow == "has math' expression" || arrow == "is a math' expression for")
+   {
+   return true;
    }
 
 return false
@@ -505,7 +522,7 @@ for (let match of obj.matches)
    if (match.Text.includes("\n"))
       {
       let from_link = document.createElement('a');
-      from_link.onclick = function() { sendlinkData(match.NClass,match.NCptr); };
+      from_link.onclick = function() { sendlinkData(match.NClass,match.NCPtr); };
 
       let from_text = document.createElement('pre');
       from_text.nameClass = "text";
@@ -517,7 +534,7 @@ for (let match of obj.matches)
    else
       {
       let from_link = document.createElement('a');
-      from_link.onclick = function() { sendlinkData(match.NClass,match.NCptr); };
+      from_link.onclick = function() { sendlinkData(match.NClass,match.NCPtr); };
       let from_text = document.createElement('h1');
       from_text.textContent = match.Text;
 
@@ -753,6 +770,8 @@ async function sendorbitData() {
 
       DoHeader(resp);
       DoOrbitPanel(resp);
+      MathJax.typeset();
+
     })
 
     .catch((error) => {
@@ -811,6 +830,8 @@ async function sendconeData() {
       DoHeader(resp);
       //DoConePanel(resp);
       DoEntireConePanel(resp);
+      MathJax.typeset();
+
     })
 
     .catch((error) => {
@@ -871,6 +892,8 @@ const form = document.querySelector("#search");
 
       DoHeader(resp);
       DoBrowsePanel(resp);
+      MathJax.typeset();
+
     })
 
     .catch((error) => {
