@@ -492,6 +492,11 @@ else
    title =  obj.chapter + " :: " + obj.context + " :: "
    }
 
+if (title.length > 90)
+   {
+   title = title.slice(0,70) + "...";
+   }
+
 if (title.length < 40)
    {
    titlebar.textContent = title;
@@ -542,15 +547,27 @@ for (let match of obj.matches)
       let from_link = document.createElement('a');
       from_link.onclick = function() { sendlinkData(match.NClass,match.NCPtr); };
       let from_text = document.createElement('h1');
-      from_text.textContent = match.Text;
-
-      if (match.Text.length > 100)
-         {
-         from_text.style.fontSize = "100%";
-         }
       from_link.appendChild(from_text);
       from_link.nameClass = "text";
       child.appendChild(from_link);
+
+      if (match.Text.length > 90)
+         {
+         from_text.style.fontSize = "100%";
+         }
+
+      if (match.Text.length > 90)
+         {
+         from_text.textContent = match.Text.slice(0,70) + "...";
+         let small_tot_text = document.createElement('p');
+         small_tot_text.textContent = match.Text;
+         small_tot_text.style.fontSize = "90%";
+         child.appendChild(small_tot_text);
+         }
+      else 
+         {
+         from_text.textContent = match.Text;
+         }
       }
 
   let chapter = document.createElement('div');
