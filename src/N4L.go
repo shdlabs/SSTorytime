@@ -1375,6 +1375,8 @@ func CheckChapter(name string) {
 		ParseError(WARN_CHAPTER_CLASS_MIXUP+name)
 		os.Exit(-1)
 	}
+
+	SEQUENCE_MODE = false
 }
 
 //**************************************************************
