@@ -155,8 +155,9 @@ $ searchN4L -chapter brain -browse arrows=occurs,freq,role
 
 ## A prototype web interface
 
-You can play around with a prototype web interface. Install your data, then go to the `src/demos_poc`
-directory and run `go run http_server.go`. Then you can connect by loading `page.html`
+You can play around with a prototype web interface. Install your data, then go to the `src`
+directory and run `go run http_server.go`. Then you can connect by loading `page.html` or connecting to the
+address: `http://localhost:8080` in a browser.
 
 <pre>
 mark% go run http_server.go
