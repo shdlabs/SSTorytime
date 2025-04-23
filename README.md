@@ -22,6 +22,7 @@ note taking and reasoning, for knowledge capture, querying, and
 dissemination of individual thinking easy, for humans and general use. (AI can only
 capture knowledge from humans, so even if we want to use AI, we'd
 better get the knowledge representations right.)
+Whether we are analysing forensic evidence, looking for criminal behaviour, learning a foreign language, or taking notes in school for an exam.
 
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp6.png 'Testing a web interface')
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
