@@ -1666,25 +1666,64 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 
 	frclass := frptr.Class
 	frm := frptr.CPtr
-	sttype := ARROW_DIRECTORY[link.Arr].STAindex
+	stindex := ARROW_DIRECTORY[link.Arr].STAindex
 
 	link.Dst = toptr // fill in the last part of the reference
+
+	// Add idempotently ...
 
 	switch frclass {
 
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[frm].I[sttype] = append(NODE_DIRECTORY.N1directory[frm].I[sttype],link)
+		NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N1directory[frm].I[stindex],link)
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[frm].I[sttype] = append(NODE_DIRECTORY.N2directory[frm].I[sttype],link)
+		NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N2directory[frm].I[stindex],link)
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[frm].I[sttype] = append(NODE_DIRECTORY.N3directory[frm].I[sttype],link)
+		NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N3directory[frm].I[stindex],link)
 	case LT128:
-		NODE_DIRECTORY.LT128[frm].I[sttype] = append(NODE_DIRECTORY.LT128[frm].I[sttype],link)
+		NODE_DIRECTORY.LT128[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.LT128[frm].I[stindex],link)
 	case LT1024:
-		NODE_DIRECTORY.LT1024[frm].I[sttype] = append(NODE_DIRECTORY.LT1024[frm].I[sttype],link)
+		NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.LT1024[frm].I[stindex],link)
 	case GT1024:
-		NODE_DIRECTORY.GT1024[frm].I[sttype] = append(NODE_DIRECTORY.GT1024[frm].I[sttype],link)
+		NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.GT1024[frm].I[stindex],link)
 	}
+}
+
+//**************************************************************
+
+func MergeDirectory(list []Link,lnk Link) []Link {
+
+	for l := range list {
+		if list[l].Arr == lnk.Arr && list[l].Dst == lnk.Dst {
+			list[l].Ctx = MergeContexts(list[l].Ctx,lnk.Ctx)
+			return list
+		}
+	}
+
+	list = append(list,lnk)
+	return list
+}
+
+//**************************************************************
+
+func MergeContexts(one,two []string) []string {
+
+	var merging = make(map[string]bool)
+	var merged []string
+
+	for s := range one {
+		merging[one[s]] = true
+	}
+
+	for s := range two {
+		merging[two[s]] = true
+	}
+
+	for s := range merging {
+		merged = append(merged,s)
+	}
+
+	return merged
 }
 
 //**************************************************************
@@ -2202,7 +2241,7 @@ func AddBackAnnotations(cleantext string,cleanptr NodePtr,annotated string) {
 	var protected bool = false
 
 	reminder := fmt.Sprintf("%.30s...",cleantext)
-	PVerbose("\n        Adding annotations from \""+reminder+"\"")
+	PVerbose("\n        Checking annotations from \""+reminder+"\"")
 
 	for r := 0; r < len(annotated); r++ {
 

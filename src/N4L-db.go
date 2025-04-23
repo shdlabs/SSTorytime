@@ -1729,7 +1729,7 @@ func AddBackAnnotations(cleantext string,cleanptr SST.NodePtr,annotated string) 
 	var protected bool = false
 
 	reminder := fmt.Sprintf("%.30s...",cleantext)
-	PVerbose("\n        Adding annotations from \""+reminder+"\"")
+	PVerbose("\n        Checking annotations from \""+reminder+"\"")
 
 	for r := 0; r < len(annotated); r++ {
 

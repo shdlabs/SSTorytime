@@ -732,21 +732,60 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 
 	link.Dst = toptr // fill in the last part of the reference
 
+	// Add idempotently ...
+
 	switch frclass {
 
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[frm].I[stindex] = append(NODE_DIRECTORY.N1directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N1directory[frm].I[stindex],link)
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[frm].I[stindex] = append(NODE_DIRECTORY.N2directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N2directory[frm].I[stindex],link)
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[frm].I[stindex] = append(NODE_DIRECTORY.N3directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N3directory[frm].I[stindex],link)
 	case LT128:
-		NODE_DIRECTORY.LT128[frm].I[stindex] = append(NODE_DIRECTORY.LT128[frm].I[stindex],link)
+		NODE_DIRECTORY.LT128[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.LT128[frm].I[stindex],link)
 	case LT1024:
-		NODE_DIRECTORY.LT1024[frm].I[stindex] = append(NODE_DIRECTORY.LT1024[frm].I[stindex],link)
+		NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.LT1024[frm].I[stindex],link)
 	case GT1024:
-		NODE_DIRECTORY.GT1024[frm].I[stindex] = append(NODE_DIRECTORY.GT1024[frm].I[stindex],link)
+		NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.GT1024[frm].I[stindex],link)
 	}
+}
+
+//**************************************************************
+
+func MergeDirectory(list []Link,lnk Link) []Link {
+
+	for l := range list {
+		if list[l].Arr == lnk.Arr && list[l].Dst == lnk.Dst {
+			list[l].Ctx = MergeContexts(list[l].Ctx,lnk.Ctx)
+			return list
+		}
+	}
+
+	list = append(list,lnk)
+	return list
+}
+
+//**************************************************************
+
+func MergeContexts(one,two []string) []string {
+
+	var merging = make(map[string]bool)
+	var merged []string
+
+	for s := range one {
+		merging[one[s]] = true
+	}
+
+	for s := range two {
+		merging[two[s]] = true
+	}
+
+	for s := range merging {
+		merged = append(merged,s)
+	}
+
+	return merged
 }
 
 //**************************************************************
@@ -3362,7 +3401,7 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr) [ST_TOP][]Orbit {
 					nt.Dst = start.Dst
 					nt.Text = txt.S
 					nt.Radius = 1
-					notes[stindex] = append(notes[stindex],nt)
+					notes[stindex] = IdempAddNote(notes[stindex],nt)
 
 					arprev := STIndexToSTType(arrow.STAindex)
 
@@ -3381,7 +3420,7 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr) [ST_TOP][]Orbit {
 						arthis := STIndexToSTType(nextarrow.STAindex)
 						// No backtracking
 						if arthis != -arprev {	
-							notes[stindex] = append(notes[stindex],nt)
+							notes[stindex] = IdempAddNote(notes[stindex],nt)
 							arprev = arthis
 						}
 					}
@@ -3391,6 +3430,20 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr) [ST_TOP][]Orbit {
 	}
 
 	return notes
+}
+
+// **************************************************************************
+
+func IdempAddNote(list []Orbit, item Orbit) []Orbit {
+
+	for o := range list {
+		if list[o].Dst == item.Dst && list[o].Arrow == item.Arrow &&
+			list[o].Text == item.Text {
+			return list
+		}
+	}
+
+	return append(list,item)
 }
 
 // **************************************************************************

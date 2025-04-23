@@ -21,7 +21,7 @@
 
  :: locations :: 
 
- Library
+ library
  Covent Garden Pub
  24 Summertown Road
 
@@ -30,8 +30,8 @@
 
  :: key events ::
 
-@party  party hosted by Miss Scarlett in London flat, evening of the 23rd March
-    "   (note) This was a month before Scarlett dated Martin
+@party  party hosted by >scarlett in London flat, evening of the 23rd March
+    "   (note) This was a month before >scarlett dated >martin
 
 @scarlettarrives  entering the library on Monday at 10am
 @doormanarrives   doorman arrived at library for work on Monday 7 am
@@ -77,6 +77,10 @@
   diddy    (attend) $party.1
   martin   (attend) $party.1
 
+  deadly nightshade (causes) hallucinations / death
+
+  >scarlett erratic behaviour (leads to) accusations and anger
+
  #######################
 
  :: weapons ::
@@ -84,27 +88,41 @@
  // we might be tempted to create a group of weapons, but why?
  // the role is clear and there is no need to prejudice 
 
- Bread knife 
+ bread knife 
  Meat cleaver (status) excluded
 
  #######################
 
- :: hearsay ::
+ :: hearsay, interviews ::
 
- scarlet (motive) had a crush on plum (question) was the crush reciprocated?
+ >scarlet had a crush on >plum (question) was the crush reciprocated? (reported by) harriet
+
+          "   (motive) had a crush 
+
+ jamie intended to be at the party by 7pm but got stuck in traffic, arriving at 8:30pm
+
+ >anne came early to the party to meet >jamie (leadsto) >anne sees >sally entering the kitchen
+
+ anne blamed jamie for losing their house
+          "   (motive) blame jamie
+
  scarlet (partner) martin
+ jamie   (partner) anne
  pumb    (partner) tiddles the cat
 
- Professor plumb was reading in the library (where) library
+ Professor >plumb was reading in the library (where) library
                        "                    (while) reading Weapon Making (about) weapon
                        "                    (when) $mondaymorning.1
+
+
+ ######################
 
  :: scenarios ::
 
  # First the unifying event is a distinct top level
  # spacetime hub unifying the contributing components
 
- Hypothesis: Miss Scarlett murders professor plumb (using) bread knife
+ Hypothesis: miss >scarlett murders professor >plumb (using) bread knife
 
                   "                    (where) in the library
 
@@ -112,8 +130,11 @@
 
                   "                    (victim) Professor Plumb
 
+ ##############################
+
  :: Layout, Scene ::
 
  The library (connects to) The garden
-
+ The garden (contains) deadly nightshade
  
+

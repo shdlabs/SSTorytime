@@ -7,6 +7,9 @@
  	# what does A -----> B mean, and what is its opposite?
 
         + empty (debug) - adjoint empty (adjdebug)
+        + leads to (leadsto) - follows from (follows)
+        + may cause (causes) - may be the cause of (causeof)
+        + reported (report)  - reported by (repby)
 
  	# causal order, preconditions, succession
 
@@ -51,7 +54,7 @@
  + perpetrated by (perpby) - perpetrator of (perp)
  + victim was (victim) - has the role of victim in (victimof)
 
- + is about about the subject (about) - is the subject of (hassubject)
+ + is about about the subject (about) - is the subject of (subjof)
 
 #########################################################
 
@@ -87,7 +90,7 @@
  = (depends on)
  * (is a special case of)
  # - (explains) , this is illegal
- > (hassubject)
+ > (about)
  >> (is an example of)
 
 
