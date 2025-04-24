@@ -74,7 +74,7 @@ func OrbitHandler(w http.ResponseWriter, r *http.Request) {
 
 		if nclass == "" || ncptr == "" {
 			if name == "" {
-				name = "fish"
+				name = "semantic"
 			}
 			fmt.Println("Matching Orbit by name(",name,chapter,context,")")
 			nptrs := SST.GetDBNodePtrMatchingName(CTX,chapter,name)

@@ -276,7 +276,17 @@ type PoSST struct {
 
 //******************************************************************
 
-type Orbit struct {
+type Stories struct {
+
+	Container NodePtr
+	Title     string
+        Arrow     string  // arrow connecting the story to its container
+	Axis      [][ST_TOP][]Orbit
+}
+
+//******************************************************************
+
+type Orbit struct {  // union, JSON transformer
 
 	Radius int
 	Arrow  string
@@ -737,27 +747,37 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 	switch frclass {
 
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N1directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.N1directory[frm].I[stindex],link)
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N2directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.N2directory[frm].I[stindex],link)
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N3directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.N3directory[frm].I[stindex],link)
 	case LT128:
-		NODE_DIRECTORY.LT128[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.LT128[frm].I[stindex],link)
+		NODE_DIRECTORY.LT128[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.LT128[frm].I[stindex],link)
 	case LT1024:
-		NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.LT1024[frm].I[stindex],link)
+		NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.LT1024[frm].I[stindex],link)
 	case GT1024:
-		NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.GT1024[frm].I[stindex],link)
+		NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.GT1024[frm].I[stindex],link)
 	}
 }
 
 //**************************************************************
 
-func MergeDirectory(list []Link,lnk Link) []Link {
+func MergeLinks(list []Link,lnk Link) []Link {
+
+	var ctx []string
+
+	for c := range lnk.Ctx { // strip redundant signal
+		if lnk.Ctx[c] != "_sequence_" {
+			ctx = append(ctx,lnk.Ctx[c])
+		}
+	}
+
+	lnk.Ctx = ctx
 
 	for l := range list {
 		if list[l].Arr == lnk.Arr && list[l].Dst == lnk.Dst {
-			list[l].Ctx = MergeContexts(list[l].Ctx,lnk.Ctx)
+			list[l].Ctx = MergeContexts(list[l].Ctx,ctx)
 			return list
 		}
 	}
@@ -782,7 +802,9 @@ func MergeContexts(one,two []string) []string {
 	}
 
 	for s := range merging {
-		merged = append(merged,s)
+		if s != "_sequence_" {
+			merged = append(merged,s)
+		}
 	}
 
 	return merged
@@ -2567,6 +2589,8 @@ func GetDBArrowsWithArrowName(ctx PoSST,s string) ArrowPtr {
 		}
 	}
 
+	fmt.Println("No such arrow found in database:",s)
+	os.Exit(-1)
 	return -1
 }
 
@@ -2798,10 +2822,12 @@ func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 			
 			if !ok {
 				ptr, ok = ARROW_LONG_DIR[name]
-				fmt.Println(ERR_NO_SUCH_ARROW,"("+name+")")
+				fmt.Println(ERR_NO_SUCH_ARROW,"("+name+") - no arrows defined in database yet?")
+				os.Exit(-1)
 			}
 		}
 	}
+
 	return ptr
 }
 
@@ -3444,6 +3470,115 @@ func IdempAddNote(list []Orbit, item Orbit) []Orbit {
 	}
 
 	return append(list,item)
+}
+
+// **************************************************************************
+// Axial paths
+// **************************************************************************
+
+func GetStoryContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Stories {
+
+	var stories []Stories
+
+	arrowptr := GetDBArrowsWithArrowName(ctx,arrname)
+
+	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,chapter,context)
+
+	for nptr := range openings {
+
+		var story Stories
+
+		node := GetDBNodeByNodePtr(ctx,openings[nptr])
+		orbit := GetNodeOrbit(ctx,openings[nptr])
+
+		container := orbit[ST_ZERO-CONTAINS]
+
+		if container != nil {
+			story.Container = container[0].Dst
+			story.Title = container[0].Text
+			story.Arrow = container[0].Arrow
+		}
+
+		if OrbitMatching(ctx,node,orbit,search) {
+			axis := GetLongestAxialPath(ctx,openings[nptr],arrowptr)
+			for lnk := 0; lnk < len(axis); lnk++ {
+
+				// Now add the orbit at this node, not including the axis
+
+				story.Axis = append(story.Axis,GetNodeOrbit(ctx,axis[lnk].Dst))
+			}
+		}
+
+		if story.Axis != nil {
+			stories = append(stories,story)
+		}
+		
+	}
+
+	return stories
+}
+
+// **************************************************************************
+
+func OrbitMatching(ctx PoSST,node Node,orbit [ST_TOP][]Orbit,search string) bool {
+
+	// Check whether the search string occurs within the near orbit of the node
+
+	if strings.Contains(node.S,search) || strings.Contains(search,node.S) {
+		return true
+	}
+
+	for st := 0; st < ST_TOP; st++ {
+		for r := range orbit[st] {
+			if strings.Contains(orbit[st][r].Text,search) || 
+			strings.Contains(search,orbit[st][r].Text) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+// **************************************************************************
+
+func GetLongestAxialPath(ctx PoSST,nptr NodePtr,arrowptr ArrowPtr) []Link {
+
+	var max int = 1
+	const maxdepth = 100 // Hard limit on story length, what?
+
+	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
+	paths,dim := GetFwdPathsAsLinks(ctx,nptr,sttype,maxdepth)
+
+	for pth := 0; pth < dim; pth++ {
+
+		var depth int
+		paths[pth],depth = TruncatePathsByArrow(paths[pth],arrowptr)
+
+		if len(paths[pth]) == 1 {
+			paths[pth] = nil
+		}
+
+		if depth > max {
+			max = pth
+		}
+	}
+
+	return paths[max]
+}
+
+// **************************************************************************
+
+func TruncatePathsByArrow(path []Link,arrow ArrowPtr) ([]Link,int) {
+
+	for hop := 1; hop < len(path); hop++ {
+
+		if path[hop].Arr != arrow {
+			return path[:hop],hop
+		}
+	}
+
+	return path,len(path)
 }
 
 // **************************************************************************

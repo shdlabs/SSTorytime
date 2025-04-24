@@ -94,6 +94,7 @@
  + is a set of (setof) - is part of set (inset) // designations can be multi-valued
  + contains (cont)     - is an element of (el)
  + subsumes (sub)      - is subsumed by (subby)
+ + encloses (encl)     - is enclosed by (isencl)
  + swallows (sw)       - is swallowed by (swby)
  + consists of (cons)  - is part of (pt)
 

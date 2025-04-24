@@ -1677,27 +1677,37 @@ func AppendLinkToNode(frptr NodePtr,link Link,toptr NodePtr) {
 	switch frclass {
 
 	case N1GRAM:
-		NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N1directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N1directory[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.N1directory[frm].I[stindex],link)
 	case N2GRAM:
-		NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N2directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N2directory[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.N2directory[frm].I[stindex],link)
 	case N3GRAM:
-		NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.N3directory[frm].I[stindex],link)
+		NODE_DIRECTORY.N3directory[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.N3directory[frm].I[stindex],link)
 	case LT128:
-		NODE_DIRECTORY.LT128[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.LT128[frm].I[stindex],link)
+		NODE_DIRECTORY.LT128[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.LT128[frm].I[stindex],link)
 	case LT1024:
-		NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.LT1024[frm].I[stindex],link)
+		NODE_DIRECTORY.LT1024[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.LT1024[frm].I[stindex],link)
 	case GT1024:
-		NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeDirectory(NODE_DIRECTORY.GT1024[frm].I[stindex],link)
+		NODE_DIRECTORY.GT1024[frm].I[stindex] = MergeLinks(NODE_DIRECTORY.GT1024[frm].I[stindex],link)
 	}
 }
 
 //**************************************************************
 
-func MergeDirectory(list []Link,lnk Link) []Link {
+func MergeLinks(list []Link,lnk Link) []Link {
+
+	var ctx []string
+
+	for c := range lnk.Ctx { // strip redundant signal
+		if lnk.Ctx[c] != "_sequence_" {
+			ctx = append(ctx,lnk.Ctx[c])
+		}
+	}
+
+	lnk.Ctx = ctx
 
 	for l := range list {
 		if list[l].Arr == lnk.Arr && list[l].Dst == lnk.Dst {
-			list[l].Ctx = MergeContexts(list[l].Ctx,lnk.Ctx)
+			list[l].Ctx = MergeContexts(list[l].Ctx,ctx)
 			return list
 		}
 	}
