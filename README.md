@@ -17,12 +17,23 @@
 * [The Shape of Knowledge](https://medium.com/@mark-burgess-oslo-mb/semantic-spacetime-1-the-shape-of-knowledge-86daced424a5)
 * [Why you still can’t find what you’re looking for…](https://medium.com/p/922d113177e7)
 
-This project aims to enable an intuitive but semi-formal approach to
-note taking and reasoning, for knowledge capture, querying, and
-dissemination of individual thinking easy, for humans and general use. (AI can only
-capture knowledge from humans, so even if we want to use AI, we'd
-better get the knowledge representations right.)
-Whether we are analysing forensic evidence, looking for criminal behaviour, learning a foreign language, or taking notes in school for an exam.
+This project aims to turn intentionally created data and notes into stories we call reasoning.
+Stories are one of the most important forms of information, whether they
+describe happenings, calculations, tales of provenance, system audits... Stories
+underpin everything that happens.
+
+Getting data into story form isn't as easy as it sounds.
+Note-taking may be an intuitive but semi-formal approach to
+getting facts for reasoning, for knowledge capture, querying, and
+dissemination of individual thinking easy, for humans and general
+use. (AI can only capture knowledge from humans, so even if we want to
+use AI, we'd better get the knowledge representations right.)  Whether
+we are analysing forensic evidence, looking for criminal behaviour,
+learning a foreign language, or taking notes in school for an exam.
+
+Today, computer tools ask people to enter data through APIs by programming,
+or by typing into special forms that are stressful and unnatural. We can do better,
+just as we can do better at retrieving the information and searching it.
 
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp6.png 'Testing a web interface')
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
