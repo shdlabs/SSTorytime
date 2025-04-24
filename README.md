@@ -97,4 +97,6 @@ The tool-set consistent of several components, starting with:
 
 * [searchN4L](docs/searchN4L.md) - a simple and experimental command line tool for testing the graph database
 
+* [http_server](docs/Tutorial.md) - a prototype webserver providing the SSTorytime browsing service
+
 
