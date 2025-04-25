@@ -3486,18 +3486,32 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 	arrowptr := GetDBArrowsWithArrowName(ctx,arrname)
 
 	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,chapter,context)
+	
+	if len(openings) > 1 {
 
+		for nptr := range openings {
+			var story Stories
+			node := GetDBNodeByNodePtr(ctx,openings[nptr])
+			story.Arrow = node.Chap
+			story.Title = node.S
+			stories = append(stories,story)
+		}
+		// If Axis is null, then this is just the toc
+		return stories
+	}
+
+	// return one story
+	
 	for nptr := range openings {
-
 		var story Stories
-
+		
 		node := GetDBNodeByNodePtr(ctx,openings[nptr])
 		orbit := GetNodeOrbit(ctx,openings[nptr])
 
-		container := orbit[ST_ZERO-CONTAINS]
-
+		container := orbit[ST_ZERO-CONTAINS] // Does the sequence have a container?
+		
 		if container != nil {
-			story.Container = container[0].Dst
+			story.Container = container[0].Dst // generalize..tbd
 			story.Title = container[0].Text
 			story.Arrow = container[0].Arrow
 		}

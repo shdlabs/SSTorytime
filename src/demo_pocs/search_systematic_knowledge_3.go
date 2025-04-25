@@ -40,8 +40,18 @@ func Story(ctx SST.PoSST, chapter string,context []string,searchtext string,arrn
 	stories := SST.GetSequenceContainers(ctx,arrname,searchtext,chapter,context)
 
 	//for s := range stories {
-	story,_ := json.Marshal(stories)
-	fmt.Println(string(story))
+
+	if stories[0].Axis == nil {
+		fmt.Println("\nReturned table of contents, no unique story...\n")
+
+		for s := range stories {
+			fmt.Println(s,stories[s].Title)
+		}
+
+	} else {
+		story,_ := json.Marshal(stories)
+		fmt.Println(string(story))
+	}
 
 	//}
 }
