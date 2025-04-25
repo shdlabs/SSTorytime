@@ -28,6 +28,8 @@ func main() {
 	http.HandleFunc("/Cone", ConeHandler)
 	http.HandleFunc("/Browse", SystematicHandler)
 	http.HandleFunc("/TOC", TableOfContents)
+	http.HandleFunc("/Sequence", SequenceHandler)
+
 	fmt.Println("Listening at http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
@@ -333,6 +335,40 @@ func TableOfContents(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
+}
+
+// *********************************************************************
+
+func SequenceHandler(w http.ResponseWriter, r *http.Request) {
+
+	GenHeader(w,r)
+
+	fmt.Println("Sequence search response handler")
+
+	switch r.Method {
+	case "POST","GET":
+		name := r.FormValue("name")
+		chapter := r.FormValue("chapter")
+		context := r.FormValue("context")
+		arrnames := r.FormValue("arrnames")
+		HandleSequence(w,r,name,chapter,context,arrnames)
+	default:
+		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
+	}
+}
+
+// *********************************************************************
+
+func HandleSequence(w http.ResponseWriter, r *http.Request,searchtext,chaptext string,cntstr,arrow string) {
+
+	chapter := strings.TrimSpace(chaptext)
+	context,_ := SST.Str2Array(cntstr)
+	searchtext = strings.TrimSpace(searchtext)
+
+	stories := SST.GetSequenceContainers(CTX,arrow,searchtext,chapter,context)
+	story,_ := json.Marshal(stories)
+	w.Write([]byte(story))
+
 }
 
 // *********************************************************************
