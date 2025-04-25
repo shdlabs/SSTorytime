@@ -103,20 +103,19 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,chap
 	chapter = strings.TrimSpace(chapter)
 
 	w.Header().Set("Content-Type", "application/json")
-	
-	orbit := fmt.Sprintf("{ \"matches\" : [")
+
+	events := fmt.Sprintf("{ \"events\" : [")
 	
 	for n := 0; n < len(nptrs); n++ {
-		orbit += SST.JSONNodeOrbit(CTX, nptrs[n])
+		events += SST.JSONNodeEvent(CTX, nptrs[n])
 		if n != len(nptrs)-1 {
-			orbit += ",\n"
+			events += ",\n"
 		}
 	}
 	
-	orbit += "] }"
+	events += "] }"
 	
-	w.Write([]byte(orbit))
-	fmt.Println(orbit)
+	w.Write([]byte(events))
 	fmt.Println("Reply Orbit sent")
 }
 
@@ -202,7 +201,6 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 	multicone += "]\n}\n"
 
 	w.Write([]byte(multicone))
-	fmt.Println(multicone)
 	fmt.Println("Reply Cone sent")
 }
 
@@ -312,7 +310,6 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 
 	multicone += "]\n}\n"
 	w.Write([]byte(multicone))
-	fmt.Println(multicone)
 }
 
 // *********************************************************************
@@ -366,9 +363,11 @@ func HandleSequence(w http.ResponseWriter, r *http.Request,searchtext,chaptext s
 	searchtext = strings.TrimSpace(searchtext)
 
 	stories := SST.GetSequenceContainers(CTX,arrow,searchtext,chapter,context)
-	story,_ := json.Marshal(stories)
-	w.Write([]byte(story))
+	orbits,_ := json.Marshal(stories)
 
+	story := fmt.Sprintf("{ \"events\" : %s }",orbits)
+
+	w.Write([]byte(story))
 }
 
 // *********************************************************************
@@ -391,12 +390,6 @@ func CleanText(c string) string {
 	c = strings.Replace(c,"\"","\\\"",-1)
 	return c
 }
-
-
-
-
-
-
 
 
 

@@ -189,7 +189,8 @@ MathJax.Hub.Config({
     <input type="text" id="arrnames" name="arrnames" />
 
     <input type="submit" id="orbitsubmit"  value="Orbits" />
-    <input type="submit" id="pathsubmit"   value="Paths" />
+    <input type="submit" id="pathsubmit"   value="Snippets" />
+    <input type="submit" id="seqsubmit"   value="Tales" />
     <input type="submit" id="dec"          value="Previous" />
     <input type="submit" id="browsesubmit" value="Browse" />
     <input type="submit" id="inc"          value="Next" />
@@ -214,6 +215,15 @@ MathJax.Hub.Config({
 /* MB SSTorytime poc/demo code - to be cleaned up and improved by an expert.. */
 
 var API_SERVER = 'http://localhost:8080';
+
+const Im3 = 0
+const Im2 = 1
+const Im1 = 2
+const In0 = 3
+const Il1 = 4
+const Ic2 = 5
+const Ie3 = 6
+const ST_TOP = 7
 
 // Disable ENTER submission
 
@@ -471,13 +481,20 @@ titlebar.id = "header_root";
 
 let title = "app";
 
-console.log(obj)
+console.log(obj);
 
-if (obj.matches != null)
+if (obj.events != null)
    {
-   if (obj.matches[0] != null)
+   if (obj.events[0] != null)
       {
-      title = obj.matches[0].Text;
+      if (obj.events[0].Title != null)
+         {
+         title = obj.events[0].Title
+         }
+      if (obj.events[0].Text != null)
+         {
+         title = obj.events[0].Text;
+         }
       }
    }
 else if (obj.paths != null)
@@ -520,136 +537,164 @@ let panel = document.createElement('span');
 panel.id = "main_root";
 section.appendChild(panel);
 
-if (obj.matches == null)
+// List of events unrelated
+
+if (obj == null)
    {
-   let child = document.createElement('content');
-   from_text.textContent = "No orbit matches";
-   from_link.appendChild(from_text);
+   return;
    }
 
-for (let match of obj.matches) 
+for (let event of obj.events) 
    {
-   let child = document.createElement('content');
-   if (match.Text.includes("\n"))
+   ShowEvents(panel,event,"all","","h1")
+   let hr = document.createElement('hr');
+   panel.appendChild(hr);
+   }
+}
+
+/***********************************************************/
+
+function ShowEvents(panel,event,direction,skiparrow,anchortag)
+{
+let child = document.createElement('content');
+
+if (event == null)
+   {
+   return;
+   }
+
+if (event.Text.includes("\n"))
+   {
+   let from_link = document.createElement('a');
+   from_link.onclick = function() { sendlinkData(event.NPtr.Class,event.NPtr.CPtr); };
+
+   let from_text = document.createElement('pre');
+   from_text.nameClass = "text";
+   from_text.textContent = event.Text;
+   from_link.appendChild(from_text);
+   from_link.nameClass = "text";
+   child.appendChild(from_link);
+   }
+else
+   {
+   let from_link = document.createElement('a');
+   from_link.onclick = function() { sendlinkData(event.NClass,event.NCPtr); };
+   let from_text = document.createElement(anchortag);
+   from_link.appendChild(from_text);
+   from_link.nameClass = "text";
+   child.appendChild(from_link);
+
+   if (event.Text.length > 90)
       {
-      let from_link = document.createElement('a');
-      from_link.onclick = function() { sendlinkData(match.NClass,match.NCPtr); };
-
-      let from_text = document.createElement('pre');
-      from_text.nameClass = "text";
-      from_text.textContent = match.Text;
-      from_link.appendChild(from_text);
-      from_link.nameClass = "text";
-      child.appendChild(from_link);
-      }
-   else
-      {
-      let from_link = document.createElement('a');
-      from_link.onclick = function() { sendlinkData(match.NClass,match.NCPtr); };
-      let from_text = document.createElement('h1');
-      from_link.appendChild(from_text);
-      from_link.nameClass = "text";
-      child.appendChild(from_link);
-
-      if (match.Text.length > 90)
-         {
-         from_text.style.fontSize = "100%";
-         }
-
-      if (match.Text.length > 90)
-         {
-         from_text.textContent = match.Text.slice(0,70) + "...";
-         let small_tot_text = document.createElement('p');
-         small_tot_text.textContent = match.Text;
-         small_tot_text.style.fontSize = "90%";
-         child.appendChild(small_tot_text);
-         }
-      else 
-         {
-         from_text.textContent = match.Text;
-         }
-      }
-
-  let chapter = document.createElement('div');
-  chapter.textContent = match.Chap;
-  child.appendChild(chapter);
-
-  // The order is important. Start with coming from
-
-   if (match.Im1 != null)
-      {
-      for (let ngh of match.Im1) 
-         {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
-         panel.appendChild(child);
-         }
+      from_text.style.fontSize = "100%";
       }
 
-   if (match.In0 != null)
+   if (event.Text.length > 90)
       {
-      for (let ngh of match.In0) 
+      from_text.textContent = event.Text.slice(0,70) + "...";
+      let small_tot_text = document.createElement('p');
+      small_tot_text.textContent = event.Text;
+      small_tot_text.style.fontSize = "90%";
+      child.appendChild(small_tot_text);
+      }
+   else 
+      {
+      from_text.textContent = event.Text;
+      }
+   }
+
+let chapter = document.createElement('div');
+chapter.textContent = event.Chap;
+child.appendChild(chapter);
+
+// The order is important. Start with coming from
+
+if (direction != "fwd" && event.Orbits[Im1] != null)
+   {
+   for (let ngh of event.Orbits[Im1]) 
+      {
+      child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+      panel.appendChild(child);
+      }
+   }
+
+if (event.Orbits[In0] != null)
+   {
+   for (let ngh of event.Orbits[In0]) 
+      {
+      if (skiparrow != ngh.Arrow)
          {
          child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx)
          panel.appendChild(child);
          }
       }
+   }
 
-   if (match.Im3 != null)
+if (direction != "fwd" && event.Orbits[Im3] != null)
+   {
+   for (let ngh of event.Orbits[Im3]) 
       {
-      for (let ngh of match.Im3) 
+      if (skiparrow != ngh.Arrow)
          {
          child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
 
-         if (IsImage(match.Text,ngh.Arrow))
+         if (IsImage(event.Text,ngh.Arrow))
             {
             let img = document.createElement('img')
-            img.src = match.Text;
+            img.src = event.Text;
             panel.appendChild(img);
             }
          }
       }
+   }
 
-  if (match.Ie3 != null)
-     {
-     for (let ngh of match.Ie3) 
-        {
-        child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
-        panel.appendChild(child);
-        }
-     }
-
-   if (match.Im2 != null)
+if (event.Orbits[Ie3] != null)
+   {
+   for (let ngh of event.Orbits[Ie3]) 
       {
-      for (let ngh of match.Im2) 
+      if (skiparrow != ngh.Arrow)
          {
          child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
+   }
 
-   if (match.Ic2 != null)
+if (direction != "fwd" && event.Orbits[Im2] != null)
+   {
+   for (let ngh of event.Orbits[Im2]) 
       {
-      for (let ngh of match.Ic2) 
+      if (skiparrow != ngh.Arrow)
          {
          child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
+   }
 
-   if (match.Il1 != null)
+if (event.Orbits[Ic2] != null)
+   {
+   for (let ngh of event.Orbits[Ic2]) 
       {
-      for (let ngh of match.Il1) 
+      if (skiparrow != ngh.Arrow)
          {
          child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
+   }
 
-   // End with going to...
-
-   let hr = document.createElement('hr');
-   panel.appendChild(hr);
+if (event.Orbits[Il1] != null)
+   {
+   for (let ngh of event.Orbits[Il1]) 
+      {
+      if (skiparrow != ngh.Arrow)
+         {
+         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+         panel.appendChild(child);
+         }
+      }
    }
 }
 
@@ -677,6 +722,50 @@ for (let nptr of obj.paths)
    panel.appendChild(parent);
    let hr = document.createElement('hr');
    parent.appendChild(hr);
+   }
+}
+
+/***********************************************************/
+
+function DoSeqPanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+if (obj != null && obj.events.length > 1)
+   {
+   for (let story of obj.events)
+      {
+      let link = document.createElement('a');
+      let item = document.createElement('h1');
+      item.textContent = story.Text;
+      link.onclick = function() { sendlinkData(story.ContainNPtr.Class,story.ContainNPtr.CPtr); };
+      link.appendChild(item);
+      panel.appendChild(link);
+
+      let cntx = document.createElement('i');
+      cntx.id = "cntxt";
+      cntx.textContent = " in " + story.Arrow;
+      panel.appendChild(cntx);
+      let hr = document.createElement('hr');
+      panel.appendChild(hr);
+      }
+
+      // Array of sequential events
+   }
+else
+   {
+   let story = obj.events[0];
+
+   if (story.Axis != null)
+      {
+      for (let event of story.Axis)
+         {
+         ShowEvents(panel,event,"fwd","then","p")
+         }
+      }
    }
 }
 
@@ -802,7 +891,7 @@ async function sendorbitData() {
       console.log("error ", error);
      let section = document.querySelector('article');
      let text = document.createElement('h2');
-     section.textContent = "Error in orbit";
+     section.textContent = "No results in orbit";
      section.id = "errormesg"
      section.appendChild(text);
 
@@ -862,7 +951,7 @@ async function sendconeData() {
       console.log("error ", error);
      let section = document.querySelector('article');
      let text = document.createElement('h2');
-     section.textContent = "Error in cone";
+     section.textContent = "No results in cone";
      section.id = "errormesg"
      section.appendChild(text);
 
@@ -872,6 +961,65 @@ async function sendconeData() {
 // Take over form submission
 button = document.getElementById('pathsubmit'),
 button.addEventListener("click", (event) => { event.preventDefault();  sendconeData(); });
+}
+
+/***********************************************************/
+
+function SeqHandler()
+{
+let form = document.querySelector("#search");
+
+async function sendseqData() {
+
+  let formData = new FormData(form);
+
+  fetch(API_SERVER+"/Sequence", { method: "POST", body: formData })
+   .then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+  })
+    .then((resp) => {
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null)
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("main_root");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoSeqPanel(resp);
+      MathJax.typeset();
+
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+     let section = document.querySelector('article');
+     let text = document.createElement('h2');
+     section.textContent = "No results in sequence";
+     section.id = "errormesg"
+     section.appendChild(text);
+
+    });
+}
+
+// Take over form submission
+button = document.getElementById('seqsubmit'),
+button.addEventListener("click", (event) => { event.preventDefault();  sendseqData(); });
 }
 
 /***********************************************************/
@@ -909,7 +1057,7 @@ const form = document.querySelector("#search");
 
      let section = document.querySelector('article');
      let text = document.createElement('h2');
-     section.textContent = "Error in browsing";
+     section.textContent = "No results in browsing";
      section.id = "errormesg"
      section.appendChild(text);
 
@@ -1129,7 +1277,7 @@ async function sendTOCData() {
       console.log("error ", error);
      let section = document.querySelector('article');
      let text = document.createElement('h2');
-     section.textContent = "Error in TOC";
+     section.textContent = "No results in TOC";
      section.id = "errormesg"
      section.appendChild(text);
 
@@ -1146,6 +1294,7 @@ button.addEventListener("click", (event) => { event.preventDefault();  sendTOCDa
 DoPage();
 OrbitHandler();
 ConeHandler();
+SeqHandler();
 BrowseHandler();
 IncHandler();
 DecHandler();

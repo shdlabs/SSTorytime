@@ -276,12 +276,23 @@ type PoSST struct {
 
 //******************************************************************
 
-type Stories struct {
+type Story struct {
 
-	Container NodePtr
-	Title     string
+	ContainNPtr NodePtr
+	Text     string
         Arrow     string  // arrow connecting the story to its container
-	Axis      [][ST_TOP][]Orbit
+	Axis      []NodeEvent
+}
+
+//******************************************************************
+
+type NodeEvent struct {
+
+	Text    string
+	L       int
+	Chap    string
+        NPtr    NodePtr
+	Orbits  [ST_TOP][]Orbit
 }
 
 //******************************************************************
@@ -2822,7 +2833,6 @@ func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 			if !ok {
 				ptr, ok = ARROW_LONG_DIR[name]
 				fmt.Println(ERR_NO_SUCH_ARROW,"("+name+") - no arrows defined in database yet?")
-				os.Exit(-1)
 			}
 		}
 	}
@@ -3395,28 +3405,33 @@ func NextLinkArrow(ctx PoSST,path []Link,arrows []ArrowPtr) string {
 
 // **************************************************************************
 
-func GetNodeOrbit(ctx PoSST,nptr NodePtr) [ST_TOP][]Orbit {
+func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit {
 
 	// Start with properties of node, within orbit
 
 	const probe_radius = 3
-	const nearest = 1
 
 	// radius = 0 is the starting node
 
-	neigh,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,probe_radius)
+	sweep,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,probe_radius)
 
 	var notes [ST_TOP][]Orbit
 
-	// Organize by the leading nearest-neighbour link type
+	// Organize by the leading nearest-neighbour by vector/link type
 
 	for stindex := 0; stindex < ST_TOP; stindex++ {
 
-		for pth := range neigh {
+		// Sweep different radial paths
 
-			if neigh[pth] != nil && len(neigh[pth]) > 1 {
+		for angle := range sweep {
 
-				start := neigh[pth][nearest]
+			// len(sweep[angle]) is the length of the probe path at angle
+
+			if sweep[angle] != nil && len(sweep[angle]) > 1 {
+
+				const nearest_satellite = 1
+				start := sweep[angle][nearest_satellite]
+
 				arrow := GetDBArrowByPtr(ctx,start.Arr)
 
 				if arrow.STAindex == stindex {
@@ -3426,23 +3441,32 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr) [ST_TOP][]Orbit {
 					nt.Dst = start.Dst
 					nt.Text = txt.S
 					nt.Radius = 1
+					if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
+						continue
+					}
+
 					notes[stindex] = IdempAddNote(notes[stindex],nt)
 
-					arprev := STIndexToSTType(arrow.STAindex)
+					// are there more satellites at this angle?
 
-					for more := 2; more < probe_radius && more < len(neigh[pth]); more++ {
+					for depth := 2; depth < probe_radius && depth < len(sweep[angle]); depth++ {
 
-						next := neigh[pth][more]
-						nextarrow := GetDBArrowByPtr(ctx,next.Arr)
+						arprev := STIndexToSTType(arrow.STAindex)
+						next := sweep[angle][depth]
+						arrow = GetDBArrowByPtr(ctx,next.Arr)
 						subtxt := GetDBNodeByNodePtr(ctx,next.Dst)
 
-						nt.Arrow = nextarrow.Long
+						if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
+							break
+						}
+
+						nt.Arrow = arrow.Long
 						nt.Dst = next.Dst
 						nt.Ctx = Array2Str(next.Ctx)
 						nt.Text = subtxt.S
-						nt.Radius = more
+						nt.Radius = depth
 
-						arthis := STIndexToSTType(nextarrow.STAindex)
+						arthis := STIndexToSTType(arrow.STAindex)
 						// No backtracking
 						if arthis != -arprev {	
 							notes[stindex] = IdempAddNote(notes[stindex],nt)
@@ -3453,7 +3477,6 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr) [ST_TOP][]Orbit {
 			}
 		}
 	}
-
 	return notes
 }
 
@@ -3475,9 +3498,9 @@ func IdempAddNote(list []Orbit, item Orbit) []Orbit {
 // Axial paths
 // **************************************************************************
 
-func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Stories {
+func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Story {
 
-	var stories []Stories
+	var stories []Story
 
 	if arrname == "" {
 		arrname = "then"
@@ -3490,10 +3513,10 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 	if len(openings) > 1 {
 
 		for nptr := range openings {
-			var story Stories
+			var story Story
 			node := GetDBNodeByNodePtr(ctx,openings[nptr])
 			story.Arrow = node.Chap
-			story.Title = node.S
+			story.Text = node.S
 			stories = append(stories,story)
 		}
 		// If Axis is null, then this is just the toc
@@ -3503,26 +3526,35 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 	// return one story
 	
 	for nptr := range openings {
-		var story Stories
+
+		var story Story
 		
 		node := GetDBNodeByNodePtr(ctx,openings[nptr])
-		orbit := GetNodeOrbit(ctx,openings[nptr])
+		orbit := GetNodeOrbit(ctx,openings[nptr],arrname)
 
 		container := orbit[ST_ZERO-CONTAINS] // Does the sequence have a container?
 		
 		if container != nil {
-			story.Container = container[0].Dst // generalize..tbd
-			story.Title = container[0].Text
+			story.ContainNPtr = container[0].Dst // generalize..tbd
+			story.Text = container[0].Text
 			story.Arrow = container[0].Arrow
 		}
 
 		if OrbitMatching(ctx,node,orbit,search) {
+
 			axis := GetLongestAxialPath(ctx,openings[nptr],arrowptr)
+
 			for lnk := 0; lnk < len(axis); lnk++ {
 
 				// Now add the orbit at this node, not including the axis
+				var ne NodeEvent
+				nd := GetDBNodeByNodePtr(ctx,axis[lnk].Dst)
+				ne.Text = nd.S
+				ne.L = nd.L
+				ne.NPtr = axis[lnk].Dst
+				ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname)
 
-				story.Axis = append(story.Axis,GetNodeOrbit(ctx,axis[lnk].Dst))
+				story.Axis = append(story.Axis,ne)
 			}
 		}
 
@@ -3609,7 +3641,7 @@ func PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int) {
 	ShowText(node.S,width)
 	fmt.Println()
 
-	notes := GetNodeOrbit(ctx,nptr)
+	notes := GetNodeOrbit(ctx,nptr,"")
 
 	PrintLinkOrbit(notes,EXPRESS)
 	PrintLinkOrbit(notes,-EXPRESS)
@@ -3713,34 +3745,20 @@ func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string
 // Presentation in JSON
 // **************************************************************************
 
-func JSONNodeOrbit(ctx PoSST, nptr NodePtr) string {
+func JSONNodeEvent(ctx PoSST, nptr NodePtr) string {
 
 	node := GetDBNodeByNodePtr(ctx,nptr)
 
-	name, _ := json.Marshal(node.S)
+	var event NodeEvent
+	event.Text = node.S
+	event.L = node.L
+	event.Chap = node.Chap
+	event.NPtr = nptr
+	event.Orbits = GetNodeOrbit(ctx,nptr,"")
 
-	jstr := fmt.Sprintf("{\n\"Text\" : %s,\n",string(name))
-	jstr += fmt.Sprintf("\"L\" : %d,\n",node.L)
-	jstr += fmt.Sprintf("\"Chap\" : \"%s\",\n",node.Chap)
-	jstr += fmt.Sprintf("\"NClass\" : %d,\n",nptr.Class)
-	jstr += fmt.Sprintf("\"NCPtr\" : %d,\n",nptr.CPtr)
+	jstr,_ := json.Marshal(event)
 
-	notes := GetNodeOrbit(ctx,nptr)
-
-	for stindex := 0; stindex < len(notes); stindex++ {
-
-		title := STTypeDBChannel(STIndexToSTType(stindex))
-
-		encoded, _ := json.Marshal(notes[stindex])
-
-		jstr += fmt.Sprintf("\"%s\" : %s",title,string(encoded))
-		if stindex != len(notes)-1 {
-			jstr += ",\n"
-		}
-	}
-
-	jstr += "\n}"
-	return jstr
+	return string(jstr)
 }
 
 // **************************************************************************
