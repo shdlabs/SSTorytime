@@ -93,7 +93,7 @@ func main() {
 
 	fmt.Println("GOT WRONG CONTEXT MATCH",qstr4,retval4)
 
-	start := SST.GetDBNodePtrMatchingName(ctx,"chinese","important")
+	start := SST.GetDBNodePtrMatchingName(ctx,"important","chinese")
 	a,_ := SST.GetEntireConePathsAsLinks(ctx,"any",start[0],4)
 
 	fmt.Println("wrapper call should work (reference)",a)

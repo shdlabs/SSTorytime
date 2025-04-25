@@ -37,7 +37,7 @@ func main() {
 
 func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 
-	start_set := SST.GetDBNodePtrMatchingName(ctx,chaptext,searchtext)
+	start_set := SST.GetDBNodePtrMatchingName(ctx,searchtext,chaptext)
 	
 	for sttype := -SST.EXPRESS; sttype <= SST.EXPRESS; sttype++ {
 		

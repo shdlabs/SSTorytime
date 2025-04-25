@@ -71,7 +71,7 @@ func Search(ctx SST.PoSST, text string) {
 	search_items := strings.Split(text," ")
 
 	for w := range search_items {
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,"poet",search_items[w])...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w],"poet")...)
 	}
 
 	for start := range start_set {

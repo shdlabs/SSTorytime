@@ -86,7 +86,7 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 	
 	for w := range search_items {
 		fmt.Print("Looking for nodes like ",search_items[w],"...")
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,chaptext,search_items[w])...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w],chaptext)...)
 	}
 
 	fmt.Println("   Found possible relevant nodes:",start_set)

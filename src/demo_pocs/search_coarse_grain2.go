@@ -52,11 +52,11 @@ func main() {
 	var leftptrs,rightptrs []SST.NodePtr
 
 	for n := range start_bc {
-		leftptrs = append(leftptrs,SST.GetDBNodePtrMatchingName(ctx,"",start_bc[n])...)
+		leftptrs = append(leftptrs,SST.GetDBNodePtrMatchingName(ctx,start_bc[n],"")...)
 	}
 
 	for n := range end_bc {
-		rightptrs = append(rightptrs,SST.GetDBNodePtrMatchingName(ctx,"",end_bc[n])...)
+		rightptrs = append(rightptrs,SST.GetDBNodePtrMatchingName(ctx,end_bc[n],"")...)
 	}
 
 	if leftptrs == nil || rightptrs == nil {

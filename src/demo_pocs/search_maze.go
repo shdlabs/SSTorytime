@@ -99,8 +99,8 @@ func Solve(ctx SST.PoSST) {
 	start_bc := "a7"
 	end_bc := "i6"
 
-	leftptrs := SST.GetDBNodePtrMatchingName(ctx,"maze",start_bc)
-	rightptrs := SST.GetDBNodePtrMatchingName(ctx,"maze",end_bc)
+	leftptrs := SST.GetDBNodePtrMatchingName(ctx,start_bc,"maze")
+	rightptrs := SST.GetDBNodePtrMatchingName(ctx,end_bc,"maze")
 
 	if leftptrs == nil || rightptrs == nil {
 		fmt.Println("No paths available from end points")

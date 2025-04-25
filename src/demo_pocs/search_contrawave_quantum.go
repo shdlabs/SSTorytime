@@ -44,8 +44,8 @@ func main() {
 	start_bc := "A1"
 	end_bc := "B6"
 
-	leftptrs := SST.GetDBNodePtrMatchingName(ctx,"",start_bc)
-	rightptrs := SST.GetDBNodePtrMatchingName(ctx,"",end_bc)
+	leftptrs := SST.GetDBNodePtrMatchingName(ctx,start_bc,"")
+	rightptrs := SST.GetDBNodePtrMatchingName(ctx,end_bc,"")
 
 	if leftptrs == nil || rightptrs == nil {
 		fmt.Println("No paths available from end points")

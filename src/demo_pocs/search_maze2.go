@@ -84,8 +84,8 @@ func Solve(ctx SST.PoSST) {
 	start_bc := "a7"
 	end_bc := "i6"
 
-	leftptrs := SST.GetDBNodePtrMatchingName(ctx,"",start_bc)
-	rightptrs := SST.GetDBNodePtrMatchingName(ctx,"",end_bc)
+	leftptrs := SST.GetDBNodePtrMatchingName(ctx,start_bc,"")
+	rightptrs := SST.GetDBNodePtrMatchingName(ctx,end_bc,"")
 
 	if leftptrs == nil || rightptrs == nil {
 		fmt.Println("No paths available from end points")

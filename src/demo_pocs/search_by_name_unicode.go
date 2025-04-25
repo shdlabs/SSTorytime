@@ -36,7 +36,7 @@ func main() {
 	chapter := "chinese"
 	name := "(rou)"
 
-	nptrs := SST.GetDBNodePtrMatching(ctx,chapter,name,cntx,nil)
+	nptrs := SST.GetDBNodePtrMatching(ctx,name,chapter,cntx,nil)
 
 	fmt.Println("\nSearching..in chapter",chapter,"\nin contexts",cntx,"\nfor",name,"\n")
 

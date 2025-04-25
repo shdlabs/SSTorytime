@@ -2409,7 +2409,7 @@ func GetDBContextsMatchingName(ctx PoSST,src string) []string {
 
 // **************************************************************************
 
-func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
+func GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr {
 
 	var qstr string
 
@@ -2458,7 +2458,7 @@ func GetDBNodePtrMatchingName(ctx PoSST,chap,src string) []NodePtr {
 
 // **************************************************************************
 
-func GetDBNodePtrMatching(ctx PoSST,chap,nm string,cn []string,arrow []ArrowPtr) []NodePtr {
+func GetDBNodePtrMatching(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr) []NodePtr {
 
 	// Match name, context, chapter
 
@@ -3476,9 +3476,13 @@ func IdempAddNote(list []Orbit, item Orbit) []Orbit {
 // Axial paths
 // **************************************************************************
 
-func GetStoryContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Stories {
+func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Stories {
 
 	var stories []Stories
+
+	if arrname == "" {
+		arrname = "then"
+	}
 
 	arrowptr := GetDBArrowsWithArrowName(ctx,arrname)
 

@@ -23,7 +23,7 @@ func main() {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	nodeptrs := SST.GetDBNodePtrMatchingName(ctx,"slit","a1")
+	nodeptrs := SST.GetDBNodePtrMatchingName(ctx,"a1","slit")
 
 	fmt.Println("Found",nodeptrs)
 

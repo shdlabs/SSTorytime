@@ -49,11 +49,11 @@ func main() {
 	var start_set,end_set []SST.NodePtr
 
 	for n := range start_bc {
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,"",start_bc[n])...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,start_bc[n],"")...)
 	}
 
 	for n := range end_bc {
-		end_set = append(end_set,SST.GetDBNodePtrMatchingName(ctx,"",end_bc[n])...)
+		end_set = append(end_set,SST.GetDBNodePtrMatchingName(ctx,end_bc[n],"")...)
 	}
 
 	solutions := SST.GetPathsAndSymmetries(ctx,start_set,end_set,chapter,context,maxdepth)

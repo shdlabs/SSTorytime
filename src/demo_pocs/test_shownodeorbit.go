@@ -40,7 +40,7 @@ func main() {
 
 func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 	
-	nptrs := SST.GetDBNodePtrMatchingName(ctx,chaptext,searchtext)
+	nptrs := SST.GetDBNodePtrMatchingName(ctx,searchtext,chaptext)
 
 	for nptr := range nptrs {
 		fmt.Print(nptr,": ")

@@ -34,8 +34,8 @@ func main() {
 	start_bc := "internet"
 	end_bc := "sovereign individual"
 
-	leftptrs := SST.GetDBNodePtrMatchingName(ctx,"",start_bc)
-	rightptrs := SST.GetDBNodePtrMatchingName(ctx,"",end_bc)
+	leftptrs := SST.GetDBNodePtrMatchingName(ctx,start_bc,"")
+	rightptrs := SST.GetDBNodePtrMatchingName(ctx,end_bc,"")
 
 	if leftptrs == nil || rightptrs == nil {
 		fmt.Println("No paths available from end points")

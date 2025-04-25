@@ -13,7 +13,7 @@ func main() {
 
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
-	nptr := SST.GetDBNodePtrMatchingName(ctx,"","lamb")
+	nptr := SST.GetDBNodePtrMatchingName(ctx,"lamb","")
 	const maxdepth = 4
 
 	multicone := "{\n"

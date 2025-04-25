@@ -11,6 +11,8 @@ package main
 import (
 	"fmt"
 	"strings"
+	"encoding/json"
+
 
         SST "SSTorytime"
 )
@@ -35,11 +37,13 @@ func main() {
 func Story(ctx SST.PoSST, chapter string,context []string,searchtext string,arrname string) {
 
 	searchtext = strings.TrimSpace(searchtext)
-	stories := SST.GetStoryContainers(ctx,arrname,searchtext,chapter,context)
+	stories := SST.GetSequenceContainers(ctx,arrname,searchtext,chapter,context)
 
-	for s := range stories {
-		fmt.Println(stories[s])
-	}
+	//for s := range stories {
+	story,_ := json.Marshal(stories)
+	fmt.Println(string(story))
+
+	//}
 }
 
 

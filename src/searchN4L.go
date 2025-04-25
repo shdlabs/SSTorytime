@@ -171,7 +171,7 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 
 func EventSearch(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 	
-	nptrs := SST.GetDBNodePtrMatchingName(ctx,chaptext,searchtext)
+	nptrs := SST.GetDBNodePtrMatchingName(ctx,searchtext,chaptext)
 
 	for nptr := range nptrs {
 		fmt.Print("\n",nptr,": ")
@@ -228,7 +228,7 @@ func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 	search_items := strings.Split(searchtext," ")
 	
 	for w := range search_items {
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,chaptext,search_items[w])...)
+		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w],chaptext)...)
 	}
 
 	for start := range start_set {
