@@ -45,7 +45,7 @@ func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext strin
 	}
 
         // First page only
-	qnodes := SST.GetDBNodeContextsMatchingArrow(ctx,chaptext,context,searchtext,arrows,1)
+	qnodes := SST.GetDBNodeContextsMatchingArrow(ctx,searchtext,chaptext,context,arrows,1)
 
 	var prev   string
 	var header []string

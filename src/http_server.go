@@ -252,7 +252,7 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 		}
 	}
 
-	qnodes := SST.GetDBNodeContextsMatchingArrow(CTX,chaptext,context,"",arrows,section)
+	qnodes := SST.GetDBNodeContextsMatchingArrow(CTX,"",chaptext,context,arrows,section)
 
 	w.Header().Set("Content-Type", "application/json")
 

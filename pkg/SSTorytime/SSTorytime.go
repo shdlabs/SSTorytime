@@ -2675,8 +2675,7 @@ func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrow
 
 // **************************************************************************
 
-func GetDBNodeContextsMatchingArrow(ctx PoSST,chap string,cn []string,searchtext string,arrow []ArrowPtr,page int) []QNodePtr {
-
+func GetDBNodeContextsMatchingArrow(ctx PoSST,searchtext string,chap string,cn []string,arrow []ArrowPtr,page int) []QNodePtr {
 	var qstr string
 
 	context := FormatSQLStringArray(cn)
