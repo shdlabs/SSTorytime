@@ -79,7 +79,7 @@ func OrbitHandler(w http.ResponseWriter, r *http.Request) {
 				name = "semantic"
 			}
 			fmt.Println("Matching Orbit by name(",name,chapter,context,")")
-			nptrs := SST.GetDBNodePtrMatchingName(CTX,chapter,name)
+			nptrs := SST.GetDBNodePtrMatchingName(CTX,name,chapter)
 			HandleOrbit(w,r,nptrs,chapter,context)
 		} else {
 			fmt.Println("Matching Orbit by NPtr(",nclass,ncptr,chapter,context,")")
@@ -163,7 +163,7 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 
 	fmt.Println("Matching...EntireCone(",name,chapter,cntxt,arrows,")")
 
-	nptrs := SST.GetDBNodePtrMatching(CTX,chapter,name,cntxt,arrows)
+	nptrs := SST.GetDBNodePtrMatching(CTX,name,chapter,cntxt,arrows)
 
 	maxdepth := 20
 	var count int
