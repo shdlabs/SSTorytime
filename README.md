@@ -22,7 +22,9 @@ Stories are one of the most important forms of information, whether they
 describe happenings, calculations, tales of provenance, system audits... Stories
 underpin everything that happens.
 
-Getting data into story form isn't as easy as it sounds.
+Getting data into story form isn't as easy as it sounds, so we start by
+introducing a simple language "N4L" to make data entry as painless as possible.
+
 Note-taking may be an intuitive but semi-formal approach to
 getting facts for reasoning, for knowledge capture, querying, and
 dissemination of individual thinking easy, for humans and general
