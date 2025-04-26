@@ -26,9 +26,9 @@ header {
 h1 {
   font-size: 35px;
   color: #5599cc;
-  padding: 0px;
+  padding: 20px;
   margin: 0px;
-line-height: 10px;
+  line-height: 10px;
 }
 
 /* Create two columns/boxes that floats next to each other */
@@ -475,6 +475,9 @@ return parent
 
 function DoHeader(obj) 
 {
+let clearscreen = document.querySelector('article');
+clearscreen.innerHTML = "";
+
 let header = document.querySelector('header');
 let titlebar = document.createElement('h2');
 titlebar.id = "header_root";
@@ -544,9 +547,11 @@ if (obj == null)
    return;
    }
 
+const separates = 1
+
 for (let event of obj.events) 
    {
-   ShowEvents(panel,event,"all","","h1")
+   ShowEvent(panel,event,separates,"all","","h1")
    let hr = document.createElement('hr');
    panel.appendChild(hr);
    }
@@ -554,7 +559,7 @@ for (let event of obj.events)
 
 /***********************************************************/
 
-function ShowEvents(panel,event,direction,skiparrow,anchortag)
+function ShowEvent(panel,event,counter,direction,skiparrow,anchortag)
 {
 let child = document.createElement('content');
 
@@ -563,6 +568,8 @@ if (event == null)
    return;
    }
 
+let text = counter + ". " + event.Text;
+
 if (event.Text.includes("\n"))
    {
    let from_link = document.createElement('a');
@@ -570,7 +577,7 @@ if (event.Text.includes("\n"))
 
    let from_text = document.createElement('pre');
    from_text.nameClass = "text";
-   from_text.textContent = event.Text;
+   from_text.textContent = text; // event.Text;
    from_link.appendChild(from_text);
    from_link.nameClass = "text";
    child.appendChild(from_link);
@@ -592,14 +599,14 @@ else
    if (event.Text.length > 90)
       {
       from_text.textContent = event.Text.slice(0,70) + "...";
-      let small_tot_text = document.createElement('p');
-      small_tot_text.textContent = event.Text;
-      small_tot_text.style.fontSize = "90%";
+      let small_tot_text = document.createElement('h2');
+      small_tot_text.textContent = text; // event.Text;
+      small_tot_text.style.fontSize = "70%";
       child.appendChild(small_tot_text);
       }
    else 
       {
-      from_text.textContent = event.Text;
+      from_text.textContent = text; // event.Text;
       }
    }
 
@@ -734,13 +741,17 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
-if (obj != null && obj.events.length > 1)
+// If more than one possible match, then list titles only
+
+if (obj != null && obj.events != null && obj.events.length > 1)
    {
+   let counter = 1
+
    for (let story of obj.events)
       {
       let link = document.createElement('a');
       let item = document.createElement('h1');
-      item.textContent = story.Text;
+      item.textContent = counter + ". " + story.Text;
       link.onclick = function() { sendlinkData(story.ContainNPtr.Class,story.ContainNPtr.CPtr); };
       link.appendChild(item);
       panel.appendChild(link);
@@ -751,19 +762,31 @@ if (obj != null && obj.events.length > 1)
       panel.appendChild(cntx);
       let hr = document.createElement('hr');
       panel.appendChild(hr);
+      counter++;
       }
-
-      // Array of sequential events
    }
-else
+else if (obj != null && obj.events != null)
    {
+   // show one full story
+
    let story = obj.events[0];
+
+   let item = document.createElement('h1');
+   item.textContent = story.Text;
+   panel.appendChild(item);
+
+   let cntx = document.createElement('i');
+   cntx.id = "cntxt";
+   cntx.textContent = story.Arrow;
+   panel.appendChild(cntx);
 
    if (story.Axis != null)
       {
+      let counter = 1
       for (let event of story.Axis)
          {
-         ShowEvents(panel,event,"fwd","then","p")
+         ShowEvent(panel,event,counter,"fwd","then","p")
+         counter++;
          }
       }
    }
@@ -873,7 +896,7 @@ async function sendorbitData() {
          prevh.remove();
          }
 
-      let prevm = document.getElementById("main_root");
+      let prevm = document.getElementById("article");
 
       if (prevm != null) 
          {
@@ -932,7 +955,7 @@ async function sendconeData() {
          prevh.remove();
          }
 
-      let prevm = document.getElementById("main_root");
+      let prevm = document.getElementById("article");
 
       if (prevm != null) 
          {
@@ -992,7 +1015,7 @@ async function sendseqData() {
          prevh.remove();
          }
 
-      let prevm = document.getElementById("main_root");
+      let prevm = document.getElementById("article");
 
       if (prevm != null) 
          {
@@ -1104,7 +1127,7 @@ function IncHandler()
          prevh.remove();
          }
 
-      let prevm = document.getElementById("main_root");
+      let prevm = document.getElementById("article");
 
       if (prevm != null) 
          {
@@ -1164,7 +1187,7 @@ function DecHandler()
          prevh.remove();
          }
 
-      let prevm = document.getElementById("main_root");
+      let prevm = document.getElementById("article");
 
       if (prevm != null) 
          {
@@ -1214,7 +1237,7 @@ async function sendlinkData(nclass,ncptr)
          prevh.remove();
          }
 
-      let prevm = document.getElementById("main_root");
+      let prevm = document.getElementById("article");
 
       if (prevm != null) 
          {
@@ -1261,7 +1284,7 @@ async function sendTOCData() {
          prevh.remove();
          }
 
-      let prevm = document.getElementById("main_root");
+      let prevm = document.getElementById("article");
 
       if (prevm != null) 
          {
@@ -1277,7 +1300,7 @@ async function sendTOCData() {
       console.log("error ", error);
      let section = document.querySelector('article');
      let text = document.createElement('h2');
-     section.textContent = "No results in TOC";
+     section.textContent = "No result in TOC";
      section.id = "errormesg"
      section.appendChild(text);
 

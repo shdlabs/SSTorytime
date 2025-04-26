@@ -3538,6 +3538,11 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			story.ContainNPtr = container[0].Dst // generalize..tbd
 			story.Text = container[0].Text
 			story.Arrow = container[0].Arrow
+		} else {
+			var none NodePtr
+			story.ContainNPtr = none // generalize..tbd
+			story.Text = "(Story without an external title container)"
+			story.Arrow = "  -- title may be included in the _sequence_, consider moving title (contains) ::_sequence_::"
 		}
 
 		if OrbitMatching(ctx,node,orbit,search) {

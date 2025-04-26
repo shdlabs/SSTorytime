@@ -338,6 +338,9 @@ func TableOfContents(w http.ResponseWriter, r *http.Request) {
 
 func SequenceHandler(w http.ResponseWriter, r *http.Request) {
 
+        // Find a sequence of arrows matching arrname/default "then" for which
+        // something in the orbit matches the search strings
+
 	GenHeader(w,r)
 
 	fmt.Println("Sequence search response handler")
@@ -364,6 +367,8 @@ func HandleSequence(w http.ResponseWriter, r *http.Request,searchtext,chaptext s
 
 	stories := SST.GetSequenceContainers(CTX,arrow,searchtext,chapter,context)
 	orbits,_ := json.Marshal(stories)
+
+        // returns story in events.Axis, with any container/title first in Story type
 
 	story := fmt.Sprintf("{ \"events\" : %s }",orbits)
 
