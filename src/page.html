@@ -167,9 +167,23 @@ a:hover {
  color: purple;
 }
 
+#full-text {
+ padding: 10px;
+ font-style: italic;
+ font-size: 70%;
+ margin-left: 40px;
+ margin-bottom: 40px;
+ width: 70%;
+ color: darkblue;
+ text-wrap: balance;
+}
+
+#chapter {
+ margin-left: 40px;
+ margin-bottom: 20px;
+}
 
 a:not(.arrow):hover{
-
   color: #999999;
 }
 
@@ -614,7 +628,7 @@ if (obj == null)
    return;
    }
 
-const separates = 1
+const separates = 0
 
 for (let event of obj.events) 
    {
@@ -636,6 +650,11 @@ if (event == null)
    }
 
 let text = counter + ". " + event.Text;
+
+if (counter == 0)
+   {
+   text = "* " + event.Text;
+   }
 
 if (event.Text.includes("\n"))
    {
@@ -666,9 +685,9 @@ else
    if (event.Text.length > 90)
       {
       from_text.textContent = event.Text.slice(0,70) + "...";
-      let small_tot_text = document.createElement('h2');
+      let small_tot_text = document.createElement('div');
       small_tot_text.textContent = text; // event.Text;
-      small_tot_text.style.fontSize = "70%";
+      small_tot_text.id = "full-text";
       child.appendChild(small_tot_text);
       }
    else 
@@ -679,6 +698,7 @@ else
 
 let chapter = document.createElement('div');
 chapter.textContent = event.Chap;
+chapter.id = "chapter";
 child.appendChild(chapter);
 
 // The order is important. Start with coming from
