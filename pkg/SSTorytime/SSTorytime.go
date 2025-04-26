@@ -299,11 +299,12 @@ type NodeEvent struct {
 
 type Orbit struct {  // union, JSON transformer
 
-	Radius int
-	Arrow  string
-	Dst    NodePtr
-	Ctx    string
-	Text   string
+	Radius  int
+	Arrow   string
+	STindex int
+	Dst     NodePtr
+	Ctx     string
+	Text    string
 }
 
 //******************************************************************
@@ -3438,6 +3439,7 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit 
 					txt := GetDBNodeByNodePtr(ctx,start.Dst)
 					var nt Orbit
 					nt.Arrow = arrow.Long
+                                        nt.STindex = arrow.STAindex
 					nt.Dst = start.Dst
 					nt.Text = txt.S
 					nt.Radius = 1
@@ -3461,6 +3463,7 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit 
 						}
 
 						nt.Arrow = arrow.Long
+						nt.STindex = arrow.STAindex
 						nt.Dst = next.Dst
 						nt.Ctx = Array2Str(next.Ctx)
 						nt.Text = subtxt.S
@@ -3771,9 +3774,10 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr) string {
 func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 
         type WebPath struct {
-		NPtr NodePtr
-		Arr  ArrowPtr
-		Name string
+		NPtr    NodePtr
+		Arr     ArrowPtr
+		STindex int
+		Name    string
 	}
 
 	var jstr string = "["
@@ -3812,6 +3816,7 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 				var wl WebPath
 				wl.Name = arr.Long
 				wl.Arr = cone[p][l].Arr
+				wl.STindex = arr.STAindex
 				path = append(path,wl)
 			}
 

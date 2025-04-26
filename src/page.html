@@ -117,6 +117,35 @@ a:hover {
  color: darkred;
 }
 
+#arrow-0 {
+ color: purple;    /* -express */
+}
+
+#arrow-1 {        /* -contain */
+ color: blue;
+}
+
+#arrow-2 {        /* -leadsto */
+ color: darkred;
+}
+
+#arrow-3 {        /* near */
+ color: #4488bb;;
+}
+
+#arrow-4 {        /* +leadsto */
+ color: darkred;
+}
+
+#arrow-5 {         /* +contain */
+ color: darkblue;
+}
+
+#arrow-6 {         /* +express */
+ color: purple;
+}
+
+
 a:not(.arrow):hover{
 
   color: #999999;
@@ -142,9 +171,13 @@ pre:hover{
 /* Style the footer */
 footer {
   background-color: #777;
-  padding: 20px;
+  padding: 10px;
   text-align: center;
   color: white;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%
 }
 
 /* Responsive layout - makes the two columns/boxes stack on top of each other instead of next to each other, on small screens */
@@ -189,8 +222,8 @@ MathJax.Hub.Config({
     <input type="text" id="arrnames" name="arrnames" />
 
     <input type="submit" id="orbitsubmit"  value="Orbits" />
-    <input type="submit" id="pathsubmit"   value="Snippets" />
-    <input type="submit" id="seqsubmit"   value="Tales" />
+    <input type="submit" id="pathsubmit"   value="Geometry" />
+    <input type="submit" id="seqsubmit"    value="Tales" />
     <input type="submit" id="dec"          value="Previous" />
     <input type="submit" id="browsesubmit" value="Browse" />
     <input type="submit" id="inc"          value="Next" />
@@ -258,7 +291,7 @@ nav.appendChild(counter);
 
 /***********************************************************/
 
-function PrintLink(parent,radius,arrow,str,nclass,ncptr,ctx) 
+function PrintLink(parent,radius,stindex,arrow,str,nclass,ncptr,ctx) 
 {
 if (arrow == null)
    {
@@ -273,7 +306,8 @@ if (str.includes("\n"))
    // arrow
    let arrow_link = document.createElement('a');
    arrow_link.textContent = `( ${arrow} )  `;
-   arrow_link.className = 'arrow';
+   //arrow_link.className = 'arrow'+stindex;
+   arrow_link.id = 'arrow-'+stindex;
    arrow_link.style.fontFamily = 'Verdana';
    box.appendChild(arrow_link);
 
@@ -294,7 +328,9 @@ else
    arrow_link.textContent = `( ${arrow} )  `;
 
    box.appendChild(arrow_link);
-   arrow_link.className = 'arrow';
+   //arrow_link.className = 'arrow'+stindex;
+   arrow_link.id = 'arrow-'+stindex;
+console.log(arrow_link.id,arrow);
    arrow_link.style.fontFamily = 'Verdana';
 
    // plain text
@@ -447,6 +483,7 @@ for (let path = 0; path < array.length; path++)
 
          let arrow = array[path][i].Name
          let arrptr = array[path][i].Arr
+         let stindex = array[path][i].STindex
 
          if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
             {
@@ -456,9 +493,10 @@ for (let path = 0; path < array.length; path++)
 
          let arrow_link = document.createElement('a');
          arrow_link.textContent = `( ${arrow} )  `;
+         arrow_link.id = `arrow-`+stindex;
          arrow_link.style.fontFamily = 'Verdana';
 
-         arrow_link.className = 'arrow';
+         //arrow_link.className = 'arrow';
          //arrow_link.style.href = 'http...';
          parent.appendChild(arrow_link);
          }
@@ -620,7 +658,7 @@ if (direction != "fwd" && event.Orbits[Im1] != null)
    {
    for (let ngh of event.Orbits[Im1]) 
       {
-      child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+      child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
       panel.appendChild(child);
       }
    }
@@ -631,7 +669,7 @@ if (event.Orbits[In0] != null)
       {
       if (skiparrow != ngh.Arrow)
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx)
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx)
          panel.appendChild(child);
          }
       }
@@ -643,7 +681,7 @@ if (direction != "fwd" && event.Orbits[Im3] != null)
       {
       if (skiparrow != ngh.Arrow)
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
 
          if (IsImage(event.Text,ngh.Arrow))
@@ -662,7 +700,7 @@ if (event.Orbits[Ie3] != null)
       {
       if (skiparrow != ngh.Arrow)
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
@@ -674,7 +712,7 @@ if (direction != "fwd" && event.Orbits[Im2] != null)
       {
       if (skiparrow != ngh.Arrow)
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
@@ -686,7 +724,7 @@ if (event.Orbits[Ic2] != null)
       {
       if (skiparrow != ngh.Arrow)
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }
@@ -698,7 +736,7 @@ if (event.Orbits[Il1] != null)
       {
       if (skiparrow != ngh.Arrow)
          {
-         child = PrintLink(child,ngh.Radius,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
          }
       }

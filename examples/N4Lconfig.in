@@ -102,7 +102,6 @@
  + has key issue (key issue) - is a key issue of (is key)
  + generalizes (general) - is a special case of (special)
  + includes (includes) - is a kind of of (kind of)
- + has example (e.g.) - is an example of (ex)
  + has member (memb) - belongs to (belong)
  + is the publisher of (published) - was published by (pub by)
 
@@ -138,6 +137,7 @@
 
  #  A (expresses) B, B (is expressed by) A
 
+ + has example (e.g.) - is an example of (ex)
  + has name (name)           - is the name of (nameof)
  + has resource/reference  (resource) - is a resource for (isresource)
  + has feature (feat)        - is a feature of (isfeat)
