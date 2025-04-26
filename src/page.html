@@ -22,6 +22,28 @@ header {
   color: white;
 }
 
+a[title] {
+  position: relative;
+}
+
+
+a[title]:hover::after {
+  visibility: block;
+  content: attr(title);
+  display: inline-block;
+  padding: 0.2em 0.6em; 
+  white-space: nowrap; 
+  background-color: #555;
+  color: #fff;
+  font-style: normal;
+  font-family: sans-serif;
+  font-size: 0.8em;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -1em);
+  z-index: 1;
+}
 
 h1 {
   font-size: 35px;
@@ -258,6 +280,8 @@ const Ic2 = 5
 const Ie3 = 6
 const ST_TOP = 7
 
+const STINDICES = ["is a property expressed by","is contained by","comes from","is near/smimilar to","leads to","contains","expresses property"]
+
 // Disable ENTER submission
 
 window.addEventListener('keydown',function(event)
@@ -308,6 +332,8 @@ if (str.includes("\n"))
    arrow_link.textContent = `( ${arrow} )  `;
    //arrow_link.className = 'arrow'+stindex;
    arrow_link.id = 'arrow-'+stindex;
+   arrow_link.title = STINDICES[stindex];
+   arrow_link.class = "tooltip";
    arrow_link.style.fontFamily = 'Verdana';
    box.appendChild(arrow_link);
 
@@ -330,7 +356,8 @@ else
    box.appendChild(arrow_link);
    //arrow_link.className = 'arrow'+stindex;
    arrow_link.id = 'arrow-'+stindex;
-console.log(arrow_link.id,arrow);
+   arrow_link.title = STINDICES[stindex];
+   arrow_link.class = "tooltip";
    arrow_link.style.fontFamily = 'Verdana';
 
    // plain text
@@ -494,6 +521,8 @@ for (let path = 0; path < array.length; path++)
          let arrow_link = document.createElement('a');
          arrow_link.textContent = `( ${arrow} )  `;
          arrow_link.id = `arrow-`+stindex;
+         arrow_link.class = "tooltip";
+         arrow_link.title = STINDICES[stindex];
          arrow_link.style.fontFamily = 'Verdana';
 
          //arrow_link.className = 'arrow';
@@ -1329,7 +1358,7 @@ async function sendTOCData() {
          prevm.remove();
          }
 
-      //DoHeader(resp);
+      DoHeader(resp);
       DoTOCPanel(resp);
     })
 
