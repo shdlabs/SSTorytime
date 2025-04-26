@@ -155,7 +155,8 @@ $ searchN4L -chapter brain -browse arrows=occurs,freq,role
 
 ## A prototype web interface
 
-You can play around with a prototype web interface. Install your data, then go to the `src`
+You can play around with a prototype web interface, running a webserver and brower on localhost. 
+Install your data, then go to the `src`
 directory and run `go run http_server.go`. Then you can connect by loading `page.html` or connecting to the
 address: `http://localhost:8080` in a browser.
 
@@ -169,9 +170,19 @@ If you load the test `page.html` into a browser, you should see a webpage, somet
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
 
 There are several text areas and several buttons. Not all of text areas are used with all buttons.
-* **Orbits** yields a description of a "thought" and its cloud of nearest relationships.
-* **Paths** yields a trail starting from a "thought"
-* **Browse**,**Previous**, and **Next**, are used when reading through notes from start to finish in a systematic order, page by page. 
+* **Orbits** yields a description of a "thought" and its cloud of nearest relationships. This is the easiest
+way to find a particular starting item and its immediate satellite links.
+* **Geometry** yields a snippets of trails starting from a certain place.
+* **Tales** yields a `_sequence_` trail starting from a "thought"
+* **Browse**,**Previous**, and **Next**, are used when reading through chapter notes from start to finish in a systematic order, page by page. Enter chapter name and perhaps context without a search string.
+
+*NB: if you want to run the web server and client on different hosts, you can change the 
+text `var API_SERVER = 'http://localhost:8080';` at the start of `page.html` to point to the IP address
+of the server. Note, however, that there is no security in the web server prototype, so it should not
+be exposed to a public internet.*
+
+**Finding the start of the right text by typing in the fields is still a challenge to be solved,
+and this should be considered experimental for now.**
 
 To search for anything matching a substring, enter a search string into Thought.
 If you want to limit the search to a particular section of notes and any specific context terms, you can
