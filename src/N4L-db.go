@@ -73,6 +73,7 @@ const (
 	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be in the form $label.n"
 	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
 	ERR_SHORT_WORD="Short word, probably a mistake: "
+	ERR_ILLEGAL_ANNOT_CHAR="Cannot use +/- reserved tokens for annotation"
 )
 
 //**************************************************************
@@ -401,6 +402,12 @@ func ClassifyConfigRole(token string) {
 					ParseError(ERR_ANNOTATION_BAD)
 				}
 			}
+
+			if token[0] == '+' || token[0] == '-' {
+				ParseError(ERR_ILLEGAL_ANNOT_CHAR)
+				os.Exit(-1)
+			}
+
 			Diag("Markup character defined in",SECTION_STATE, token)
 			LINE_ITEM_STATE = HAVE_PLUS
 			LAST_IN_SEQUENCE = token

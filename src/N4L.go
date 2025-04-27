@@ -71,6 +71,7 @@ const (
 	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
 	ERR_SHORT_WORD="Short word, probably a mistake: "
 	ERR_ARR_REDEFINITION="Redefinition of arrow "
+	ERR_ILLEGAL_ANNOT_CHAR="Cannot use +/- reserved tokens for annotation"
 )
 
 //**************************************************************
@@ -513,6 +514,11 @@ func ClassifyConfigRole(token string) {
 				if unicode.IsLetter(rune(token[r])) {
 					ParseError(ERR_ANNOTATION_BAD)
 				}
+			}
+
+			if token[0] == '+' || token[0] == '-' {
+				ParseError(ERR_ILLEGAL_ANNOT_CHAR)
+				os.Exit(-1)
 			}
 
 			Diag("Markup character defined in",SECTION_STATE, token)
