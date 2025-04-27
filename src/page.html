@@ -1001,7 +1001,7 @@ async function sendorbitData() {
       console.log("error ", error);
      let section = document.querySelector('article');
      let text = document.createElement('h2');
-     section.textContent = "No results in orbit";
+     section.textContent = "No results in orbit (perhaps no connection)";
      section.id = "errormesg"
      section.appendChild(text);
 
@@ -1061,7 +1061,7 @@ async function sendconeData() {
       console.log("error ", error);
      let section = document.querySelector('article');
      let text = document.createElement('h2');
-     section.textContent = "No results in cone";
+     section.textContent = "No results in Geometry (perhaps no connection)";
      section.id = "errormesg"
      section.appendChild(text);
 
@@ -1120,7 +1120,7 @@ async function sendseqData() {
       console.log("error ", error);
      let section = document.querySelector('article');
      let text = document.createElement('h2');
-     section.textContent = "No results in sequence";
+     section.textContent = "No results in Tales (perhaps no connection)";
      section.id = "errormesg"
      section.appendChild(text);
 
