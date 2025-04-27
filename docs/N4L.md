@@ -702,9 +702,9 @@ Annotations are special characters used to mark up a longer text, i.e. to pick o
 certain words within a body of text. A word that is prefixed by such a character will
 be linked to the whole text using the relationship declared in this list, e.g.
 <pre>
-  in a sentence +specialword can be marked ...
+  in a sentence %specialword can be marked ...
 </pre>
-The `+ sign` generates an implicit link:
+The `% sign` generates an implicit link:
 <pre>
   in a sentence +specialword can be marked ...   (discusses) specialword
 </pre>
@@ -718,12 +718,12 @@ The declarations are as follows:
  // for marking up a text body: body (relation) annotation
  // hyphen is illegal, as it's common in text and ambiguous to section grammar
 
- + (discusses)
+ % (discusses)
  = (depends on)
  * (is a special case of)
- # - (explains) , this is illegal
  > (has subject)
 </pre>
+the symbols + and - are reserved.
 
 
 
