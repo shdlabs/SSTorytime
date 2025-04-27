@@ -28,6 +28,9 @@ as possible.  Then we add tools for browsing, visializing, analysing
 the resulting graph, solving for paths, and divining storylines
 through the data. The aim is to support human learning, and to assist
 human perception--though the results may be used together with "AI" in the future.
+Finally, there will be an API for programmers to incorporate these methods
+into their own explorations, either in Go or in Python. As a sort of "better, faster Python",
+Go is recommended for power scripting.
 
 Note-taking may be an intuitive but semi-formal approach to
 getting facts for reasoning, for knowledge capture, querying, and
