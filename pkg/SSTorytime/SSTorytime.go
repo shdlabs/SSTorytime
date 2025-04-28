@@ -3885,7 +3885,7 @@ func JSON_TableOfContents(ctx PoSST,chap string,cn []string) string {
 			rc := chps[c]
 			cn := ParseSQLArrayString(rcontext)
 			for s := 0; s < len(cn); s++ {
-				cn[s] = strings.Replace(cn[s]," ","-",-1)
+				//cn[s] = strings.Replace(cn[s]," ","-",-1)
 				toc[rc] = append(toc[rc],cn[s])
 			}
 		}
