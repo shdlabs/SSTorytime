@@ -435,9 +435,9 @@ return false
 
 /***********************************************************/
 
-function IsMath(str,arrow)
+function IsMath(str)
 {
-if (arrow == "has math' expression" || arrow == "is a math' expression for")
+if (str.includes("\(") && str.includes("\)"))
    {
    return true;
    }
@@ -593,18 +593,13 @@ else
    title =  obj.chapter + " :: " + obj.context + " :: "
    }
 
-if (title.length > 90)
-   {
-   title = title.slice(0,70) + "...";
-   }
-
-if (title.length < 40)
+if (title.length < 60 || IsMath(title))
    {
    titlebar.textContent = title;
    } 
 else 
    {
-   titlebar.textContent = title.slice(0.40) + "...";
+   titlebar.textContent = title.slice(0.60) + "...";
    }
 
    titlebar.style.fontSize = "70%"
@@ -682,7 +677,7 @@ else
       from_text.style.fontSize = "100%";
       }
 
-   if (event.Text.length > 90)
+   if (event.Text.length > 90 && !IsMath(event.Text))
       {
       from_text.textContent = event.Text.slice(0,70) + "...";
       let small_tot_text = document.createElement('div');
