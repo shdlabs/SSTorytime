@@ -44,6 +44,7 @@ Today, computer tools ask people to enter data through APIs by programming,
 or by typing into special forms that are stressful and unnatural. We can do better,
 just as we can do better at retrieving the information and searching it.
 
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/last.png 'Testing a web interface')
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp6.png 'Testing a web interface')
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
 
