@@ -44,7 +44,8 @@
 
  a %graph (represents) a %process
 
- events (representedby) nodes
+ events (representedby) nodes (represents) states of the knowledge system
+    "   (consists of) place and moment in a proper time sequence
  associations (representedby) arrows
 
 @path contiguous paths through a sequence of %events
@@ -65,4 +66,13 @@
      "      (consists of) any number of possible connecting paths, one to be selected
 
  What unknown property? (enables) paths that join up into stories (enables) reasoning
+
+
+
+ :: neuroscience ::
+
+ The fire together/wire together principle (generates) turn correlations into associations.
+
+ Observation of information (creates) a boundary condition and (generates) a process for generating knowledge.
+
 
