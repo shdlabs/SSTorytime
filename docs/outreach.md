@@ -5,6 +5,15 @@ I'll try to compile references to related note taking and semantic search projec
 SSToryline could potentially integrate with these projects, as it solves a very different
 problem to the way people normally think about knowledge.
 
+## Articles about Semantic Spacetime by others
+
+* [Semantic Spacetime: Understanding Graph Relationships in Knowledge Representation](https://ai.plainenglish.io/semantic-spacetime-understanding-graph-relationships-in-knowledge-representation-1175cab8282d)
+
+* [Semantic Space Time for AI Agent Memory — Space and Coordinates](https://ai.plainenglish.io/semantic-space-time-for-ai-agent-memory-space-and-coordinates-2194b93ef74d)
+
+* [Bigraphs for Semantic Spacetime: A Promising Framework for Representing Meaning and Structure](https://volodymyrpavlyshyn.medium.com/bigraphs-for-semantic-spacetime-a-promising-framework-for-representing-meaning-and-structure-3b2faeddbaf6)
+
+
 ## Note taking tools
 
 Here is a list of links to possibly related projects and information about note taking.
