@@ -31,10 +31,11 @@
 	+ next if yes (ifyes) - is a positive outcome of (bifyes)
 	+ next if no (if no)  - is anegitive outcome of (bifno)
 
-        + intends (intt)    - is the intent of (iof)
-        + proposed (propose)    - proposed by (propby)
-        + decided (decide)    - decided by (decidby)
-        + spoke to (spoke)    - was spoken to by (talked)
+        + intends (intt)        - is the intent of (iof)
+        + considers (consider)  - is a consideration of (isconsider)
+        + proposed (proposes)    - proposed by (propby)
+        + decides (decide)      - decided by (decideby)
+        + spoke to (spoke)      - was spoken to by (talked)
 
         + implements (implem) - was implemented by (implorg)        
         + named after (named) - inspired the name (inspname)

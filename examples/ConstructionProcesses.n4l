@@ -16,8 +16,8 @@
  ::: meeting 1 :::
 
  Martin X (met with) Sonja Y, Knut Z
- Martin X (proposed) apply for insulation grant
- meeting 1 (decided) next meeting cancelled 
+ Martin X (proposes) apply for insulation grant
+ meeting 1 (decides) next meeting cancelled 
 
  ::: materials . recycling ::: 
 
@@ -61,8 +61,8 @@
   shipment 1 (delivaddr) operagata 2 
      "       (contains)  type 40 air filters
      "       (note)   2 days late
-#     "       (damaged) 2 boxes   // this is ambiguous and needs reworking
-      "  (contains) 2 damaged boxes
+#     "      (damaged) 2 boxes   // this is ambiguous and needs reworking
+      "      (contains) 2 damaged boxes
 
    2 damaged boxes (condition) water damage
 

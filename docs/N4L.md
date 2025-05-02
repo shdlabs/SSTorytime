@@ -439,6 +439,11 @@ For example:
 Similarity is directionless 0 = -0; for the others there is a difference between
 positive and negative inverses.)*
 
+** When naming relations, stick to one tense (e.g. present tense) and for the short form use
+something that would easiy match any occurrence of the meaning of the arrow. This will make
+debugging and automation of suggestion easier later. In other words, try to be unambiguous and consistent
+in your use of language.**
+
 These four classes of association can be literal or metaphorical (all language
 is an outgrowth of [metaphors for space and time](https://www.amazon.com/Smart-Spacetime-information-challenges-process/dp/B091F18Q8K/ref=tmm_hrd_swatch_0)).
 behave like placing items around

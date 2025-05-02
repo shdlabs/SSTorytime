@@ -86,18 +86,20 @@
  :: weapons ::
 
  // we might be tempted to create a group of weapons, but why?
- // the role is clear and there is no need to prejudice 
+ // the role is clear and there is no need to prejudice the meaning
 
  bread knife 
- Meat cleaver (status) excluded
+ meat cleaver      (status) excluded
+ mushrooms
+ deadly nightshade
 
  #######################
 
  :: hearsay, interviews ::
 
- >scarlet had a crush on >plum (question) was the crush reciprocated? (reported by) harriet
-
-          "   (motive) had a crush 
+ >scarlet had a crush on >plum (question) was the crush reciprocated? 
+            "                  (reported by) harriet
+            "                  (motive) had a crush 
 
  jamie intended to be at the party by 7pm but got stuck in traffic, arriving at 8:30pm
 
@@ -111,8 +113,8 @@
  pumb    (partner) tiddles the cat
 
  Professor >plumb was reading in the library (where) library
-                       "                    (while) reading Weapon Making (about) weapon
-                       "                    (when) $mondaymorning.1
+                       "                     (while) reading Weapon Making (about) weapon
+                       "                     (when)  $mondaymorning.1
 
 
  ######################
@@ -135,6 +137,6 @@
  :: Layout, Scene ::
 
  The library (connects to) The garden
- The garden (contains) deadly nightshade
+ The garden  (contains) deadly nightshade
  
 
