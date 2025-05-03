@@ -763,14 +763,16 @@ func ComputeEVC(dim int,adj [][]float64) []float64 {
 	for i := 0; i < several; i++ {
 
 		v = MatrixOpVector(dim,adj,vlast)
-		maxval := GetVecMax(v)
-		v = NormalizeVec(v,maxval)
 
 		if CompareVec(v,vlast) < 0.1 {
 			break
 		}
 		vlast = v
 	}
+
+	maxval := GetVecMax(v)
+	v = NormalizeVec(v,maxval)
+
 	return v
 }
 
