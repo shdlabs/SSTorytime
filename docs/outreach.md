@@ -13,6 +13,9 @@ problem to the way people normally think about knowledge.
 
 * [Bigraphs for Semantic Spacetime: A Promising Framework for Representing Meaning and Structure](https://volodymyrpavlyshyn.medium.com/bigraphs-for-semantic-spacetime-a-promising-framework-for-representing-meaning-and-structure-3b2faeddbaf6)
 
+## Graph database/analytics resources
+
+* [Neo4j Graph Data Science Library](https://neo4j.com/docs/graph-data-science/current/)
 
 ## Note taking tools
 
