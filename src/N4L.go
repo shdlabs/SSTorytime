@@ -860,7 +860,9 @@ func MatrixOpVector(dim int,m [][]float64, v []float64) []float64 {
 
 	for r := 0; r < dim; r++ {
 		for c := 0; c < dim; c++ {
-			vp[r] += m[r][c] * v[c]
+			if m[r][c] != 0 {
+				vp[r] += m[r][c] * v[c]
+			}
 		}
 	}
 	return vp
