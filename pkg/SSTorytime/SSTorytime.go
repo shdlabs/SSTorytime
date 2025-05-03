@@ -1287,7 +1287,9 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	// Insert a node structure, also an anchor for and containing link arrays
 	
-	qstr := "CREATE OR REPLACE FUNCTION IdempInsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)\n" +
+	cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
+
+	qstr := fmt.Sprintf("CREATE OR REPLACE FUNCTION IdempInsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)\n" +
 		"RETURNS TABLE (    \n" +
 		"    ret_cptr INTEGER," +
 		"    ret_channel INTEGER" +
@@ -1295,11 +1297,11 @@ func DefineStoredFunctions(ctx PoSST) {
 		"DECLARE \n" +
 		"BEGIN\n" +
 		"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE lower(s) = lower(iSi)) THEN\n" +
-		"     INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap) VALUES (iszchani,icptri,iLi,iSi,ichapi);" +
+		"     INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap,%s) VALUES (iszchani,icptri,iLi,iSi,ichapi,'{}','{}','{}','{}','{}','{}','{}');" +
 		"  END IF;\n" +
 		"  RETURN QUERY SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
 		"END ;\n" +
-		"$fn$ LANGUAGE plpgsql;";
+		"$fn$ LANGUAGE plpgsql;",cols);
 
 	row,err := ctx.DB.Query(qstr)
 	
@@ -2542,11 +2544,9 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 		return GetNodeFromPtr(im_nptr)
 	}
 
-        // Doesn't quite work in go sql
-	//cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
-	//qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr",cols,db_nptr.Class,db_nptr.CPtr)
-
-	qstr := fmt.Sprintf("select L,S,Chap from Node where NPtr='(%d,%d)'::NodePtr",db_nptr.Class,db_nptr.CPtr)
+	// This ony works if we insert non-null arrays in initialization
+	cols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
+	qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr",cols,db_nptr.Class,db_nptr.CPtr)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -2564,8 +2564,8 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 	//     rely on this and work around when needed using GetEntireCone(any,2..) separately
 
 	for row.Next() {
-		//err = row.Scan(&n.L,&n.S,&n.Chap,&whole[0],&whole[1],&whole[2],&whole[3],&whole[4],&whole[5],&whole[6])
-		err = row.Scan(&n.L,&n.S,&n.Chap)
+		err = row.Scan(&n.L,&n.S,&n.Chap,&whole[0],&whole[1],&whole[2],&whole[3],&whole[4],&whole[5],&whole[6])
+
 		for i := 0; i < ST_TOP; i++ {
 			n.I[i] = ParseLinkArray(whole[i])
 		}
@@ -4405,7 +4405,7 @@ func ParseLinkArray(s string) []Link {
 
 	s = strings.TrimSpace(s)
 
-	if len(s) == 0 {
+	if len(s) <= 2 {
 		return array
 	}
 
