@@ -30,6 +30,25 @@ in your Linux. See this issue post:
 Once you've installed the dependencies: Go programming language, Postgres database, the Postgress-contrib library, and (optionally) the Make program, you could start like this:
 <pre>
 $ make
+# Make database user (role) and database which the user has access to (should work on Linux systems)
+$ sudo -i
+[sudo] password for xxxx:
+root@foobar:~# su - postgres
+postgres@foobar:~$ psql
+psql (16.8 (Ubuntu 16.8-0ubuntu0.24.04.1))
+Type "help" for help.
+postgres=# CREATE DATABASE sstoryline OWNER sstoryline;
+ERROR:  role "sstoryline" does not exist
+postgres=# CREATE USER sstoryline WITH PASSWORD 'sst_1234';
+CREATE ROLE
+postgres=# CREATE DATABASE sstoryline OWNER sstoryline;
+CREATE DATABASE
+postgres=#
+\q
+postgres@foobar:~$
+logout
+root@foobar:~#
+logout
 $ cd examples
 $ ../src/N4L-db -u chinese*n4l Mary.n4l doors.n4l doubleslit.n4l brains.n4l
 
