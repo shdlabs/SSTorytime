@@ -1,5 +1,5 @@
 
-# searchN4L
+# pathsolve
 
 This is an experimental tool for finding contiguous paths between node sets.
 
