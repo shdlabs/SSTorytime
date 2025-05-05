@@ -85,6 +85,14 @@ func Init() []string {
 		END = *endPtr
 	}
 
+	if *dirPtr {
+		FWD = "bwd"
+		BWD = "fwd"
+	} else {
+		BWD = "bwd"
+		FWD = "fwd"
+	}
+
 	if *chapterPtr != "" {
 		CHAPTER = *chapterPtr
 	}
@@ -122,6 +130,8 @@ func PathSolve(ctx SST.PoSST, chapter,begin, end string) {
 		fmt.Println("No paths available from end points")
 		return
 	}
+
+	fmt.Printf("\n\n Paths < end_set= {%s} | {%s} = start set>\n\n",ShowNode(ctx,rightptrs),ShowNode(ctx,leftptrs))
 
 	// Find the path matrix
 
@@ -237,6 +247,21 @@ func TallyPath(ctx SST.PoSST,path []SST.Link,between map[string]int) map[string]
 
 	return between
 }
+
+// **********************************************************
+
+func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
+
+	var ret string
+
+	for n := range nptr {
+		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
+		ret += fmt.Sprintf("%.30s, ",node.S)
+	}
+
+	return ret
+}
+
 
 
 

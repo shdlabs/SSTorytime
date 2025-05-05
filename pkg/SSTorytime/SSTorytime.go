@@ -3231,22 +3231,15 @@ func WaveFront(path [][]Link,num int) []NodePtr {
 func NodesOverlap(ctx PoSST,left,right []NodePtr) map[int][]int {
 
 	var LRsplice = make(map[int][]int)
-	var list string
 
 	// Return coordinate pairs of partial paths to splice
 
 	for l := 0; l < len(left); l++ {
 		for r := 0; r < len(right); r++ {
 			if left[l] == right[r] {
-				node := GetDBNodeByNodePtr(ctx,left[l])
-				list += node.S+", "
 				LRsplice[l] = append(LRsplice[l],r)
 			}
 		}
-	}
-
-	if len(list) > 0 {
-		fmt.Println("  (i.e. waves impinge",len(LRsplice),"times at: ",list,")\n")
 	}
 
 	return LRsplice
