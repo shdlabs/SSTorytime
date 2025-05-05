@@ -61,6 +61,7 @@ job summary by an LLM text tool in which you get an answer `take it or leave it'
 * [SSTorytelling](docs/Storytelling.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
 * [searchN4L - preliminary search/testing tool](docs/searchN4L.md)
+* [pathsolve - preliminary path solving tool](docs/pathsolve.md)
 * [Related work and links](docs/outreach.md)
 * [FAQ](docs/FAQ.md)
 
@@ -106,6 +107,8 @@ The tool-set consistent of several components, starting with:
 * [N4L-db](docs/N4L.md) - a version of N4L that depends on the Golang package SSToryline in /pkg and uploads to a postgres database. This version is a compatible superset of N4L which prepares a database for searchN4L.
 
 * [searchN4L](docs/searchN4L.md) - a simple and experimental command line tool for testing the graph database
+
+* [pathsolve](docs/pathSolve.md) - a simple and experimental command line tool for testing the graph database
 
 * [http_server](docs/Tutorial.md) - a prototype webserver providing the SSTorytime browsing service
 
