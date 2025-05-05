@@ -228,6 +228,8 @@ func PathSolve(ctx SST.PoSST, chapter,begin, end string) {
 
 func TallyPath(ctx SST.PoSST,path []SST.Link,between map[string]int) map[string]int {
 
+	// count how often each node appears in the different path solutions
+
 	for leg := range path {
 		n := SST.GetDBNodeByNodePtr(ctx,path[leg].Dst)
 		between[n.S]++
