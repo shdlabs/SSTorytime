@@ -3082,6 +3082,7 @@ func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodeP
 
 	if err != nil {
 		fmt.Println("QUERY to AllSuperNCPathsAsLinks Failed",err,qstr)
+		os.Exit(-1)
 	}
 
 	var whole string

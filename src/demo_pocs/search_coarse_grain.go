@@ -2,7 +2,6 @@
 //
 // Find <end|start> transition matrix and calculate symmetries
 //
-//
 //******************************************************************
 
 package main
@@ -11,16 +10,6 @@ import (
 	"fmt"
 
         SST "SSTorytime"
-)
-
-//******************************************************************
-
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "sstoryline"
-	password = "sst_1234"
-	dbname   = "sstoryline"
 )
 
 //******************************************************************
