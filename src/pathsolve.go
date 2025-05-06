@@ -102,27 +102,7 @@ func Init() []string {
 	}
 
 	if len(args) > 0 {
-
-		if args[0][0] == '<' && args[0][len(args[0])-1] == '>' {
-
-			matrix := args[0][1:len(args[0])-1]
-			params := strings.Split(matrix,"|")
-
-			switch len(params) {
-
-			case 2: 
-				BEGIN = params[0]
-				END = params[1]
-			case 3:
-				BEGIN = params[0]
-				CONTEXT = params[1]
-				END = params[2]
-
-			default:
-				fmt.Println("Bad Dirac notation, should be <a|b> or <a|context|b>")
-				os.Exit(-1)
-			}
-		}
+		BEGIN,END,CONTEXT = SST.DiracNotation(args[0])
 	} 
 
 	SST.MemoryInit()
@@ -169,8 +149,7 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
 		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,FWD,leftptrs,ldepth,chapter,context)
-		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,BWD,rightptrs,rdepth,chapter,context)		
-
+		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,BWD,rightptrs,rdepth,chapter,context)
 		solutions,_ = SST.WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
