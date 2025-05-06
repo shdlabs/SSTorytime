@@ -926,7 +926,7 @@ for (let chp of obj.TOC)
    {
    let link = document.createElement('a');
    let item = document.createElement('h1');
-   link.onclick = function() { sendlinkData(nclass,ncptr); };
+   link.onclick = function() { sendTOCLinkData(chp.Chapter,""); };
    item.textContent = chp.Chapter;
    link.appendChild(item);
    panel.appendChild(link);
@@ -936,10 +936,13 @@ for (let chp of obj.TOC)
 
    for (let ctx of chp.Contexts)
       {
+      let link = document.createElement('a');
       let sitem = document.createElement('div');
       sitem.textContent = ctx;
       sitem.id = "toc-elem";
-      chap.appendChild(sitem);
+      link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
+      link.appendChild(sitem)
+      chap.appendChild(link);
       }
 
    panel.appendChild(chap)
@@ -1329,6 +1332,53 @@ async function sendlinkData(nclass,ncptr)
 
       DoHeader(resp);
       DoOrbitPanel(resp);
+      MathJax.typeset();
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+}
+
+/***********************************************************/
+
+async function sendTOCLinkData(chap,ctx)
+{
+  let formData = new FormData();
+  formData.set("chapter",chap);
+  formData.set("contexts",ctx);
+
+  fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
+   .then(response => {
+
+    if (!response.ok) {
+      throw new Error('network returns error');
+    }
+
+    return response.json();
+
+  })
+    .then((resp) => {
+
+      console.log("CHECK TOC",JSON.stringify(resp, null, 2))
+
+      let prevh = document.getElementById("header_root");
+
+      if (prevh != null) 
+         {
+         prevh.remove();
+         }
+
+      let prevm = document.getElementById("article");
+
+      if (prevm != null) 
+         {
+         prevm.remove();
+         }
+
+      DoHeader(resp);
+      DoBrowsePanel(resp);
       MathJax.typeset();
     })
 
