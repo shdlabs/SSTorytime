@@ -60,8 +60,8 @@ func Init() []string {
 
 	verbosePtr := flag.Bool("v", false,"verbose")
 	chapterPtr := flag.String("chapter", "", "a optional string to limit to a chapter/section")
-	beginPtr := flag.String("begin", "S1", "a string match start/begin set")
-	endPtr := flag.String("end", "B6", "a string to match final end set")
+	beginPtr := flag.String("begin", "", "a string match start/begin set")
+	endPtr := flag.String("end", "", "a string to match final end set")
 	dirPtr := flag.Bool("bwd", false, "reverse search direction")
 
 	flag.Parse()

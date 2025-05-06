@@ -2427,6 +2427,10 @@ func GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr {
 
 	var qstr string
 
+	if src == "" || src == "empty" {
+		return nil
+	}
+ 
 	remove_accents,stripped := IsBracketedSearchTerm(src)
 
 	if remove_accents {
