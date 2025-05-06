@@ -4500,7 +4500,7 @@ func StorageClass(s string) (int,int) {
 
 // **************************************************************************
 
-func DiracNotation(s string) (string,string,string) {
+func DiracNotation(s string) (bool,string,string,string) {
 
 	var begin,end,context string
 
@@ -4522,8 +4522,11 @@ func DiracNotation(s string) (string,string,string) {
 			fmt.Println("Bad Dirac notation, should be <a|b> or <a|context|b>")
 			os.Exit(-1)
 		}
+	} else {
+		return false,"","",""
 	}
-	return begin,end,context
+
+	return true,begin,end,context
 }
 
 // **************************************************************************

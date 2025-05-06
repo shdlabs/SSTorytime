@@ -102,7 +102,13 @@ func Init() []string {
 	}
 
 	if len(args) > 0 {
-		BEGIN,END,CONTEXT = SST.DiracNotation(args[0])
+		isdirac,beg,end,cnt := SST.DiracNotation(args[0])
+
+		if isdirac {
+			BEGIN = beg
+			END = end
+			CONTEXT = cnt
+		}
 	} 
 
 	SST.MemoryInit()
