@@ -12,6 +12,7 @@ import (
 	"flag"
 	"os"
 	"sort"
+	"strings"
 
         SST "SSTorytime"
 )
@@ -22,6 +23,7 @@ var (
 	BEGIN   string
 	END     string
 	CHAPTER string
+	CONTEXT string
 	VERBOSE bool
 	FWD     string
 	BWD     string
@@ -36,7 +38,7 @@ func main() {
 	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
-	PathSolve(ctx,CHAPTER,BEGIN,END)
+	PathSolve(ctx,CHAPTER,CONTEXT,BEGIN,END)
 
 }
 
@@ -69,6 +71,8 @@ func Init() []string {
 		VERBOSE = true
 	}
 
+	CHAPTER = ""
+
 	if *dirPtr {
 		FWD = "bwd"
 		BWD = "fwd"
@@ -97,6 +101,30 @@ func Init() []string {
 		CHAPTER = *chapterPtr
 	}
 
+	if len(args) > 0 {
+
+		if args[0][0] == '<' && args[0][len(args[0])-1] == '>' {
+
+			matrix := args[0][1:len(args[0])-1]
+			params := strings.Split(matrix,"|")
+
+			switch len(params) {
+
+			case 2: 
+				BEGIN = params[0]
+				END = params[1]
+			case 3:
+				BEGIN = params[0]
+				CONTEXT = params[1]
+				END = params[2]
+
+			default:
+				fmt.Println("Bad Dirac notation, should be <a|b> or <a|context|b>")
+				os.Exit(-1)
+			}
+		}
+	} 
+
 	SST.MemoryInit()
 
 	return args
@@ -104,30 +132,29 @@ func Init() []string {
 
 //******************************************************************
 
-func PathSolve(ctx SST.PoSST, chapter,begin, end string) {
+func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 	const maxdepth = 15
 	var Lnum,Rnum int
 	var count int
 	var left_paths, right_paths [][]SST.Link
 
-	context := []string{""}
-
 	start_bc := []string{begin}
 	end_bc := []string{end}
+	context := strings.Split(cntext,",")
 
 	var leftptrs,rightptrs []SST.NodePtr
 
 	for n := range start_bc {
-		leftptrs = append(leftptrs,SST.GetDBNodePtrMatchingName(ctx,start_bc[n],"")...)
+		leftptrs = append(leftptrs,SST.GetDBNodePtrMatchingName(ctx,start_bc[n],chapter)...)
 	}
 
 	for n := range end_bc {
-		rightptrs = append(rightptrs,SST.GetDBNodePtrMatchingName(ctx,end_bc[n],"")...)
+		rightptrs = append(rightptrs,SST.GetDBNodePtrMatchingName(ctx,end_bc[n],chapter)...)
 	}
 
 	if leftptrs == nil || rightptrs == nil {
-		fmt.Println("No paths available from end points")
+		fmt.Println("No paths available from end points",begin,"TO",end,"in chapter",chapter)
 		return
 	}
 
@@ -162,6 +189,11 @@ func PathSolve(ctx SST.PoSST, chapter,begin, end string) {
 		} else {
 			rdepth++
 		}
+	}
+
+	if len(solutions) == 0 {
+		fmt.Println("No paths satisfy constraints",context," between end points",begin,"TO",end,"in chapter",chapter)
+		os.Exit(-1)
 	}
 
 	// Calculate the node layer sets S[path][depth]

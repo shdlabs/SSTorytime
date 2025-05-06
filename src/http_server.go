@@ -273,7 +273,7 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 
 	// Encode
 
-	fmt.Println("Looking for section",section)
+	fmt.Println("Looking for section",section,"in",chapter)
 
 	for q := range qnodes {
 

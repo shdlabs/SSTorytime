@@ -1,6 +1,6 @@
 
 //
-// N4LParser
+// transform random text suggesting arrow hints for N4LParser
 //
 
 package main
