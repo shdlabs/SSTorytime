@@ -53,9 +53,7 @@ search_noninteractive
 search_systematic_knowledge_1
 search_systematic_knowledge_2
 search_boundary_nodes 
-search_coarse_grain
-search_coarse_grain2
-search_coarse_grain_api
+search_coarse_grain*
 postgres_testdb
 search_maze
 search_maze2
