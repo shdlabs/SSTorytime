@@ -128,11 +128,25 @@ func ConeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("NCC Cone response handler")
 	
 	switch r.Method {
+
 	case "POST","GET":
 		name := r.FormValue("name")
 		chapter := r.FormValue("chapter")
 		context := r.FormValue("context")
 		arrnames := r.FormValue("arrnames")
+
+		isdirac,begin,end,cnt := SST.DiracNotation(name)
+
+		if isdirac {
+			fmt.Println("Detected dirac transit",name)
+			if cnt == "" {
+				HandlePathSolve(w,r,begin,end,chapter,context)
+			} else {
+				HandlePathSolve(w,r,begin,end,chapter,cnt)
+			}
+			return
+		}
+
 		HandleEntireCone(w,r,name,chapter,context,arrnames)
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
@@ -202,6 +216,85 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 
 	w.Write([]byte(multicone))
 	fmt.Println("Reply Cone sent")
+}
+
+//******************************************************************
+
+func HandlePathSolve(w http.ResponseWriter, r *http.Request,begin,end,chapter,cntext string) {
+
+	const maxdepth = 15
+	var Lnum,Rnum int
+	var count int
+	var left_paths, right_paths [][]SST.Link
+
+	start_bc := []string{begin}
+	end_bc := []string{end}
+	context := strings.Split(cntext,",")
+
+	var leftptrs,rightptrs []SST.NodePtr
+
+	for n := range start_bc {
+		leftptrs = append(leftptrs,SST.GetDBNodePtrMatchingName(CTX,start_bc[n],chapter)...)
+	}
+
+	for n := range end_bc {
+		rightptrs = append(rightptrs,SST.GetDBNodePtrMatchingName(CTX,end_bc[n],chapter)...)
+	}
+
+	if leftptrs == nil || rightptrs == nil {
+		fmt.Println("No paths available from end points",begin,"TO",end,"in chapter",chapter)
+		return
+	}
+
+	dirac_form := fmt.Sprintf("<{%s}|%v|{%s}>",ShowNode(CTX,rightptrs),context,ShowNode(CTX,leftptrs))
+	fmt.Printf("\n\n Paths %s\n\n",dirac_form)
+
+	// Find the path matrix
+
+	var solutions [][]SST.Link
+	var ldepth,rdepth int = 1,1
+	var betweenness = make(map[string]int)
+
+	var json string
+
+	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
+
+		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"fwd",leftptrs,ldepth,chapter,context)
+		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"bwd",rightptrs,rdepth,chapter,context)
+		solutions,_ = SST.WaveFrontsOverlap(CTX,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+
+		if len(solutions) > 0 {
+
+			json += fmt.Sprintf("{ \"paths\" : [\n")
+			json += fmt.Sprintf(" { \"NClass\" : %d,\n",solutions[0][0].Dst.Class)
+			json += fmt.Sprintf("   \"NCPtr\" : %d,\n",solutions[0][0].Dst.CPtr)
+			json += fmt.Sprintf("   \"Title\" : \"%s\",\n",dirac_form)
+
+			json += fmt.Sprintf("\"Entire\" : %s ",SST.JSONCone(CTX,solutions,chapter,context))	
+			json += "\n}\n]\n}"
+
+			for s := 0; s < len(solutions); s++ {
+				betweenness = TallyPath(CTX,solutions[s],betweenness)
+			}
+			count++
+			break
+		}
+
+		if turn % 2 == 0 {
+			ldepth++
+		} else {
+			rdepth++
+		}
+	}
+
+	if len(solutions) == 0 {
+		fmt.Println("No paths satisfy constraints",context," between end points",begin,"TO",end,"in chapter",chapter)
+		os.Exit(-1)
+	}
+
+	w.Write([]byte(json))
+	fmt.Println("Reply PathSolve sent")
+
 }
 
 //******************************************************************
@@ -394,6 +487,34 @@ func CleanText(c string) string {
 	c = strings.Replace(c,","," ",-1)
 	c = strings.Replace(c,"\"","\\\"",-1)
 	return c
+}
+
+// **********************************************************
+
+func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
+
+	var ret string
+
+	for n := range nptr {
+		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
+		ret += fmt.Sprintf("%.30s, ",node.S)
+	}
+
+	return ret
+}
+
+// **********************************************************
+
+func TallyPath(ctx SST.PoSST,path []SST.Link,between map[string]int) map[string]int {
+
+	// count how often each node appears in the different path solutions
+
+	for leg := range path {
+		n := SST.GetDBNodeByNodePtr(ctx,path[leg].Dst)
+		between[n.S]++
+	}
+
+	return between
 }
 
 
