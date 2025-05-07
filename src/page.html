@@ -132,6 +132,29 @@ article a {
   padding: 50px;
 }
 
+table {
+   background: lightblue;
+   padding: 30px;
+   align: center;
+   border-spacing: 30px;
+   width: 100%;
+}
+
+tr {
+   background: blue;
+   padding: 30px;
+}
+
+td {
+   background: white;
+   padding: 30px;
+   vertical-align: top;
+}
+
+li {
+   word-spacing: 10px;
+}
+
 a:hover {
   color: orange;
 }
@@ -806,12 +829,48 @@ for (let nptr of obj.paths)
    link.textContent = nptr.Title;
    link.onclick = function() { sendlinkData(nclass,ncptr); };
    item.appendChild(link);
-
    let parent = document.createElement('content');
    parent = PrintPath(parent,nptr.Entire);
    panel.appendChild(parent);
+
+   let tab = document.createElement('table');
+   let row = document.createElement('tr');
+   let col1 = document.createElement('td');
+   let hd1 = document.createElement('h2');
+   hd1.textContent = "Between Centrality";
+   col1.appendChild(hd1)
+   let lst1 = document.createElement('ol');
+
+   for (let centrality of nptr.BTWC)
+      {
+      let li = document.createElement('li');
+      li.textContent = centrality;
+      lst1.appendChild(li);
+      }
+   col1.appendChild(lst1)
+
+   let col2 = document.createElement('td');
+   let hd2 = document.createElement('h2');
+   hd2.textContent = "Supernodes";
+   col2.appendChild(hd2)
+   let lst2 = document.createElement('ol');
+
+   for (let snode of nptr.Supernodes)
+      {
+      let li = document.createElement('li');
+      li.textContent = snode;
+      lst2.appendChild(li);
+      }
+   col2.appendChild(lst2)
+
+   row.appendChild(col1)
+   row.appendChild(col2)
+
+   tab.appendChild(row);
+   panel.appendChild(tab);
+
    let hr = document.createElement('hr');
-   parent.appendChild(hr);
+   panel.appendChild(hr);
    }
 }
 

@@ -277,7 +277,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,begin,end,chapter,cn
 			json += fmt.Sprintf("   \"NCPtr\" : %d,\n",solutions[0][0].Dst.CPtr)
 			json += fmt.Sprintf("   \"Title\" : \"%s\",\n",dirac_form)
 			json += fmt.Sprintf("   \"BTWC\" : [ %s ],\n",SST.BetweenNessCentrality(CTX,solutions))
-//			json += fmt.Sprintf("   \"BTWC\" : [ %s ],\n",SuperNodes(solutions))
+			json += fmt.Sprintf("   \"Supernodes\" : [ %s ],\n",SST.SuperNodes(CTX,solutions,maxdepth))
 
 			json += fmt.Sprintf("\"Entire\" : %s ",SST.JSONCone(CTX,solutions,chapter,context))	
 			json += "\n}\n]\n}"

@@ -4207,11 +4207,11 @@ func BetweenNessCentrality(ctx PoSST,solutions [][]Link) string {
 	var betw,retval string
 
 	for key := len(order)-1; key >= 0; key-- {
-		betw = fmt.Sprintf("%.2f :",float64(order[key])/float64(len(solutions)))
+		betw = fmt.Sprintf("%.2f : ",float64(order[key])/float64(len(solutions)))
 		for el := 0; el < len(inv[order[key]]); el++ {
 			betw += fmt.Sprintf("%s",inv[order[key]][el])
 			if el < len(inv[order[key]])-1 {
-				betw += ","
+				betw += ", "
 			}
 		}
 		retval += fmt.Sprintf("\"%s\"",betw)
@@ -4275,12 +4275,12 @@ func SuperNodes(ctx PoSST,solutions [][]Link, maxdepth int) string {
 			node := GetDBNodeByNodePtr(ctx,supernodes[g][n])
 			super += fmt.Sprintf("%s",node.S)
 			if n < len(supernodes[g])-1 {
-				super += ","
+				super += ", "
 			}
 		}
 		retval += fmt.Sprintf("\"%s\"",super)
 		if g < len(supernodes)-1 {
-			retval += ","
+			retval += ", "
 		}
 	}
 
