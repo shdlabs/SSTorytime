@@ -138,7 +138,7 @@ func ConeHandler(w http.ResponseWriter, r *http.Request) {
 		isdirac,begin,end,cnt := SST.DiracNotation(name)
 
 		if isdirac {
-			fmt.Println("Detected dirac transit",name)
+			fmt.Println("Detected dirac transit",begin,cnt,end)
 			if cnt == "" {
 				HandlePathSolve(w,r,begin,end,chapter,context)
 			} else {
@@ -246,15 +246,20 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,begin,end,chapter,cn
 		return
 	}
 
-	dirac_form := fmt.Sprintf("<{%s}|%v|{%s}>",ShowNode(CTX,rightptrs),context,ShowNode(CTX,leftptrs))
+	var dirac_form string
+
+	if len(context) > 0 {
+		dirac_form = fmt.Sprintf("<%s | %v | %s>",ShowNode(CTX,rightptrs),context,ShowNode(CTX,leftptrs))
+	} else {
+		dirac_form = fmt.Sprintf("<%s | %s>",ShowNode(CTX,rightptrs),ShowNode(CTX,leftptrs))
+	}
+
 	fmt.Printf("\n\n Paths %s\n\n",dirac_form)
 
 	// Find the path matrix
 
 	var solutions [][]SST.Link
 	var ldepth,rdepth int = 1,1
-	var betweenness = make(map[string]int)
-
 	var json string
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
@@ -265,17 +270,18 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,begin,end,chapter,cn
 
 		if len(solutions) > 0 {
 
+			// format paths
+
 			json += fmt.Sprintf("{ \"paths\" : [\n")
 			json += fmt.Sprintf(" { \"NClass\" : %d,\n",solutions[0][0].Dst.Class)
 			json += fmt.Sprintf("   \"NCPtr\" : %d,\n",solutions[0][0].Dst.CPtr)
 			json += fmt.Sprintf("   \"Title\" : \"%s\",\n",dirac_form)
+			json += fmt.Sprintf("   \"BTWC\" : [ %s ],\n",SST.BetweenNessCentrality(CTX,solutions))
+//			json += fmt.Sprintf("   \"BTWC\" : [ %s ],\n",SuperNodes(solutions))
 
 			json += fmt.Sprintf("\"Entire\" : %s ",SST.JSONCone(CTX,solutions,chapter,context))	
 			json += "\n}\n]\n}"
 
-			for s := 0; s < len(solutions); s++ {
-				betweenness = TallyPath(CTX,solutions[s],betweenness)
-			}
 			count++
 			break
 		}
@@ -495,26 +501,15 @@ func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
 	var ret string
 
-	for n := range nptr {
+	for n := 0; n < len(nptr); n++ {
 		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
-		ret += fmt.Sprintf("%.30s, ",node.S)
+		ret += fmt.Sprintf("%.30s",node.S)
+		if n < len(nptr)-1 {
+			ret += ","
+		}
 	}
 
 	return ret
-}
-
-// **********************************************************
-
-func TallyPath(ctx SST.PoSST,path []SST.Link,between map[string]int) map[string]int {
-
-	// count how often each node appears in the different path solutions
-
-	for leg := range path {
-		n := SST.GetDBNodeByNodePtr(ctx,path[leg].Dst)
-		between[n.S]++
-	}
-
-	return between
 }
 
 

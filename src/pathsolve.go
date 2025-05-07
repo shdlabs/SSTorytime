@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"flag"
 	"os"
-	"sort"
 	"strings"
 
         SST "SSTorytime"
@@ -228,27 +227,10 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 	fmt.Println(" *\n *\n * FLOW IMPORTANCE:\n *\n *\n")
 
-	var inv = make(map[int][]string)
-	var order []int
+	betw := SST.BetweenNessCentrality(ctx,solutions)	
+	fmt.Println("Betweenness centrality:",betw)
 
-	for key := range betweenness {
-		inv[betweenness[key]] = append(inv[betweenness[key]],key)
-	}
 
-	for key := range inv {
-		order = append(order,key)
-	}
-
-	sort.Ints(order)
-
-	for key := len(order)-1; key >= 0; key-- {
-		fmt.Printf("\n    -Rank (betweenness centrality): %.2f - ",float64(order[key])/float64(len(solutions)))
-		for el := range inv[order[key]] {
-			fmt.Print(inv[order[key]][el],",")
-		}
-		fmt.Println()
-	}
-	
 }
 
 // **********************************************************

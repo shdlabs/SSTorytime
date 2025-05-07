@@ -44,16 +44,22 @@
  :: timeline, order, _sequence_ ::
 
 
-@pstart  party (start) 23rd March 20:00, 
+heavy traffic between >18:00 and >19:00
+
+@pstart  party (start) 23rd March >20:00, 
             "  (location) Kensington, London
+
+jamie arrives >20:30
 
 @relocate Some guests moved from party to pub around 1 am, 24th
         "         (location)  Covent Garden, London
 
-@pend    party  (end)   24rd March 03:00, 
+@pend    party  (end)   24rd March >03:00, 
 
 @mondaymorning Monday morning
        "       (event) $murder.1
+
+
  
  -:: _sequence_ ::
 
@@ -101,12 +107,12 @@
             "                  (reported by) harriet
             "                  (motive) had a crush 
 
- jamie intended to be at the party by 7pm but got stuck in traffic, arriving at 8:30pm
+ >jamie intended to be at the party by 7pm but got stuck in traffic, arriving at >20:30
 
  >anne came early to the party to meet >jamie (leadsto) >anne sees >sally entering the kitchen
 
- anne blamed jamie for losing their house
-          "   (motive) blame jamie
+ >anne blamed >jamie for losing their house
+          "   (motive) blame >jamie
 
  scarlet (partner) martin
  jamie   (partner) anne

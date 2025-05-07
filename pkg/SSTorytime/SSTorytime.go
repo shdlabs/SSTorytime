@@ -4166,6 +4166,63 @@ func GetAppointmentNodesBySTType(ctx PoSST) []STTypeAppointment {
 }
 
 // **************************************************************************
+// CENTRALITY
+// **************************************************************************
+
+func TallyPath(ctx PoSST,path []Link,between map[string]int) map[string]int {
+
+	// count how often each node appears in the different path solutions
+
+	for leg := range path {
+		n := GetDBNodeByNodePtr(ctx,path[leg].Dst)
+		between[n.S]++
+	}
+
+	return between
+}
+
+// **************************************************************************
+
+func BetweenNessCentrality(ctx PoSST,solutions [][]Link) string {
+
+	var betweenness = make(map[string]int)
+
+	for s := 0; s < len(solutions); s++ {
+		betweenness = TallyPath(ctx,solutions[s],betweenness)
+	}
+
+	var inv = make(map[int][]string)
+ 	var order []int
+
+	for key := range betweenness {
+		inv[betweenness[key]] = append(inv[betweenness[key]],key)
+	}
+
+	for key := range inv {
+		order = append(order,key)
+	}
+
+	sort.Ints(order)
+
+	var betw,retval string
+
+	for key := len(order)-1; key >= 0; key-- {
+		betw = fmt.Sprintf("%.2f :",float64(order[key])/float64(len(solutions)))
+		for el := 0; el < len(inv[order[key]]); el++ {
+			betw += fmt.Sprintf("%s",inv[order[key]][el])
+			if el < len(inv[order[key]])-1 {
+				betw += ","
+			}
+		}
+		retval += fmt.Sprintf("\"%s\"",betw)
+		if key > 0 {
+			retval += ","
+		}
+	}
+	return retval
+}
+
+// **************************************************************************
 // SQL marshalling Tools
 // **************************************************************************
 
@@ -4520,8 +4577,7 @@ func DiracNotation(s string) (bool,string,string,string) {
 		case 3:
 			begin = params[0]
 			context = params[1]
-			end = params[2]
-			
+			end = params[2]			
 		default:
 			fmt.Println("Bad Dirac notation, should be <a|b> or <a|context|b>")
 			os.Exit(-1)
