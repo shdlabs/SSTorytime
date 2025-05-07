@@ -184,20 +184,15 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 	fmt.Println(" *\n *\n * PATH ANALYSIS: into node flow equivalence groups\n *\n *\n\n")
 
-	supernodes := SST.SuperNodesByConicPath(solutions,maxdepth)
+	//supernodes := SST.SuperNodesByConicPath(solutions,maxdepth)
 
 	// *** Summarize paths
 
-	for g := range supernodes {
-		fmt.Print("    - Super node ",g," = {")
-		for n := range supernodes[g] {
-			node :=SST.GetDBNodeByNodePtr(ctx,supernodes[g][n])
-			fmt.Print(node.S)
-			if n < len(supernodes[g])-1 {
-				fmt.Print(",")
-			}
-		}
-		fmt.Println("}")
+	s := SST.SuperNodes(ctx,solutions,maxdepth)
+	supers := strings.Split(s[1:len(s)-1],"\",\"")
+
+	for s := range supers {
+		fmt.Println("   - Supernode:",supers[s])
 	}
 
 	fmt.Println("\n *\n *\n * FLOW IMPORTANCE:\n *\n *\n")

@@ -4260,6 +4260,34 @@ func SuperNodesByConicPath(solutions [][]Link, maxdepth int) [][]NodePtr {
 }
 
 // **************************************************************************
+
+func SuperNodes(ctx PoSST,solutions [][]Link, maxdepth int) string {
+
+	supernodes := SuperNodesByConicPath(solutions,maxdepth)
+
+	var retval string
+
+	for g := range supernodes {
+
+		super := ""
+
+		for n := range supernodes[g] {
+			node := GetDBNodeByNodePtr(ctx,supernodes[g][n])
+			super += fmt.Sprintf("%s",node.S)
+			if n < len(supernodes[g])-1 {
+				super += ","
+			}
+		}
+		retval += fmt.Sprintf("\"%s\"",super)
+		if g < len(supernodes)-1 {
+			retval += ","
+		}
+	}
+
+	return retval
+}
+
+// **************************************************************************
 // SQL marshalling Tools
 // **************************************************************************
 
