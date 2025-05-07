@@ -182,53 +182,33 @@ func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
 	// Calculate the node layer sets S[path][depth]
 
-	fmt.Println(" *\n *\n * PATH ANALYSIS: into node flow equivalence groups\n *\n *\n")
+	fmt.Println(" *\n *\n * PATH ANALYSIS: into node flow equivalence groups\n *\n *\n\n")
 
-	var supernodes [][]SST.NodePtr
-
-	for depth := 0; depth < maxdepth*2; depth++ {
-
-		for p_i := 0; p_i < len(solutions); p_i++ {
-
-			if depth == len(solutions[p_i])-1 {
-				supernodes = SST.Together(supernodes,solutions[p_i][depth].Dst,solutions[p_i][depth].Dst)
-			}
-
-			if depth > len(solutions[p_i])-1 {
-				continue
-			}
-
-			supernodes = SST.Together(supernodes,solutions[p_i][depth].Dst,solutions[p_i][depth].Dst)
-
-			for p_j := p_i+1; p_j < len(solutions); p_j++ {
-
-				if depth < 1 || depth > len(solutions[p_j])-2 {
-					break
-				}
-
-				if solutions[p_i][depth-1].Dst == solutions[p_j][depth-1].Dst && 
-				   solutions[p_i][depth+1].Dst == solutions[p_j][depth+1].Dst {
-					   supernodes = SST.Together(supernodes,solutions[p_i][depth].Dst,solutions[p_j][depth].Dst)
-				}
-			}
-		}		
-	}
+	supernodes := SST.SuperNodesByConicPath(solutions,maxdepth)
 
 	// *** Summarize paths
 
 	for g := range supernodes {
-		fmt.Print("\n    - Super node ",g," = {")
+		fmt.Print("    - Super node ",g," = {")
 		for n := range supernodes[g] {
 			node :=SST.GetDBNodeByNodePtr(ctx,supernodes[g][n])
-			fmt.Print(node.S,",")
+			fmt.Print(node.S)
+			if n < len(supernodes[g])-1 {
+				fmt.Print(",")
+			}
 		}
 		fmt.Println("}")
 	}
 
-	fmt.Println(" *\n *\n * FLOW IMPORTANCE:\n *\n *\n")
+	fmt.Println("\n *\n *\n * FLOW IMPORTANCE:\n *\n *\n")
 
-	betw := SST.BetweenNessCentrality(ctx,solutions)	
-	fmt.Println("Betweenness centrality:",betw)
+	b := SST.BetweenNessCentrality(ctx,solutions)
+
+	betw := strings.Split(b[1:len(b)-1],"\",\"")
+
+	for b := range betw {
+		fmt.Println("   - Betweenness centrality:",betw[b])
+	}
 
 
 }

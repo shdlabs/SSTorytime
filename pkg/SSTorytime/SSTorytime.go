@@ -4223,6 +4223,43 @@ func BetweenNessCentrality(ctx PoSST,solutions [][]Link) string {
 }
 
 // **************************************************************************
+
+func SuperNodesByConicPath(solutions [][]Link, maxdepth int) [][]NodePtr {
+
+	var supernodes [][]NodePtr
+	
+	for depth := 0; depth < maxdepth*2; depth++ {
+		
+		for p_i := 0; p_i < len(solutions); p_i++ {
+
+			if depth == len(solutions[p_i])-1 {
+				supernodes = Together(supernodes,solutions[p_i][depth].Dst,solutions[p_i][depth].Dst)
+			}
+
+			if depth > len(solutions[p_i])-1 {
+				continue
+			}
+
+			supernodes = Together(supernodes,solutions[p_i][depth].Dst,solutions[p_i][depth].Dst)
+
+			for p_j := p_i+1; p_j < len(solutions); p_j++ {
+
+				if depth < 1 || depth > len(solutions[p_j])-2 {
+					break
+				}
+
+				if solutions[p_i][depth-1].Dst == solutions[p_j][depth-1].Dst && 
+				   solutions[p_i][depth+1].Dst == solutions[p_j][depth+1].Dst {
+					   supernodes = Together(supernodes,solutions[p_i][depth].Dst,solutions[p_j][depth].Dst)
+				}
+			}
+		}		
+	}
+
+	return supernodes
+}
+
+// **************************************************************************
 // SQL marshalling Tools
 // **************************************************************************
 
