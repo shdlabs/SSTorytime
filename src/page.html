@@ -95,6 +95,7 @@ article p {
 }
 
 article div {
+ padding: 40px;
  margin-bottom: 10px;
 }
 
@@ -836,8 +837,8 @@ for (let nptr of obj.paths)
    let tab = document.createElement('table');
    let row = document.createElement('tr');
    let col1 = document.createElement('td');
-   let hd1 = document.createElement('h2');
-   hd1.textContent = "Between Centrality";
+   let hd1 = document.createElement('h4');
+   hd1.textContent = "Between-ness Centrality Rank";
    col1.appendChild(hd1)
    let lst1 = document.createElement('ol');
 
@@ -850,8 +851,8 @@ for (let nptr of obj.paths)
    col1.appendChild(lst1)
 
    let col2 = document.createElement('td');
-   let hd2 = document.createElement('h2');
-   hd2.textContent = "Supernodes";
+   let hd2 = document.createElement('h4');
+   hd2.textContent = "Supernode summary";
    col2.appendChild(hd2)
    let lst2 = document.createElement('ol');
 
