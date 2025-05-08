@@ -281,7 +281,6 @@ MathJax.Hub.Config({
     <input type="text" id="context" name="context" />
     <label for="chapter">Arrow ties</label>
     <input type="text" id="arrnames" name="arrnames" />
-
     <input type="submit" id="orbitsubmit"  value="Orbits" />
     <input type="submit" id="pathsubmit"   value="Geometry" />
     <input type="submit" id="seqsubmit"    value="Tales" />
@@ -581,12 +580,18 @@ return parent
 
 function DoHeader(obj) 
 {
+// Clear the main panel here, as it's common to all
+
 let clearscreen = document.querySelector('article');
 clearscreen.innerHTML = "";
 
+// Now manage the header
 let header = document.querySelector('header');
 let titlebar = document.createElement('h2');
+titlebar.textContent="SSToryGraph"
 titlebar.id = "header_root";
+header.appendChild(titlebar);
+
 
 let title = "app";
 
@@ -613,6 +618,10 @@ else if (obj.paths != null)
       title = obj.paths[0].Title
       }
    }
+else if (obj.Title != null)
+   {
+   title =  obj.Title + " :: " + obj.Context + " :: "
+   }
 else
    {
    title =  obj.chapter + " :: " + obj.context + " :: "
@@ -628,8 +637,6 @@ else
    }
 
    titlebar.style.fontSize = "70%"
-
-header.appendChild(titlebar);
 }
 
 /***********************************************************/
@@ -944,33 +951,42 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
-for (let nptr of obj.nptrs) 
+if (obj.Title != null)  // PageView
    {
-   let nclass = nptr.NClass;
-   let ncptr = nptr.NCPtr;
    let item = document.createElement('p');
-   let link = document.createElement('a');
-   link.onclick = function() { sendlinkData(nclass,ncptr); };
-   link.textContent = nptr.Title;
-   item.appendChild(link);
-
-   item = PrintPath(item,nptr.Il1);
-   panel.appendChild(item);
-   item = PrintPath(item,nptr.Im1);
-   panel.appendChild(item);
-   item = PrintPath(item,nptr.Im2);
-   panel.appendChild(item);
-   item = PrintPath(item,nptr.Ic2);
-   panel.appendChild(item);
-   item = PrintPath(item,nptr.Ie3);
-   panel.appendChild(item);
-   item = PrintPath(item,nptr.Im3);
-   panel.appendChild(item);
-   item = PrintPath(item,nptr.In0);
+   item = PrintPath(item,obj.Notes);
    panel.appendChild(item);
    }
-let spacer = document.createElement('hr');
-panel.appendChild(spacer);
+else // Conic Arrow search
+   {
+   for (let nptr of obj.NPtrs) 
+      {
+      let nclass = nptr.NClass;
+      let ncptr = nptr.NCPtr;
+      let item = document.createElement('p');
+      let link = document.createElement('a');
+      link.onclick = function() { sendlinkData(nclass,ncptr); };
+      link.textContent = nptr.Title;
+      item.appendChild(link);
+
+      item = PrintPath(item,nptr.Il1);
+      panel.appendChild(item);
+      item = PrintPath(item,nptr.Im1);
+      panel.appendChild(item);
+      item = PrintPath(item,nptr.Im2);
+      panel.appendChild(item);
+      item = PrintPath(item,nptr.Ic2);
+      panel.appendChild(item);
+      item = PrintPath(item,nptr.Ie3);
+      panel.appendChild(item);
+      item = PrintPath(item,nptr.Im3);
+      panel.appendChild(item);
+      item = PrintPath(item,nptr.In0);
+      panel.appendChild(item);
+      }
+   let spacer = document.createElement('hr');
+   panel.appendChild(spacer);
+   }
 }
 
 /***********************************************************/

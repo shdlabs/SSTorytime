@@ -1,3 +1,4 @@
+
 //**************************************************************
 //
 // An interface for postgres for graph analytics and semantics
@@ -92,6 +93,17 @@ type NodeArrowNode struct {
 
 //**************************************************************
 
+type QNodePtr struct {
+
+	// A Qualified NodePtr 
+
+	NPtr    NodePtr
+	Context string  // array in string form
+	Chapter string
+}
+
+//**************************************************************
+
 type PageMap struct {  // Thereis additional intent in the layout
 
 	Chapter string
@@ -101,15 +113,17 @@ type PageMap struct {  // Thereis additional intent in the layout
 	Path    []Link
 }
 
-//**************************************************************
+type PageView struct {
+	Title   string
+	Context string
+	Notes   [][]WebPath
+}
 
-type QNodePtr struct {
-
-	// A Qualified NodePtr 
-
+type WebPath struct {
 	NPtr    NodePtr
-	Context string  // array in string form
-	Chapter string
+	Arr     ArrowPtr
+	STindex int
+	Name    string
 }
 
 //**************************************************************
@@ -3890,13 +3904,6 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr) string {
 
 func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
 
-        type WebPath struct {
-		NPtr    NodePtr
-		Arr     ArrowPtr
-		STindex int
-		Name    string
-	}
-
 	var jstr string = "["
 
 	for p := 0; p < len(cone); p++ {
@@ -4047,6 +4054,60 @@ fmt.Println(qstr)
 	
 	row.Close()
 	return json_toc
+}
+
+// **************************************************************************
+
+func JSONPage(ctx PoSST, maplines []PageMap) string {
+
+	var webnotes PageView
+	var last,lastc string
+
+	for n := 0; n < len(maplines); n++ {
+
+		var path []WebPath
+
+		txtctx := ContextString(maplines[n].Context)
+
+		if last != maplines[n].Chapter || lastc != txtctx {
+			webnotes.Title = maplines[n].Chapter
+			webnotes.Context = txtctx
+			last = maplines[n].Chapter
+			lastc = txtctx
+		}
+		
+		for lnk := 0; lnk < len(maplines[n].Path); lnk++ {
+			
+			text := GetDBNodeByNodePtr(ctx,maplines[n].Path[lnk].Dst)
+			
+			if lnk == 0 {
+				var ws WebPath
+				ws.Name = text.S
+				ws.NPtr = maplines[n].Path[lnk].Dst
+				path = append(path,ws)
+				
+			} else {
+				arr := GetDBArrowByPtr(ctx,maplines[n].Path[lnk].Arr)
+				var wl WebPath
+				wl.Name = arr.Long
+				wl.Arr = maplines[n].Path[lnk].Arr
+				wl.STindex = arr.STAindex
+				path = append(path,wl)
+				
+				var ws WebPath
+				ws.Name = text.S
+				ws.NPtr = maplines[n].Path[lnk].Dst
+				path = append(path,ws)
+				
+			}
+		}
+		webnotes.Notes = append(webnotes.Notes,path)
+	}
+	
+	encoded, _ := json.Marshal(webnotes)
+	jstr := fmt.Sprintf("%s",string(encoded))
+
+	return jstr
 }
 
 // **************************************************************************
@@ -4960,6 +5021,26 @@ func RunErr(message string) {
 func EscapeString(s string) string {
 
 	// Don't do this here, move to SQLEscape()
+	return s
+}
+
+
+
+
+
+
+
+//******************************************************************
+
+func ContextString(context []string) string {
+
+	var s string
+
+	for c := 0; c < len(context); c++ {
+
+		s += context[c] + " "
+	}
+
 	return s
 }
 

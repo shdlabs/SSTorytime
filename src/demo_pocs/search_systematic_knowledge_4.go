@@ -10,8 +10,7 @@ package main
 
 import (
 	"fmt"
-	//"strings"
-	//"encoding/json"
+	"encoding/json"
 
         SST "SSTorytime"
 )
@@ -25,29 +24,35 @@ func main() {
 
 	context := []string{""}
 
-	Story(ctx,"notes on chinese",context,1)
+	Page(ctx,"notes on chinese",context,1)
 	fmt.Println("\n........")
-	Story(ctx,"notes on chinese",context,2)
+	Page(ctx,"notes on chinese",context,2)
 	fmt.Println("\n........")
-	Story(ctx,"notes on chinese",context,3)
+	Page(ctx,"notes on chinese",context,3)
 
 	SST.Close(ctx)
 }
 
 //******************************************************************
 
-func Story(ctx SST.PoSST,chapter string,context []string,page int) {
+func Page(ctx SST.PoSST,chapter string,context []string,page int) {
 
 	var last string
+	var lastc string
 
 	notes := SST.GetDBPageMap(ctx,chapter,context,page)
 
+	jstr := SST.JSONPage(ctx,notes)
+
 	for n := 0; n < len(notes); n++ {
 
-		if last != notes[n].Chapter {
-			fmt.Println("\nTitle:", notes[n].Chapter)
-			fmt.Println("Context:", notes[n].Context)
+		txtctx := SST.ContextString(notes[n].Context)
+		
+		if last != notes[n].Chapter || lastc != txtctx {
+			fmt.Println("\n\nTitle:", notes[n].Chapter)
+			fmt.Println("Context:", txtctx)
 			last = notes[n].Chapter
+			lastc = txtctx
 		}
 
 		for lnk := 0; lnk < len(notes[n].Path); lnk++ {
@@ -63,11 +68,6 @@ func Story(ctx SST.PoSST,chapter string,context []string,page int) {
 		}
 	}
 }
-
-
-
-
-
 
 
 
