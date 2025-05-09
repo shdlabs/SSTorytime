@@ -2784,7 +2784,7 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,searchtext string,chap string,cn [
 	chapter := "%"+chap+"%"
 	arrows := FormatSQLIntArray(Arrow2Int(arrow))
 
-	const hits_per_page = 30
+	const hits_per_page = 60
 	offset := (page-1) * hits_per_page;
 
 	// sufficient to search NFrom to get all nodes in context, as +/- relations complete
@@ -2960,7 +2960,7 @@ func GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
 	context := FormatSQLStringArray(cn)
 	chapter := "%"+chap+"%"
 
-	const hits_per_page = 30
+	const hits_per_page = 60
 	offset := (page-1) * hits_per_page;
 
 	qstr = fmt.Sprintf("SELECT DISTINCT Chap,Ctx,Line,Path FROM PageMap\n"+

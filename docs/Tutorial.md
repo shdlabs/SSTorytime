@@ -128,10 +128,38 @@ That already covers a lot of possibilities!
 
 ## Browsing the results
 
-Eventually, there will be tools for scripting the search in simple ways, because the most powerful ways to search 
-are to use a programming language. You can see examples in the demos and proof of concept directory under src/demo_poc.
-But as the project progresses, you can use the searchN4L tool to play around with the result:
+Eventually, there will be tools for scripting the search in simple
+ways, because the most powerful ways to search any structure are to
+use a programming language that allows you to express your own
+intent. You can see examples in the demos and proof of concept
+directory under src/demo_poc.  But as the project progresses, you can
+use the `notes` and `searchN4L` tool to play around with the result.
+The simplest way to see what you entered (which is like a cleaned up version of `more`)
+is to use:
+<pre>
+$ src/notes fox and crow
 
+
+Title: chinese story about fox and crow
+Context: 
+
+Wūyā Hé Húli (pinyin for hanzi) 乌鸦和狐狸 (hanzi for english) The Crow and the Fox 
+
+Title: chinese story about fox and crow
+Context: _sequence_ 
+
+Húli zài shùlín lĭ zhăo chī de.  Tā lái dào yì kē dà shù xià, 
+狐狸   在   树林   里  找   吃  的。  他  来  到  一 棵 大  树  下, (pinyin for english) The fox was in the woods looking for food. He came to a tree, 
+
+...
+
+</pre>
+This take only a page number as an argument for controlling long note sets:
+<pre>
+$ src/notes -page 2 brain
+
+</pre>
+A more flexible command interface is provided by `searchN4L`:
 <pre>
 $ src/searchN4L notes 
 

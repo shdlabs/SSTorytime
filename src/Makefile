@@ -1,6 +1,8 @@
 #
 
-all: N4L N4L-db searchN4L http_server
+OBJ=N4L N4L-db searchN4L http_server notes
+
+all: $(OBJ)
 
 N4L: N4L.go
 	go build -o $@ $@.go
@@ -14,7 +16,10 @@ searchN4L: searchN4L.go ../pkg/SSTorytime/SSTorytime.go
 http_server: http_server.go ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
+notes: notes.go ../pkg/SSTorytime/SSTorytime.go
+	go build -o $@ $@.go
+
 clean:
-	rm -f N4L N4L-db
+	rm -f $(OBJ)
 	rm -f *~ demo_pocs/*~
 

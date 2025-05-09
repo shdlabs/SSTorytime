@@ -10,7 +10,6 @@ package main
 
 import (
 	"fmt"
-	"encoding/json"
 
         SST "SSTorytime"
 )
@@ -41,8 +40,6 @@ func Page(ctx SST.PoSST,chapter string,context []string,page int) {
 	var lastc string
 
 	notes := SST.GetDBPageMap(ctx,chapter,context,page)
-
-	jstr := SST.JSONPage(ctx,notes)
 
 	for n := 0; n < len(notes); n++ {
 
