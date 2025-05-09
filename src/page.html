@@ -1432,6 +1432,13 @@ async function sendTOCLinkData(chap,ctx)
       throw new Error('network returns error');
     }
 
+  let a = document.getElementById("name");
+  a.value = "";
+  let b = document.getElementById("context");
+  b.value=ctx;
+  let c = document.getElementById("chapter");
+  c.value=chap;
+
     return response.json();
 
   })
