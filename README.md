@@ -18,7 +18,7 @@
 * * [Why you still can’t find what you’re looking for…](https://medium.com/p/922d113177e7)
 
 This project aims to turn intentionally created data (like written notes or snippets
-cut and pasted into a file) into linked and searchable knowledge, tracing the stories that we call 
+cut and pasted into a file) into linked and searchable knowledge maps, tracing the stories that we call 
 reasoning, and solving puzzles by connecting the dots between bits of information you curate.
 
 Knowledge maps are graph (network) structures that link together events, things, and ideas into a web
