@@ -40,7 +40,7 @@ for f in fail_*.in; do
    rm -f test_outputs/N4L*.log
    echo -n testing $f
 
-   if $FAIL_PROG $f > test_output/$f.out; 
+   if $FAIL_PROG $f > /dev/null; 
        then 
        echo -e "${RED} NOT ok ${END}"
    else 
@@ -83,7 +83,7 @@ for f in fail_*.in; do
    rm -f test_outputs/N4L*.log
    echo -n testing $f
 
-   if $FAIL_PROG $f > test_output/$f.out; 
+   if $FAIL_PROG $f > /dev/null; 
        then 
        echo -e "${RED} NOT ok ${END}"
    else 

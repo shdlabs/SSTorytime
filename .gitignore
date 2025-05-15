@@ -58,6 +58,7 @@ postgres_testdb
 search_maze
 search_maze2
 search_wardley
+notes
 ScanText
 json
 
@@ -74,6 +75,7 @@ cscope.*
 # emacs
 .#*
 *~
+
 \#*#
 .dir-locals.el
 /contrib/*.elc
