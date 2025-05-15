@@ -3,8 +3,17 @@
 
 *(This is a provisional tutorial to help get you started using the language)*
 
-This is an unusual project, in the age of so-called Artificial Intelligence.
-It's a project about knowledge--your knowledge, not that abstract knowledge of Mankind.
+This is a project in the age of so-called Artificial Intelligence. But it's not about machines.
+It's a project about knowledge--*your* knowledge, not the abstract knowledge of Mankind that
+people talk about for AI. Learning is difficult, and remembering is difficult,
+but we can make tools that help. That's what this is about.
+
+* You can use the note taking language for write reports (incident reports, forensic details, patient plans,
+or just notes about your favourite movies.)
+
+* Once you've got a bunch of notes, you can upload them into a searchable format and analyze them for patterns
+and hidden connections.
+
 How how can you compete with AI and with other people in the information age?
 It's a bit like going to the gym to get fit. No one can do it for you, but there
 are tools to help you. So here is a methodology with tools, to improve the user experience 

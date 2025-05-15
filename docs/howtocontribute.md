@@ -3,9 +3,13 @@
 
 SSTorytime and the Semantic Spacetime model of knowledge is a unique project based on leading edge research. You'll recognize some of the ideas that are old, but there are some new concepts to know too!
 
-* The best way to help is to use it as much as possible! Taking notes is about enhancing your **human** abilities rather than replacing yourself with an AI chat! When you choose your own words, you understand more powerfully than when someone puts words in your mouth! Start small and expand as you feel inspired.
+* The best way to help is to try it!
+
+* Use it as much as possible! Taking notes is about enhancing your **human** abilities rather than replacing yourself with an AI chat! When you choose your own words, you understand more powerfully than when someone puts words in your mouth! Start small and expand as you feel inspired.
 
 * Get your friends and kids involved. Anyone can use it. It's ideal for school projects.
+
+* Even before you try to set up a database, you can use the note-taking language N4L to get started.
 
 * Please *read* about the project to make sure you understand how it is special, don't assume it's like something else you already know!
 
