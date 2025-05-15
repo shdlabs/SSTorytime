@@ -10,6 +10,7 @@ SSTorytime and the Semantic Spacetime model of knowledge is a unique project bas
 * Get your friends and kids involved. Anyone can use it. It's ideal for school projects.
 
 * Even before you try to set up a database, you can use the note-taking language N4L to get started.
+[See the tutorial!](Tutorial.md)
 
 * Please *read* about the project to make sure you understand how it is special, don't assume it's like something else you already know!
 
