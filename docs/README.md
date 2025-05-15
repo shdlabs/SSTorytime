@@ -19,132 +19,67 @@ go env -w GO111MODULE=off
 
 ## Troubleshooting
 
-Note that the "hard part" of this is getting Go(lang) to work properly. There have been issues since
-the introduction of modules. If you don't install from the go download, it might be due to local differences
-in your Linux. See this issue post:
+Note that the "hard part" of setting up is to work around the quirks of the `Go` language and the database `Postgresql`. These are both delicate beasts: when they work they will just work, but if they don't they are very hard to debug. Postgres, in particular, fails silently and mysteriously. It keeps log files in `/var/lib/pgsql/data/log`.
 
-* [Can't Build Issue](https://github.com/markburgess/SSTorytime/issues/1)
+Luckily the major linux distros are mostly similar these days, so cross fingers that these instructions work. 
 
-## Running on a GNU/Linux distribution
 
-Once you've installed the dependencies: Go programming language, Postgres database, the Postgress-contrib library, and (optionally) the Make program, you could start like this:
-<pre>
-$ make
-# Make database user (role) and database which the user has access to (should work on Linux systems)
-$ sudo -i
-[sudo] password for xxxx:
-root@foobar:~# su - postgres
-postgres@foobar:~$ psql
-psql (16.8 (Ubuntu 16.8-0ubuntu0.24.04.1))
-Type "help" for help.
-postgres=# CREATE DATABASE sstoryline OWNER sstoryline;
-ERROR:  role "sstoryline" does not exist
-postgres=# CREATE USER sstoryline WITH PASSWORD 'sst_1234';
-CREATE ROLE
-postgres=# CREATE DATABASE sstoryline OWNER sstoryline;
-CREATE DATABASE
-postgres=#
-\q
-postgres@foobar:~$
-logout
-root@foobar:~#
-logout
-$ cd examples
-$ ../src/N4L-db -u chinese*n4l Mary.n4l doors.n4l doubleslit.n4l brains.n4l
+* [Can't Build with Go Issue](https://github.com/markburgess/SSTorytime/issues/1)
 
-2442:N4L chinese.n4l WARNING: Found a note to self in the text (ZZZZZZZZ) at line 2442 
 
-2517:N4L chinese.n4l WARNING: Found a note to self in the text (HERE TO DO) at line 2517 
-Uploading nodes..
-Storing nodes...
-.................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
-
-</pre>
-Once the data are uploaded, you can try a simple test, e.g. the demo program
-<pre>
-% cd src/demo_pocs
-% go run search_noninteractive.go
---------------------------------------------------
-Looking for relevant arrows by [poem] chinese
---------------------------------------------------
-    (No relevant matches)
---------------------------------------------------
-Looking for relevant nodes by tiger
---------------------------------------------------
-Looking for nodes like tiger...   Found possible relevant nodes: [{4 626}]
-
-    -------------------------------------------
-     Search text MATCH #1 via -LeadsTo connection
-     (search tiger => hit two tigers, two tigers)
-    -------------------------------------------
-     - SSType -LeadsTo  cone item:  two tigers, two tigers , found in notes on chinese
-     - SSType -LeadsTo  cone item:  两只老虎, 两只老虎 , found in notes on chinese
-     - SSType -LeadsTo  cone item:  Liǎng zhī lǎohǔ, liǎng zhī lǎohǔ , found in notes on chinese
-     (END 1)
-
---------------------------------------------------
-checking whether any arrows also match search tiger (in any context)
---------------------------------------------------
-mark% 
-
-</pre>
-If you see something like this, everything is working.
 
 ### Installing database Postgres
 
-* Use your local package manager to download packages for `postgres databaser server` and `psql client`.
-* In postgres, you need root privileges to configure and create a database.
-* Set the server to run in your systemd configuration.
+Hard part first; there are several steps (summary):
 
+* Use your local package manager to download and install packages for `postgres databaser server` and `psql client`.
+* In postgres, you need root privileges to configure and create a database.
+* Locate and edit the configuration file `pg_hba.conf` and make sure it's owned by the `postgres` user.
+* Set the server to run in your systemd configuration. 
+
+You need root access, but postgres prefers you to do everything as the postgres user not as root.
+
+* To begin with, you need to start the database as root.
+If this command doesn't work, check your local Linux instruction page as distros vary.
+<pre>
+$ sudo systemctl enable postgresql
+$ sudo systemctl start postgresql
+
+$ ps waux | grep postgres
+</pre>
+You should now see a number of processes running as the postgres user.
+
+* * (as postgres user) Next login to the postgres user account and run the `psql` command there to gain root access:
 <pre>
 sudo su -
 su - postgres
+psql
 </pre>
-Once you have a root shell, you can grant access to postgres to other users.
+Only postgres user can CREATE or DROP a database.
 
-* You will normally access postgres for a specific database that you create once and for all, as root user.
-
-* `psql` is a tool that accepts commands of two kind:
-
- * Backslash commands, e.g. describe tables for the current database `\dt`,  `\d tablename`, and describing stored functions `\df`.
- * As direct SQL commands, which must end in ;
-
-Set up a database for the examples, e.g. as root user. The default name in the code is:
+* * (as postgres user) Set up a database for the examples. The default name in the code is:
 <pre>
 \h for help
 
-CREATE user sstoryline password 'sst_1234' superuser;
+CREATE USER sstoryline PASSWORD 'sst_1234' superuser;
 CREATE DATABASE sstoryline;
-CREATE DATABASE newdb;
 GRANT ALL PRIVILEGES ON DATABASE sstoryline TO sstoryline;
-GRANT ALL PRIVILEGES ON DATABASE newdb TO sstoryline;
 CREATE EXTENSION UNACCENT;
 </pre>
 For the last line, you must have installed the extension packages `postgres-contrib`.
-
-* In the examples, two databases are used: `sstoryline` and `newdb` for personal scripting and testing,
-it's useful to have another, called `newdb`.
-* Only superuser can CREATE or DROP a database.
-
-* You should now be able to log in to the postgres shell as an ordinary user, without sudo.
-
+If you want to use psql to examine and manage
+the database yourself using psql, it's useful to add your own account to the privileges, like this:
 <pre>
-psql newdb
-psql sstoryline
+CREATE USER myusername;
+GRANT ALL PRIVILEGES ON DATABASE sstoryline TO myusername;
+\l
 </pre>
-When connecting in code, you have to add the password. For a shell user, postgres recognizes your local
-credentials.
+The `\l` command lists the databases, and you should now see the database.
 
-Cleary this is not a secure configuration, so you should only use this for testing on your laptop.
-Also, note that this will not allow you to login until you also open up the configuration of postgres
-as below. In summary, 
-
-* * Create a database.
-* * Create a user for accessing the database over a local (or later remote) socket.
-* * Grant access and permissions to the SST user, by editing a configuration file.
-* * Locate the file `locate pg_hba.conf` for your distribution (you might have to search for it):
+* * (as postgres user) Locate the file `locate pg_hba.conf` for your distribution (you might have to search for it) and edit it as the postgres user.
 
 <pre>
+$ myfavouriteeditor /var/lib/pgsql/data/pg_hba.conf
 
 # TYPE  DATABASE        USER            ADDRESS                 METHOD
 
@@ -158,6 +93,22 @@ host    all             all             ::1/128                 <b>password</b>
 This will allow you to connect to the database using the shell command `psql` command using password
 authentication. Think of a suitable password.
 
+Note that, if you accidentally edit the file as root, the owner of the file will be changed and postgres will fail to start.
+
+
+Notice that the `psql` is a tool that accepts commands of two kind: backslash commands, e.g. describe tables for the current database `\dt`,  `\d tablename`, and describing stored functions `\df`. Also note that direct SQL commands, which must end in a semi-colon `;`.
+
+* You should now be able to exit su log in to the postgres shell as an ordinary user, without sudo. Tap CTRL-D twice to get back to your user shell.
+When connecting in code, you have to add the password. For a shell user, postgres recognizes your local
+credentials.
+<pre>
+$ psql sstoryline
+</pre>
+
+
+*Cleary this is not a secure configuration, so you should only use this for testing on your laptop.
+Also, note that this will not allow you to login until you also open up the configuration of postgres
+as below.*
 
 
 Postgres is finnicky if you're not used to running it, but once these details are set up
