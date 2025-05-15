@@ -10,7 +10,7 @@
 
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation
 
-* This is a work in progress during 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/). It's currently in an R&D phase, so comments are welcome but there is much to be done. This is not an RDF project. *
+* This is a work in progress during 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/). It's currently in an R&D phase, so comments are welcome but there is much to be done. This is not an RDF project. * [HOW CAN YOU CONTRIBUTE?](docs/howtocontribute.md)
 
 * See these Medium articles for a conceptual introduction
 * [From cognition to understing](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
@@ -21,8 +21,6 @@ This project aims to turn intentionally created data and notes into stories we c
 Stories are one of the most important forms of information, whether they
 describe happenings, calculations, tales of provenance, system audits... Stories
 underpin everything that happens.
-
-* [HOW CAN YOU CONTRIBUTE?](docs/howtocontribute.md)
 
 Getting data into story form isn't as easy as it sounds, so we start
 by introducing a simple language "N4L" to make data entry as painless
