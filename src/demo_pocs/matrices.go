@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"sort"
 )
 
 //**************************************************************
@@ -39,7 +40,7 @@ func main () {
 */
 
 
-        //                  1 2 3 4 5 6 7 8 9 10
+/*        //                  1 2 3 4 5 6 7 8 9 10
 	rows = append(rows,"0 2 0 0 0 0 0 0 0 0") // 1
 	rows = append(rows,"0 0 3 0 0 0 0 0 0 0") // 2
 	rows = append(rows,"0 0 0 1 0 0 0 0 0 0") // 3
@@ -50,9 +51,9 @@ func main () {
 	rows = append(rows,"0 0 0 0 0 9 0 0 1 1") // 8
 	rows = append(rows,"0 0 0 0 0 1 0 0 0 0") // 9
  	rows = append(rows,"0 0 0 0 0 0 0 0 0 0") // 10
+*/
 
 
-/*
         //                  1 2 3 4 5 6 7 8 9 10
 	rows = append(rows,"0 1 0 0 0 0 0 0 0 0") // 1
 	rows = append(rows,"0 0 1 0 0 0 0 0 0 0") // 2
@@ -64,7 +65,7 @@ func main () {
 	rows = append(rows,"0 0 0 0 0 1 0 0 1 1") // 8
 	rows = append(rows,"0 0 0 0 0 1 0 0 0 0") // 9
  	rows = append(rows,"0 0 0 0 0 0 0 0 0 0") // 10
-*/
+
 
 /*	rows = append(rows,"0 1 0 0 0 0")
 	rows = append(rows,"0 0 1 0 0 0")
@@ -88,29 +89,34 @@ func main () {
 	rows = append(rows,"0 1 0")*/
 
 
-	m := Matrix(rows)
-	PrintMatrix(m)
+	m,s := Matrix(rows)
+	PrintMatrix(m,s,"A")
 
-	mt := Transpose(m)
-	PrintMatrix(mt)
+	//mt := Transpose(m)
+	//PrintMatrix(mt,s,"A^T")
 
-	m2 := Mult(mt,mt)
-	//PrintMatrix(m2)
+	m2,s2 := Mult(m,m,s,s)
+	PrintMatrix(m2,s2,"A^2")
+	AnalyzePowerMatrix(s2)
 
-	m3 := Mult(mt,m2)
-	//PrintMatrix(m3)
+	m3,s3 := Mult(m,m2,s,s2)
+	PrintMatrix(m3,s3,"A^3")
+	AnalyzePowerMatrix(s3)
 
-	//m4 := Mult(m,m3)
-	//PrintMatrix(m4)
+	m4,s4 := Mult(m,m3,s,s3)
+	PrintMatrix(m4,s4,"A^4")
+	AnalyzePowerMatrix(s4)
 
-	m6 := Mult(m3,m3)
-	//PrintMatrix(m6)
+	m6,s6 := Mult(m3,m3,s3,s3)
+	PrintMatrix(m6,s6,"A^6")
+	AnalyzePowerMatrix(s6)
 
 	fmt.Println(".....................")
 	fmt.Println("M^n asymm")
 
-	m12 := Mult(m6,m6)
-	PrintMatrix(m12)
+	m12,s12 := Mult(m6,m6,s6,s6)
+	PrintMatrix(m12,s12,"M^12")
+
 	v := MakeInitVector(len(m12),1.0)
 	v = MatrixOpVector(m12,v)
 	PrintVector(v)
@@ -118,69 +124,87 @@ func main () {
 	fmt.Println(".....................")
 
 	fmt.Println("EVC plain")
-	evc := ComputeEVC("asymm",mt)
+	evc := ComputeEVC("asymm",m)
 	PrintVector(evc)
 
 	fmt.Println(".....................")
-	s := Symmetrize(m)
-	fmt.Println("symm")
-	PrintMatrix(s)
+	sm := Symmetrize(m)
 
 	fmt.Println("EVC symm")
-	evc2 := ComputeEVC("symm", s)
+	evc2 := ComputeEVC("symm", sm)
 	PrintVector(evc2)
 
 }
 
 //**************************************************************
 
-func Mult(m1,m2 [][]float64) [][]float64 {
+func Mult(m1,m2 [][]float64,s1,s2 [][]string) ([][]float64,[][]string) {
 
 	var m [][]float64
+	var sym [][]string
 
 	if len(m1[0]) != len(m2) {
 		fmt.Println("Can't multiply incompatible dimensions")
-		return m
+		return m,sym
 	}
 
 	for r := 0; r < len(m1); r++ {
 
 		var newrow []float64
+		var symrow []string
 
 		for c := 0; c < len(m2[0]); c++ {
+
 			var value float64
+			var symbols string
+
 			for j := 0; j < len(m2); j++ {
 				value += m1[r][j] * m2[j][c]
+ 
+				if  m1[r][j] != 0 && m2[j][c] != 0 {
+					symbols += fmt.Sprintf("%s*%s",s1[r][j],s2[j][c])
+				}
 			}
 			newrow = append(newrow,value)
+			symrow = append(symrow,symbols)
 		}
 		m  = append(m,newrow)
+		sym  = append(sym,symrow)
 	}
 
-	return m
+	return m,sym
 }
 
 //**************************************************************
 
-func Matrix(rows []string) [][]float64 {
+func Matrix(rows []string) ([][]float64,[][]string) {
 
 	var matrix [][]float64
+	var symbol [][]string
 
 	for r := 0; r < len(rows); r++ {
 
 		var row []float64
+		var srow []string
 
 		cols := strings.Split(rows[r]," ")
 
 		for c := 0; c < len(cols); c++ {
 			var value float64
+			var sym string = ""
+
 			fmt.Sscanf(cols[c],"%f",&value)
 			row = append(row,value)
+			if value != 0 {
+				sym = fmt.Sprintf("%d*%d",r,c)
+			}
+			srow = append(srow,sym)
 		}
 		matrix = append(matrix,row)
+		symbol = append(symbol,srow)
 	}
 
-	return matrix
+	return matrix,symbol
 }
 
 //**************************************************************
@@ -257,7 +281,7 @@ func ComputeEVC(s string, adj [][]float64) []float64 {
 	v := MakeInitVector(len(adj),1.0)
 	vlast := v
 	fmt.Println("...........",s,"..........")
-	PrintMatrix(adj)
+	//PrintMatrix(adj,"evc")
 
 	const several = 10
 
@@ -329,19 +353,76 @@ func CompareVec(v1,v2 []float64) float64 {
 
 //**************************************************************
 
-func PrintMatrix(matrix [][]float64) {
+func PrintMatrix(matrix [][]float64,symbolic [][]string,str string) {
 
-	fmt.Printf("                 DIAG  \n")
+	fmt.Printf("                 DIAG %s \n",str)
 
 	for row := 0; row < len(matrix); row++ {
 		for col := 0; col < len(matrix[row]); col++ {
 			fmt.Printf("%3.0f ",matrix[row][col])
 		}
 
-		fmt.Printf("      %1.1f    ...\n",matrix[row][row])
+		fmt.Printf("      %1.1f   ...",matrix[row][row])
+		if matrix[row][row] > 0 {
+			fmt.Printf("      %s    (loop)\n",symbolic[row][row])
+		} else {
+			fmt.Println()
+		}
 	}
 	fmt.Println()
 }
+
+//**************************************************************
+
+func AnalyzePowerMatrix(symbolic [][]string) {
+
+	var loop = make(map[string]int)
+
+	for r := 0; r < len(symbolic); r++ {
+
+		// check the diagonal
+
+		if len(symbolic[r][r]) == 0 {
+			continue
+		}
+
+		var distrib = make(map[string]int)
+		var nodes []string
+
+		vec := strings.Split(symbolic[r][r],"*")
+		
+		for i := 0; i < len(vec); i++ {
+			distrib[vec[i]]++
+		}
+
+		var degeneracy int
+
+		for d := range distrib {
+			degeneracy = distrib[d] / 2
+			break
+		}
+
+		for r := range distrib {
+			nodes = append(nodes,r)
+		}
+
+		sort.Strings(nodes)
+		var members string
+
+		for n := 0; n < len(nodes); n++ {
+			members += fmt.Sprintf("(%s)",nodes[n])
+		}
+
+
+		loop[members] = degeneracy
+	}
+
+	for m := range loop {
+		length := len(strings.Split(m,")("))
+		fmt.Println("Loop of length",length,"and degeneracy",loop[m],"with members",m)
+	}
+}
+
 //**************************************************************
 
 func PrintVector(vector []float64) {
