@@ -79,12 +79,15 @@
      + handles (handles) - is handled by (handleyby)      // has dual meanings!
      + coordinates (coord) - is coordinated by (coordby)
 
- :: chinese language ::
-
- 	+ pinyin for english (pe) - english for pinyin (ep) 
- 	+ pinyin for hanzi (ph) - hanzi for pinyin (hp)
- 	+ hanzi for english (he) - english for hanzi (eh)
- 	+ english for Norwegian (en) - Norwegian for english (ne)
+# :: chinese language ::
+#
+#     There is some freedom to represent language speech acts as events, 
+#     and these translations and process transitions, but since they don't
+#     propagate further, the translations can also be properties of one another (properties)
+# 	+ pinyin for english (pe) - english for pinyin (ep) 
+# 	+ pinyin for hanzi (ph) - hanzi for pinyin (hp)
+# 	+ hanzi for english (he) - english for hanzi (eh)
+# 	+ english for Norwegian (en) - Norwegian for english (ne)
 
  :: wardley maps ::
 
@@ -175,6 +178,13 @@
  + note/remark (note) - is a note or remark about (isnotefor)
  + added remark (remark) - is a remark concerning (concerns)
  + please note! (NB) - is an important remark concerning (important regarding)
+
+ # recouch these as properties
+
+ + pinyin has english (pe) - english has pinyin (ep) 
+ + pinyin has hanzi (ph) - hanzi has pinyin (hp)
+ + hanzi has english (he) - english has hanzi (eh)
+ + english has Norwegian (en) - Norwegian has english (ne)
 
  + stands for (sfor)  - is a case of (case of)
  + refers to (ref)    - may be referred to as (refas)

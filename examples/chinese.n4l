@@ -268,31 +268,31 @@ composer (eh) 作曲家 (hp) zuòqǔ jiā (see also)  yī míng zuòqǔ jiā (pe
 
 ::chinese.words:: 
 
- character (english for pinyin) hànzì
-    "       (english for hanzi)  汉字
+ character (ep) hànzì
+    "       (eh)  汉字
 
 
- most (english for pinyin) zuì 
-   "   (english for hanzi) 最 
+ most (english has pinyin) zuì 
+   "   (english has hanzi) 最 
 
- apple (english for pinyin) píngguǒ
-   "    (english for hanzi) 苹果 
+ apple (english has pinyin) píngguǒ
+   "    (english has hanzi) 苹果 
 
-  shuǐ (pinyin for english) water
-   "    (pinyin for hanzi) 水
+  shuǐ (pinyin has english) water
+   "    (pinyin has hanzi) 水
 
   X (stands for) person
   Y (stands for) thing
 
-  'X zuì xǐhuān de Y' (pinyin for english) 'X's most liked/favourite Y'
+  'X zuì xǐhuān de Y' (pinyin has english) 'X's most liked/favourite Y'
 
    "  (contains) zuì
    "  (contains) xǐhuān
 
   ## Split by ' ' attach (uses)
 
-   zhǐ (pinyin for english) only
-    "   (pinyin for hanzi) 只 
+   zhǐ (pinyin has english) only
+    "   (pinyin has hanzi) 只 
 
    zao (looks like,0.2) zuo    # the number is an affinity, the {} are a matching set
 
@@ -303,24 +303,24 @@ composer (eh) 作曲家 (hp) zuòqǔ jiā (see also)  yī míng zuòqǔ jiā (pe
 
   # beautify curated ... and unnaturally stylised
 
-  meat    (english for pinyin) ròu
-    "      (english for hanzi)  肉
-  chicken (english for pinyin) jīròu
-    "      (english for hanzi)  鸡肉 
+  meat    (english has pinyin) ròu
+    "      (english has hanzi)  肉
+  chicken (english has pinyin) jīròu
+    "      (english has hanzi)  鸡肉 
 
-  lamb (english for pinyin) yángròu (pinyin for hanzi) 羊肉
-  beef (english for pinyin) niúròu  (pinyin for hanzi) 牛肉
-  milk (english for pinyin) niúnǎi  (pinyin for hanzi) 牛奶
+  lamb (english has pinyin) yángròu (pinyin has hanzi) 羊肉
+  beef (english has pinyin) niúròu  (pinyin has hanzi) 牛肉
+  milk (english has pinyin) niúnǎi  (pinyin has hanzi) 牛奶
 
-  vegetable (english for pinyin) shūcài  (pinyin for hanzi) 蔬菜
-  fruit     (english for pinyin) shuǐguǒ (pinyin for hanzi) 水果
- watermelon (english for pinyin) xīguā   (pinyin for hanzi) 西瓜
+  vegetable (english has pinyin) shūcài  (pinyin has hanzi) 蔬菜
+  fruit     (english has pinyin) shuǐguǒ (pinyin has hanzi) 水果
+ watermelon (english has pinyin) xīguā   (pinyin has hanzi) 西瓜
 
- chocolate (english for pinyin) qiǎokèlì (pinyin for hanzi) 巧克力 
-   alcohol (english for pinyin) jiǔjīng  (pinyin for hanzi) 酒精
-      fish (english for pinyin) yú       (pinyin for hanzi) 鱼
-      rice (english for pinyin) mǐ       (pinyin for hanzi) 米
-   noodles (english for pinyin) miàntiáo (pinyin for hanzi) 面条
+ chocolate (english has pinyin) qiǎokèlì (pinyin has hanzi) 巧克力 
+   alcohol (english has pinyin) jiǔjīng  (pinyin has hanzi) 酒精
+      fish (english has pinyin) yú       (pinyin has hanzi) 鱼
+      rice (english has pinyin) mǐ       (pinyin has hanzi) 米
+   noodles (english has pinyin) miàntiáo (pinyin has hanzi) 面条
 
   # more realistic with abbreviations ...
 
