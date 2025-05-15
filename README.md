@@ -17,7 +17,10 @@
 * * [The Shape of Knowledge](https://medium.com/@mark-burgess-oslo-mb/semantic-spacetime-1-the-shape-of-knowledge-86daced424a5)
 * * [Why you still can’t find what you’re looking for…](https://medium.com/p/922d113177e7)
 
-This project aims to turn intentionally created data and notes into stories we call reasoning.
+This project aims to turn intentionally created data (like written notes or snippets
+cut and pasted into a file) into linked and searchable knowledge, tracing the stories that we call 
+reasoning, and solving puzzles by connecting the dots between bits of information you curate.
+
 Stories are one of the most important forms of information, whether they
 describe happenings, calculations, tales of provenance, system audits... Stories
 underpin everything that happens.
