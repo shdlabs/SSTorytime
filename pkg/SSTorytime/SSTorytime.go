@@ -86,7 +86,7 @@ type NodeArrowNode struct {
 	NFrom NodePtr
 	STType int
 	Arr ArrowPtr
-	Wgt float64
+	Wgt float32
 	Ctx []string
 	NTo NodePtr
 }
@@ -149,7 +149,7 @@ type ArrowAppointment struct {
 type Link struct {  // A link is a type of arrow, with context
                     // and maybe with a weightfor package math
 	Arr ArrowPtr         // type of arrow, presorted
-	Wgt float64          // numerical weight of this link
+	Wgt float32          // numerical weight of this link
 	Ctx []string         // context for this pathway
 	Dst NodePtr          // adjacent event/item/node
 }
@@ -2747,7 +2747,7 @@ func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrow
 	var to_node string
 	var actx string
 	var st,arr int
-	var wgt float64
+	var wgt float32
 
 	var nfr,nto NodePtr
 	var nan NodeArrowNode
@@ -4387,7 +4387,7 @@ func BetweenNessCentrality(ctx PoSST,solutions [][]Link) string {
 	var betw,retval string
 
 	for key := len(order)-1; key >= 0; key-- {
-		betw = fmt.Sprintf("%.2f : ",float64(order[key])/float64(len(solutions)))
+		betw = fmt.Sprintf("%.2f : ",float32(order[key])/float32(len(solutions)))
 		for el := 0; el < len(inv[order[key]]); el++ {
 			betw += fmt.Sprintf("%s",inv[order[key]][el])
 			if el < len(inv[order[key]])-1 {

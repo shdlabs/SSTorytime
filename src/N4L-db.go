@@ -445,7 +445,7 @@ func GetLinkArrowByName(token string) SST.Link {
 	// Return a preregistered link/arrow ptr bythe name of a link
 
 	var reln []string
-	var weight float64 = 1
+	var weight float32 = 1
 	var weightcount int
 	var ctx []string
 	var name string
@@ -465,7 +465,7 @@ func GetLinkArrowByName(token string) SST.Link {
 		// look at any comma separated notes after the arrow name
 		for i := 1; i < len(reln); i++ {
 
-			v, err := strconv.ParseFloat(reln[i], 64)
+			v, err := strconv.ParseFloat(reln[i], 32)
 
 			if err == nil {
 				if weight < 0 {
@@ -476,7 +476,7 @@ func GetLinkArrowByName(token string) SST.Link {
 					ParseError(ERR_TOO_MANY_WEIGHTS+token)
 					os.Exit(-1)
 				}
-				weight = v
+				weight = float32(v)
 				weightcount++
 			} else {
 				ctx = append(ctx,reln[i])
@@ -638,12 +638,12 @@ func SummarizeGraph() {
 	}
 
 	complete := count_nodes * (count_nodes-1)
-	fmt.Println("Total links",total,"sparseness (fraction of completeness)",float64(total)/float64(complete))
+	fmt.Println("Total links",total,"sparseness (fraction of completeness)",float32(total)/float32(complete))
 }
 
 //**************************************************************
 
-func CreateAdjacencyMatrix(searchlist string) (int,[]SST.NodePtr,[][]float64,[][]float64) {
+func CreateAdjacencyMatrix(searchlist string) (int,[]SST.NodePtr,[][]float32,[][]float32) {
 
 	search_list := ValidateLinkArgs(searchlist)
 
@@ -662,12 +662,12 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]SST.NodePtr,[][]float64,[][
 	//	Verbose("    - path weight",path_weights[f],"from",GetNodeTxtFromPtr(f.Row),"to",GetNodeTxtFromPtr(f.Col))
 	//}
 
-	var subadj_matrix [][]float64 = make([][]float64,dim)
-	var symadj_matrix [][]float64 = make([][]float64,dim)
+	var subadj_matrix [][]float32 = make([][]float32,dim)
+	var symadj_matrix [][]float32 = make([][]float32,dim)
 
 	for row := 0; row < dim; row++ {
-		subadj_matrix [row] = make([]float64,dim)
-		symadj_matrix [row] = make([]float64,dim)
+		subadj_matrix [row] = make([]float32,dim)
+		symadj_matrix [row] = make([]float32,dim)
 	}
 
 	for row := 0; row < dim; row++ {
@@ -692,7 +692,7 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]SST.NodePtr,[][]float64,[][
 
 //**************************************************************
 
-func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float64) {
+func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float32) {
 
 
 	s := fmt.Sprintln("\n",name,"...\n")
@@ -721,7 +721,7 @@ func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float64) {
 
 //**************************************************************
 
-func PrintNZVector(name string, dim int, key []SST.NodePtr, vector[]float64) {
+func PrintNZVector(name string, dim int, key []SST.NodePtr, vector[]float32) {
 
 	s := fmt.Sprintln("\n",name,"...\n")
 
@@ -729,7 +729,7 @@ func PrintNZVector(name string, dim int, key []SST.NodePtr, vector[]float64) {
 
 	type KV struct {
 		Key string
-		Value float64
+		Value float32
 	}
 
 	var vec []KV = make([]KV,dim)
@@ -754,7 +754,7 @@ func PrintNZVector(name string, dim int, key []SST.NodePtr, vector[]float64) {
 
 //**************************************************************
 
-func ComputeEVC(dim int,adj [][]float64) []float64 {
+func ComputeEVC(dim int,adj [][]float32) []float32 {
 
 	v := MakeInitVector(dim,1.0)
 	vlast := v
@@ -779,9 +779,9 @@ func ComputeEVC(dim int,adj [][]float64) []float64 {
 
 //**************************************************************
 
-func MakeInitVector(dim int, init_value float64) []float64 {
+func MakeInitVector(dim int, init_value float32) []float32 {
 
-	var v = make([]float64,dim)
+	var v = make([]float32,dim)
 
 	for r := 0; r < dim; r++ {
 		v[r] = init_value
@@ -792,9 +792,9 @@ func MakeInitVector(dim int, init_value float64) []float64 {
 
 //**************************************************************
 
-func MatrixOpVector(dim int,m [][]float64, v []float64) []float64 {
+func MatrixOpVector(dim int,m [][]float32, v []float32) []float32 {
 
-	var vp = make([]float64,dim)
+	var vp = make([]float32,dim)
 
 	for r := 0; r < dim; r++ {
 		for c := 0; c < dim; c++ {
@@ -808,9 +808,9 @@ func MatrixOpVector(dim int,m [][]float64, v []float64) []float64 {
 
 //**************************************************************
 
-func GetVecMax(v []float64) float64 {
+func GetVecMax(v []float32) float32 {
 
-	var max float64 = -1
+	var max float32 = -1
 
 	for r := range v {
 		if v[r] > max {
@@ -823,7 +823,7 @@ func GetVecMax(v []float64) float64 {
 
 //**************************************************************
 
-func NormalizeVec(v []float64, div float64) []float64 {
+func NormalizeVec(v []float32, div float32) []float32 {
 
 	for r := range v {
 		v[r] = v[r] / div
@@ -834,9 +834,9 @@ func NormalizeVec(v []float64, div float64) []float64 {
 
 //**************************************************************
 
-func CompareVec(v1,v2 []float64) float64 {
+func CompareVec(v1,v2 []float32) float32 {
 
-	var max float64 = -1
+	var max float32 = -1
 
 	for r := range v1 {
 		diff := v1[r]-v2[r]
@@ -907,10 +907,10 @@ func ValidateLinkArgs(s string) []SST.ArrowPtr {
 
 //**************************************************************
 
-func AssembleInvolvedNodes(search_list []SST.ArrowPtr) ([]SST.NodePtr,map[RCtype]float64) {
+func AssembleInvolvedNodes(search_list []SST.ArrowPtr) ([]SST.NodePtr,map[RCtype]float32) {
 
 	var node_list []SST.NodePtr
-	var weights = make(map[RCtype]float64)
+	var weights = make(map[RCtype]float32)
 
 	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
 
@@ -947,7 +947,7 @@ func AssembleInvolvedNodes(search_list []SST.ArrowPtr) ([]SST.NodePtr,map[RCtype
 
 //**************************************************************
 
-func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list []SST.NodePtr,ret_weights map[RCtype]float64) []SST.NodePtr {
+func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list []SST.NodePtr,ret_weights map[RCtype]float32) []SST.NodePtr {
 
 	var row_nodes = make(map[SST.NodePtr]bool)
 	var ret_nodes []SST.NodePtr

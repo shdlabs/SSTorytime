@@ -178,7 +178,7 @@ type RCtype struct {
 type Link struct {  // A link is a type of arrow, with context
                     // and maybe with a weightfor package math
 	Arr ArrowPtr         // type of arrow, presorted
-	Wgt float64          // numerical weight of this link
+	Wgt float32          // numerical weight of this link
 	Ctx []string         // context for this pathway
 	Dst NodePtr // adjacent event/item/node
 }
@@ -702,12 +702,12 @@ func SummarizeGraph() {
 	}
 
 	complete := count_nodes * (count_nodes-1)
-	fmt.Println("Total links",total,"sparseness (fraction of completeness)",float64(total)/float64(complete))
+	fmt.Println("Total links",total,"sparseness (fraction of completeness)",float32(total)/float32(complete))
 }
 
 //**************************************************************
 
-func CreateAdjacencyMatrix(searchlist string) (int,[]NodePtr,[][]float64,[][]float64) {
+func CreateAdjacencyMatrix(searchlist string) (int,[]NodePtr,[][]float32,[][]float32) {
 
 	search_list := ValidateLinkArgs(searchlist)
 
@@ -726,12 +726,12 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]NodePtr,[][]float64,[][]flo
 	//	Verbose("    - path weight",path_weights[f],"from",GetNodeTxtFromPtr(f.Row),"to",GetNodeTxtFromPtr(f.Col))
 	//}
 
-	var subadj_matrix [][]float64 = make([][]float64,dim)
-	var symadj_matrix [][]float64 = make([][]float64,dim)
+	var subadj_matrix [][]float32 = make([][]float32,dim)
+	var symadj_matrix [][]float32 = make([][]float32,dim)
 
 	for row := 0; row < dim; row++ {
-		subadj_matrix [row] = make([]float64,dim)
-		symadj_matrix [row] = make([]float64,dim)
+		subadj_matrix [row] = make([]float32,dim)
+		symadj_matrix [row] = make([]float32,dim)
 	}
 
 	for row := 0; row < dim; row++ {
@@ -756,7 +756,7 @@ func CreateAdjacencyMatrix(searchlist string) (int,[]NodePtr,[][]float64,[][]flo
 
 //**************************************************************
 
-func PrintMatrix(name string, dim int, key []NodePtr, matrix [][]float64) {
+func PrintMatrix(name string, dim int, key []NodePtr, matrix [][]float32) {
 
 
 	s := fmt.Sprintln("\n",name,"...\n")
@@ -785,14 +785,14 @@ func PrintMatrix(name string, dim int, key []NodePtr, matrix [][]float64) {
 
 //**************************************************************
 
-func PrintNZVector(name string, dim int, key []NodePtr, vector[]float64) {
+func PrintNZVector(name string, dim int, key []NodePtr, vector[]float32) {
 
 	s := fmt.Sprintln("\n",name,"...\n")
 	Verbose(s)
 
 	type KV struct {
 		Key string
-		Value float64
+		Value float32
 	}
 
 	var vec []KV = make([]KV,dim)
@@ -817,7 +817,7 @@ func PrintNZVector(name string, dim int, key []NodePtr, vector[]float64) {
 
 //**************************************************************
 
-func ComputeEVC(dim int,adj [][]float64) []float64 {
+func ComputeEVC(dim int,adj [][]float32) []float32 {
 
 	v := MakeInitVector(dim,1.0)
 	vlast := v
@@ -841,9 +841,9 @@ func ComputeEVC(dim int,adj [][]float64) []float64 {
 
 //**************************************************************
 
-func MakeInitVector(dim int, init_value float64) []float64 {
+func MakeInitVector(dim int, init_value float32) []float32 {
 
-	var v = make([]float64,dim)
+	var v = make([]float32,dim)
 
 	for r := 0; r < dim; r++ {
 		v[r] = init_value
@@ -854,9 +854,9 @@ func MakeInitVector(dim int, init_value float64) []float64 {
 
 //**************************************************************
 
-func MatrixOpVector(dim int,m [][]float64, v []float64) []float64 {
+func MatrixOpVector(dim int,m [][]float32, v []float32) []float32 {
 
-	var vp = make([]float64,dim)
+	var vp = make([]float32,dim)
 
 	for r := 0; r < dim; r++ {
 		for c := 0; c < dim; c++ {
@@ -870,9 +870,9 @@ func MatrixOpVector(dim int,m [][]float64, v []float64) []float64 {
 
 //**************************************************************
 
-func GetVecMax(v []float64) float64 {
+func GetVecMax(v []float32) float32 {
 
-	var max float64 = -1
+	var max float32 = -1
 
 	for r := range v {
 		if v[r] > max {
@@ -885,7 +885,7 @@ func GetVecMax(v []float64) float64 {
 
 //**************************************************************
 
-func NormalizeVec(v []float64, div float64) []float64 {
+func NormalizeVec(v []float32, div float32) []float32 {
 
 	for r := range v {
 		v[r] = v[r] / div
@@ -896,9 +896,9 @@ func NormalizeVec(v []float64, div float64) []float64 {
 
 //**************************************************************
 
-func CompareVec(v1,v2 []float64) float64 {
+func CompareVec(v1,v2 []float32) float32 {
 
-	var max float64 = -1
+	var max float32 = -1
 
 	for r := range v1 {
 		diff := v1[r]-v2[r]
@@ -981,10 +981,10 @@ func ValidateLinkArgs(s string) []ArrowPtr {
 
 //**************************************************************
 
-func AssembleInvolvedNodes(search_list []ArrowPtr) ([]NodePtr,map[RCtype]float64) {
+func AssembleInvolvedNodes(search_list []ArrowPtr) ([]NodePtr,map[RCtype]float32) {
 
 	var node_list []NodePtr
-	var weights = make(map[RCtype]float64)
+	var weights = make(map[RCtype]float32)
 
 	for class := N1GRAM; class <= GT1024; class++ {
 
@@ -1021,7 +1021,7 @@ func AssembleInvolvedNodes(search_list []ArrowPtr) ([]NodePtr,map[RCtype]float64
 
 //**************************************************************
 
-func SearchIncidentRowClass(node Node, searcharrows []ArrowPtr,node_list []NodePtr,ret_weights map[RCtype]float64) []NodePtr {
+func SearchIncidentRowClass(node Node, searcharrows []ArrowPtr,node_list []NodePtr,ret_weights map[RCtype]float32) []NodePtr {
 
 	var row_nodes = make(map[NodePtr]bool)
 	var ret_nodes []NodePtr
@@ -2110,7 +2110,7 @@ func GetLinkArrowByName(token string) Link {
 	// Return a preregistered link/arrow ptr bythe name of a link
 
 	var reln []string
-	var weight float64 = 1
+	var weight float32 = 1
 	var weightcount int
 	var ctx []string
 	var name string
@@ -2130,7 +2130,7 @@ func GetLinkArrowByName(token string) Link {
 		// look at any comma separated notes after the arrow name
 		for i := 1; i < len(reln); i++ {
 
-			v, err := strconv.ParseFloat(reln[i], 64)
+			v, err := strconv.ParseFloat(reln[i], 32)
 
 			if err == nil {
 				if weight < 0 {
@@ -2141,7 +2141,7 @@ func GetLinkArrowByName(token string) Link {
 					ParseError(ERR_TOO_MANY_WEIGHTS+token)
 					os.Exit(-1)
 				}
-				weight = v
+				weight = float32(v)
 				weightcount++
 			} else {
 				ctx = append(ctx,reln[i])
