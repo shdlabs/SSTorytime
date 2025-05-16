@@ -138,9 +138,9 @@ func main () {
 
 //**************************************************************
 
-func Mult(m1,m2 [][]float64,s1,s2 [][]string) ([][]float64,[][]string) {
+func Mult(m1,m2 [][]float32,s1,s2 [][]string) ([][]float32,[][]string) {
 
-	var m [][]float64
+	var m [][]float32
 	var sym [][]string
 
 	if len(m1[0]) != len(m2) {
@@ -150,12 +150,12 @@ func Mult(m1,m2 [][]float64,s1,s2 [][]string) ([][]float64,[][]string) {
 
 	for r := 0; r < len(m1); r++ {
 
-		var newrow []float64
+		var newrow []float32
 		var symrow []string
 
 		for c := 0; c < len(m2[0]); c++ {
 
-			var value float64
+			var value float32
 			var symbols string
 
 			for j := 0; j < len(m2); j++ {
@@ -177,20 +177,20 @@ func Mult(m1,m2 [][]float64,s1,s2 [][]string) ([][]float64,[][]string) {
 
 //**************************************************************
 
-func Matrix(rows []string) ([][]float64,[][]string) {
+func Matrix(rows []string) ([][]float32,[][]string) {
 
-	var matrix [][]float64
+	var matrix [][]float32
 	var symbol [][]string
 
 	for r := 0; r < len(rows); r++ {
 
-		var row []float64
+		var row []float32
 		var srow []string
 
 		cols := strings.Split(rows[r]," ")
 
 		for c := 0; c < len(cols); c++ {
-			var value float64
+			var value float32
 			var sym string = ""
 
 			fmt.Sscanf(cols[c],"%f",&value)
@@ -209,9 +209,9 @@ func Matrix(rows []string) ([][]float64,[][]string) {
 
 //**************************************************************
 
-func Symmetrize(matrix [][]float64) [][]float64 {
+func Symmetrize(matrix [][]float32) [][]float32 {
 
-	var m [][]float64 = matrix
+	var m [][]float32 = matrix
 
 	for r := 0; r < len(m); r++ {
 		for c := r; c < len(m); c++ {
@@ -227,9 +227,9 @@ func Symmetrize(matrix [][]float64) [][]float64 {
 
 //**************************************************************
 
-func Transpose(matrix [][]float64) [][]float64 {
+func Transpose(matrix [][]float32) [][]float32 {
 
-	var m [][]float64 = matrix
+	var m [][]float32 = matrix
 
 	for r := 0; r < len(m); r++ {
 		for c := r; c < len(m); c++ {
@@ -246,9 +246,9 @@ func Transpose(matrix [][]float64) [][]float64 {
 
 //**************************************************************
 
-func MakeInitVector(dim int,init_value float64) []float64 {
+func MakeInitVector(dim int,init_value float32) []float32 {
 
-	var v = make([]float64,dim)
+	var v = make([]float32,dim)
 
 	for r := 0; r < dim; r++ {
 		v[r] = init_value
@@ -259,9 +259,9 @@ func MakeInitVector(dim int,init_value float64) []float64 {
 
 //**************************************************************
 
-func MatrixOpVector(m [][]float64, v []float64) []float64 {
+func MatrixOpVector(m [][]float32, v []float32) []float32 {
 
-	var vp = make([]float64,len(m))
+	var vp = make([]float32,len(m))
 
 	for r := 0; r < len(m); r++ {
 		for c := 0; c < len(m); c++ {
@@ -276,7 +276,7 @@ func MatrixOpVector(m [][]float64, v []float64) []float64 {
 
 //**************************************************************
 
-func ComputeEVC(s string, adj [][]float64) []float64 {
+func ComputeEVC(s string, adj [][]float32) []float32 {
 
 	v := MakeInitVector(len(adj),1.0)
 	vlast := v
@@ -302,9 +302,9 @@ func ComputeEVC(s string, adj [][]float64) []float64 {
 
 //**************************************************************
 
-func GetVecMax(v []float64) float64 {
+func GetVecMax(v []float32) float32 {
 
-	var max float64 = -1
+	var max float32 = -1
 
 	for r := range v {
 		if v[r] > max {
@@ -317,7 +317,7 @@ func GetVecMax(v []float64) float64 {
 
 //**************************************************************
 
-func NormalizeVec(v []float64, div float64) []float64 {
+func NormalizeVec(v []float32, div float32) []float32 {
 
 	if div == 0 {
 		div = 1
@@ -332,9 +332,9 @@ func NormalizeVec(v []float64, div float64) []float64 {
 
 //**************************************************************
 
-func CompareVec(v1,v2 []float64) float64 {
+func CompareVec(v1,v2 []float32) float32 {
 
-	var max float64 = -1
+	var max float32 = -1
 
 	for r := range v1 {
 		diff := v1[r]-v2[r]
@@ -353,7 +353,7 @@ func CompareVec(v1,v2 []float64) float64 {
 
 //**************************************************************
 
-func PrintMatrix(matrix [][]float64,symbolic [][]string,str string) {
+func PrintMatrix(matrix [][]float32,symbolic [][]string,str string) {
 
 	fmt.Printf("                 DIAG %s \n",str)
 
@@ -425,7 +425,7 @@ func AnalyzePowerMatrix(symbolic [][]string) {
 
 //**************************************************************
 
-func PrintVector(vector []float64) {
+func PrintVector(vector []float32) {
 
 	for row := 0; row < len(vector); row++ {
 
