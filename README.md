@@ -21,11 +21,14 @@ This project aims to turn intentionally created data (like written notes or snip
 cut and pasted into a file) into linked and searchable knowledge maps, tracing the stories that we call 
 reasoning, and solving puzzles by connecting the dots between bits of information you curate.
 
-Knowledge maps are graph (network) structures that link together events, things, and ideas into a web
-of relationships. They are great ways to find out where processes start and stop, who is most important
-in their execution, the provenance of transacted things or ideas, and their rate of spreading, etc etc.
-The pathways through such a web form journeys, histories, or stories, depending on your point of view.
-We can interpret graphs in many ways.
+Knowledge maps are graph (network) structures that link together
+events, things, and ideas into a web of relationships. They are great
+ways to find out where processes start and stop, who is most important
+in their execution, the provenance of transacted things or ideas, and
+their rate of spreading, etc etc.  The pathways through such a web
+form journeys, histories, or stories, planning itineraries or
+processes, depending on your point of view.  We can interpret graphs
+in many ways. Your imagination is the limit,
 
 Stories are one of the most important forms of information, whether they
 describe happenings, calculations, tales of provenance, system audits... Stories
