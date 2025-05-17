@@ -30,42 +30,59 @@ func main() {
 	rows = append(rows,"0 0 0 0 0 1 0 0 1 1") // 8
 	rows = append(rows,"0 0 0 0 0 1 0 0 0 0") // 9
  	rows = append(rows,"0 0 0 0 0 0 0 0 0 0") // 10
-	adj,_ := Matrix(rows)
-*/
+	adj,_ := Rows2Matrix(rows)
+	var nodekey []SST.NodePtr
 
+
+*/
 	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
-	sttypes := []int{1}
+	chapter := "notes on chinese"
+        context := []string{""}
 
-	adj,nodekey := GetDBAdjacentNodePtrBySTType(ctx,sttypes)
-	sym := SymbolMatrix(adj)
+	sttypes := []int{1,2,3}
+	nptrs := GetDBSingletonBySTType(ctx,sttypes,chapter,context)
+	PrintNodes(ctx,nptrs)
+
+	adj,nodekey := GetDBAdjacentNodePtrBySTType(ctx,sttypes,chapter,context)
+
 	dim := len(adj)
+	sadj := Symmetrize(adj)
+	symb := SymbolMatrix(adj)
+	ssymb := SymbolMatrix(sadj)
 
-	fmt.Println("Got symbols",dim)
+	v := ComputeEVC(sadj)
+	PrintVector(v)
 
-	m2,s2 := Mult(adj,adj,sym,sym)
-	//PrintMatrix(m2,s2,"A^2")
+	evc,top := GetVecMax(v)
+
+	fmt.Println("Node evc max",top,evc,nodekey[top],SST.GetDBNodeByNodePtr(ctx,nodekey[top]))
+	fmt.Println("Got total symbols",dim)
+
+	PrintMatrix(adj,symb,"A")
+	PrintMatrix(sadj,ssymb,"sym")
+
+	m2,s2 := SymbolicMultiply(adj,adj,symb,symb)
+
+	PrintMatrix(m2,s2,"A2")
+	m3,s3 := SymbolicMultiply(adj,m2,symb,s2)
+	PrintMatrix(m3,s3,"A3")
+	_,s4 := SymbolicMultiply(adj,m3,symb,s3)
+	_,s6 := SymbolicMultiply(m3,m3,s3,s3)
+
 	AnalyzePowerMatrix(ctx,s2,nodekey)
-
-	m3,s3 := Mult(adj,m2,sym,s2)
-	//PrintMatrix(m3,s3,"A^3")
 	AnalyzePowerMatrix(ctx,s3,nodekey)
-
-	_,s4 := Mult(adj,m3,sym,s3)
-	//PrintMatrix(m4,s4,"A^4")
 	AnalyzePowerMatrix(ctx,s4,nodekey)
-
-	_,s6 := Mult(m3,m3,s3,s3)
-	//PrintMatrix(m6,s6,"A^6")
 	AnalyzePowerMatrix(ctx,s6,nodekey)
+
 
 	SST.Close(ctx)
 }
 
 //**************************************************************
 
-func Matrix(rows []string) ([][]float32,[][]string) {
+func Rows2Matrix(rows []string) ([][]float32,[][]string) {
 
 	var matrix [][]float32
 	var symbol [][]string
@@ -78,6 +95,7 @@ func Matrix(rows []string) ([][]float32,[][]string) {
 		cols := strings.Split(rows[r]," ")
 
 		for c := 0; c < len(cols); c++ {
+
 			var value float32
 			var sym string = ""
 
@@ -97,13 +115,16 @@ func Matrix(rows []string) ([][]float32,[][]string) {
 
 // **************************************************************************
 
-func GetDBAdjacentNodePtrBySTType(ctx SST.PoSST,sttypes []int) ([][]float32,[]SST.NodePtr) {
+func GetDBAdjacentNodePtrBySTType(ctx SST.PoSST,sttypes []int,chap string,cn []string) ([][]float32,[]SST.NodePtr) {
 
 	// Return a connected adjacency matrix for the subgraph and a lookup table
 	// A bit memory intensive, but possibly unavoidable
 	
 	var qstr,qwhere,qsearch string
 	var dim = len(sttypes)
+
+	context := SST.FormatSQLStringArray(cn)
+	chapter := "%"+chap+"%"
 
 	if dim > 4 {
 		fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType")
@@ -113,17 +134,17 @@ func GetDBAdjacentNodePtrBySTType(ctx SST.PoSST,sttypes []int) ([][]float32,[]SS
 	for st := 0; st < len(sttypes); st++ {
 
 		stname := SST.STTypeDBChannel(sttypes[st])
-		qwhere += fmt.Sprintf("array_length(%s::text[],1) IS NOT NULL",stname)
+		qwhere += fmt.Sprintf("array_length(%s::text[],1) IS NOT NULL AND match_context((%s)[0].Ctx::text[],%s)",stname,stname,context)
 
 		if st != dim-1 {
-			qwhere += " AND "
+			qwhere += " OR "
 		}
 
 		qsearch += "," + stname
 
 	}
 
-	qstr = fmt.Sprintf("SELECT NPtr%s FROM Node WHERE %s",qsearch,qwhere)
+	qstr = fmt.Sprintf("SELECT NPtr%s FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)",qsearch,chapter,qwhere)
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -132,7 +153,7 @@ func GetDBAdjacentNodePtrBySTType(ctx SST.PoSST,sttypes []int) ([][]float32,[]SS
 		return nil,nil
 	}
 
-	var linkstr = make ([]string,dim)
+	var linkstr = make([]string,dim+1)
 	var protoadj = make(map[int][]SST.Link)
 	var lookup = make(map[SST.NodePtr]int)
 	var rowindex int
@@ -158,7 +179,7 @@ func GetDBAdjacentNodePtrBySTType(ctx SST.PoSST,sttypes []int) ([][]float32,[]SS
 		}
 
 		if err != nil {
-			fmt.Println("Error scanning sql data",err)
+			fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
 			row.Close()
 			return nil,nil
 		}
@@ -181,12 +202,11 @@ func GetDBAdjacentNodePtrBySTType(ctx SST.PoSST,sttypes []int) ([][]float32,[]SS
 		for lnks := range linkstr {
 
 			links := SST.ParseLinkArray(linkstr[lnks])
-			
+
 			// we have to go through one by one to avoid duplicates
 			// and keep adjacent nodes closer in order
 			
-			for l := range links {
-				
+			for l := range links {	
 				_,already := lookup[links[l].Dst]
 				
 				if !already {
@@ -195,10 +215,10 @@ func GetDBAdjacentNodePtrBySTType(ctx SST.PoSST,sttypes []int) ([][]float32,[]SS
 					nodekey = append(nodekey,links[l].Dst)
 				}
 			}
-			protoadj[rowindex] = links // now have a sparse ordered repr		
+			protoadj[rowindex] = append(protoadj[rowindex],links...)
 		}
 	}
-	
+
 	adj := make([][]float32,counter)
 
 	for r := 0; r < counter; r++ {
@@ -215,8 +235,66 @@ func GetDBAdjacentNodePtrBySTType(ctx SST.PoSST,sttypes []int) ([][]float32,[]SS
 	}
 	
 	row.Close()
-	
 	return adj,nodekey
+}
+
+// **************************************************************************
+
+func GetDBSingletonBySTType(ctx SST.PoSST,sttypes []int,chap string,cn []string) []SST.NodePtr {
+
+	var qstr,qwhere string
+	var dim = len(sttypes)
+
+	context := SST.FormatSQLStringArray(cn)
+	chapter := "%"+chap+"%"
+
+	if dim > 4 {
+		fmt.Println("Maximum 4 sttypes in GetDBSingletonBySTType")
+		return nil
+	}
+
+	for st := 0; st < len(sttypes); st++ {
+
+		stname := SST.STTypeDBChannel(sttypes[st])
+		stinv := SST.STTypeDBChannel(-sttypes[st])
+		qwhere += fmt.Sprintf("(array_length(%s::text[],1) IS NOT NULL AND array_length(%s::text[],1) IS NULL AND match_context((%s)[0].Ctx::text[],%s))",stname,stinv,stname,context)
+		
+		if st != dim-1 {
+			qwhere += " OR "
+		}
+	}
+
+	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)",chapter,qwhere)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetDBAdjacentNodePtrBySTType Failed",err)
+		return nil
+	}
+
+	var nptrs []SST.NodePtr
+
+	for row.Next() {		
+		
+		var n SST.NodePtr
+		var nstr string
+		
+		err = row.Scan(&nstr)
+		
+		if err != nil {
+			fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
+			row.Close()
+			return nil
+		}
+		
+		fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
+		
+		nptrs = append(nptrs,n)
+	}
+	row.Close()
+	
+	return nptrs
 	
 }
 
@@ -225,12 +303,14 @@ func GetDBAdjacentNodePtrBySTType(ctx SST.PoSST,sttypes []int) ([][]float32,[]SS
 func SymbolMatrix(m [][]float32) [][]string {
 	
 	var symbol [][]string
-	
-	for r := 0; r < len(m); r++ {
-		
+	dim := len(m)
+
+	for r := 0; r < dim; r++ {
+
 		var srow []string
 		
-		for c := 0; c < len(m); c++ {
+		for c := 0; c < dim; c++ {
+
 			var sym string = ""
 
 			if m[r][c] != 0 {
@@ -240,13 +320,12 @@ func SymbolMatrix(m [][]float32) [][]string {
 		}
 		symbol = append(symbol,srow)
 	}
-
 	return symbol
 }
 
 //**************************************************************
 
-func Mult(m1,m2 [][]float32,s1,s2 [][]string) ([][]float32,[][]string) {
+func SymbolicMultiply(m1,m2 [][]float32,s1,s2 [][]string) ([][]float32,[][]string) {
 
 	var m [][]float32
 	var sym [][]string
@@ -298,19 +377,29 @@ func GetSparseOccupancy(m [][]float32,dim int) []int {
 
 //**************************************************************
 
-func Symmetrize(matrix [][]float32) [][]float32 {
+func Symmetrize(m [][]float32) [][]float32 {
 
-	var m [][]float32 = matrix
+	// CAUTION! unless we make a copy, go actually changes the original m!!! :o
+	// There is some very weird pathological memory behaviour here .. but this
+	// workaround seems to be stable
 
-	for r := 0; r < len(m); r++ {
-		for c := r; c < len(m); c++ {
-			v := m[r][c]+matrix[c][r]
-			m[r][c] = v
-			m[c][r] = v
+	var dim int = len(m)
+	var symm [][]float32 = make([][]float32,dim)
+
+	for r := 0; r < dim; r++ {
+		var row []float32 = make([]float32,dim)
+		symm[r] = row
+	}
+	
+	for r := 0; r < dim; r++ {
+		for c := r; c < dim; c++ {
+			v := m[r][c]+m[c][r]
+			symm[r][c] = v
+			symm[c][r] = v
 		}
 	}
 
-	return m
+	return symm
 }
 
 //**************************************************************
@@ -381,24 +470,26 @@ func ComputeEVC(adj [][]float32) []float32 {
 		vlast = v
 	}
 
-	maxval := GetVecMax(v)
+	maxval,_ := GetVecMax(v)
 	v = NormalizeVec(v,maxval)
 	return v
 }
 
 //**************************************************************
 
-func GetVecMax(v []float32) float32 {
+func GetVecMax(v []float32) (float32,int) {
 
 	var max float32 = -1
+	var index int
 
 	for r := range v {
 		if v[r] > max {
 			max = v[r]
+			index = r
 		}
 	}
 
-	return max
+	return max,index
 }
 
 //**************************************************************
@@ -490,13 +581,23 @@ func AnalyzePowerMatrix(ctx SST.PoSST,symbolic [][]string,nodekey []SST.NodePtr)
 	for m := range loop {
 		length := len(strings.Split(m,")("))
 		fmt.Println("Loop of length",length,"and degeneracy",loop[m],"with members",m)
-		PrintNodes(ctx,memberlist[m],nodekey)
+		PrintKeyNodes(ctx,memberlist[m],nodekey)
 	}
 }
 
 //**************************************************************
 
-func PrintNodes(ctx SST.PoSST,m []int,nodekey []SST.NodePtr) {
+func PrintNodes(ctx SST.PoSST,nptrs []SST.NodePtr) {
+
+	for n := range nptrs {
+		node := SST.GetDBNodeByNodePtr(ctx,nptrs[n])
+		fmt.Printf("(%d,%d) = %s\n",nptrs[n].Class,nptrs[n].CPtr,node.S)
+	}
+}
+
+//**************************************************************
+
+func PrintKeyNodes(ctx SST.PoSST,m []int,nodekey []SST.NodePtr) {
 
 	for member := range m {
 		nptr := nodekey[m[member]]
