@@ -3046,6 +3046,11 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 
 	for st := 0; st < len(sttypes); st++ {
 
+		if sttypes[st] < 0 {
+			fmt.Println("WARNING! Only give positive STType arguments to GetDBSingletonBySTType as both signs are returned as sources (+) and sinks (-)")
+			return nil,nil
+		}
+
 		stname := STTypeDBChannel(sttypes[st])
 		stinv := STTypeDBChannel(-sttypes[st])
 		qwhere += fmt.Sprintf("(array_length(%s::text[],1) IS NOT NULL AND array_length(%s::text[],1) IS NULL AND match_context((%s)[0].Ctx::text[],%s))",stname,stinv,stname,context)
