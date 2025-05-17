@@ -5,6 +5,8 @@ SSTorytime and the Semantic Spacetime model of knowledge is a unique project bas
 
 * The best way to help is to try it!
 
+* Are you a teacher? Get your students to try it, make a class project!
+
 * Use it as much as possible! Taking notes is about enhancing your **human** abilities rather than replacing yourself with an AI chat! When you choose your own words, you understand more powerfully than when someone puts words in your mouth! Start small and expand as you feel inspired.
 
 * Get your friends and kids involved. Anyone can use it. It's ideal for school projects. You can write in any language.

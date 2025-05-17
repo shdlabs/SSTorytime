@@ -10,7 +10,7 @@
 
  Keywords, tags: Open Source Smart Graph Database API for Postgres, Go(lang) API, Explainability of Knowledge Representation
 
-* This is a work in progress during 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/). It's currently in an R&D phase, so comments are welcome but there is much to be done. This is not an RDF project. <br> [HOW CAN YOU CONTRIBUTE?](docs/howtocontribute.md)
+* This is a work in progress during 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/). It's currently in an R&D phase, so comments are welcome but there is much to be done. This is not an RDF project. <br><br> [HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 
 * See these Medium articles for a conceptual introduction
 * * [From cognition to understing](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
