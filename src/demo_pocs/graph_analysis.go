@@ -32,46 +32,59 @@ func main() {
  	rows = append(rows,"0 0 0 0 0 0 0 0 0 0") // 10
 	adj,_ := Rows2Matrix(rows)
 	var nodekey []SST.NodePtr
-
-
 */
+
+
+
 	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
-	chapter := "notes on chinese"
+	chapter := "brain"
+
         context := []string{""}
 
 	sttypes := []int{1,2,3}
 	sources,sinks := SST.GetDBSingletonBySTType(ctx,sttypes,chapter,context)
+	fmt.Println("---------------------------------")
 	fmt.Println("\n\nSOURCES types",sttypes)
+	fmt.Println("---------------------------------")
 	PrintNodes(ctx,sources)
-
+	fmt.Println("---------------------------------")
 	fmt.Println("\n\nSINKS types",sttypes)
+	fmt.Println("---------------------------------")
 	PrintNodes(ctx,sinks)
 
 	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(ctx,sttypes,chapter,context)
 
-	dim := len(adj)
 	sadj := Symmetrize(adj)
 	symb := SymbolMatrix(adj)
 	ssymb := SymbolMatrix(sadj)
 
-	v := ComputeEVC(sadj)
-	PrintVector(v)
+	fmt.Println("---------------------------------")
+	evc := ComputeEVC(sadj)
+	fmt.Print("EVC = capacitance at equilibrium = \n")
+	PrintVector(evc)
+	fmt.Println("---------------------------------")
+	fmt.Println("- Graph equilibrium landscape:")
+	evctop,path := FindGradientTop(sadj,evc)
 
-	evc,top := GetVecMax(v)
+	fmt.Println("There are",len(evctop),"local maxima in the EVC landscape")
 
-	fmt.Println("Node evc max",top,evc,nodekey[top],SST.GetDBNodeByNodePtr(ctx,nodekey[top]))
-	fmt.Println("Got total symbols",dim)
+	for index := 0; index < len(evc); index++ {
+		fmt.Println(" - Node",index,"has local max",evctop[index],"hop distance",len(path[index])-1,"along",path[index])
+		fmt.Println("   =",SST.GetDBNodeByNodePtr(ctx,nodekey[evctop[index]]).S,"\n")
+	}
 
+	fmt.Println("---------------------------------")
+	fmt.Println("Loop search")
 	PrintMatrix(adj,symb,"A")
 	PrintMatrix(sadj,ssymb,"sym")
 
 	m2,s2 := SymbolicMultiply(adj,adj,symb,symb)
 
-	PrintMatrix(m2,s2,"A2")
+	//PrintMatrix(m2,s2,"A2")
 	m3,s3 := SymbolicMultiply(adj,m2,symb,s2)
-	PrintMatrix(m3,s3,"A3")
+	//PrintMatrix(m3,s3,"A3")
 	_,s4 := SymbolicMultiply(adj,m3,symb,s3)
 	_,s6 := SymbolicMultiply(m3,m3,s3,s3)
 
@@ -349,6 +362,68 @@ func CompareVec(v1,v2 []float32) float32 {
 
 //**************************************************************
 
+func FindGradientTop(sadj [][]float32,evc []float32) ([]int,[][]int) {
+
+	dim := len(evc)
+
+	var localtop []int
+	var paths [][]int
+
+	for index := 0; index < dim; index++ {
+
+		// foreach neighbour
+
+		ltop,path := GetHillTop(index,sadj,evc)
+
+		localtop = append(localtop,ltop)
+		paths = append(paths,path)
+	}
+
+	return localtop,paths
+}
+
+//**************************************************************
+
+func GetHillTop(index int,sadj [][]float32,evc []float32) (int,[]int) {
+
+	topnode := index
+	visited := make(map[int]bool)
+	visited[index] = true
+
+	var path []int
+
+	dim := len(evc)
+	finished := false
+	path = append(path,index)
+
+	for {
+		finished = true
+		winner := topnode
+		
+		for ngh := 0; ngh < dim; ngh++ {
+			
+			if (sadj[topnode][ngh] > 0) && !visited[ngh] {
+				visited[ngh] = true
+				
+				if evc[ngh] > evc[topnode] {
+					winner = ngh
+					finished = false
+				}
+			}
+		}
+		if finished {
+			break
+		}
+
+		topnode = winner
+		path = append(path,topnode)
+	}
+
+	return topnode,path
+}
+
+//**************************************************************
+
 func AnalyzePowerMatrix(ctx SST.PoSST,symbolic [][]string,nodekey []SST.NodePtr) {
 
 	var loop = make(map[string]int)
@@ -431,7 +506,7 @@ func PrintVector(vector []float32) {
 
 	for row := 0; row < len(vector); row++ {
 
-		fmt.Printf("( %3.2f )\n",vector[row])
+		fmt.Printf("   ( %3.2f )\n",vector[row])
 	}
 	fmt.Println()
 }
