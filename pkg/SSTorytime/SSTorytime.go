@@ -2902,6 +2902,196 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,co
 }
 
 // **************************************************************************
+// Adjacency matrix and graph vector
+// **************************************************************************
+
+func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([][]float32,[]NodePtr) {
+
+	// Return a weighted adjacency matrix by nptr, and an index:nptr lookup table
+	// Returns a connected adjacency matrix for the subgraph and a lookup table
+	// A bit memory intensive, but possibly unavoidable
+	
+	var qstr,qwhere,qsearch string
+	var dim = len(sttypes)
+
+	context := FormatSQLStringArray(cn)
+	chapter := "%"+chap+"%"
+
+	if dim > 4 {
+		fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType")
+		return nil,nil
+	}
+
+	for st := 0; st < len(sttypes); st++ {
+
+		stname := STTypeDBChannel(sttypes[st])
+		qwhere += fmt.Sprintf("array_length(%s::text[],1) IS NOT NULL AND match_context((%s)[0].Ctx::text[],%s)",stname,stname,context)
+
+		if st != dim-1 {
+			qwhere += " OR "
+		}
+
+		qsearch += "," + stname
+
+	}
+
+	qstr = fmt.Sprintf("SELECT NPtr%s FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)",qsearch,chapter,qwhere)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetDBAdjacentNodePtrBySTType Failed",err)
+		return nil,nil
+	}
+
+	var linkstr = make([]string,dim+1)
+	var protoadj = make(map[int][]Link)
+	var lookup = make(map[NodePtr]int)
+	var rowindex int
+	var nodekey []NodePtr
+	var counter int
+
+	for row.Next() {		
+
+		var n NodePtr
+		var nstr string
+
+		switch dim {
+
+		case 1: err = row.Scan(&nstr,&linkstr[0])
+		case 2: err = row.Scan(&nstr,&linkstr[0],&linkstr[1])
+		case 3: err = row.Scan(&nstr,&linkstr[0],&linkstr[1],&linkstr[2])
+		case 4: err = row.Scan(&nstr,&linkstr[0],&linkstr[1],&linkstr[2],&linkstr[3])
+
+		default:
+			fmt.Println("Maximum 4 sttypes in GetDBAdjacentNodePtrBySTType - shouldn't happen")
+			row.Close()
+			return nil,nil
+		}
+
+		if err != nil {
+			fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
+			row.Close()
+			return nil,nil
+		}
+
+		fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
+
+		// idempotently gather nptrs into a map, keeping linked nodes close in order
+
+		index,already := lookup[n]
+
+		if already {
+			rowindex = index
+		} else {
+			rowindex = counter
+			lookup[n] = counter
+			counter++
+			nodekey = append(nodekey,n)
+		}
+
+		for lnks := range linkstr {
+
+			links := ParseLinkArray(linkstr[lnks])
+
+			// we have to go through one by one to avoid duplicates
+			// and keep adjacent nodes closer in order
+			
+			for l := range links {	
+				_,already := lookup[links[l].Dst]
+				
+				if !already {
+					lookup[links[l].Dst] = counter
+					counter++
+					nodekey = append(nodekey,links[l].Dst)
+				}
+			}
+			protoadj[rowindex] = append(protoadj[rowindex],links...)
+		}
+	}
+
+	adj := make([][]float32,counter)
+
+	for r := 0; r < counter; r++ {
+
+		adj[r] = make([]float32,counter)
+
+		row := protoadj[r]
+
+		for l := 0; l < len(row); l++ {
+			lnk := row[l]
+			c := lookup[lnk.Dst]
+			adj[r][c] = lnk.Wgt
+		}
+	}
+	
+	row.Close()
+	return adj,nodekey
+}
+
+// **************************************************************************
+
+func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) []NodePtr {
+
+	var qstr,qwhere string
+	var dim = len(sttypes)
+
+	context := FormatSQLStringArray(cn)
+	chapter := "%"+chap+"%"
+
+	if dim > 4 {
+		fmt.Println("Maximum 4 sttypes in GetDBSingletonBySTType")
+		return nil
+	}
+
+	for st := 0; st < len(sttypes); st++ {
+
+		stname := STTypeDBChannel(sttypes[st])
+		stinv := STTypeDBChannel(-sttypes[st])
+		qwhere += fmt.Sprintf("(array_length(%s::text[],1) IS NOT NULL AND array_length(%s::text[],1) IS NULL AND match_context((%s)[0].Ctx::text[],%s))",stname,stinv,stname,context)
+		
+		if st != dim-1 {
+			qwhere += " OR "
+		}
+	}
+
+	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)",chapter,qwhere)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetDBAdjacentNodePtrBySTType Failed",err)
+		return nil
+	}
+
+	var nptrs []NodePtr
+
+	for row.Next() {		
+		
+		var n NodePtr
+		var nstr string
+		
+		err = row.Scan(&nstr)
+		
+		if err != nil {
+			fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
+			row.Close()
+			return nil
+		}
+		
+		fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
+		
+		nptrs = append(nptrs,n)
+	}
+	row.Close()
+	
+	return nptrs
+	
+}
+
+// **************************************************************************
+// Basic helper functions
+// **************************************************************************
 
 func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 
