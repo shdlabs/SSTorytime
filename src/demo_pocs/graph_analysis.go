@@ -42,8 +42,12 @@ func main() {
         context := []string{""}
 
 	sttypes := []int{1,2,3}
-	nptrs := SST.GetDBSingletonBySTType(ctx,sttypes,chapter,context)
-	PrintNodes(ctx,nptrs)
+	sources,sinks := SST.GetDBSingletonBySTType(ctx,sttypes,chapter,context)
+	fmt.Println("\n\nSOURCES types",sttypes)
+	PrintNodes(ctx,sources)
+
+	fmt.Println("\n\nSINKS types",sttypes)
+	PrintNodes(ctx,sinks)
 
 	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(ctx,sttypes,chapter,context)
 

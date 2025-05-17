@@ -3031,7 +3031,7 @@ func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []strin
 
 // **************************************************************************
 
-func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) []NodePtr {
+func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]NodePtr,[]NodePtr) {
 
 	var qstr,qwhere string
 	var dim = len(sttypes)
@@ -3041,7 +3041,7 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) []N
 
 	if dim > 4 {
 		fmt.Println("Maximum 4 sttypes in GetDBSingletonBySTType")
-		return nil
+		return nil,nil
 	}
 
 	for st := 0; st < len(sttypes); st++ {
@@ -3060,11 +3060,11 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) []N
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetDBAdjacentNodePtrBySTType Failed",err)
-		return nil
+		fmt.Println("QUERY GetDBSingletonBySTType Failed",err,qstr)
+		return nil,nil
 	}
 
-	var nptrs []NodePtr
+	var src_nptrs,snk_nptrs []NodePtr
 
 	for row.Next() {		
 		
@@ -3076,16 +3076,59 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) []N
 		if err != nil {
 			fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
 			row.Close()
-			return nil
+			return nil,nil
 		}
 		
 		fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
 		
-		nptrs = append(nptrs,n)
+		src_nptrs = append(src_nptrs,n)
+	}
+	row.Close()
+
+	// and sinks  -> -
+
+	qwhere = ""
+
+	for st := 0; st < len(sttypes); st++ {
+
+		stname := STTypeDBChannel(-sttypes[st])
+		stinv := STTypeDBChannel(sttypes[st])
+		qwhere += fmt.Sprintf("(array_length(%s::text[],1) IS NOT NULL AND array_length(%s::text[],1) IS NULL AND match_context((%s)[0].Ctx::text[],%s))",stname,stinv,stname,context)
+		
+		if st != dim-1 {
+			qwhere += " OR "
+		}
+	}
+
+	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)",chapter,qwhere)
+
+	row, err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetDBSingletonBySTType Failed",err)
+		return nil,nil
+	}
+
+	for row.Next() {		
+		
+		var n NodePtr
+		var nstr string
+		
+		err = row.Scan(&nstr)
+		
+		if err != nil {
+			fmt.Println("Error scanning sql data case",dim,"gave error",err,qstr)
+			row.Close()
+			return nil,nil
+		}
+		
+		fmt.Sscanf(nstr,"(%d,%d)",&n.Class,&n.CPtr)
+		
+		snk_nptrs = append(snk_nptrs,n)
 	}
 	row.Close()
 	
-	return nptrs
+	return src_nptrs,snk_nptrs
 	
 }
 
