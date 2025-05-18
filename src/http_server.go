@@ -176,7 +176,7 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 
 	fmt.Println("Matching...EntireCone(",name,chapter,cntxt,arrows,")")
 
-	nptrs := SST.GetDBNodePtrMatching(CTX,name,chapter,cntxt,arrows)
+	nptrs := SST.GetDBNodePtrMatchingNCC(CTX,name,chapter,cntxt,arrows)
 
 	maxdepth := 20
 	var count int
@@ -349,7 +349,7 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 		}
 		
 		fmt.Println("Matching...Browse(",section,chaptext,context,arrnames,")",len(arrnames))
-		
+
 		var arrows []SST.ArrowPtr
 		
 		for a := range arrnames {

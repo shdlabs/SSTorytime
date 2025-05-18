@@ -2309,8 +2309,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
-	
-        // select AllNCPathsAsLinks('(1,46)','chinese','{"food","example"}','fwd',4);
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -2562,7 +2560,7 @@ func GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr {
 
 // **************************************************************************
 
-func GetDBNodePtrMatching(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr) []NodePtr {
+func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr) []NodePtr {
 
 	// Match name, context, chapter
 
@@ -3112,78 +3110,6 @@ func GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
 // Bulk DB Retrieval
 // **************************************************************************
 
-func CacheNode(n Node) {
-
-	NODE_CACHE[n.NPtr] = AppendTextToDirectory(n,RunErr)
-}
-
-// **************************************************************************
-
-func DownloadArrowsFromDB(ctx PoSST) {
-
-	// These must be ordered to match in-memory array
-
-	qstr := fmt.Sprintf("SELECT STAindex,Long,Short,ArrPtr FROM ArrowDirectory ORDER BY ArrPtr")
-
-	row, err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("QUERY Download Arrows Failed",err)
-	}
-
-	var staidx int
-	var long string
-	var short string
-	var ptr ArrowPtr
-	var ad ArrowDirectory
-
-	for row.Next() {		
-		err = row.Scan(&staidx,&long,&short,&ptr)
-		ad.STAindex = staidx
-		ad.Long = long
-		ad.Short = short
-		ad.Ptr = ptr
-
-		ARROW_DIRECTORY = append(ARROW_DIRECTORY,ad)
-		ARROW_SHORT_DIR[short] = ARROW_DIRECTORY_TOP
-		ARROW_LONG_DIR[long] = ARROW_DIRECTORY_TOP
-
-		if ad.Ptr != ARROW_DIRECTORY_TOP {
-			fmt.Println(ERR_MEMORY_DB_ARROW_MISMATCH,ad,ad.Ptr,ARROW_DIRECTORY_TOP)
-			os.Exit(-1)
-		}
-
-		ARROW_DIRECTORY_TOP++
-	}
-
-	row.Close()
-
-	// Get Inverses
-
-	qstr = fmt.Sprintf("SELECT Plus,Minus FROM ArrowInverses ORDER BY Plus")
-
-	row, err = ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("QUERY Download Inverses Failed",err)
-	}
-
-	var plus,minus ArrowPtr
-
-	for row.Next() {		
-
-		err = row.Scan(&plus,&minus)
-
-		if err != nil {
-			fmt.Println("QUERY Download Arrows Failed",err)
-		}
-
-		INVERSE_ARROWS[plus] = minus
-	}
-}
-
-// **************************************************************************
-
 func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr {
 
 	qstr := fmt.Sprintf("select unnest(fwdconeasnodes) from FwdConeAsNodes('(%d,%d)',%d,%d);",start.Class,start.CPtr,sttype,depth)
@@ -3344,6 +3270,80 @@ func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodeP
 
 	row.Close()
 	return retval,len(retval)
+}
+
+// **************************************************************************
+// Bulk retrieval helper functions
+// **************************************************************************
+
+func CacheNode(n Node) {
+
+	NODE_CACHE[n.NPtr] = AppendTextToDirectory(n,RunErr)
+}
+
+// **************************************************************************
+
+func DownloadArrowsFromDB(ctx PoSST) {
+
+	// These must be ordered to match in-memory array
+
+	qstr := fmt.Sprintf("SELECT STAindex,Long,Short,ArrPtr FROM ArrowDirectory ORDER BY ArrPtr")
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY Download Arrows Failed",err)
+	}
+
+	var staidx int
+	var long string
+	var short string
+	var ptr ArrowPtr
+	var ad ArrowDirectory
+
+	for row.Next() {		
+		err = row.Scan(&staidx,&long,&short,&ptr)
+		ad.STAindex = staidx
+		ad.Long = long
+		ad.Short = short
+		ad.Ptr = ptr
+
+		ARROW_DIRECTORY = append(ARROW_DIRECTORY,ad)
+		ARROW_SHORT_DIR[short] = ARROW_DIRECTORY_TOP
+		ARROW_LONG_DIR[long] = ARROW_DIRECTORY_TOP
+
+		if ad.Ptr != ARROW_DIRECTORY_TOP {
+			fmt.Println(ERR_MEMORY_DB_ARROW_MISMATCH,ad,ad.Ptr,ARROW_DIRECTORY_TOP)
+			os.Exit(-1)
+		}
+
+		ARROW_DIRECTORY_TOP++
+	}
+
+	row.Close()
+
+	// Get Inverses
+
+	qstr = fmt.Sprintf("SELECT Plus,Minus FROM ArrowInverses ORDER BY Plus")
+
+	row, err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY Download Inverses Failed",err)
+	}
+
+	var plus,minus ArrowPtr
+
+	for row.Next() {		
+
+		err = row.Scan(&plus,&minus)
+
+		if err != nil {
+			fmt.Println("QUERY Download Arrows Failed",err)
+		}
+
+		INVERSE_ARROWS[plus] = minus
+	}
 }
 
 // **************************************************************************
@@ -4079,85 +4079,6 @@ func NextLinkArrow(ctx PoSST,path []Link,arrows []ArrowPtr) string {
 
 // **************************************************************************
 
-func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit {
-
-	// Start with properties of node, within orbit
-
-	const probe_radius = 3
-
-	// radius = 0 is the starting node
-
-	sweep,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,probe_radius)
-
-	var notes [ST_TOP][]Orbit
-
-	// Organize by the leading nearest-neighbour by vector/link type
-
-	for stindex := 0; stindex < ST_TOP; stindex++ {
-
-		// Sweep different radial paths
-
-		for angle := range sweep {
-
-			// len(sweep[angle]) is the length of the probe path at angle
-
-			if sweep[angle] != nil && len(sweep[angle]) > 1 {
-
-				const nearest_satellite = 1
-				start := sweep[angle][nearest_satellite]
-
-				arrow := GetDBArrowByPtr(ctx,start.Arr)
-
-				if arrow.STAindex == stindex {
-					txt := GetDBNodeByNodePtr(ctx,start.Dst)
-					var nt Orbit
-					nt.Arrow = arrow.Long
-                                        nt.STindex = arrow.STAindex
-					nt.Dst = start.Dst
-					nt.Text = txt.S
-					nt.Radius = 1
-					if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
-						continue
-					}
-
-					notes[stindex] = IdempAddNote(notes[stindex],nt)
-
-					// are there more satellites at this angle?
-
-					for depth := 2; depth < probe_radius && depth < len(sweep[angle]); depth++ {
-
-						arprev := STIndexToSTType(arrow.STAindex)
-						next := sweep[angle][depth]
-						arrow = GetDBArrowByPtr(ctx,next.Arr)
-						subtxt := GetDBNodeByNodePtr(ctx,next.Dst)
-
-						if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
-							break
-						}
-
-						nt.Arrow = arrow.Long
-						nt.STindex = arrow.STAindex
-						nt.Dst = next.Dst
-						nt.Ctx = Array2Str(next.Ctx)
-						nt.Text = subtxt.S
-						nt.Radius = depth
-
-						arthis := STIndexToSTType(arrow.STAindex)
-						// No backtracking
-						if arthis != -arprev {	
-							notes[stindex] = IdempAddNote(notes[stindex],nt)
-							arprev = arthis
-						}
-					}
-				}
-			}
-		}
-	}
-	return notes
-}
-
-// **************************************************************************
-
 func IdempAddNote(list []Orbit, item Orbit) []Orbit {
 
 	for o := range list {
@@ -4246,6 +4167,85 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 	}
 
 	return stories
+}
+
+// **************************************************************************
+
+func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit {
+
+	// Start with properties of node, within orbit
+
+	const probe_radius = 3
+
+	// radius = 0 is the starting node
+
+	sweep,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,probe_radius)
+
+	var notes [ST_TOP][]Orbit
+
+	// Organize by the leading nearest-neighbour by vector/link type
+
+	for stindex := 0; stindex < ST_TOP; stindex++ {
+
+		// Sweep different radial paths
+
+		for angle := range sweep {
+
+			// len(sweep[angle]) is the length of the probe path at angle
+
+			if sweep[angle] != nil && len(sweep[angle]) > 1 {
+
+				const nearest_satellite = 1
+				start := sweep[angle][nearest_satellite]
+
+				arrow := GetDBArrowByPtr(ctx,start.Arr)
+
+				if arrow.STAindex == stindex {
+					txt := GetDBNodeByNodePtr(ctx,start.Dst)
+					var nt Orbit
+					nt.Arrow = arrow.Long
+                                        nt.STindex = arrow.STAindex
+					nt.Dst = start.Dst
+					nt.Text = txt.S
+					nt.Radius = 1
+					if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
+						continue
+					}
+
+					notes[stindex] = IdempAddNote(notes[stindex],nt)
+
+					// are there more satellites at this angle?
+
+					for depth := 2; depth < probe_radius && depth < len(sweep[angle]); depth++ {
+
+						arprev := STIndexToSTType(arrow.STAindex)
+						next := sweep[angle][depth]
+						arrow = GetDBArrowByPtr(ctx,next.Arr)
+						subtxt := GetDBNodeByNodePtr(ctx,next.Dst)
+
+						if arrow.Long == exclude_vector || arrow.Short == exclude_vector {
+							break
+						}
+
+						nt.Arrow = arrow.Long
+						nt.STindex = arrow.STAindex
+						nt.Dst = next.Dst
+						nt.Ctx = Array2Str(next.Ctx)
+						nt.Text = subtxt.S
+						nt.Radius = depth
+
+						arthis := STIndexToSTType(arrow.STAindex)
+						// No backtracking
+						if arthis != -arprev {	
+							notes[stindex] = IdempAddNote(notes[stindex],nt)
+							arprev = arthis
+						}
+					}
+				}
+			}
+		}
+	}
+	return notes
 }
 
 // **************************************************************************
