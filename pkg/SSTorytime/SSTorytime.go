@@ -3141,6 +3141,306 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 // Basic helper functions
 // **************************************************************************
 
+func SymbolMatrix(m [][]float32) [][]string {
+	
+	var symbol [][]string
+	dim := len(m)
+
+	for r := 0; r < dim; r++ {
+
+		var srow []string
+		
+		for c := 0; c < dim; c++ {
+
+			var sym string = ""
+
+			if m[r][c] != 0 {
+				sym = fmt.Sprintf("%d*%d",r,c)
+			}
+			srow = append(srow,sym)
+		}
+		symbol = append(symbol,srow)
+	}
+	return symbol
+}
+
+//**************************************************************
+
+func SymbolicMultiply(m1,m2 [][]float32,s1,s2 [][]string) ([][]float32,[][]string) {
+
+	var m [][]float32
+	var sym [][]string
+
+	dim := len(m1)
+
+	for r := 0; r < dim; r++ {
+
+		var newrow []float32
+		var symrow []string
+
+		for c := 0; c < dim; c++ {
+
+			var value float32
+			var symbols string
+
+			for j := 0; j < dim; j++ {
+
+				if  m1[r][j] != 0 && m2[j][c] != 0 {
+					value += m1[r][j] * m2[j][c]
+					symbols += fmt.Sprintf("%s*%s",s1[r][j],s2[j][c])
+				}
+			}
+			newrow = append(newrow,value)
+			symrow = append(symrow,symbols)
+
+		}
+		m  = append(m,newrow)
+		sym  = append(sym,symrow)
+	}
+
+	return m,sym
+}
+
+//**************************************************************
+
+func GetSparseOccupancy(m [][]float32,dim int) []int {
+
+	var sparse_count = make([]int,dim)
+
+	for r := 0; r < dim; r++ {
+		for c := 0; c < dim; c++ {
+			sparse_count[r]+= int(m[r][c])
+		}
+	}
+
+	return sparse_count
+}
+
+//**************************************************************
+
+func SymmetrizeMatrix(m [][]float32) [][]float32 {
+
+	// CAUTION! unless we make a copy, go actually changes the original m!!! :o
+	// There is some very weird pathological memory behaviour here .. but this
+	// workaround seems to be stable
+
+	var dim int = len(m)
+	var symm [][]float32 = make([][]float32,dim)
+
+	for r := 0; r < dim; r++ {
+		var row []float32 = make([]float32,dim)
+		symm[r] = row
+	}
+	
+	for r := 0; r < dim; r++ {
+		for c := r; c < dim; c++ {
+			v := m[r][c]+m[c][r]
+			symm[r][c] = v
+			symm[c][r] = v
+		}
+	}
+
+	return symm
+}
+
+//**************************************************************
+
+func TransposeMatrix(m [][]float32) [][]float32 {
+
+	var dim int = len(m)
+	var mt [][]float32 = make([][]float32,dim)
+
+	for r := 0; r < dim; r++ {
+		var row []float32 = make([]float32,dim)
+		mt[r] = row
+	}
+
+	for r := 0; r < len(m); r++ {
+		for c := r; c < len(m); c++ {
+
+			v := m[r][c]
+			vt := m[c][r]
+			mt[r][c] = vt
+			mt[c][r] = v
+		}
+	}
+
+	return mt
+}
+
+//**************************************************************
+
+func MakeInitVector(dim int,init_value float32) []float32 {
+
+	var v = make([]float32,dim)
+
+	for r := 0; r < dim; r++ {
+		v[r] = init_value
+	}
+
+	return v
+}
+
+//**************************************************************
+
+func MatrixOpVector(m [][]float32, v []float32) []float32 {
+
+	var vp = make([]float32,len(m))
+
+	for r := 0; r < len(m); r++ {
+		for c := 0; c < len(m); c++ {
+
+			if m[r][c] != 0 {
+				vp[r] += m[r][c] * v[c]
+			}
+		}
+	}
+	return vp
+}
+
+//**************************************************************
+
+func ComputeEVC(adj [][]float32) []float32 {
+
+	v := MakeInitVector(len(adj),1.0)
+	vlast := v
+
+	const several = 10
+
+	for i := 0; i < several; i++ {
+
+		v = MatrixOpVector(adj,vlast)
+
+		if CompareVec(v,vlast) < 0.1 {
+			break
+		}
+		vlast = v
+	}
+
+	maxval,_ := GetVecMax(v)
+	v = NormalizeVec(v,maxval)
+	return v
+}
+
+//**************************************************************
+
+func GetVecMax(v []float32) (float32,int) {
+
+	var max float32 = -1
+	var index int
+
+	for r := range v {
+		if v[r] > max {
+			max = v[r]
+			index = r
+		}
+	}
+
+	return max,index
+}
+
+//**************************************************************
+
+func NormalizeVec(v []float32, div float32) []float32 {
+
+	if div == 0 {
+		div = 1
+	}
+
+	for r := range v {
+		v[r] = v[r] / div
+	}
+
+	return v
+}
+
+//**************************************************************
+
+func CompareVec(v1,v2 []float32) float32 {
+
+	var max float32 = -1
+
+	for r := range v1 {
+		diff := v1[r]-v2[r]
+
+		if diff < 0 {
+			diff = -diff
+		}
+
+		if diff > max {
+			max = diff
+		}
+	}
+
+	return max
+}
+
+//**************************************************************
+
+func FindGradientFieldTop(sadj [][]float32,evc []float32) ([]int,[][]int) {
+
+	dim := len(evc)
+
+	var localtop []int
+	var paths [][]int
+
+	for index := 0; index < dim; index++ {
+
+		// foreach neighbour
+
+		ltop,path := GetHillTop(index,sadj,evc)
+
+		localtop = append(localtop,ltop)
+		paths = append(paths,path)
+	}
+
+	return localtop,paths
+}
+
+//**************************************************************
+
+func GetHillTop(index int,sadj [][]float32,evc []float32) (int,[]int) {
+
+	topnode := index
+	visited := make(map[int]bool)
+	visited[index] = true
+
+	var path []int
+
+	dim := len(evc)
+	finished := false
+	path = append(path,index)
+
+	for {
+		finished = true
+		winner := topnode
+		
+		for ngh := 0; ngh < dim; ngh++ {
+			
+			if (sadj[topnode][ngh] > 0) && !visited[ngh] {
+				visited[ngh] = true
+				
+				if evc[ngh] > evc[topnode] {
+					winner = ngh
+					finished = false
+				}
+			}
+		}
+		if finished {
+			break
+		}
+
+		topnode = winner
+		path = append(path,topnode)
+	}
+
+	return topnode,path
+}
+
+// **************************************************************************
+// Matrix helper functions
+// **************************************************************************
+
 func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 
 	if ARROW_DIRECTORY_TOP == 0 {

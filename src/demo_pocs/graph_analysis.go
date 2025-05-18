@@ -39,54 +39,72 @@ func main() {
 	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
-	chapter := "brain"
+	chapter := "SSTorytime in N4L"
 
         context := []string{""}
 
 	sttypes := []int{1,2,3}
 	sources,sinks := SST.GetDBSingletonBySTType(ctx,sttypes,chapter,context)
+
 	fmt.Println("---------------------------------")
 	fmt.Println("\n\nSOURCES types",sttypes)
 	fmt.Println("---------------------------------")
+
 	PrintNodes(ctx,sources)
+
 	fmt.Println("---------------------------------")
 	fmt.Println("\n\nSINKS types",sttypes)
 	fmt.Println("---------------------------------")
+
 	PrintNodes(ctx,sinks)
 
 	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(ctx,sttypes,chapter,context)
 
-	sadj := Symmetrize(adj)
-	symb := SymbolMatrix(adj)
-	ssymb := SymbolMatrix(sadj)
+	at := SST.TransposeMatrix(adj)
+	asymb := SST.SymbolMatrix(at)
+
+	PrintMatrix(at,asymb,"A^T")
+
+	sadj := SST.SymmetrizeMatrix(adj)
+	symb := SST.SymbolMatrix(adj)
+	ssymb := SST.SymbolMatrix(sadj)
 
 	fmt.Println("---------------------------------")
-	evc := ComputeEVC(sadj)
+	evc := SST.ComputeEVC(sadj)
 	fmt.Print("EVC = capacitance at equilibrium = \n")
-	PrintVector(evc)
-	fmt.Println("---------------------------------")
-	fmt.Println("- Graph equilibrium landscape:")
-	evctop,path := FindGradientTop(sadj,evc)
 
-	fmt.Println("There are",len(evctop),"local maxima in the EVC landscape")
+	PrintVector(evc)
+
+	fmt.Println("---------------------------------")
+	fmt.Println("Graph equilibrium EVC landscape:")
+	fmt.Println("---------------------------------")
+
+	evctop,path := SST.FindGradientFieldTop(sadj,evc)
+
+	fmt.Println("\nThere are",len(evctop),"local maxima in the EVC landscape:\n")
+	fmt.Println("\n  - Gradient paths:\n")
 
 	for index := 0; index < len(evc); index++ {
-		fmt.Println(" - Node",index,"has local max",evctop[index],"hop distance",len(path[index])-1,"along",path[index])
-		fmt.Println("   =",SST.GetDBNodeByNodePtr(ctx,nodekey[evctop[index]]).S,"\n")
+		fmt.Println("--\n   From node",index,"has local max",evctop[index],"hop distance",len(path[index])-1,"along",path[index],"\n")
+		for p := 0; p < len(path[index]); p++ {
+			fmt.Printf("   %d = %.40s\n",path[index][p],SST.GetDBNodeByNodePtr(ctx,nodekey[path[index][p]]).S)
+		}
 	}
 
 	fmt.Println("---------------------------------")
 	fmt.Println("Loop search")
+	fmt.Println("---------------------------------\n")
+
 	PrintMatrix(adj,symb,"A")
 	PrintMatrix(sadj,ssymb,"sym")
 
-	m2,s2 := SymbolicMultiply(adj,adj,symb,symb)
+	m2,s2 := SST.SymbolicMultiply(adj,adj,symb,symb)
 
-	//PrintMatrix(m2,s2,"A2")
-	m3,s3 := SymbolicMultiply(adj,m2,symb,s2)
-	//PrintMatrix(m3,s3,"A3")
-	_,s4 := SymbolicMultiply(adj,m3,symb,s3)
-	_,s6 := SymbolicMultiply(m3,m3,s3,s3)
+	//SST.PrintMatrix(m2,s2,"A2")
+	m3,s3 := SST.SymbolicMultiply(adj,m2,symb,s2)
+	//SST.PrintMatrix(m3,s3,"A3")
+	_,s4 := SST.SymbolicMultiply(adj,m3,symb,s3)
+	_,s6 := SST.SymbolicMultiply(m3,m3,s3,s3)
 
 	AnalyzePowerMatrix(ctx,s2,nodekey)
 	AnalyzePowerMatrix(ctx,s3,nodekey)
@@ -128,298 +146,6 @@ func Rows2Matrix(rows []string) ([][]float32,[][]string) {
 	}
 
 	return matrix,symbol
-}
-
-//**************************************************************
-
-func SymbolMatrix(m [][]float32) [][]string {
-	
-	var symbol [][]string
-	dim := len(m)
-
-	for r := 0; r < dim; r++ {
-
-		var srow []string
-		
-		for c := 0; c < dim; c++ {
-
-			var sym string = ""
-
-			if m[r][c] != 0 {
-				sym = fmt.Sprintf("%d*%d",r,c)
-			}
-			srow = append(srow,sym)
-		}
-		symbol = append(symbol,srow)
-	}
-	return symbol
-}
-
-//**************************************************************
-
-func SymbolicMultiply(m1,m2 [][]float32,s1,s2 [][]string) ([][]float32,[][]string) {
-
-	var m [][]float32
-	var sym [][]string
-
-	dim := len(m1)
-
-	for r := 0; r < dim; r++ {
-
-		var newrow []float32
-		var symrow []string
-
-		for c := 0; c < dim; c++ {
-
-			var value float32
-			var symbols string
-
-			for j := 0; j < dim; j++ {
-
-				if  m1[r][j] != 0 && m2[j][c] != 0 {
-					value += m1[r][j] * m2[j][c]
-					symbols += fmt.Sprintf("%s*%s",s1[r][j],s2[j][c])
-				}
-			}
-			newrow = append(newrow,value)
-			symrow = append(symrow,symbols)
-
-		}
-		m  = append(m,newrow)
-		sym  = append(sym,symrow)
-	}
-
-	return m,sym
-}
-
-//**************************************************************
-
-func GetSparseOccupancy(m [][]float32,dim int) []int {
-
-	var sparse_count = make([]int,dim)
-
-	for r := 0; r < dim; r++ {
-		for c := 0; c < dim; c++ {
-			sparse_count[r]+= int(m[r][c])
-		}
-	}
-
-	return sparse_count
-}
-
-//**************************************************************
-
-func Symmetrize(m [][]float32) [][]float32 {
-
-	// CAUTION! unless we make a copy, go actually changes the original m!!! :o
-	// There is some very weird pathological memory behaviour here .. but this
-	// workaround seems to be stable
-
-	var dim int = len(m)
-	var symm [][]float32 = make([][]float32,dim)
-
-	for r := 0; r < dim; r++ {
-		var row []float32 = make([]float32,dim)
-		symm[r] = row
-	}
-	
-	for r := 0; r < dim; r++ {
-		for c := r; c < dim; c++ {
-			v := m[r][c]+m[c][r]
-			symm[r][c] = v
-			symm[c][r] = v
-		}
-	}
-
-	return symm
-}
-
-//**************************************************************
-
-func Transpose(matrix [][]float32) [][]float32 {
-
-	var m [][]float32 = matrix
-
-	for r := 0; r < len(m); r++ {
-		for c := r; c < len(m); c++ {
-
-			v := m[r][c]
-			vt := m[c][r]
-			m[r][c] = vt
-			m[c][r] = v
-		}
-	}
-
-	return m
-}
-
-//**************************************************************
-
-func MakeInitVector(dim int,init_value float32) []float32 {
-
-	var v = make([]float32,dim)
-
-	for r := 0; r < dim; r++ {
-		v[r] = init_value
-	}
-
-	return v
-}
-
-//**************************************************************
-
-func MatrixOpVector(m [][]float32, v []float32) []float32 {
-
-	var vp = make([]float32,len(m))
-
-	for r := 0; r < len(m); r++ {
-		for c := 0; c < len(m); c++ {
-
-			if m[r][c] != 0 {
-				vp[r] += m[r][c] * v[c]
-			}
-		}
-	}
-	return vp
-}
-
-//**************************************************************
-
-func ComputeEVC(adj [][]float32) []float32 {
-
-	v := MakeInitVector(len(adj),1.0)
-	vlast := v
-
-	const several = 10
-
-	for i := 0; i < several; i++ {
-
-		v = MatrixOpVector(adj,vlast)
-
-		if CompareVec(v,vlast) < 0.1 {
-			break
-		}
-		vlast = v
-	}
-
-	maxval,_ := GetVecMax(v)
-	v = NormalizeVec(v,maxval)
-	return v
-}
-
-//**************************************************************
-
-func GetVecMax(v []float32) (float32,int) {
-
-	var max float32 = -1
-	var index int
-
-	for r := range v {
-		if v[r] > max {
-			max = v[r]
-			index = r
-		}
-	}
-
-	return max,index
-}
-
-//**************************************************************
-
-func NormalizeVec(v []float32, div float32) []float32 {
-
-	if div == 0 {
-		div = 1
-	}
-
-	for r := range v {
-		v[r] = v[r] / div
-	}
-
-	return v
-}
-
-//**************************************************************
-
-func CompareVec(v1,v2 []float32) float32 {
-
-	var max float32 = -1
-
-	for r := range v1 {
-		diff := v1[r]-v2[r]
-
-		if diff < 0 {
-			diff = -diff
-		}
-
-		if diff > max {
-			max = diff
-		}
-	}
-
-	return max
-}
-
-//**************************************************************
-
-func FindGradientTop(sadj [][]float32,evc []float32) ([]int,[][]int) {
-
-	dim := len(evc)
-
-	var localtop []int
-	var paths [][]int
-
-	for index := 0; index < dim; index++ {
-
-		// foreach neighbour
-
-		ltop,path := GetHillTop(index,sadj,evc)
-
-		localtop = append(localtop,ltop)
-		paths = append(paths,path)
-	}
-
-	return localtop,paths
-}
-
-//**************************************************************
-
-func GetHillTop(index int,sadj [][]float32,evc []float32) (int,[]int) {
-
-	topnode := index
-	visited := make(map[int]bool)
-	visited[index] = true
-
-	var path []int
-
-	dim := len(evc)
-	finished := false
-	path = append(path,index)
-
-	for {
-		finished = true
-		winner := topnode
-		
-		for ngh := 0; ngh < dim; ngh++ {
-			
-			if (sadj[topnode][ngh] > 0) && !visited[ngh] {
-				visited[ngh] = true
-				
-				if evc[ngh] > evc[topnode] {
-					winner = ngh
-					finished = false
-				}
-			}
-		}
-		if finished {
-			break
-		}
-
-		topnode = winner
-		path = append(path,topnode)
-	}
-
-	return topnode,path
 }
 
 //**************************************************************
@@ -506,7 +232,7 @@ func PrintVector(vector []float32) {
 
 	for row := 0; row < len(vector); row++ {
 
-		fmt.Printf("   ( %3.2f )\n",vector[row])
+		fmt.Printf("   ( %2.2f )\n",vector[row])
 	}
 	fmt.Println()
 }
@@ -519,10 +245,10 @@ func PrintMatrix(matrix [][]float32,symbolic [][]string,str string) {
 
 	for row := 0; row < len(matrix); row++ {
 		for col := 0; col < len(matrix[row]); col++ {
-			fmt.Printf("%3.0f ",matrix[row][col])
+			fmt.Printf("%2.0f ",matrix[row][col])
 		}
 
-		fmt.Printf("      %1.1f   ...",matrix[row][row])
+		fmt.Printf(" %1.1f   ...",matrix[row][row])
 		if matrix[row][row] > 0 {
 			fmt.Printf("      %s    (loop)\n",symbolic[row][row])
 		} else {
