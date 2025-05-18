@@ -112,3 +112,8 @@ END LOOP;
 RETURN ret_paths;
 END;"    (ex)  A recursive search in SQL
  
+
+  :: low level API, golang, go programming ::
+
+
+

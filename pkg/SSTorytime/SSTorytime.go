@@ -527,7 +527,7 @@ func GetNodeTxtFromPtr(frptr NodePtr) string {
 
 // **************************************************************************
 
-func GetNodeFromPtr(frptr NodePtr) Node {
+func GetMemoryNodeFromPtr(frptr NodePtr) Node {
 
 	class := frptr.Class
 	index := frptr.CPtr
@@ -2631,7 +2631,7 @@ func GetDBNodeByNodePtr(ctx PoSST,db_nptr NodePtr) Node {
 	im_nptr,cached := NODE_CACHE[db_nptr]
 
 	if cached {
-		return GetNodeFromPtr(im_nptr)
+		return GetMemoryNodeFromPtr(im_nptr)
 	}
 
 	// This ony works if we insert non-null arrays in initialization
