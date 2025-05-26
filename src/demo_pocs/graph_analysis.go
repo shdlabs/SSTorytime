@@ -18,6 +18,7 @@ import (
 
 func main() {
 
+
 /*
 	var rows []string
 	rows = append(rows,"0 1 0 0 0 0 0 0 0 0") // 1
@@ -38,7 +39,7 @@ func main() {
 	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
-	chapter := "SSTorytime in N4L"
+	chapter := "loop test"
         context := []string{""}
 
 	chaps := SST.GetDBChaptersMatchingName(ctx,chapter)
@@ -79,14 +80,15 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string) {
 	PrintNodes(ctx,sinks)
 
 	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(ctx,sttypes,chapter,context)
+	symb := SST.SymbolMatrix(adj)
 
-	//at := SST.TransposeMatrix(adj)
-	//asymb := SST.SymbolMatrix(at)
-	//PrintMatrix(at,asymb,"A^T")
+	at := SST.TransposeMatrix(adj)
+	asymb := SST.SymbolMatrix(at)
+	PrintMatrix(adj,asymb,"A")
+	PrintMatrix(at,asymb,"A^T")
 
 	sadj := SST.SymmetrizeMatrix(adj)
-	symb := SST.SymbolMatrix(adj)
-	//ssymb := SST.SymbolMatrix(sadj)
+	ssymb := SST.SymbolMatrix(sadj)
 
 	fmt.Println("---------------------------------")
 	evc := SST.ComputeEVC(sadj)
@@ -114,14 +116,14 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string) {
 	fmt.Println("Loop search")
 	fmt.Println("---------------------------------\n")
 
-	//PrintMatrix(adj,symb,"A")
-	//PrintMatrix(sadj,ssymb,"sym")
+	PrintMatrix(adj,symb,"A")
+	PrintMatrix(sadj,ssymb,"sym")
 
 	m2,s2 := SST.SymbolicMultiply(adj,adj,symb,symb)
 
-	//SST.PrintMatrix(m2,s2,"A2")
+	PrintMatrix(m2,s2,"A2")
 	m3,s3 := SST.SymbolicMultiply(adj,m2,symb,s2)
-	//SST.PrintMatrix(m3,s3,"A3")
+	PrintMatrix(m3,s3,"A3")
 	_,s4 := SST.SymbolicMultiply(adj,m3,symb,s3)
 	_,s6 := SST.SymbolicMultiply(m3,m3,s3,s3)
 
@@ -274,12 +276,4 @@ func PrintMatrix(matrix [][]float32,symbolic [][]string,str string) {
 	}
 	fmt.Println()
 }
-
-
-
-
-
-
-
-
 

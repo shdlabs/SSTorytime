@@ -3744,9 +3744,11 @@ func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []strin
 			nodekey = append(nodekey,n)
 		}
 
+		// Run through the nodes linked and add them now
+
 		for lnks := range linkstr {
 
-			links := ParseLinkArray(linkstr[lnks])
+			links := ParseMapLinkArray(linkstr[lnks])
 
 			// we have to go through one by one to avoid duplicates
 			// and keep adjacent nodes closer in order
@@ -3760,9 +3762,14 @@ func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []strin
 					nodekey = append(nodekey,links[l].Dst)
 				}
 			}
+			// Now we have a vector row for each NPtr, with a list of links
 			protoadj[rowindex] = append(protoadj[rowindex],links...)
+
 		}
 	}
+
+	// Now we know the dimension of the square matrix = counter
+        // and an ordered directory vector[index] ->  NPtr, as well as lookup table
 
 	adj := make([][]float32,counter)
 
