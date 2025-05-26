@@ -35,39 +35,58 @@ func main() {
 */
 
 
-
 	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
 	chapter := "SSTorytime in N4L"
-
         context := []string{""}
 
-	sttypes := []int{1,2,3}
+	chaps := SST.GetDBChaptersMatchingName(ctx,chapter)
+
+	for chap := range chaps {
+		AnalyzeGraph(ctx,chaps[chap],context) 
+	}
+
+
+	SST.Close(ctx)
+}
+
+//******************************************************************
+
+func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string) {
+
+	sttypes := []int{1}
 	sources,sinks := SST.GetDBSingletonBySTType(ctx,sttypes,chapter,context)
 
 	fmt.Println("---------------------------------")
-	fmt.Println("\n\nSOURCES types",sttypes)
+	fmt.Print("\n\nORIGIN ROOT SOURCE types (")
+	for st := range sttypes {
+		fmt.Print("\"",SST.STTypeName(sttypes[st]),"\"")
+	}
+	fmt.Println(") in",chapter)
 	fmt.Println("---------------------------------")
 
 	PrintNodes(ctx,sources)
 
 	fmt.Println("---------------------------------")
-	fmt.Println("\n\nSINKS types",sttypes)
+	fmt.Print("\n\nFINAL DEPENDENT SINK types (")
+	for st := range sttypes {
+		fmt.Print("\"",SST.STTypeName(sttypes[st]),"\"")
+	}
+	fmt.Println(") in",chapter)
 	fmt.Println("---------------------------------")
 
 	PrintNodes(ctx,sinks)
 
 	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(ctx,sttypes,chapter,context)
 
-	at := SST.TransposeMatrix(adj)
-	asymb := SST.SymbolMatrix(at)
-
-	PrintMatrix(at,asymb,"A^T")
+	//at := SST.TransposeMatrix(adj)
+	//asymb := SST.SymbolMatrix(at)
+	//PrintMatrix(at,asymb,"A^T")
 
 	sadj := SST.SymmetrizeMatrix(adj)
 	symb := SST.SymbolMatrix(adj)
-	ssymb := SST.SymbolMatrix(sadj)
+	//ssymb := SST.SymbolMatrix(sadj)
 
 	fmt.Println("---------------------------------")
 	evc := SST.ComputeEVC(sadj)
@@ -87,7 +106,7 @@ func main() {
 	for index := 0; index < len(evc); index++ {
 		fmt.Println("--\n   From node",index,"has local max",evctop[index],"hop distance",len(path[index])-1,"along",path[index],"\n")
 		for p := 0; p < len(path[index]); p++ {
-			fmt.Printf("   %d = %.40s\n",path[index][p],SST.GetDBNodeByNodePtr(ctx,nodekey[path[index][p]]).S)
+			fmt.Printf("   %d = %.40s...\n",path[index][p],SST.GetDBNodeByNodePtr(ctx,nodekey[path[index][p]]).S)
 		}
 	}
 
@@ -95,8 +114,8 @@ func main() {
 	fmt.Println("Loop search")
 	fmt.Println("---------------------------------\n")
 
-	PrintMatrix(adj,symb,"A")
-	PrintMatrix(sadj,ssymb,"sym")
+	//PrintMatrix(adj,symb,"A")
+	//PrintMatrix(sadj,ssymb,"sym")
 
 	m2,s2 := SST.SymbolicMultiply(adj,adj,symb,symb)
 
@@ -111,8 +130,6 @@ func main() {
 	AnalyzePowerMatrix(ctx,s4,nodekey)
 	AnalyzePowerMatrix(ctx,s6,nodekey)
 
-
-	SST.Close(ctx)
 }
 
 //**************************************************************
