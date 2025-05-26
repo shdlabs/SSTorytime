@@ -1,7 +1,9 @@
 
 # Setting up and getting started
 
-To do:
+## Summary
+
+These are the things you will need to do:
 
 * Download this repository, which contains examples of data input
 languages N4L and examples of scripting your own programs.
@@ -17,7 +19,7 @@ go env -w GO111MODULE=off
 
 * [Related series about semantic spacetime](https://mark-burgess-oslo-mb.medium.com/list/semantic-spacetime-and-data-analytics-28e9649c0ade)
 
-## Troubleshooting
+## Note on troubleshooting
 
 Note that the "hard part" of setting up is to work around the quirks of the `Go` language and the database `Postgresql`. These are both delicate beasts: when they work they will just work, but if they don't they are very hard to debug. Postgres, in particular, fails silently and mysteriously. It keeps log files in `/var/lib/pgsql/data/log`.
 
