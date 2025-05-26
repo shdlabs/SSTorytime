@@ -25,14 +25,14 @@ go env -w GO111MODULE=off
 
 ## Installing database Postgres
 
-Hard part first; there are several steps (summary):
+Hard part first; the postgres database is a bit of a monster. There are several steps to install it an set it up. Here's the summary:
 
 * Use your local package manager to download and install packages for `postgres databaser server` and `psql client`.
 * In postgres, you need root privileges to configure and create a database.
 * Locate and edit the configuration file `pg_hba.conf` and make sure it's owned by the `postgres` user.
 * Set the server to run in your systemd configuration. 
 
-You need root access, but postgres prefers you to do everything as the postgres user not as root.
+You need privileged `root` access to access the postgres management account. Postgres prefers you to do everything as the postgres user not as root.
 
 * To begin with, you need to start the database as root.
 If this command doesn't work, check your local Linux instruction page as distros vary.
