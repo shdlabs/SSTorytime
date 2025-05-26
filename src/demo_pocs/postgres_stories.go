@@ -1,7 +1,6 @@
 //******************************************************************
 //
-// Demo of accessing postgres with custom data structures and arrays
-// converting to the package library format
+// Demo of node by node addition
 //
 //******************************************************************
 
@@ -24,9 +23,9 @@ func main() {
 	var n1,n2,n3,n4,n5,n6 SST.Node
 	var lnk12,lnk23,lnk34,lnk25,lnk56 SST.Link
 	
-	n1.NPtr = SST.NodePtr{ CPtr : 1, Class: SST.LT128}
-	n1.S = "Mary had a little lamb"
-	n1.Chap = "home and away"
+	nd := SSTInsertNode("Mary had a little lamb","home and away")
+
+	fmr.Println(nd)
 
 	n2.NPtr = SST.NodePtr{ CPtr : 2, Class: SST.LT128}
 	n2.S = "Whose fleece was dull and grey"
@@ -75,24 +74,24 @@ func main() {
 
 	sttype := SST.LEADSTO
 
-	n1 = SST.CreateDBNode(ctx, n1)
-	n2 = SST.CreateDBNode(ctx, n2)
+	n1 = SST.IdempDBAddNode(ctx, n1)
+	n2 = SST.IdempDBAddNode(ctx, n2)
 	SST.AppendDBLinkToNode(ctx,n1.NPtr,lnk12,sttype)
 
-	n2 = SST.CreateDBNode(ctx, n2)
-	n3 = SST.CreateDBNode(ctx, n3)
+	n2 = SST.IdempDBAddNode(ctx, n2)
+	n3 = SST.IdempDBAddNode(ctx, n3)
 	SST.AppendDBLinkToNode(ctx,n2.NPtr,lnk23,sttype)
 
-	n3 = SST.CreateDBNode(ctx, n3)
-	n4 = SST.CreateDBNode(ctx, n4)
+	n3 = SST.IdempDBAddNode(ctx, n3)
+	n4 = SST.IdempDBAddNode(ctx, n4)
 	SST.AppendDBLinkToNode(ctx,n3.NPtr,lnk34,sttype)
 
-	n2 = SST.CreateDBNode(ctx, n2)
-	n5 = SST.CreateDBNode(ctx, n5)
+	n2 = SST.IdempDBAddNode(ctx, n2)
+	n5 = SST.IdempDBAddNode(ctx, n5)
 	SST.AppendDBLinkToNode(ctx,n2.NPtr,lnk25,sttype)
 
-	n5 = SST.CreateDBNode(ctx, n5)
-	n6 = SST.CreateDBNode(ctx, n6)
+	n5 = SST.IdempDBAddNode(ctx, n5)
+	n6 = SST.IdempDBAddNode(ctx, n6)
 	SST.AppendDBLinkToNode(ctx,n5.NPtr,lnk56,sttype)
 
 	fmt.Println("----------------------------------")
@@ -146,6 +145,20 @@ func main() {
 }
 
 
+
+//*****************************************
+
+func SSTInsertNode(s string,chapter string) {
+
+	var node SST.Node
+
+	node.S = s
+	node.Chap = chapter  
+        node.L,node.NPtr.Class = StorageClass(n.S)
+	node.NPtr.CPtr = DB_NODE_OFFSETS[node.NPtr.Class]
+	DB_NODE_OFFSETS[node.NPtr.Class]++
+
+}
 
 
 

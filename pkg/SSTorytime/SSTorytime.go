@@ -702,55 +702,6 @@ func CheckExistingOrAltCaps(event Node,ErrFunc func(string)) (ClassedNodePtr,boo
 
 //**************************************************************
 
-func IdempDBAddNode(ctx PoSST,n Node) Node {
-
-	// alternative for np = SST.CreateDBNode(ctx, np)
-	// without assuming management/control of the Nptr increments
-
-	var qstr string
-
-	// No need to trust the values, ignore/overwrite CPtr
-
-        n.L,n.NPtr.Class = StorageClass(n.S)
-
-	es := SQLEscape(n.S)
-	ec := SQLEscape(n.Chap)
-
-	// Wrap BEGIN/END a single transaction
-
-	qstr = fmt.Sprintf("SELECT IdempAppendNode(%d,%d,'%s','%s')",n.L,n.NPtr.Class,es,ec)
-
-	row,err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		s := fmt.Sprint("Failed to add node",err)
-		
-		if strings.Contains(s,"duplicate key") {
-		} else {
-			fmt.Println(s,"FAILED \n",qstr,err)
-		}
-		return n
-	}
-
-	var whole string
-	var cl,ch int
-
-	for row.Next() {		
-		err = row.Scan(&whole)
-		fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
-	}
-
-	n.NPtr.Class = cl
-	n.NPtr.CPtr = ClassedNodePtr(ch)
-
-	row.Close()
-
-	return n
-
-}
-
-//**************************************************************
-
 func IdempAddChapterToNode(class int,cptr ClassedNodePtr,chap string) {
 
 	/* In the DB version, we have handle chapter collisions
@@ -1005,7 +956,6 @@ func GetDBNPtrHighWaterMarks(ctx PoSST) {
 		row,err := ctx.DB.Query(qstr)
 		
 		if err != nil {
-			fmt.Println("FAILED to find Highwatermark\n",qstr,err)
 			return
 		}
 		
@@ -1152,9 +1102,9 @@ func CreateTable(ctx PoSST,defn string) bool {
 
 func CreateDBNode(ctx PoSST, n Node) Node {
 
-	var qstr string
+	// Add node version setting explicit CPtr value, note different function call
 
-	// No need to trust the values
+	var qstr string
 
         n.L,n.NPtr.Class = StorageClass(n.S)
 	
@@ -1191,6 +1141,52 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 	row.Close()
 
 	return n
+}
+
+// **************************************************************************
+
+func IdempDBAddNode(ctx PoSST,n Node) Node {
+
+	var qstr string
+
+	// No need to trust the values, ignore/overwrite CPtr
+
+        n.L,n.NPtr.Class = StorageClass(n.S)
+
+	es := SQLEscape(n.S)
+	ec := SQLEscape(n.Chap)
+
+	// Wrap BEGIN/END a single transaction
+
+	qstr = fmt.Sprintf("SELECT IdempAppendNode(%d,%d,'%s','%s')",n.L,n.NPtr.Class,es,ec)
+
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		s := fmt.Sprint("Failed to add node",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+		return n
+	}
+
+	var whole string
+	var cl,ch int
+
+	for row.Next() {		
+		err = row.Scan(&whole)
+		fmt.Sscanf(whole,"(%d,%d)",&cl,&ch)
+	}
+
+	n.NPtr.Class = cl
+	n.NPtr.CPtr = ClassedNodePtr(ch)
+
+	row.Close()
+
+	return n
+
 }
 
 // **************************************************************************

@@ -1077,24 +1077,21 @@ func SkipWhiteSpace(src []rune, pos int) int {
 
 func AddMandatory() {
 
-	if SST.WIPE_DB {
-
-		arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
-		inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
-		SST.InsertInverseArrowDirectory(arr,inv)
-		
-		arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-		inv = SST.InsertArrowDirectory("leadsto","prev","follows on from","-")
-		SST.InsertInverseArrowDirectory(arr,inv)
-		
-		arr = SST.InsertArrowDirectory("properties","url","has URL","+")
-		inv = SST.InsertArrowDirectory("properties","isurl","is a URL for","-")
-		SST.InsertInverseArrowDirectory(arr,inv)
-		
-		arr = SST.InsertArrowDirectory("properties","img","has image","+")
-		inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
-		SST.InsertInverseArrowDirectory(arr,inv)
-	}
+	arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
+	inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+	
+	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
+	inv = SST.InsertArrowDirectory("leadsto","prev","follows on from","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+	
+	arr = SST.InsertArrowDirectory("properties","url","has URL","+")
+	inv = SST.InsertArrowDirectory("properties","isurl","is a URL for","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+	
+	arr = SST.InsertArrowDirectory("properties","img","has image","+")
+	inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
 }
 
 //**************************************************************
