@@ -120,7 +120,7 @@ The tool-set consistent of several components, starting with:
 
 * [searchN4L](docs/searchN4L.md) - a simple and experimental command line tool for testing the graph database
 
-* [notes](docs/Tutorial.md) - a simple command line browser of notes in page view layout
+* [notes](docs/notes.md) - a simple command line browser of notes in page view layout
 
 * [pathsolve](docs/pathsolve.md) - a simple and experimental command line tool for testing the graph database
 
