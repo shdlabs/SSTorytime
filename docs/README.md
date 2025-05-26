@@ -10,16 +10,17 @@ languages N4L and examples of scripting your own programs.
 
 * Install the `postgres` database, `postgres-contrib` extensions, and `psql` shell command line client.
 
-* Install the Go(lang) programming and build environment. If you experience problems building,
-you may need to turn off modules:
-<pre>
-go env -w GO111MODULE=off
-</pre>
+* Install the Go(lang) programming and build environment. 
 
 
 * [Related series about semantic spacetime](https://mark-burgess-oslo-mb.medium.com/list/semantic-spacetime-and-data-analytics-28e9649c0ade)
 
-*Note about troubleshooting: the "hard part" of setting up is to work around the quirks of the `Go` language and the database `Postgresql`. These are both delicate beasts: when they work they will just work, but if they don't they are very hard to debug. Postgres, in particular, fails silently and mysteriously. It keeps log files in `/var/lib/pgsql/data/log`. Luckily the major linux distros are mostly similar these days, so cross fingers that these instructions work. *
+*Note about troubleshooting: the "hard part" of setting up is to work around the quirks of the `Go` language and the database `Postgresql`. These are both delicate beasts: when they work they will just work, but if they don't they are very hard to debug. Postgres, in particular, fails silently and mysteriously. It keeps log files in `/var/lib/pgsql/data/log`. Luckily the major linux distros are mostly similar these days, so cross fingers that these instructions work. If you experience problems with the go language,
+you may need to turn off modules:*
+<pre>
+go env -w GO111MODULE=off
+</pre>
+
 
 
 ## Installing database Postgres
