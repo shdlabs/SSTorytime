@@ -1,5 +1,7 @@
 
-# Setting up and getting started
+# Setting up and getting started on a Linux computer
+
+*At the moment, STTorytime is only supported on Linux based operating systems. Packaging for other systems will follow when things are more finished.*
 
 ## Summary
 
