@@ -132,12 +132,26 @@ type RCtype struct {
 
 func main() {
 
+	var ctx SST.PoSST
+
 	args := Init()
+
+
+	if UPLOAD {
+		load_arrows := true
+
+		if SST.WIPE_DB {
+			load_arrows = false
+		}
+
+		ctx = SST.Open(load_arrows)
+	}
 
 	NewFile("N4Lconfig.in")
 	config := ReadFile(CURRENT_FILE)
 
 	AddMandatory()
+
 	ParseConfig(config)
 
 	for input := 0; input < len(args); input++ {
@@ -159,8 +173,6 @@ func main() {
 	}
 
 	if UPLOAD {
-		load_arrows := false
-		ctx := SST.Open(load_arrows)
 		fmt.Println("Uploading nodes..")
 		SST.GraphToDB(ctx)
 		SST.Close(ctx)
@@ -426,13 +438,15 @@ func ClassifyConfigRole(token string) {
 func CheckArrow(alias,name string) {
 
 	prev,ok := SST.ARROW_SHORT_DIR[alias]
-	if ok {
+
+	if ok && SST.WIPE_DB {
 		ParseError(ERR_ARR_REDEFINITION+"\""+alias+"\" previous short name: "+SST.ARROW_DIRECTORY[prev].Short)
 		os.Exit(-1)
 	}
 	
 	prev,ok = SST.ARROW_LONG_DIR[name]
-	if ok {
+
+	if ok && SST.WIPE_DB {
 		ParseError(ERR_ARR_REDEFINITION+"\""+name+"\" previous long name: "+SST.ARROW_DIRECTORY[prev].Long)
 		os.Exit(-1)
 	}
@@ -1063,21 +1077,24 @@ func SkipWhiteSpace(src []rune, pos int) int {
 
 func AddMandatory() {
 
-	arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
-	inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+	if SST.WIPE_DB {
 
-	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
-	inv = SST.InsertArrowDirectory("leadsto","prev","follows on from","-")
-	SST.InsertInverseArrowDirectory(arr,inv)
-
-	arr = SST.InsertArrowDirectory("properties","url","has URL","+")
-        inv = SST.InsertArrowDirectory("properties","isurl","is a URL for","-")
-	SST.InsertInverseArrowDirectory(arr,inv)
-
-	arr = SST.InsertArrowDirectory("properties","img","has image","+")
-        inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
-	SST.InsertInverseArrowDirectory(arr,inv)
+		arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
+		inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
+		SST.InsertInverseArrowDirectory(arr,inv)
+		
+		arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
+		inv = SST.InsertArrowDirectory("leadsto","prev","follows on from","-")
+		SST.InsertInverseArrowDirectory(arr,inv)
+		
+		arr = SST.InsertArrowDirectory("properties","url","has URL","+")
+		inv = SST.InsertArrowDirectory("properties","isurl","is a URL for","-")
+		SST.InsertInverseArrowDirectory(arr,inv)
+		
+		arr = SST.InsertArrowDirectory("properties","img","has image","+")
+		inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
+		SST.InsertInverseArrowDirectory(arr,inv)
+	}
 }
 
 //**************************************************************

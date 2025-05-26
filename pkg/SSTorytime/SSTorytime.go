@@ -113,11 +113,15 @@ type PageMap struct {  // Thereis additional intent in the layout
 	Path    []Link
 }
 
+//**************************************************************
+
 type PageView struct {
 	Title   string
 	Context string
 	Notes   [][]WebPath
 }
+
+//**************************************************************
 
 type WebPath struct {
 	NPtr    NodePtr
@@ -153,54 +157,6 @@ type Link struct {  // A link is a type of arrow, with context
 	Ctx []string         // context for this pathway
 	Dst NodePtr          // adjacent event/item/node
 }
-
-const NODEPTR_TYPE = "CREATE TYPE NodePtr AS  " +
-	"(                    " +
-	"Chan     int,        " +
-	"CPtr     int         " +
-	")"
-
-const LINK_TYPE = "CREATE TYPE Link AS  " +
-	"(                    " +
-	"Arr      int,        " +
-	"Wgt      real,       " +
-	"Ctx      text,       " +
-	"Dst      NodePtr     " +
-	")"
-
-const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
-	"( " +
-	"NPtr      NodePtr,        " +
-	"L         int,            " +
-	"S         text,           " +
-	"Chap      text,           " +
-	I_MEXPR+"  Link[],         " + // Im3
-	I_MCONT+"  Link[],         " + // Im2
-	I_MLEAD+"  Link[],         " + // Im1
-	I_NEAR +"  Link[],         " + // In0
-	I_PLEAD+"  Link[],         " + // Il1
-	I_PCONT+"  Link[],         " + // Ic2
-	I_PEXPR+"  Link[]          " + // Ie3
-	")"
-
-const LINK_TABLE = "CREATE TABLE IF NOT EXISTS NodeArrowNode " +
-	"( " +
-	"NFrom    NodePtr, " +
-	"STtype   int,     " +
-	"Arr      int,     " +
-	"Wgt      int,     " +
-	"Ctx      text[],  " +
-	"NTo      NodePtr  " +
-	")"
-
-const PAGEMAP_TABLE = "CREATE TABLE IF NOT EXISTS PageMap " +
-	"( " +
-	"Chap     Text,  " +
-	"Alias    Text,  " +
-	"Ctx      Text[]," +
-	"Line     Int,   " +
-	"Path     Link[] " +
-	")"
 
 //**************************************************************
 
@@ -262,9 +218,57 @@ type ArrowPtr int // ArrowDirectory index
 
 //**************************************************************
 
+const NODEPTR_TYPE = "CREATE TYPE NodePtr AS  " +
+	"(                    " +
+	"Chan     int,        " +
+	"CPtr     int         " +
+	")"
+
+const LINK_TYPE = "CREATE TYPE Link AS  " +
+	"(                    " +
+	"Arr      int,        " +
+	"Wgt      real,       " +
+	"Ctx      text,       " +
+	"Dst      NodePtr     " +
+	")"
+
+const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
+	"( " +
+	"NPtr      NodePtr,        " +
+	"L         int,            " +
+	"S         text,           " +
+	"Chap      text,           " +
+	I_MEXPR+"  Link[],         " + // Im3
+	I_MCONT+"  Link[],         " + // Im2
+	I_MLEAD+"  Link[],         " + // Im1
+	I_NEAR +"  Link[],         " + // In0
+	I_PLEAD+"  Link[],         " + // Il1
+	I_PCONT+"  Link[],         " + // Ic2
+	I_PEXPR+"  Link[]          " + // Ie3
+	")"
+
+const LINK_TABLE = "CREATE TABLE IF NOT EXISTS NodeArrowNode " +
+	"( " +
+	"NFrom    NodePtr, " +
+	"STtype   int,     " +
+	"Arr      int,     " +
+	"Wgt      int,     " +
+	"Ctx      text[],  " +
+	"NTo      NodePtr  " +
+	")"
+
+const PAGEMAP_TABLE = "CREATE TABLE IF NOT EXISTS PageMap " +
+	"( " +
+	"Chap     Text,  " +
+	"Alias    Text,  " +
+	"Ctx      Text[]," +
+	"Line     Int,   " +
+	"Path     Link[] " +
+	")"
+
 const ARROW_DIRECTORY_TABLE = "CREATE TABLE IF NOT EXISTS ArrowDirectory " +
 	"(    " +
-	"STAindex int,             " +
+	"STAindex int,           " +
 	"Long text,              " +
 	"Short text,             " +
 	"ArrPtr int primary key  " +
@@ -298,6 +302,8 @@ var (
         SILLINESS_COUNTER int
         SILLINESS_POS int
 	SILLINESS bool
+
+	DB_NODE_OFFSETS [7]ClassedNodePtr
 )
 
 //******************************************************************
@@ -444,6 +450,12 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 		ctx.DB.QueryRow("drop table ArrowDirectory")
 		ctx.DB.QueryRow("drop table ArrowInverses")
+
+	} else {
+
+		// Get the data top CPtr values
+		GetDBNPtrHighWaterMarks(ctx)
+
 	}
 
 	// Ignore error
@@ -984,6 +996,32 @@ func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
 // Write to database
 //**************************************************************
 
+func GetDBNPtrHighWaterMarks(ctx PoSST) {
+
+	for class := 1; class <= 6; class++ {
+
+		qstr := fmt.Sprintf("SELECT max((NPtr).CPtr) FROM Node WHERE (NPtr).Chan = %d",class)
+
+		row,err := ctx.DB.Query(qstr)
+		
+		if err != nil {
+			fmt.Println("FAILED to find Highwatermark\n",qstr,err)
+			return
+		}
+		
+		var top int
+		
+		for row.Next() {		
+			err = row.Scan(&top)
+		}
+		
+		DB_NODE_OFFSETS[class] = ClassedNodePtr(top + 1)
+		row.Close()
+	}
+}
+
+//**************************************************************
+
 func GraphToDB(ctx PoSST) {
 
 	fmt.Println("Storing nodes...")
@@ -1024,8 +1062,21 @@ func GraphToDB(ctx PoSST) {
 		}
 	}
 
-
 	fmt.Println("\nStoring Arrows...")
+
+	// Avoid duplicates, even if we're not wiping. since we loaded everything
+
+	ctx.DB.QueryRow("drop table ArrowDirectory")
+	ctx.DB.QueryRow("drop table ArrowInverses")
+
+	if !CreateTable(ctx,ARROW_INVERSES_TABLE) {
+		fmt.Println("Unable to create table as, ",ARROW_INVERSES_TABLE)
+		os.Exit(-1)
+	}
+	if !CreateTable(ctx,ARROW_DIRECTORY_TABLE) {
+		fmt.Println("Unable to create table as, ",ARROW_DIRECTORY_TABLE)
+		os.Exit(-1)
+	}
 
 	for arrow := range ARROW_DIRECTORY {
 
@@ -1108,6 +1159,7 @@ func CreateDBNode(ctx PoSST, n Node) Node {
         n.L,n.NPtr.Class = StorageClass(n.S)
 	
 	cptr := n.NPtr.CPtr
+
 	es := SQLEscape(n.S)
 	ec := SQLEscape(n.Chap)
 
@@ -1145,7 +1197,11 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 
 func UploadNodeToDB(ctx PoSST, org Node) {
 
-	CreateDBNode(ctx, org)
+	// add OFFSETS from current DB high water marks
+
+	org.NPtr.CPtr += DB_NODE_OFFSETS[org.NPtr.Class]
+
+	CreateDBNode(ctx,org)
 
 	const nolink = 999
 	var empty Link
@@ -1154,6 +1210,7 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 
 		for lnk := range org.I[stindex] {
 
+			org.I[stindex][lnk].Dst.CPtr += DB_NODE_OFFSETS[org.NPtr.Class]
 			dstlnk := org.I[stindex][lnk]
 			sttype := STIndexToSTType(stindex)
 
@@ -1238,6 +1295,10 @@ func UploadPageMapEvent(ctx PoSST, line PageMap) {
 	row.Close()
 
 	for lnk := 0; lnk < len(line.Path); lnk++ {
+
+		if !WIPE_DB {
+			line.Path[lnk].Dst.CPtr += DB_NODE_OFFSETS[line.Path[lnk].Dst.Class]
+		}
 
 		linkval := fmt.Sprintf("(%d, %f, %s, (%d,%d)::NodePtr)",line.Path[lnk].Arr,line.Path[lnk].Wgt,FormatSQLStringArray(line.Path[lnk].Ctx),line.Path[lnk].Dst.Class,line.Path[lnk].Dst.CPtr)
 
@@ -3896,7 +3957,7 @@ func ComputeEVC(adj [][]float32) []float32 {
 
 		v = MatrixOpVector(adj,vlast)
 
-		if CompareVec(v,vlast) < 0.1 {
+		if CompareVec(v,vlast) < 0.01 {
 			break
 		}
 		vlast = v
