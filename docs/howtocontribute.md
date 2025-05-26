@@ -5,6 +5,8 @@ SSTorytime and the Semantic Spacetime model of knowledge is a unique project bas
 
 * The best way to help is to try it!
 
+The hardest part at the moment is installing the software. It's easiest of you have a Linux computer. Just follow the destructions on [getting started](README.md). It's too early to be packaging the software for Windows or MacIntosh at the moment, but you can still try writing notes in the N4L language, which doesn't require any tools!
+
 * Are you a teacher? Get your students to try it, make a class project!
 
 * Use it as much as possible! Taking notes is about enhancing your **human** abilities rather than replacing yourself with an AI chat! When you choose your own words, you understand more powerfully than when someone puts words in your mouth! Start small and expand as you feel inspired.
