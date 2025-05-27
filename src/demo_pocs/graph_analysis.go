@@ -60,7 +60,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string) {
 	sources,sinks := SST.GetDBSingletonBySTType(ctx,sttypes,chapter,context)
 
 	fmt.Println("---------------------------------")
-	fmt.Print("\n\nORIGIN ROOT SOURCE types (")
+	fmt.Print("\n\nPROCESS ORIGIN ROOT DEPENDENCIES / SOURCES (")
 	for st := range sttypes {
 		fmt.Print("\"",SST.STTypeName(sttypes[st]),"\"")
 	}
@@ -70,7 +70,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string) {
 	PrintNodes(ctx,sources)
 
 	fmt.Println("---------------------------------")
-	fmt.Print("\n\nFINAL DEPENDENT SINK types (")
+	fmt.Print("\n\nFINAL DEPENDENT SINKS  (")
 	for st := range sttypes {
 		fmt.Print("\"",SST.STTypeName(sttypes[st]),"\"")
 	}
