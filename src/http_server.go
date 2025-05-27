@@ -74,6 +74,18 @@ func OrbitHandler(w http.ResponseWriter, r *http.Request) {
 		context := r.FormValue("context")
 		name := r.FormValue("name")
 
+		isdirac,begin,end,cnt := SST.DiracNotation(name)
+
+		if isdirac {
+			fmt.Println("Detected dirac transit",begin,cnt,end)
+			if cnt == "" {
+				HandlePathSolve(w,r,begin,end,chapter,context)
+			} else {
+				HandlePathSolve(w,r,begin,end,chapter,cnt)
+			}
+			return
+		}
+
 		if nclass == "" || ncptr == "" {
 			if name == "" {
 				name = "semantic"

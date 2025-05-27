@@ -1,7 +1,8 @@
 
 # pathsolve
 
-This is an experimental tool for finding contiguous paths between node sets.
+`pathsolve` is an experimental tool for finding contiguous paths between node sets.
+It can also be accessed through the web browser.
 
 For now, you can get started by trying the examples, e.g.
 <pre>
@@ -90,3 +91,21 @@ Or the adjoint path search:
 $ go run pathsolve.go -begin B6 -end A1 -bwd
 
 </end>
+You can also use Dirac transition matrix notation like this:
+<pre>
+
+$ go run pathsolve.go "<end|start>"
+$ go run pathsolve.go "<target|start>"
+
+</end>
+Notice the order of the start and end sets.
+
+## Using in the web browser
+
+In the search field, enter the Dirac notation, e.g. `<target|start>` and relevant chapter `interference`, then click on `geometry`.
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/pathsolve1.png 'pathsolving in a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/pathsolve2.png 'pathsolving in a web interface')
+
+
+

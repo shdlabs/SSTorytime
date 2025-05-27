@@ -5469,6 +5469,10 @@ func DiracNotation(s string) (bool,string,string,string) {
 
 	var begin,end,context string
 
+	if s == "" {
+		return false,"","",""
+	}
+
 	if s[0] == '<' && s[len(s)-1] == '>' {
 		matrix := s[1:len(s)-1]
 		params := strings.Split(matrix,"|")
@@ -5476,12 +5480,12 @@ func DiracNotation(s string) (bool,string,string,string) {
 		switch len(params) {
 			
 		case 2: 
-			begin = params[0]
-			end = params[1]
+			end = params[0]
+			begin = params[1]
 		case 3:
-			begin = params[0]
+			end = params[0]
 			context = params[1]
-			end = params[2]			
+			begin = params[2]			
 		default:
 			fmt.Println("Bad Dirac notation, should be <a|b> or <a|context|b>")
 			os.Exit(-1)
