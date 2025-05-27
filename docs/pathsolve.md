@@ -90,14 +90,14 @@ Or the adjoint path search:
 
 $ go run pathsolve.go -begin B6 -end A1 -bwd
 
-</end>
+</pre>
 You can also use Dirac transition matrix notation like this:
 <pre>
 
 $ go run pathsolve.go "<end|start>"
 $ go run pathsolve.go "<target|start>"
 
-</end>
+</pre>
 Notice the order of the start and end sets.
 
 ## Using in the web browser
