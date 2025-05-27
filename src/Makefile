@@ -1,6 +1,6 @@
 #
 
-OBJ=N4L N4L-db searchN4L http_server notes
+OBJ=N4L N4L-db searchN4L http_server notes API_EXAMPLE
 
 all: $(OBJ)
 
@@ -17,6 +17,9 @@ http_server: http_server.go ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
 notes: notes.go ../pkg/SSTorytime/SSTorytime.go
+	go build -o $@ $@.go
+
+API_EXAMPLE: API_EXAMPLE.go ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
 clean:
