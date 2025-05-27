@@ -37,7 +37,7 @@ func main() {
 
 	fmt.Println("\nLook for node startinga thread with arrow",arrow,"regardlss of context")
 
-        matches2 := SST.GetNodesStartingStoriesForArrow(ctx,arrow)
+        matches2,_ := SST.GetNodesStartingStoriesForArrow(ctx,arrow)
 
         for p := range matches2 {
 

@@ -51,7 +51,7 @@ func main() {
 			nt.NPtr = SST.NodePtr{ CPtr : cptr, Class: SST.N1GRAM}
 			nt.Chap = "maze"
 
-			lnk.Arr = SST.GetDBArrowsWithArrowName(ctx,"connects to")
+			lnk.Arr,_ = SST.GetDBArrowsWithArrowName(ctx,"connects to")
 			lnk.Dst = nt.NPtr
 
 			np = SST.IdempDBAddNode(ctx, np)

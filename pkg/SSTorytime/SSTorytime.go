@@ -1097,12 +1097,44 @@ func CreateTable(ctx PoSST,defn string) bool {
 }
 
 // **************************************************************************
-// Store
+// Store - High level API
+// **************************************************************************
+
+func Vertex(ctx PoSST, name,chap string) Node {
+
+	var n Node
+
+	n.S = name
+	n.Chap = chap
+
+	return IdempDBAddNode(ctx,n)
+}
+
+// **************************************************************************
+
+func Edge(ctx PoSST,from Node,arrow string,to Node,context []string,weight float32) (ArrowPtr,int) {
+
+	arrowptr,sttype := GetDBArrowsWithArrowName(ctx,arrow)
+
+	var link Link
+
+	link.Arr = arrowptr
+	link.Dst = to.NPtr
+	link.Wgt = weight
+	link.Ctx = context
+
+	IdempDBAddLink(ctx,from,link,to)
+	return arrowptr,sttype
+}
+
+// **************************************************************************
+// Lower level functions
 // **************************************************************************
 
 func CreateDBNode(ctx PoSST, n Node) Node {
 
 	// Add node version setting explicit CPtr value, note different function call
+	// We use this function when we ARE managing/counting CPtr values ourselves
 
 	var qstr string
 
@@ -1147,6 +1179,9 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 
 func IdempDBAddNode(ctx PoSST,n Node) Node {
 
+	// We use this function when we aren't counting CPtr values
+	// This functon may be deprecated in future, replaced by Node()
+
 	var qstr string
 
 	// No need to trust the values, ignore/overwrite CPtr
@@ -1186,7 +1221,6 @@ func IdempDBAddNode(ctx PoSST,n Node) Node {
 	row.Close()
 
 	return n
-
 }
 
 // **************************************************************************
@@ -2957,16 +2991,14 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,searchtext string,chap string,cn [
 
 // **************************************************************************
 
-func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr {
+func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int) {
 
 	// Find the head / starting node matching an arrow sequence.
 	// It has outgoing (+sttype) but not incoming (-sttype) arrow
 
 	var matches []NodePtr
 
-	arrowptr := GetDBArrowsWithArrowName(ctx,arrow)
-
-	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
+	arrowptr,sttype := GetDBArrowsWithArrowName(ctx,arrow)
 
 	qstr := fmt.Sprintf("select GetStoryStartNodes(%d,%d,%d)",arrowptr,INVERSE_ARROWS[arrowptr],sttype)
 		
@@ -2974,7 +3006,7 @@ func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr {
 	
 	if err != nil {
 		fmt.Println("GetNodesStartingStoriesForArrow failed\n",qstr,err)
-		return nil
+		return nil,0
 	}
 	
 	var nptrstring string
@@ -2986,7 +3018,7 @@ func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) []NodePtr {
 	
 	row.Close()
 
-	return matches
+	return matches,sttype
 }
 
 // **************************************************************************
@@ -2999,9 +3031,7 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,co
 
 	var matches []NodePtr
 
-	arrowptr := GetDBArrowsWithArrowName(ctx,arrow)
-
-	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
+	arrowptr,sttype := GetDBArrowsWithArrowName(ctx,arrow)
 
 	chp := "%"+chapter+"%"
 	cntx := FormatSQLStringArray(context)
@@ -3030,7 +3060,7 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,co
 // Retrieve Arrow type data
 // **************************************************************************
 
-func GetDBArrowsWithArrowName(ctx PoSST,s string) ArrowPtr {
+func GetDBArrowsWithArrowName(ctx PoSST,s string) (ArrowPtr,int) {
 
 	if ARROW_DIRECTORY_TOP == 0 {
 		DownloadArrowsFromDB(ctx)
@@ -3038,13 +3068,14 @@ func GetDBArrowsWithArrowName(ctx PoSST,s string) ArrowPtr {
 
 	for a := range ARROW_DIRECTORY {
 		if s == ARROW_DIRECTORY[a].Long || s == ARROW_DIRECTORY[a].Short {
-			return ARROW_DIRECTORY[a].Ptr
+			sttype := STIndexToSTType(ARROW_DIRECTORY[a].STAindex)
+			return ARROW_DIRECTORY[a].Ptr,sttype
 		}
 	}
 
 	fmt.Println("No such arrow found in database:",s)
 	os.Exit(-1)
-	return -1
+	return -1,0
 }
 
 // **************************************************************************
@@ -4167,7 +4198,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 		arrname = "then"
 	}
 
-	arrowptr := GetDBArrowsWithArrowName(ctx,arrname)
+	arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrname)
 
 	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,chapter,context)
 	

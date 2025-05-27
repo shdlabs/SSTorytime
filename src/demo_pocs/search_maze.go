@@ -52,7 +52,7 @@ func main() {
 			nt.NPtr = SST.NodePtr{ CPtr : cptr, Class: SST.N1GRAM}
 			nt.Chap = "maze"
 
-			lnk.Arr = SST.GetDBArrowsWithArrowName(ctx,"fwd")
+			lnk.Arr,_ = SST.GetDBArrowsWithArrowName(ctx,"fwd")
 
 			if lnk.Arr < 0 {
 				fmt.Println("Arrow not yet defined in the database")
