@@ -126,4 +126,6 @@ The tool-set consistent of several components, starting with:
 
 * [http_server](docs/Tutorial.md) - a prototype webserver providing the SSTorytime browsing service
 
+* [API_EXAMPLE](src/API_EXAMPLE.go) - a simple store and retrieve example of the graph database.
+
 
