@@ -4,6 +4,16 @@
 `pathsolve` is an experimental tool for finding contiguous paths between node sets.
 It can also be accessed through the web browser.
 
+`pathsolve` also reports about two deeper analyses of the paths:
+
+* *Betweenness centrality*:  a score for how many times each path passes through each node in the path sets.
+The hiighest scoring nodes are 'most central' in the sense of flow throughput.
+
+* *Supernodes*: these are nodes that form equivalence sets. The members of a supernode are interchangeable as far
+as the path process is concerned. The map to and from the same locations, so they are symmetrical.
+
+## Command line
+
 For now, you can get started by trying the examples, e.g.
 <pre>
 $ cd examples
@@ -107,5 +117,7 @@ In the search field, enter the Dirac notation, e.g. `<target|start>` and relevan
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/pathsolve1.png 'pathsolving in a web interface')
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/pathsolve2.png 'pathsolving in a web interface')
 
+
+Notice the reporting about supernodes and betweenness centrality scores. 
 
 
