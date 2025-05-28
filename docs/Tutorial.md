@@ -135,6 +135,33 @@ If you choose verbose output, you see more of what's going on:
 
 That already covers a lot of possibilities!
 
+## Uploading to the database
+
+To upload notes to the database, you use the `N4L-db` version of the tool. To get
+started, you can try some of the examples:
+<pre>
+$ cd examples
+$ make 
+</pre>
+You see this runs the following command:
+<pre>
+../src/N4L-db -u -wipe doors.n4l Mary.n4l chinese*n4l branches.n4l doubleslit.n4l ConstructionProcesses.n4l wardleymap.n4l 
+brains.n4l kubernetes.n4l SSTorytime.n4l integral.n4l reasoning.n4l
+</pre>
+The `-u` option tells the program to upload to the database. The `-wipe` option, tells it to override
+whatever is already in the database and start again. If you want to append new data, you can simply
+omit the `-wipe` option:
+<pre>
+$ ../src/N4L-db -u LoopyLoo.n4l
+</pre>
+The examples in the documentation assume you set up from the start with these uploads:
+<pre>
+$ cd examples
+$ make 
+$ ../src/N4L-db -u LoopyLoo.n4l
+</pre>
+
+
 ## Browsing the results
 
 Eventually, there will be tools for scripting the search in simple
