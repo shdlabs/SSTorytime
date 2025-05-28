@@ -134,7 +134,8 @@ These are used to simplify the importing of packages. Finally, you need to link 
 </pre>
 The last step links the directory where you will keep the Smart Spacetime code library to the list of libraries that Go knows about. You’ll also need to set a GOPATH environment variable and add the installation directory to your execution path.For Linux (using default bash shell) you edit the file “~/.bashrc” in your home directory using your favourite text editor. It should contain these lines, as per the golang destructions:
 <pre>
-export PATH=$PATH:/usr/local/go/binexport GOPATH=~/go# Set a short promptexport PS1=”mark% “
+export PATH=$PATH:/usr/local/go/bin
+export GOPATH=~/go
 </pre>
 Don’t forget to restart your shell or command window after editing this.
 
