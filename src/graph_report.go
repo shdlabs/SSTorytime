@@ -11,28 +11,103 @@ import (
 	"fmt"
 	"strings"
 	"sort"
+	"flag"
+	"os"
         SST "SSTorytime"
 )
+
+var CHAPTER string
+var CONTEXT []string
+var STTYPES []int
+var DEPTH int
 
 //******************************************************************
 
 func main() {
 
+	Init()
+
 	load_arrows := true
 	ctx := SST.Open(load_arrows)
 
-	chapter := "loop test"
-        context := []string{""}
-
-	chaps := SST.GetDBChaptersMatchingName(ctx,chapter)
-	sttypes := []int{1}
-	depth := 6
+	chaps := SST.GetDBChaptersMatchingName(ctx,CHAPTER)
 
 	for chap := range chaps {
-		AnalyzeGraph(ctx,chaps[chap],context,sttypes,depth) 
+		AnalyzeGraph(ctx,chaps[chap],CONTEXT,STTYPES,DEPTH) 
 	}
 
 	SST.Close(ctx)
+}
+
+//**************************************************************
+
+func Usage() {
+	
+	fmt.Printf("usage: graph_report [-sttype comma separated L,C,P,N] [-depth integer] [-chapter comma separated string] [context]\n")
+	flag.PrintDefaults()
+
+	os.Exit(2)
+}
+
+//**************************************************************
+
+func Init() []string {
+
+	flag.Usage = Usage
+
+	chapterPtr := flag.String("chapter", "", "a optional substring to match specific chapters")
+	sttypePtr := flag.String("sttype", "+L", "link st-types e.g. L,C,P,N")
+	depthPtr := flag.Int("depth", 6, "maximum probe depth for loop detection")
+
+	flag.Parse()
+	args := flag.Args()
+
+	CHAPTER = "none"
+
+	if *chapterPtr != "" {
+		CHAPTER = *chapterPtr
+	}
+
+	if *sttypePtr != "" {
+
+		var sttypes = make(map[int]bool)
+		array := strings.Split(*sttypePtr,",")
+		for t := range array {
+			switch array[t] {
+			case "L","+L": 
+				sttypes[1] = true
+			case "C","+C": 
+				sttypes[2] = true
+			case "E","+E": 
+				sttypes[3] = true
+			case "P","+P": 
+				sttypes[3] = true
+			case "N","+N","-N": 
+				sttypes[4] = true
+			case "-L": 
+				sttypes[-1] = true
+			case "-C": 
+				sttypes[-2] = true
+			case "-E": 
+				sttypes[-3] = true
+			case "-P": 
+				sttypes[-3] = true
+			default:
+				fmt.Println("Unknown sttype",array[t],"(should be in { L,C,E,N } +/-)")
+				os.Exit(-1)
+			}
+		}
+
+		for t := range sttypes {
+			STTYPES = append(STTYPES,t)
+		}
+	}
+
+	DEPTH = *depthPtr
+
+	SST.MemoryInit()
+
+	return args
 }
 
 //******************************************************************

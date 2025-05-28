@@ -2776,7 +2776,7 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 	context := FormatSQLStringArray(cn)
 	chapter := "%"+chap+"%"
 
-	if dim > 4 {
+	if dim == 0 || dim > 4 {
 		fmt.Println("Maximum 4 sttypes in GetDBSingletonBySTType")
 		return nil,nil
 	}
@@ -2802,7 +2802,7 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetDBSingletonBySTType Failed",err,qstr)
+		fmt.Println("QUERY GetDBSingletonBySTType Failed",err,"IN",qstr)
 		return nil,nil
 	}
 
@@ -2847,7 +2847,7 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 	row, err = ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetDBSingletonBySTType Failed",err)
+		fmt.Println("QUERY GetDBSingletonBySTType 2 Failed",err,"IN",qstr)
 		return nil,nil
 	}
 
