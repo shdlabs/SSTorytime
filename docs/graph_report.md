@@ -18,7 +18,9 @@ each node as being a reservoir of 'weight' and each directed arrow as being a gr
 all the weight in a directed graph flows to the sinks immediately, leaving all others empty.
 In a symmetrized (undirected graph), the flows reach equilibrium and the highest levels settle
 in the nodes that are best connected. The capacitance of these nodes tells us something about
-their topological connectivity, setting aside the directedness of the arrows. 
+their topological connectivity, setting aside the directedness of the arrows.  The graph_report tool
+reports the unbiased vector normalization of the principal eigenvector when removing all arrow
+directions but preserving their weights.
 
 For example, the report on the "LoopyLoo.n4l" graph, for leadsto links:
 
