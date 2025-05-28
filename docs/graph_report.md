@@ -13,8 +13,8 @@ They exchange places if one changes the sign of the link type.
 * *Eigenvector centrality*: undirected graphs have a property by virtue of the 
 Frobenious-Perron theorem that every undirected graph has a non-negative principal
 eigenvector. It ranks the 'connectedness' of nodes, or their importance, by measuring
-the amount of `weight' propagated to each node. If we think of
-each node as being a reservoir of `weight' and each directed arrow as being a gradient, then
+the amount of 'weight' propagated to each node. If we think of
+each node as being a reservoir of 'weight' and each directed arrow as being a gradient, then
 all the weight in a directed graph flows to the sinks immediately, leaving all others empty.
 In a symmetrized (undirected graph), the flows reach equilibrium and the highest levels settle
 in the nodes that are best connected. The capacitance of these nodes tells us something about
