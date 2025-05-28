@@ -3686,7 +3686,7 @@ func InNodeSet(list []NodePtr,node NodePtr) bool {
 // Adjacency matrix representation and graph vector support
 // **************************************************************************
 
-func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([][]float32,[]NodePtr) {
+func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []string,transpose bool) ([][]float32,[]NodePtr) {
 
 	// Return a weighted adjacency matrix by nptr, and an index:nptr lookup table
 	// Returns a connected adjacency matrix for the subgraph and a lookup table
@@ -3797,6 +3797,7 @@ func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []strin
 
 	// Now we know the dimension of the square matrix = counter
         // and an ordered directory vector[index] ->  NPtr, as well as lookup table
+	// So we assemble the adjacency matrix (or its transpose on request)
 
 	adj := make([][]float32,counter)
 
@@ -3807,9 +3808,15 @@ func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []strin
 		row := protoadj[r]
 
 		for l := 0; l < len(row); l++ {
+
 			lnk := row[l]
 			c := lookup[lnk.Dst]
-			adj[r][c] = lnk.Wgt
+
+			if transpose {
+				adj[c][r] = lnk.Wgt
+			} else {
+				adj[r][c] = lnk.Wgt
+			}
 		}
 	}
 	
