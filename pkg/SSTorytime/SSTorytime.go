@@ -65,6 +65,9 @@ const (
 	GT1024 = 6
 )
 
+var CLASS_CHANNEL_DESCRIPTION = []string{"","single word ngram","two word ngram","three word ngram",
+	"string less than 128 chars","string less than 1024 chars","string greater than 1024 chars"}
+
 //**************************************************************
 
 type Node struct {
@@ -2539,11 +2542,22 @@ func GetDBChaptersMatchingName(ctx PoSST,src string) []string {
 	}
 
 	var whole string
+	var chapters = make(map[string]int)
 	var retval []string
 
 	for row.Next() {		
 		err = row.Scan(&whole)
-		retval = append(retval,whole)
+		several := strings.Split(whole,",")
+
+		for s := range several {
+			chapters[several[s]]++
+		}
+	}
+
+	for c := range chapters {
+		if strings.Contains(c,src) {
+			retval = append(retval,c)
+		}
 	}
 
 	sort.Strings(retval)
@@ -4064,7 +4078,7 @@ func CompareVec(v1,v2 []float32) float32 {
 
 //**************************************************************
 
-func FindGradientFieldTop(sadj [][]float32,evc []float32) ([]int,[][]int) {
+func FindGradientFieldTop(sadj [][]float32,evc []float32) (map[int][]int,[]int,[][]int) {
 
 	// Hill climbing gradient search
 
@@ -4072,6 +4086,7 @@ func FindGradientFieldTop(sadj [][]float32,evc []float32) ([]int,[][]int) {
 
 	var localtop []int
 	var paths [][]int
+	var regions = make(map[int][]int)
 
 	for index := 0; index < dim; index++ {
 
@@ -4079,11 +4094,12 @@ func FindGradientFieldTop(sadj [][]float32,evc []float32) ([]int,[][]int) {
 
 		ltop,path := GetHillTop(index,sadj,evc)
 
+		regions[ltop] = append(regions[ltop],index)
 		localtop = append(localtop,ltop)
 		paths = append(paths,path)
 	}
 
-	return localtop,paths
+	return regions,localtop,paths
 }
 
 //**************************************************************

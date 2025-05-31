@@ -1,7 +1,6 @@
 //******************************************************************
 //
-// Study graph properties
-// 
+// Study graph properties - print a basic report of key map features
 //
 //******************************************************************
 
@@ -114,10 +113,28 @@ func Init() []string {
 
 func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,depth int) {
 
+
+	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(ctx,sttypes,chapter,context,false)
+	symb := SST.SymbolMatrix(adj)
+	sadj := SST.SymmetrizeMatrix(adj)
+	num := GetNumberOfLinks(adj)
+	distribution := GetNameDistribution(nodekey)
+	total := len(nodekey)
+	max := total*(total-1)
+
 	fmt.Println("----------------------------------------------------------------")
 	fmt.Printf("Analysing chapter \"%s\", context %v to path length %d\n",chapter,context,depth)
-	fmt.Println("----------------------------------------------------------------")
+	fmt.Println("----------------------------------------------------------------\n")
 
+	fmt.Println("\n* TOTAL NODES IN THE SEARCH REGION",total)
+	fmt.Printf("\n* TOTAL DIRECTED LINKS = %d of possible %d = %2.2f %%\n",num,max,float64(num)/float64(max))
+	fmt.Printf("\n* DISTRIBUTION OF NAME TYPE/LENGTHS:\n")
+		for class := 1; class < 7; class++ {
+			if distribution[class] > 0 {
+				fmt.Printf("  - %s : %d / %d\n",SST.CLASS_CHANNEL_DESCRIPTION[class],distribution[class],total)
+			}
+		}
+	
 	sources,sinks := SST.GetDBSingletonBySTType(ctx,sttypes,chapter,context)
 
 	fmt.Print("\n\n* PROCESS ORIGINS / ROOT DEPENDENCIES / PATH SOURCES for (")
@@ -139,12 +156,8 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 
 	PrintNodes(ctx,sinks)
 
-	adj,nodekey := SST.GetDBAdjacentNodePtrBySTType(ctx,sttypes,chapter,context,false)
-	symb := SST.SymbolMatrix(adj)
-	sadj := SST.SymmetrizeMatrix(adj)
-
 	fmt.Println("")
-	fmt.Println("* DIRECTED LOOP SEARCH:\n")
+	fmt.Println("* DIRECTED LOOPS AND CYCLES:\n")
 	fmt.Println("\n")
 
 	// Find power matrices
@@ -163,34 +176,72 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 			an[power],sn[power] = SST.SymbolicMultiply(an[power-1],adj,sn[power-1],symb)
 		}
 
-		loop,memberlist := AnalyzePowerMatrix(ctx,sn[power])
+		loop,_ := AnalyzePowerMatrix(ctx,sn[power])
 
 		for m := range loop {
 			length := len(strings.Split(m,")("))
 			fmt.Println("  Cycle of length",length,"with members",m)
-			PrintKeyNodes(ctx,memberlist[m],nodekey)
+			//PrintKeyNodes(ctx,memberlist[m],nodekey)
 		}
 	}
 
 	fmt.Println("")
 	evc := SST.ComputeEVC(sadj)
 
-	fmt.Println("* Symmetrized Eigenvector Centrality = FLOW RESERVOIR CAPACITANCE AT EQUILIBRIUM = \n")
+	fmt.Println("* SYMMETRIZED EIGENVECTOR CENTRALITY = FLOW RESERVOIR CAPACITANCE AT EQUILIBRIUM = \n")
 
 	PrintVector(ctx,evc,nodekey)
 
 	// Now find the undirected graph properties 
 
-	evctop,path := SST.FindGradientFieldTop(sadj,evc)
+	regions,evctop,path := SST.FindGradientFieldTop(sadj,evc)
 
 	fmt.Println("")
-	fmt.Println("At directionless equilibrium, there are",len(evctop),"local maxima in the EVC landscape:")
-
-	for index := 0; index < len(evc); index++ {
-		fmt.Println("\n  From node",index,"has local maximum at node *",evctop[index],"*, hop distance",len(path[index])-1,"along",path[index])
-		PrintKeyNodes(ctx,path[index],nodekey)
+	if len(regions) == 1 {
+		fmt.Println("* THERE IS",len(regions),"LOCAL MAXIMA IN THE EQUILIBRIUM EVC LANDSCAPE:\n")
+	} else {
+		fmt.Println("* THERE ARE",len(regions),"LOCAL MAXIMA IN THE EQUILIBRIUM EVC LANDSCAPE:\n")
 	}
 
+	for reg := range regions {
+		fmt.Println("  - subregion of maximum",reg,"consisting of nodes",regions[reg])
+		PrintKeyNodes(ctx,regions[reg],nodekey)
+	}
+
+	fmt.Println("\n* HILL-CLIMBING EVC-LAMDSCAPE GRADIENT PATHS:\n")
+
+	for index := 0; index < len(evc); index++ {
+		fmt.Println("     - Path node",index,"has local maximum at node *",evctop[index],"*, hop distance",len(path[index])-1,"along",path[index])		
+	}
+
+}
+
+//**************************************************************
+
+func GetNumberOfLinks(a [][]float32) int {
+
+	count := 0
+	for i := range a {
+		for j := range a[i] {
+			if a[i][j] > 0 {
+				count++
+			}
+		}
+	}
+	return count
+}
+
+//**************************************************************
+
+func GetNameDistribution(nodeptr []SST.NodePtr) [7]int {
+
+	var dist [7]int
+
+	for n := range nodeptr {
+		dist[nodeptr[n].Class]++
+	}
+
+	return dist
 }
 
 //**************************************************************
@@ -263,7 +314,7 @@ func PrintKeyNodes(ctx SST.PoSST,m []int,nodekey []SST.NodePtr) {
 	for member := range m {
 		nptr := nodekey[m[member]]
 		node := SST.GetDBNodeByNodePtr(ctx,nptr)
-		fmt.Printf("   - where %d -> %s\n",m[member],node.S)
+		fmt.Printf("     - where %d -> %s\n",m[member],node.S)
 	}
 }
 
@@ -274,7 +325,7 @@ func PrintVector(ctx SST.PoSST,vector []float32,nodekey []SST.NodePtr) {
 	for row := 0; row < len(vector); row++ {
 		nptr := nodekey[row]
 		node := SST.GetDBNodeByNodePtr(ctx,nptr)
-		fmt.Printf("   ( %2.2f ) <- %d = %s\n",vector[row],row,node.S)
+		fmt.Printf("   ( %3.3f ) <- %d = %s\n",vector[row],row,node.S)
 	}
 	fmt.Println()
 }
