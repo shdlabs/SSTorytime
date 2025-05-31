@@ -167,6 +167,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 
 	an[1] = adj
 	sn[1] = symb
+	acyclic := true
 
 	for power := 2; power <= depth; power++ {
 
@@ -179,10 +180,14 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 		loop,_ := AnalyzePowerMatrix(ctx,sn[power])
 
 		for m := range loop {
+			acyclic = false
 			length := len(strings.Split(m,")("))
-			fmt.Println("  Cycle of length",length,"with members",m)
-			//PrintKeyNodes(ctx,memberlist[m],nodekey)
+			fmt.Println("  - Cycle of length",length,"with members",m)
 		}
+	}
+
+	if acyclic {
+		fmt.Println("   - Acyclic")
 	}
 
 	fmt.Println("")
