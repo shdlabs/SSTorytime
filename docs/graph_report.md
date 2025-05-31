@@ -22,108 +22,89 @@ their topological connectivity, setting aside the directedness of the arrows.  T
 reports the unbiased vector normalization of the principal eigenvector when removing all arrow
 directions but preserving their weights.
 
-For example, the report on the "LoopyLoo.n4l" graph, for leadsto links:
+For example, the report on the "doors.n4l" graph, for leadsto links:
 
 <pre>
 
-$ go run graph_report.go -chapter "loop" -sttype=L 
+$ go run graph_report.go -chapter multi
 ----------------------------------------------------------------
-Analysing chapter "loop test", context [] to path length 6
+Analysing chapter "multi slit interference", context [] to path length 6
 ----------------------------------------------------------------
 
-* PROCESS ORIGINS / ROOT DEPENDENCIES / PATH SOURCES for ("+leads to") in loop test
+* TOTAL NODES IN THE SEARCH REGION 13
 
-   - NPtr(1,3161) -> L0
+* TOTAL DIRECTED LINKS = 17 of possible 156 = 0.11 %
 
-* FINAL END-STATES / PATH SINK NODES for ("+leads to") in loop test
+* DISTRIBUTION OF NAME TYPE/LENGTHS:
+  - single word ngram : 10 / 13
+  - two word ngram : 3 / 13
 
-   - NPtr(1,3170) -> L9
 
-* DIRECTED LOOP SEARCH:
+* PROCESS ORIGINS / ROOT DEPENDENCIES / PATH SOURCES for ("+leads to") in multi slit interference
 
-  Cycle of length 3 with members (1)(4)(5)
-   - where 1 -> L1
-   - where 4 -> L2
-   - where 5 -> L3
-  Cycle of length 3 with members (2)(3)(7)
-   - where 2 -> L6
-   - where 3 -> L7
-   - where 7 -> L5
-  Cycle of length 4 with members (2)(3)(7)(8)
-   - where 2 -> L6
-   - where 3 -> L7
-   - where 7 -> L5
-   - where 8 -> L8
-  Cycle of length 3 with members (2)(3)(7)
-   - where 2 -> L6
-   - where 3 -> L7
-   - where 7 -> L5
-  Cycle of length 3 with members (1)(4)(5)
-   - where 1 -> L1
-   - where 4 -> L2
-   - where 5 -> L3
+   - NPtr(1,0) -> start
 
-* Symmetrized Eigenvector Centrality = FLOW RESERVOIR CAPACITANCE AT EQUILIBRIUM = 
 
-   ( 0.09 ) <- 0 = L0
-   ( 0.25 ) <- 1 = L1
-   ( 0.70 ) <- 2 = L6
-   ( 0.96 ) <- 3 = L7
-   ( 0.23 ) <- 4 = L2
-   ( 0.35 ) <- 5 = L3
-   ( 0.49 ) <- 6 = L4
-   ( 1.00 ) <- 7 = L5
-   ( 0.70 ) <- 8 = L8
-   ( 0.34 ) <- 9 = L9
 
-At directionless equilibrium, there are 10 local maxima in the EVC landscape:
+* FINAL END-STATES / PATH SINK NODES for ("+leads to") in multi slit interference
 
-  From node 0 has local maximum at node * 7 *, hop distance 4 along [0 1 5 6 7]
-   - where 0 -> L0
-   - where 1 -> L1
-   - where 5 -> L3
-   - where 6 -> L4
-   - where 7 -> L5
+   - NPtr(2,0) -> target 1
+   - NPtr(2,1) -> target 2
+   - NPtr(2,2) -> target 3
 
-  From node 1 has local maximum at node * 7 *, hop distance 3 along [1 5 6 7]
-   - where 1 -> L1
-   - where 5 -> L3
-   - where 6 -> L4
-   - where 7 -> L5
+* DIRECTED LOOPS AND CYCLES:
 
-  From node 2 has local maximum at node * 7 *, hop distance 1 along [2 7]
-   - where 2 -> L6
-   - where 7 -> L5
+   - Acyclic
 
-  From node 3 has local maximum at node * 7 *, hop distance 1 along [3 7]
-   - where 3 -> L7
-   - where 7 -> L5
+* SYMMETRIZED EIGENVECTOR CENTRALITY = FLOW RESERVOIR CAPACITANCE AT EQUILIBRIUM = 
 
-  From node 4 has local maximum at node * 7 *, hop distance 3 along [4 5 6 7]
-   - where 4 -> L2
-   - where 5 -> L3
-   - where 6 -> L4
-   - where 7 -> L5
+   ( 0.993 ) <- 0 = tram
+   ( 0.768 ) <- 1 = target 3
+   ( 0.847 ) <- 2 = gate
+   ( 0.496 ) <- 3 = bike
+   ( 1.000 ) <- 4 = start
+   ( 0.787 ) <- 5 = door
+   ( 0.940 ) <- 6 = port
+   ( 0.678 ) <- 7 = hole
+   ( 0.767 ) <- 8 = river
+   ( 0.272 ) <- 9 = passage
+   ( 0.093 ) <- 10 = target 1
+   ( 0.272 ) <- 11 = road
+   ( 0.093 ) <- 12 = target 2
 
-  From node 5 has local maximum at node * 7 *, hop distance 2 along [5 6 7]
-   - where 5 -> L3
-   - where 6 -> L4
-   - where 7 -> L5
 
-  From node 6 has local maximum at node * 7 *, hop distance 1 along [6 7]
-   - where 6 -> L4
-   - where 7 -> L5
+* THERE ARE 2 LOCAL MAXIMA IN THE EQUILIBRIUM EVC LANDSCAPE:
 
-  From node 7 has local maximum at node * 7 *, hop distance 0 along [7]
-   - where 7 -> L5
+  - subregion of maximum 0 consisting of nodes [0 1]
+     - where 0 -> tram
+     - where 1 -> target 3
+  - subregion of maximum 4 consisting of nodes [2 3 4 5 6 7 8 9 10 11 12]
+     - where 2 -> gate
+     - where 3 -> bike
+     - where 4 -> start
+     - where 5 -> door
+     - where 6 -> port
+     - where 7 -> hole
+     - where 8 -> river
+     - where 9 -> passage
+     - where 10 -> target 1
+     - where 11 -> road
+     - where 12 -> target 2
 
-  From node 8 has local maximum at node * 7 *, hop distance 1 along [8 7]
-   - where 8 -> L8
-   - where 7 -> L5
+* HILL-CLIMBING EVC-LAMDSCAPE GRADIENT PATHS:
 
-  From node 9 has local maximum at node * 7 *, hop distance 2 along [9 3 7]
-   - where 9 -> L9
-   - where 3 -> L7
-   - where 7 -> L5
+     - Path node 0 has local maximum at node * 0 *, hop distance 0 along [0]
+     - Path node 1 has local maximum at node * 0 *, hop distance 1 along [1 0]
+     - Path node 2 has local maximum at node * 4 *, hop distance 1 along [2 4]
+     - Path node 3 has local maximum at node * 4 *, hop distance 2 along [3 2 4]
+     - Path node 4 has local maximum at node * 4 *, hop distance 0 along [4]
+     - Path node 5 has local maximum at node * 4 *, hop distance 1 along [5 4]
+     - Path node 6 has local maximum at node * 4 *, hop distance 1 along [6 4]
+     - Path node 7 has local maximum at node * 4 *, hop distance 1 along [7 4]
+     - Path node 8 has local maximum at node * 4 *, hop distance 2 along [8 6 4]
+     - Path node 9 has local maximum at node * 4 *, hop distance 2 along [9 5 4]
+     - Path node 10 has local maximum at node * 4 *, hop distance 3 along [10 9 5 4]
+     - Path node 11 has local maximum at node * 4 *, hop distance 2 along [11 5 4]
+     - Path node 12 has local maximum at node * 4 *, hop distance 3 along [12 11 5 4]
 
 </pre>
