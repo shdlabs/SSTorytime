@@ -1368,6 +1368,11 @@ func IdempDBAddLink(ctx PoSST,from Node,link Link,to Node) {
 		os.Exit(-1)
 	}
 
+	if link.Wgt == 0 {
+		fmt.Println("Attempt to register a link with zero weight is pointless")
+		os.Exit(-1)
+	}
+
 	sttype := STIndexToSTType(ARROW_DIRECTORY[link.Arr].STAindex)
 
 	AppendDBLinkToNode(ctx,frptr,link,sttype)
@@ -3733,7 +3738,7 @@ func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []strin
 	qstr = fmt.Sprintf("SELECT NPtr%s FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)",qsearch,chapter,qwhere)
 
 	row, err := ctx.DB.Query(qstr)
-	
+
 	if err != nil {
 		fmt.Println("QUERY GetDBAdjacentNodePtrBySTType Failed",err)
 		return nil,nil
@@ -3805,7 +3810,6 @@ func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []strin
 			}
 			// Now we have a vector row for each NPtr, with a list of links
 			protoadj[rowindex] = append(protoadj[rowindex],links...)
-
 		}
 	}
 

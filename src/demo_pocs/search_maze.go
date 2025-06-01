@@ -60,6 +60,7 @@ func main() {
 			}
 
 			lnk.Dst = nt.NPtr
+			lnk.Wgt = 1
 			lnk.Ctx = []string{"maze"}
 
 			// More appropriate high level functions

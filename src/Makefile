@@ -1,6 +1,6 @@
 #
 
-OBJ=N4L N4L-db searchN4L http_server pathsolve notes API_EXAMPLE
+OBJ=N4L N4L-db searchN4L http_server pathsolve notes graph_report API_EXAMPLE
 
 all: $(OBJ)
 
@@ -22,7 +22,11 @@ notes: notes.go ../pkg/SSTorytime/SSTorytime.go
 pathsolve: pathsolve.go ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
+graph_report: graph_report.go ../pkg/SSTorytime/SSTorytime.go
+	go build -o $@ $@.go
+
 API_EXAMPLE: API_EXAMPLE.go ../pkg/SSTorytime/SSTorytime.go
+
 	go build -o $@ $@.go
 
 clean:
