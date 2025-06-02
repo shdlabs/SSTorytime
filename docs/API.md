@@ -7,7 +7,7 @@ that interact with the database through the Go API
 [here](https://github.com/markburgess/SSTorytime/tree/main/src/demo_pocs).
 
 Notable examples:
-* [Maze solver 1](../src/demo_pocs/search_maze) and * [Maze solver 2](demo_pocs/search_maze2)
+* [Maze solver 1](../src/demo_pocs/search_maze.go) and * [Maze solver 2](demo_pocs/search_maze2.go)
 * [Path solver](../src/pathsolve.go)
 * [Graph reporter](../src/graph_report.go)
 
