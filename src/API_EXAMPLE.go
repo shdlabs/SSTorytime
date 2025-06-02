@@ -80,7 +80,7 @@ func LookupStory(ctx SST.PoSST) {
 
 					name := SST.GetDBNodeByNodePtr(ctx,paths[p][l].Dst).S
 					fmt.Println("    ",l,"xx  --> ",
-						paths[p][l].Dst,"=",name,"weight",
+						paths[p][l].Dst,"=",name,"  , weight",
 						paths[p][l].Wgt,"context",paths[p][l].Ctx)
 				}
 			}

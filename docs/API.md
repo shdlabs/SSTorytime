@@ -23,6 +23,129 @@ standard, and a battle-tested and extensible data platform.*
 You will find examples of using Go(lang) code to write custom scripts
 that interact with the database through the Go API [here](https://github.com/markburgess/SSTorytime/tree/main/src/demo_pocs).
 
+
+## Creating graph node data
+
+See the [example](../src/API_EXAMPLE.go). To make node registration as easy as possible, you can use two functions
+`Vertex()` and `Edge()` to create nodes and links respectively. These names are chosen to distance themselves
+from the underlying `Node` and `Link`naming, by using the more mathematical names for these objects.
+To open the context channel for the database, one brackets the meat of a program with simple
+Open and Close functions:
+
+<pre>
+func main() {
+
+	load_arrows := false
+	ctx := SST.Open(load_arrows)
+
+	AddStory(ctx)
+	LookupStory(ctx)
+
+	SST.Close(ctx)
+}
+
+</pre>
+Adding nodes to a database, without using the N4L language is straightforward:
+<pre>
+	chap := "home and away"
+	context := []string{""}
+	var w float32 = 1.0
+
+	n1 := SST.Vertex(ctx,"Mary had a little lamb",chap)
+	n2 := SST.Vertex(ctx,"Whose fleece was dull and grey",chap)
+
+	n3 := SST.Vertex(ctx,"And every time she washed it clean",chap)
+	n4 := SST.Vertex(ctx,"It just went to roll in the hay",chap)
+
+	n5 := SST.Vertex(ctx,"And when it reached a certain age ",chap)
+	n6 := SST.Vertex(ctx,"She'd serve it on a tray",chap)
+
+	SST.Edge(ctx,n1,"then",n2,context,w)
+
+	// bifurcation!
+
+	SST.Edge(ctx,n2,"then",n3,context,w/2)
+	SST.Edge(ctx,n2,"then",n5,context,w/2)
+
+	// endings
+
+	SST.Edge(ctx,n3,"then",n4,context,w)
+	SST.Edge(ctx,n5,"then",n6,context,w)
+
+</pre>
+Looking up up the data is more complicated because there are many options.
+This example looks for story paths starting from a node that we search for by name.
+<ol>
+<li>First we get a pointer to the starting node by random access lookup:
+<pre>
+	start_set := SST.GetDBNodePtrMatchingName(ctx,"Mary had a","")
+</pre>
+Because there might be several nodes that match your name description, this returns
+an array of pointers.
+
+<li>Next we want to know the Semantic Spacetime type of link to follow.
+If you remember the numbers -3,-2,-1,0,1,2,3 of the link type (leadsto,contains,property,near)
+you can select `sttype` directly. If you only remember the name of the relation, you can search
+for it:
+<pre>
+	_,sttype := SST.GetDBArrowsWithArrowName(ctx,"then")
+</pre>
+<li>Setting a limit on the path length to explore, you search for the forward cone
+of type `sttype` from the starting set of node pointers.
+<pre>
+	path_length := 4
+
+	for n := range start_set {
+
+		paths,_ := SST.GetFwdPathsAsLinks(ctx,start_set[n],sttype,path_length)
+
+		for p := range paths {
+
+			if len(paths[p]) > 1 {
+			
+				fmt.Println("    Path",p," len",len(paths[p]))
+
+				for l := 0; l < len(paths[p]); l++ {
+
+					// Find the long node name details from the pointer
+
+					name := SST.GetDBNodeByNodePtr(ctx,paths[p][l].Dst).S
+
+					fmt.Println("    ",l,"xx  --> ",
+						paths[p][l].Dst,"=",name,"  , weight",
+						paths[p][l].Wgt,"context",paths[p][l].Ctx)
+				}
+			}
+		}
+	}
+
+</pre>
+</ol>
+
+Running the `API_EXAMPLE.go` program:
+<pre>
+$ cd src
+$ make
+go build -o API_EXAMPLE API_EXAMPLE.go
+$ ./API_EXAMPLE 
+    Path 0  len 4
+     0 xx  -->  {4 0} = Mary had a little lamb   , weight 1 context []
+     1 xx  -->  {4 2} = Whose fleece was white as snow   , weight 1 context [cutting edge high brow poem]
+     2 xx  -->  {4 3} = And everywhere that Mary went   , weight 1 context [cutting edge high brow poem]
+     3 xx  -->  {4 4} = The lamb was sure to go   , weight 1 context [cutting edge high brow poem]
+    Path 1  len 4
+     0 xx  -->  {4 0} = Mary had a little lamb   , weight 1 context []
+     1 xx  -->  {4 987} = Whose fleece was dull and grey   , weight 1 context []
+     2 xx  -->  {4 988} = And every time she washed it clean   , weight 0.5 context []
+     3 xx  -->  {4 989} = It just went to roll in the hay   , weight 1 context []
+    Path 2  len 4
+     0 xx  -->  {4 0} = Mary had a little lamb   , weight 1 context []
+     1 xx  -->  {4 987} = Whose fleece was dull and grey   , weight 1 context []
+     2 xx  -->  {4 990} = And when it reached a certain age    , weight 0.5 context []
+     3 xx  -->  {4 991} = She'd serve it on a tray   , weight 1 context []
+
+</pre>
+
 ## Searching a graph
 
 We need to respect the geometry of the semantic spacetime when tracing and presenting paths.
