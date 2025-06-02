@@ -36,6 +36,8 @@ stamp-h1
 N4L
 N4L-db
 http_server
+pathsolve
+graph_report
 API_EXAMPLE
 searchN4L
 search_broad 
