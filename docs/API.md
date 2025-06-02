@@ -2,34 +2,21 @@
 
 # An API for interacting with the SST graph
 
-*(These preliminary functions are unlikely to be final public functions in the final API, they
-are still in the development and research phase of testing )*
-
-Once data have been entered into a SSToryline database, we want to be able to extract it again.
-It's possible to create tools for this, but ultimately any set of tools will tend to limit the user.
-A user's imagination should be the only limit. 
-
-Many specialized graph databases offer graph languages, but they
-expose an important problem with Domain Specific Languages, which is
-that by trying to make simple things easy, they make less-simple
-things hard. The most well known standard for data (Structured Query
-Language, or SQL) is itself a Domain Specific Language with exactly
-these problems. However, in Open Source Postgres there are plenty of
-extensions that make it possible to overcome the limitations of SQL.
-
-*This project uses Postgres because of that compromise between a well known
-standard, and a battle-tested and extensible data platform.*
-
-You will find examples of using Go(lang) code to write custom scripts
-that interact with the database through the Go API [here](https://github.com/markburgess/SSTorytime/tree/main/src/demo_pocs).
+You will find many examples of using Go(lang) code to write custom scripts
+that interact with the database through the Go API
+[here](https://github.com/markburgess/SSTorytime/tree/main/src/demo_pocs).
 
 
-## Creating graph node data
+## Creating an SST graph from data
 
 See the [example](../src/API_EXAMPLE.go). To make node registration as easy as possible, you can use two functions
 `Vertex()` and `Edge()` to create nodes and links respectively. These names are chosen to distance themselves
 from the underlying `Node` and `Link`naming, by using the more mathematical names for these objects.
-To open the context channel for the database, one brackets the meat of a program with simple
+
+### Structure
+
+Assuming the arrow names have been defined (e.g. by uploading them using N4L),
+then to open the context channel for the database, we bracket the meat of a program with
 Open and Close functions:
 
 <pre>
@@ -45,6 +32,10 @@ func main() {
 }
 
 </pre>
+
+### Add nodes and links from data
+
+For the meat of an AddStory function, we can use the Vertex and Edge functions to avoid low level details.
 Adding nodes to a database, without using the N4L language is straightforward:
 <pre>
 	chap := "home and away"
@@ -73,6 +64,9 @@ Adding nodes to a database, without using the N4L language is straightforward:
 	SST.Edge(ctx,n5,"then",n6,context,w)
 
 </pre>
+
+### Reading the graph back
+
 Looking up up the data is more complicated because there are many options.
 This example looks for story paths starting from a node that we search for by name.
 <ol>
@@ -121,6 +115,8 @@ of type `sttype` from the starting set of node pointers.
 
 </pre>
 </ol>
+
+### Checking the result
 
 Running the `API_EXAMPLE.go` program:
 <pre>
