@@ -277,9 +277,9 @@ functions.
 
 * To show the different tables:
 <pre>
-$ psql newdb
+$ psql storyline
 
-newdb=# \dt
+storyline=# \dt
               List of relations
  Schema |      Name      | Type  |   Owner    
 --------+----------------+-------+------------
@@ -292,7 +292,7 @@ newdb=# \dt
 </pre>
 * To query these, we look at the members:
 <pre>
-newdb=# \d node
+storyline=# \d node
                 Table "public.node"
  Column |  Type   | Collation | Nullable | Default 
 --------+---------+-----------+----------+---------
@@ -316,7 +316,7 @@ Indexes:
 
 Now try:
 <pre>
-newdb=# select S,chap from Node limit 10;
+storyline=# select S,chap from Node limit 10;
      s      |       chap       
 ------------+------------------
  please     | notes on chinese
@@ -335,7 +335,7 @@ newdb=# select S,chap from Node limit 10;
 
 * An alternative view of relations is provided by NodeArrowNode:
 <pre>
-newdb=# select *  from NodeArrowNode LIMIT 10;
+storyline=# select *  from NodeArrowNode LIMIT 10;
  nfrom | sttype | arr | wgt |              ctx              |   nto   
 -------+--------+-----+-----+-------------------------------+---------
  (1,0) |     -1 |  69 |   1 | {please,"thank you",thankyou} | (1,1)
@@ -358,7 +358,7 @@ of things, we can get away with deferring the lookup of the actual data until we
 looking for. That information can be cached so as to minimize the data transferred over the wire.
 
 <pre>
-newdb=# select S from Node where NPtr=(1,5);
+storyline=# select S from Node where NPtr=(1,5);
    s    
 --------
  xièxiè
@@ -373,7 +373,7 @@ and a destination node. Links are anchored to their origin nodes in the `Node` t
 in the six columns `im3`, `im2`, `im1`, `in0`, `il1`, `ic2`, `ie3`.  
 To find the links of type `Leads to':
 <pre>
-newdb=# select Il1 from Node where NPtr=(1,5);
+storyline=# select Il1 from Node where NPtr=(1,5);
                                        il1                                        
 ----------------------------------------------------------------------------------
  {"(66,1,\"{ \"\"please\"\", \"\"thank you\"\", \"\"thankyou\"\" }\",\"(1,4)\")"}
@@ -384,7 +384,7 @@ newdb=# select Il1 from Node where NPtr=(1,5);
 Arrows are defined for each arrow pointer in the arrow directory:
 
 <pre>
-newdb=# select * from arrowdirectory limit 10;
+storyline=# select * from arrowdirectory limit 10;
  staindex |         long         | short | arrptr 
 ----------+----------------------+-------+--------
         4 | leads to             | lt    |      0
@@ -423,7 +423,7 @@ const (
 	port     = 5432
 	user     = "sstoryline"
 	password = "sst_1234"
-	dbname   = "newdb"
+	dbname   = "storyline"
 )
 
 //******************************************************************
