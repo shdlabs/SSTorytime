@@ -5,6 +5,10 @@ I'll try to compile references to related note taking and semantic search projec
 SSToryline could potentially integrate with these projects, as it solves a very different
 problem to the way people normally think about knowledge.
 
+In May 2025, several handfuls of people have contacted me about the project, expressing interest
+and usefulness in their own work. For privacy, I won't list these contacts here, but this is
+encouraging news.
+
 ## Articles about Semantic Spacetime by others
 
 * [Semantic Spacetime: Understanding Graph Relationships in Knowledge Representation](https://ai.plainenglish.io/semantic-spacetime-understanding-graph-relationships-in-knowledge-representation-1175cab8282d)
