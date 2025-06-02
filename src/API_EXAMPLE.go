@@ -53,7 +53,6 @@ func AddStory(ctx SST.PoSST) {
 	SST.Edge(ctx,n3,"then",n4,context,w)
 	SST.Edge(ctx,n5,"then",n6,context,w)
 
-
 }
 
 //******************************************************************

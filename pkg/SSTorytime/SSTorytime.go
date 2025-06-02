@@ -1130,6 +1130,8 @@ func Edge(ctx PoSST,from Node,arrow string,to Node,context []string,weight float
 	link.Ctx = context
 
 	IdempDBAddLink(ctx,from,link,to)
+	CreateDBNodeArrowNode(ctx,from.NPtr,link,sttype)
+
 	return arrowptr,sttype
 }
 

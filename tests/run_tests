@@ -104,10 +104,9 @@ for f in warn_*.in; do
    fi
 done
 
-
-#
-# Now look at database
-#
+#########################################################
+# Now look at database behaviour
+#########################################################
 
 DB_TEST_PROG="../src/demo_pocs/postgres_testdb"
 
