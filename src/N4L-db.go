@@ -174,7 +174,7 @@ func main() {
 
 	if UPLOAD {
 		fmt.Println("Uploading nodes..")
-		SST.GraphToDB(ctx)
+		SST.GraphToDB(ctx,true)
 		SST.Close(ctx)
 	}
 }

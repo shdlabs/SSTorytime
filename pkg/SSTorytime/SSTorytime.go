@@ -975,7 +975,7 @@ func GetDBNPtrHighWaterMarks(ctx PoSST) {
 
 //**************************************************************
 
-func GraphToDB(ctx PoSST) {
+func GraphToDB(ctx PoSST,wait_counter bool) {
 
 	fmt.Println("Storing nodes...")
 
@@ -1012,6 +1012,9 @@ func GraphToDB(ctx PoSST) {
 				org := NODE_DIRECTORY.GT1024[n]
 				UploadNodeToDB(ctx,org)
 			}
+		}
+		if wait_counter {
+			Waiting()
 		}
 	}
 
@@ -1249,11 +1252,9 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 
 			AppendDBLinkToNode(ctx,org.NPtr,dstlnk,sttype)
 			CreateDBNodeArrowNode(ctx,org.NPtr,dstlnk,sttype)
-			Waiting()
 		}
 
 		CreateDBNodeArrowNode(ctx,org.NPtr,empty,nolink)
-		Waiting()
 	}
 }
 
