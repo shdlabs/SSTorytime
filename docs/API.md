@@ -6,6 +6,10 @@ You will find many examples of using Go(lang) code to write custom scripts
 that interact with the database through the Go API
 [here](https://github.com/markburgess/SSTorytime/tree/main/src/demo_pocs).
 
+Notable examples:
+* [Maze solver 1](demo_pocs/search_maze) and * [Maze solver 2](demo_pocs/search_maze2)
+* [Path solver](pathsolve.go)
+* [Graph reporter](graph_report.go)
 
 ## Creating an SST graph from data
 
