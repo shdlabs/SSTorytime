@@ -153,7 +153,6 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 
 	if EXPLORE {
 		BroadByName(ctx,chapter,context,searchtext,arrows)
-		ByArrow(ctx,chapter,context,searchtext,arrows)
 	}
 
 	if BROWSE {
@@ -176,44 +175,6 @@ func EventSearch(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 	for nptr := range nptrs {
 		fmt.Print("\n",nptr,": ")
 		SST.PrintNodeOrbit(ctx,nptrs[nptr],100)
-	}
-}
-
-//******************************************************************
-
-func ByArrow(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string) {
-
-	chaptext = strings.TrimSpace(chaptext)
-	searchtext = strings.TrimSpace(searchtext)
-
-	// **** Look for meaning in the arrows ***
-
-	var ama map[SST.ArrowPtr][]SST.NodePtr
-	var count int
-
-	ama = SST.GetAppointmentArrayByArrow(ctx,context,chaptext)
-
-	for arrowptr := range ama {
-		arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
-
-		if SST.MatchesInContext(arr_dir.Long,context) {
-
-			count++
-			fmt.Println("\nArrow --(",arr_dir.Long,")--> points to a group of nodes with a similar role in the context of",context,"in the chapter",chaptext,"\n")
-			
-			for n := 0; n < len(ama[arrowptr]); n++ {
-				node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n])
-				SST.NewLine(n)
-				fmt.Print("..  ",node.S,",")
-				
-			}
-			fmt.Println()
-			fmt.Println("............................................")
-		}
-	}
-
-	if count == 0 {
-		fmt.Println("    (No relevant matches)")
 	}
 }
 

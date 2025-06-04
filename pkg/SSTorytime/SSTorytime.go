@@ -135,19 +135,16 @@ type WebPath struct {
 
 //**************************************************************
 
-type STTypeAppointment struct {
+type Appointment struct {
 
-	NFrom NodePtr
-	STType int
-	NTo []NodePtr
-}
+        // An appointed from node points to a collection of to nodes 
+        // by the same arrow
 
-//**************************************************************
-
-type ArrowAppointment struct {
-
+	Chap string
+	Ctx []string
 	NFrom NodePtr
 	Arr ArrowPtr
+	STType int
 	NTo []NodePtr
 }
 
@@ -233,6 +230,16 @@ const LINK_TYPE = "CREATE TYPE Link AS  " +
 	"Wgt      real,       " +
 	"Ctx      text,       " +
 	"Dst      NodePtr     " +
+	")"
+
+const APPOINTMENT_TYPE = "CREATE TYPE Appointment AS  " +
+	"(                    " +
+	"Chap   text," +
+	"Ctx    text[]," +
+	"NFrom  NodePtr[]," +
+	"Arr    int," +
+	"STType int," +
+	"NTo    NodePtr" +
 	")"
 
 const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
@@ -444,6 +451,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function ArrowInList")
 		ctx.DB.QueryRow("drop function GetStoryStartNodes")
 		ctx.DB.QueryRow("drop function GetNCCStoryStartNodes")
+		ctx.DB.QueryRow("drop function GetAppointments")
 
 		ctx.DB.QueryRow("drop table Node")
 		ctx.DB.QueryRow("drop table PageMap")
@@ -471,6 +479,11 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 	if !CreateType(ctx,LINK_TYPE) {
 		fmt.Println("Unable to create type as, ",LINK_TYPE)
+		os.Exit(-1)
+	}
+
+	if !CreateType(ctx,APPOINTMENT_TYPE) {
+		fmt.Println("Unable to create type as, ",APPOINTMENT_TYPE)
 		os.Exit(-1)
 	}
 
@@ -977,44 +990,46 @@ func GetDBNPtrHighWaterMarks(ctx PoSST) {
 
 func GraphToDB(ctx PoSST,wait_counter bool) {
 
-	fmt.Println("Storing nodes...")
-
 	for class := N1GRAM; class <= GT1024; class++ {
+
 		switch class {
 		case N1GRAM:
 			for n := range NODE_DIRECTORY.N1directory {
 				org := NODE_DIRECTORY.N1directory[n]
 				UploadNodeToDB(ctx,org)
+				Waiting(wait_counter)
 			}
 		case N2GRAM:
 			for n := range NODE_DIRECTORY.N2directory {
 				org := NODE_DIRECTORY.N2directory[n]
 				UploadNodeToDB(ctx,org)
+				Waiting(wait_counter)
 			}
 		case N3GRAM:
 			for n := range NODE_DIRECTORY.N3directory {
 				org := NODE_DIRECTORY.N3directory[n]
 				UploadNodeToDB(ctx,org)
+				Waiting(wait_counter)
 			}
 		case LT128:
 			for n := range NODE_DIRECTORY.LT128 {
 				org := NODE_DIRECTORY.LT128[n]
 				UploadNodeToDB(ctx,org)
+				Waiting(wait_counter)
 			}
 		case LT1024:
 			for n := range NODE_DIRECTORY.LT1024 {
 				org := NODE_DIRECTORY.LT1024[n]
 				UploadNodeToDB(ctx,org)
+				Waiting(wait_counter)
 			}
 
 		case GT1024:
 			for n := range NODE_DIRECTORY.GT1024 {
 				org := NODE_DIRECTORY.GT1024[n]
 				UploadNodeToDB(ctx,org)
+				Waiting(wait_counter)
 			}
-		}
-		if wait_counter {
-			Waiting()
 		}
 	}
 
@@ -1268,7 +1283,7 @@ func UploadArrowToDB(ctx PoSST,arrow ArrowPtr) {
 	long := SQLEscape(ARROW_DIRECTORY[arrow].Long)
 	short := SQLEscape(ARROW_DIRECTORY[arrow].Short)
 
-	qstr := fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) VALUES (%d,'%s','%s',%d)",staidx,long,short,arrow)
+	qstr := fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) SELECT %d,'%s','%s',%d WHERE NOT EXISTS (SELECT Long,Short,ArrPtr FROM ArrowDirectory WHERE lower(Long) = lower('%s') OR lower(Short) = lower('%s') OR ArrPtr = %d)",staidx,long,short,arrow,long,short,arrow)
 
 	row,err := ctx.DB.Query(qstr)
 	
@@ -1292,7 +1307,7 @@ func UploadInverseArrowToDB(ctx PoSST,arrow ArrowPtr) {
 	plus := arrow
 	minus := INVERSE_ARROWS[arrow]
 
-	qstr := fmt.Sprintf("INSERT INTO ArrowInverses (Plus,Minus) VALUES (%d,%d)",plus,minus)
+	qstr := fmt.Sprintf("INSERT INTO ArrowInverses (Plus,Minus) SELECT %d,%d WHERE NOT EXISTS (SELECT Plus,Minus FROM ArrowInverses WHERE Plus = %d OR minus = %d)",plus,minus,plus,minus)
 
 	row,err := ctx.DB.Query(qstr)
 	
@@ -2486,41 +2501,132 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    RETURN neighbours; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n")
-
-
+	
+	
         // This one includes an NC chapter filter
-
+	
 	qstr = "CREATE OR REPLACE FUNCTION GetNCNeighboursByType(start NodePtr, chapter text,sttype int)\n"+
 		"RETURNS Link[] AS $fn$\n"+
 		"DECLARE \n"+
 		"    fwdlinks Link[] := Array[] :: Link[];\n"+
 		"    lnk Link := (0,1.0,Array[]::text[],(0,0));\n"+
-                "    chp text = Format('%s%s%s','%',chapter,'%');"+
+		"    chp text = Format('%s%s%s','%',chapter,'%');"+
 		"BEGIN\n"+
-
 		"   CASE sttype \n"
-	
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
 			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND lower(Chap) LIKE lower(chp);\n",st,STTypeDBChannel(st));
 	}
-
+	
 	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
 		"END CASE;\n" +
-
 		"    RETURN fwdlinks; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
-
-        // elect GetNCNeighboursByType('(1,116)','chinese',-1);
-
-
+	
+        // select GetNCNeighboursByType('(1,116)','chinese',-1);
+	
 	row,err = ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
+	
+	row.Close()
+	
+	// **************************************
+	// Looking for hub / authority search
+	// **************************************
+	
+	qstr = "CREATE OR REPLACE FUNCTION GetAppointments(arrow int,sttype int,min int,chaptxt text,context text[],with_accents bool)\n"+
+		"RETURNS Appointment[] AS $fn$\n" +
+		"DECLARE \n" +
 
+		"    app       Appointment;\n" +
+		"    appointed Appointment[];\n" +
+		"    this      RECORD;" +
+		"    thischap  text;" +
+		"    arrscalar text;"+
+		"    thisarray Link[];" +
+		"    count     int;"+
+		"    lnk       Link;"+
+
+
+		"BEGIN\n" +		
+		"   CASE -sttype \n"
+	
+	for st := -EXPRESS; st <= EXPRESS; st++ {
+		qstr += fmt.Sprintf("WHEN %d THEN\n",st);
+qstr +=	"RAISE NOTICE 'LOOKIMG SSTT %', sttype;"
+		qstr += "   IF with_accents THEN\n"
+		qstr += fmt.Sprintf("      FOR this IN SELECT NPtr as thptr,Chap as thchap,%s as chn FROM Node WHERE lower(unaccent(chap)) LIKE lower(chaptxt)\n",STTypeDBChannel(st));
+		qstr += "      LOOP\n" +
+		"         count := 0;\n" +
+		"         app.NTo = this.thptr::NodePtr;\n" +
+		"         app.Chap = this.thchap;\n" +
+
+		"         app.Ctx = lnk.Ctx;\n\n" +
+
+		"         IF this.chn::Link[] IS NOT NULL THEN\n"+
+
+		"           FOREACH lnk IN ARRAY this.chn::Link[]\n" +
+		"           LOOP\n" +
+	"RAISE NOTICE 'found %', lnk;"+
+		"	       IF lnk.Arr = arrow AND match_context(lnk.Ctx::text[],context) THEN\n" +
+		"  	          count = count + 1;\n" +
+		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
+		"              END IF;\n" +
+		"           END LOOP;\n" +
+
+		"         END IF;\n" +
+		
+		"         IF count > min THEN\n" +
+		"	    appointed = array_append(appointed,app);\n" +
+		"         END IF;\n" +
+		"      END LOOP;\n"
+
+
+		qstr += "   ELSE\n"
+
+		qstr += fmt.Sprintf("      FOR this IN SELECT NPtr as thptr,Chap as thchap,%s as chn FROM Node WHERE lower(chap) LIKE lower(chaptxt)\n",STTypeDBChannel(st));
+		qstr += "      LOOP\n" +
+		"         count := 0;\n" +
+		"         app.NTo = this.thptr::NodePtr;\n" +
+		"         app.Chap = this.thchap;\n" +
+
+		"         app.Ctx = lnk.Ctx;\n\n" +
+
+		"         IF this.chn::Link[] IS NOT NULL THEN\n"+
+
+		"           FOREACH lnk IN ARRAY this.chn::Link[]\n" +
+		"           LOOP\n" +
+		"	       IF lnk.Arr = arrow AND match_context(lnk.Ctx::text[],context) THEN\n" +
+		"  	          count = count + 1;\n" +
+		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
+		"              END IF;\n" +
+		"           END LOOP;\n" +
+
+		"         END IF;\n" +
+		
+		"         IF count > min THEN\n" +
+		"	    appointed = array_append(appointed,app);\n" +
+		"         END IF;\n" +
+		"      END LOOP;\n" +
+
+		"   END IF;\n"
+	}
+	
+	qstr += "END CASE;\n"
+	qstr += "    RETURN appointed;\n"
+	qstr += "END ;\n"
+	qstr += "$fn$ LANGUAGE plpgsql;\n"
+	
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+	
 	row.Close()
 
 }
@@ -4778,237 +4884,63 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 }
 
 // **************************************************************************
-// Retrieve Analysis
+// Retrieve cluster Analysis
 // **************************************************************************
 
-func GetAppointmentArrayByArrow(ctx PoSST, context []string,chapter string) map[ArrowPtr][]NodePtr {
+func GetAppointedNodesByArrow(ctx PoSST,arrow ArrowPtr,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
 
-          /* arr |             x             
-            -----+---------------------------
-              18 | {"(2,4)","(3,4)","(4,4)"}
-             138 | {"(4,4)","(0,4)"}
-              97 | {"(1,2)"}
-              96 | {"(0,4)"}
-             137 | {"(1,4)","(0,3)"}
-              52 | {"(0,4)"}
-              53 | {"(0,2)"} */
+	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
+        // grouped by arrow
 
-	// Postgres && operator on arrays is SET OVERLAP .. how to solve this?
+	arr := GetDBArrowByPtr(ctx,arrow)
+	sttype := STIndexToSTType(arr.STAindex)
 
-	qstr := "SELECT arr,array_agg(DISTINCT NTo) FROM NodeArrowNode"
+	_,cn_stripped := IsBracketedSearchList(cn)
+	context := FormatSQLStringArray(cn_stripped)
 
-	if context != nil {
-		qstr += fmt.Sprintf(" WHERE match_context(ctx,%s)",FormatSQLStringArray(context))
+	var chap_col,chap_stripped string
+	var remove_chap_accents bool
+
+	if chap != "any" && chap != "" {	
+		remove_chap_accents,chap_stripped = IsBracketedSearchTerm(chap)
+		
+		if remove_chap_accents {
+			chap_col = "%"+chap_stripped+"%"
+		} else {
+			chap_col = "%"+chap+"%"
+		}
 	}
-
-	qstr += " GROUP BY arr"
-
+	
+	qstr := fmt.Sprintf("SELECT GetAppointments(%d,%d,%d,'%s',%s,%v)",int(arrow),sttype,size,chap_col,context,remove_chap_accents)
 	row, err := ctx.DB.Query(qstr)
+
+	fmt.Println(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err,qstr)
+		fmt.Println("QUERY GetAppointedNodesByArrow Failed",err,qstr)
 	}
-
+	
 	var arry string
-	var arr ArrowPtr
-	var retval = make(map[ArrowPtr][]NodePtr)
-
-	for row.Next() {		
-		err = row.Scan(&arr,&arry)
-		retval[arr] = ParseSQLNPtrArray(arry)
+	var arrp ArrowPtr
+	var ncorrelator string
+	var apex NodePtr
+	var next Appointment
+	var retval = make(map[ArrowPtr][]Appointment)
+	var rchap,rctx string
+	
+	for row.Next() {
+		err = row.Scan(&arr,&rchap,&rctx,&ncorrelator,&arry)
+		fmt.Sscanf(ncorrelator,"(%d,%d)",&apex.Class,&apex.CPtr)
+		next.NTo = ParseSQLNPtrArray(arry)
+		next.NFrom = apex
+		next.Ctx = ParseSQLArrayString(rctx)
+		next.Chap = rchap
+		next.Arr = arrp
+		retval[arrp] = append(retval[arrp],next)
 	}
-
+	
 	row.Close()
 	
-	return retval
-}
-
-// **************************************************************************
-
-func GetAppointmentArrayBySSType(ctx PoSST) map[int][]NodePtr {
-
-
-          /* sttype |             array_agg             
-             --------+-----------------------------------
-                 -3 | {"(0,4)","(4,4)"}
-                 -2 | {"(1,2)"}
-                 -1 | {"(0,2)"}
-                  1 | {"(0,4)","(2,4)","(3,4)","(4,4)"}
-                  2 | {"(0,4)"}
-                  3 | {"(0,3)","(1,4)"} */
-
-
-	qstr := "SELECT sttype, array_agg(DISTINCT NTo) FROM NodeArrowNode GROUP BY Sttype order by sttype"
-
-	row, err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err)
-	}
-
-	var arry string
-	var sttype int
-	var retval = make(map[int][]NodePtr)
-
-	for row.Next() {		
-		err = row.Scan(&sttype,&arry)
-		retval[sttype] = ParseSQLNPtrArray(arry)
-	}
-
-	row.Close()
-	
-	return retval
-}
-
-// **************************************************************************
-
-func GetAppointmentHistogramByArrow(ctx PoSST) map[ArrowPtr]int {
-
-/* arr | count 
------+-------
-  18 |     3
-  52 |     1
-  53 |     1
-  96 |     1
-  97 |     1
- 137 |     2
- 138 |     2 */
-
-	qstr := "SELECT arr,count(NTo) FROM NodeArrowNode GROUP BY arr order by Arr"
-
-	row, err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err)
-	}
-
-	var freq int
-	var arr ArrowPtr
-	var retval = make(map[ArrowPtr]int)
-
-	for row.Next() {		
-		err = row.Scan(&arr,&freq)
-		retval[arr] = freq
-	}
-
-	row.Close()
-	
-	return retval
-}
-
-// **************************************************************************
-
-func GetAppointmentHistogramBySSType(ctx PoSST) map[int]int {
-
-/* sttype | x 
---------+---
-      1 | 4
-     -1 | 1
-      2 | 1
-     -2 | 1
-      3 | 2
-     -3 | 2 */
-
-	qstr := "SELECT sttype,count(NTo) FROM NodeArrowNode GROUP BY Sttype"
-
-	row, err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err)
-	}
-
-	var freq int
-	var sttype int
-	var retval = make(map[int]int)
-
-	for row.Next() {		
-		err = row.Scan(&sttype,&freq)
-		retval[sttype] = freq
-	}
-	return retval
-}
-
-// **************************************************************************
-
-func GetAppointmentNodesByArrow(ctx PoSST) []ArrowAppointment {
-
-/*  nfrom | arr | array_agg 
--------+-----+-----------
- (4,0) |  18 | {"(2,4)"}
- (4,2) |  18 | {"(3,4)"}
- (4,3) |  18 | {"(4,4)"}
- (2,0) |  52 | {"(0,4)"}
- (4,0) |  53 | {"(0,2)"}
- (2,1) |  96 | {"(0,4)"}
- (4,0) |  97 | {"(1,2)"}
- (4,0) | 137 | {"(1,4)"}
- (4,4) | 137 | {"(0,3)"}
- (3,0) | 138 | {"(4,4)"}
- (4,1) | 138 | {"(0,4)"} */
-
-	qstr := "SELECT NFrom,Arr,array_agg(NTo) FROM NodeArrowNode GROUP BY Arr,Nfrom HAVING count(NTo) > 1 ORDER BY Arr "
-
-	row, err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("QUERY GetAppointmentArrayByArrow Failed",err)
-	}
-
-	var nptr,arry string
-	var retval []ArrowAppointment
-	var this ArrowAppointment
-
-	for row.Next() {		
-		err = row.Scan(&nptr,&this.Arr,&arry)
-		fmt.Sscanf(nptr,"(%d,%d)",&this.NFrom.Class,&this.NFrom.CPtr)
-		this.NTo = ParseSQLNPtrArray(arry)
-		retval = append(retval,this)
-	}
-
-	row.Close()
-
-	return retval
-}
-
-// **************************************************************************
-
-func GetAppointmentNodesBySTType(ctx PoSST) []STTypeAppointment {
-
-/*  nfrom | sttype | array_agg 
--------+--------+-----------
- (3,0) |     -3 | {"(4,4)"}
- (4,1) |     -3 | {"(0,4)"}
- (4,0) |     -2 | {"(1,2)"}
- (4,0) |     -1 | {"(0,2)"}
- (2,0) |      1 | {"(0,4)"}
- (4,0) |      1 | {"(2,4)"}
- (4,2) |      1 | {"(3,4)"}
- (4,3) |      1 | {"(4,4)"}
- (2,1) |      2 | {"(0,4)"}
- (4,0) |      3 | {"(1,4)"}
- (4,4) |      3 | {"(0,3)"}*/
-
-	qstr := "SELECT NFrom,sttype,array_agg(NTo) FROM NodeArrowNode GROUP BY sttype,Nfrom HAVING count(NTo) > 1 ORDER BY sttype"
-
-	row, err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("QUERY GetAppointmentArrayBySTType Failed",err)
-	}
-
-	var retval []STTypeAppointment
-	var this STTypeAppointment
-	var nptr,arr,arry string
-
-	for row.Next() {		
-		err = row.Scan(&nptr,&arr,&arry)
-		err = row.Scan(&nptr,&this.STType,&arry)
-		fmt.Sscanf(nptr,"(%d,%d)",&this.NFrom.Class,&this.NFrom.CPtr)
-		this.NTo = ParseSQLNPtrArray(arry)
-		retval = append(retval,this)
-	}
-
-	row.Close()
 	return retval
 }
 
@@ -5800,7 +5732,11 @@ func NewLine(n int) {
 
 // **************************************************************************
 
-func Waiting() {
+func Waiting(output bool) {
+
+	if !output {
+		return
+	}
 
 	const propaganda = "IT.ISN'T.KNOWLEDGE.UNLESS.YOU.KNOW.IT.!!"
 	const interval = 3

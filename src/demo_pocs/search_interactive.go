@@ -64,40 +64,6 @@ func Search(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
 	chaptext = strings.TrimSpace(chaptext)
 	searchtext = strings.TrimSpace(searchtext)
 
-	// **** Look for meaning in the arrows ***
-
-	var ama map[SST.ArrowPtr][]SST.NodePtr
-	var count int
-
-	ama = SST.GetAppointmentArrayByArrow(ctx,context,chaptext)
-
-	fmt.Println("--------------------------------------------------")
-	fmt.Println("Looking for relevant arrows by",context,chaptext)
-	fmt.Println("--------------------------------------------------")
-	
-	for arrowptr := range ama {
-		arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
-
-		if SST.MatchesInContext(arr_dir.Long,context) {
-
-			count++
-			fmt.Println("\nArrow --(",arr_dir.Long,")--> points to a group of nodes with a similar role in the context of",context,"in the chapter",chaptext,"\n")
-			
-			for n := 0; n < len(ama[arrowptr]); n++ {
-				node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n])
-				SST.NewLine(n)
-				fmt.Print("..  ",node.S,",")
-				
-			}
-			fmt.Println()
-			fmt.Println("............................................")
-		}
-	}
-
-	if count == 0 {
-		fmt.Println("    (No relevant matches)")
-	}
-
 	fmt.Println("--------------------------------------------------")
 	fmt.Println("Looking for relevant nodes by",searchtext)
 	fmt.Println("--------------------------------------------------")
