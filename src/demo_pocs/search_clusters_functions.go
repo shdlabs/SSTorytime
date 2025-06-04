@@ -28,15 +28,6 @@ func main() {
 
 	arrow := SST.GetDBArrowByName(ctx,"fwd")
 
-	arrowfull := SST.GetDBArrowByPtr(ctx,arrow)
-
-	fmt.Println("arrow",arrow,arrowfull)
-
-// Get arrows that correlate nodes via mutual appointments
-
-// Get nodes that correlate others via appointment arr
-// Get nodes that correlate others via appointment sttype
-
 	UseGetAppointmentArrayByArrow(ctx,arrow,chapter,context)
 
 	SST.Close(ctx)

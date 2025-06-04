@@ -140,12 +140,12 @@ type Appointment struct {
         // An appointed from node points to a collection of to nodes 
         // by the same arrow
 
-	Chap string
-	Ctx []string
-	NFrom NodePtr
 	Arr ArrowPtr
 	STType int
-	NTo []NodePtr
+	Chap string
+	Ctx []string
+	NTo NodePtr
+	NFrom []NodePtr
 }
 
 //**************************************************************
@@ -234,12 +234,12 @@ const LINK_TYPE = "CREATE TYPE Link AS  " +
 
 const APPOINTMENT_TYPE = "CREATE TYPE Appointment AS  " +
 	"(                    " +
-	"Chap   text," +
-	"Ctx    text[]," +
-	"NFrom  NodePtr[]," +
 	"Arr    int," +
 	"STType int," +
-	"NTo    NodePtr" +
+	"Chap   text," +
+	"Ctx    text[]," +
+	"NTo    NodePtr," +
+	"NFrom  NodePtr[]" +
 	")"
 
 const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
@@ -458,6 +458,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop table NodeArrowNode")
 		ctx.DB.QueryRow("drop type NodePtr")
 		ctx.DB.QueryRow("drop type Link")
+		ctx.DB.QueryRow("drop type Appointment")
 
 		ctx.DB.QueryRow("drop table ArrowDirectory")
 		ctx.DB.QueryRow("drop table ArrowInverses")
@@ -2539,9 +2540,9 @@ func DefineStoredFunctions(ctx PoSST) {
 	// **************************************
 	
 	qstr = "CREATE OR REPLACE FUNCTION GetAppointments(arrow int,sttype int,min int,chaptxt text,context text[],with_accents bool)\n"+
+
 		"RETURNS Appointment[] AS $fn$\n" +
 		"DECLARE \n" +
-
 		"    app       Appointment;\n" +
 		"    appointed Appointment[];\n" +
 		"    this      RECORD;" +
@@ -2553,25 +2554,26 @@ func DefineStoredFunctions(ctx PoSST) {
 
 
 		"BEGIN\n" +		
-		"   CASE -sttype \n"
+		"   CASE sttype \n"
 	
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n",st);
-qstr +=	"RAISE NOTICE 'LOOKIMG SSTT %', sttype;"
+
 		qstr += "   IF with_accents THEN\n"
+		// -------------------------------------------------
 		qstr += fmt.Sprintf("      FOR this IN SELECT NPtr as thptr,Chap as thchap,%s as chn FROM Node WHERE lower(unaccent(chap)) LIKE lower(chaptxt)\n",STTypeDBChannel(st));
 		qstr += "      LOOP\n" +
 		"         count := 0;\n" +
+		"         app.NFrom = null;"+
 		"         app.NTo = this.thptr::NodePtr;\n" +
 		"         app.Chap = this.thchap;\n" +
-
+		"         app.Arr = arrow;"+
+		"         app.STType = sttype;"+
 		"         app.Ctx = lnk.Ctx;\n\n" +
 
 		"         IF this.chn::Link[] IS NOT NULL THEN\n"+
-
 		"           FOREACH lnk IN ARRAY this.chn::Link[]\n" +
 		"           LOOP\n" +
-	"RAISE NOTICE 'found %', lnk;"+
 		"	       IF lnk.Arr = arrow AND match_context(lnk.Ctx::text[],context) THEN\n" +
 		"  	          count = count + 1;\n" +
 		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
@@ -2580,24 +2582,24 @@ qstr +=	"RAISE NOTICE 'LOOKIMG SSTT %', sttype;"
 
 		"         END IF;\n" +
 		
-		"         IF count > min THEN\n" +
+		"         IF count >= min THEN\n" +
 		"	    appointed = array_append(appointed,app);\n" +
 		"         END IF;\n" +
 		"      END LOOP;\n"
-
-
+		// -------------------------------------------------
 		qstr += "   ELSE\n"
-
+		// -------------------------------------------------
 		qstr += fmt.Sprintf("      FOR this IN SELECT NPtr as thptr,Chap as thchap,%s as chn FROM Node WHERE lower(chap) LIKE lower(chaptxt)\n",STTypeDBChannel(st));
 		qstr += "      LOOP\n" +
 		"         count := 0;\n" +
+		"         app.NFrom = null;"+
 		"         app.NTo = this.thptr::NodePtr;\n" +
 		"         app.Chap = this.thchap;\n" +
-
+		"         app.Arr = arrow;"+
+		"         app.STType = sttype;"+
 		"         app.Ctx = lnk.Ctx;\n\n" +
 
 		"         IF this.chn::Link[] IS NOT NULL THEN\n"+
-
 		"           FOREACH lnk IN ARRAY this.chn::Link[]\n" +
 		"           LOOP\n" +
 		"	       IF lnk.Arr = arrow AND match_context(lnk.Ctx::text[],context) THEN\n" +
@@ -2605,14 +2607,14 @@ qstr +=	"RAISE NOTICE 'LOOKIMG SSTT %', sttype;"
 		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
 		"              END IF;\n" +
 		"           END LOOP;\n" +
-
 		"         END IF;\n" +
 		
-		"         IF count > min THEN\n" +
+		"         IF count >= min THEN\n" +
+"RAISE NOTICE 'appending....%',app;"+
 		"	    appointed = array_append(appointed,app);\n" +
 		"         END IF;\n" +
 		"      END LOOP;\n" +
-
+		// -------------------------------------------------
 		"   END IF;\n"
 	}
 	
@@ -4892,7 +4894,8 @@ func GetAppointedNodesByArrow(ctx PoSST,arrow ArrowPtr,cn []string,chap string,s
 	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
         // grouped by arrow
 
-	arr := GetDBArrowByPtr(ctx,arrow)
+	reverse_arrow := INVERSE_ARROWS[arrow]
+	arr := GetDBArrowByPtr(ctx,reverse_arrow)
 	sttype := STIndexToSTType(arr.STAindex)
 
 	_,cn_stripped := IsBracketedSearchList(cn)
@@ -4910,38 +4913,93 @@ func GetAppointedNodesByArrow(ctx PoSST,arrow ArrowPtr,cn []string,chap string,s
 			chap_col = "%"+chap+"%"
 		}
 	}
-	
-	qstr := fmt.Sprintf("SELECT GetAppointments(%d,%d,%d,'%s',%s,%v)",int(arrow),sttype,size,chap_col,context,remove_chap_accents)
-	row, err := ctx.DB.Query(qstr)
 
-	fmt.Println(qstr)
+	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))",int(reverse_arrow),sttype,size,chap_col,context,remove_chap_accents)
+
+	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
 		fmt.Println("QUERY GetAppointedNodesByArrow Failed",err,qstr)
 	}
-	
-	var arry string
-	var arrp ArrowPtr
-	var ncorrelator string
-	var apex NodePtr
-	var next Appointment
+
+	var whole string
+
 	var retval = make(map[ArrowPtr][]Appointment)
-	var rchap,rctx string
 	
 	for row.Next() {
-		err = row.Scan(&arr,&rchap,&rctx,&ncorrelator,&arry)
-		fmt.Sscanf(ncorrelator,"(%d,%d)",&apex.Class,&apex.CPtr)
-		next.NTo = ParseSQLNPtrArray(arry)
-		next.NFrom = apex
-		next.Ctx = ParseSQLArrayString(rctx)
-		next.Chap = rchap
-		next.Arr = arrp
-		retval[arrp] = append(retval[arrp],next)
+		err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
+
+		next := ParseAppointedNodeCluster(whole)
+		retval[next.Arr] = append(retval[next.Arr],next)
 	}
 	
 	row.Close()
 	
 	return retval
+}
+
+// **************************************************************************
+
+func ParseAppointedNodeCluster(whole string) Appointment {
+
+    //  (13,-1,maze,{},"(1,3122)","{""(1,3121)"",""(1,3138)""}")
+
+	var next Appointment
+      	var l []string
+
+    	whole = strings.Trim(whole,"(")
+    	whole = strings.Trim(whole,")")
+
+	uni_array := []rune(whole)
+
+	var items []string
+	var item []rune
+	var protected = false
+
+	for u := range uni_array {
+
+		if uni_array[u] == '"' {
+			protected = !protected
+			continue
+		}
+
+		if !protected && uni_array[u] == ',' {
+			items = append(items,string(item))
+			item = nil
+			continue
+		}
+
+		item = append(item,uni_array[u])
+	}
+
+	if item != nil {
+		items = append(items,string(item))
+	}
+
+	for i := range items {
+
+	    s := strings.TrimSpace(items[i])
+
+	    l = append(l,s)
+	    }
+
+	fmt.Println("XXX",l)
+
+	var arrp ArrowPtr
+	fmt.Sscanf(l[0],"%d",&arrp)
+	next.Arr = ArrowPtr(arrp)
+
+	fmt.Sscanf(l[1],"%d",&next.STType)
+
+	next.Chap = l[2]
+	next.Ctx = ParseSQLArrayString(l[3])
+
+	fmt.Sscanf(l[4],"(%d,%d)",&next.NTo.Class,&next.NTo.CPtr)
+
+	next.NFrom = ParseSQLNPtrArray(l[5])
+
+	fmt.Println("YYY",next)
+	return next
 }
 
 // **************************************************************************
