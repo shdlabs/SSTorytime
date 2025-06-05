@@ -4983,22 +4983,25 @@ func ParseAppointedNodeCluster(whole string) Appointment {
 	    l = append(l,s)
 	    }
 
-	fmt.Println("XXX",l)
-
 	var arrp ArrowPtr
 	fmt.Sscanf(l[0],"%d",&arrp)
-	next.Arr = ArrowPtr(arrp)
-
 	fmt.Sscanf(l[1],"%d",&next.STType)
+
+	// invert arrow
+	next.Arr = INVERSE_ARROWS[ArrowPtr(arrp)]
+	next.STType = -next.STType
 
 	next.Chap = l[2]
 	next.Ctx = ParseSQLArrayString(l[3])
 
 	fmt.Sscanf(l[4],"(%d,%d)",&next.NTo.Class,&next.NTo.CPtr)
 
+	// Postgres is inconsistent in adding \" to arrays (hack)
+
+	l[5] = strings.Replace(l[5],"(","\"(",-1)
+	l[5] = strings.Replace(l[5],")",")\"",-1)
 	next.NFrom = ParseSQLNPtrArray(l[5])
 
-	fmt.Println("YYY",next)
 	return next
 }
 

@@ -28,39 +28,50 @@ func main() {
 
 	arrow := SST.GetDBArrowByName(ctx,"fwd")
 
-	UseGetAppointmentArrayByArrow(ctx,arrow,chapter,context)
+	UseGetAppointmentArrayByArrow(ctx,arrow,chapter,context,2)
 
 	SST.Close(ctx)
 }
 
 //******************************************************************
 
-func UseGetAppointmentArrayByArrow(ctx SST.PoSST,arrow SST.ArrowPtr,chapter string,context []string) {
+func UseGetAppointmentArrayByArrow(ctx SST.PoSST,arrow SST.ArrowPtr,chapter string,context []string,min int) {
 
 	var ama map[SST.ArrowPtr][]SST.Appointment
 
-	ama = SST.GetAppointedNodesByArrow(ctx,arrow,context,chapter,2)
+	arr_search := SST.GetDBArrowByPtr(ctx,arrow)
 
-	fmt.Println(ama)
+	ama = SST.GetAppointedNodesByArrow(ctx,arrow,context,chapter,min)
 
 	fmt.Println("--------------------------------------------------")
 	fmt.Println("FEATURE: GetAppointmentArrayByArrow:")
-	fmt.Println(" return a map of all the nodes in chap,context that are pointed to by the same type of arrow")
+	fmt.Println(" return a map of all the nodes in chap,context that are ")
+	fmt.Println(" pointed to by at least",min,"arrows of type:",arr_search.Long)
 	fmt.Println("--------------------------------------------------")
-/*
+
 	for arrowptr := range ama {
+		
 		arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
-		fmt.Println("\nArrow --(",arr_dir.Long,")--> points to a group of nodes with a similar role in the context of",context,"in the chapter",chapter,"\n")
-
+		
+		// Appointment list
 		for n := 0; n < len(ama[arrowptr]); n++ {
-			node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n])
-			NewLine(n)
-			fmt.Print("..  ",node.S,",")
 
+			appointed_nptr := ama[arrowptr][n].NTo
+			appointed := SST.GetDBNodeByNodePtr(ctx,appointed_nptr)
+			
+			fmt.Printf("\nAppointed node (%s ...) in chapter \"%s\" correlates/is selected by:\n",appointed.S,chapter)
+
+			// Appointers list
+			for m := range ama[arrowptr][n].NFrom {
+				node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n].NFrom[m])
+				stname := SST.STTypeName(SST.STIndexToSTType(arr_dir.STAindex))
+				fmt.Printf("     %.40s --(%s : %s)--> %.40s...   - in context %v\n",node.S,arr_dir.Long,stname,appointed.S,context)
+			}
 		}
+
 		fmt.Println()
 		fmt.Println("............................................")
-	}*/
+	}
 }
 
 //******************************************************************
