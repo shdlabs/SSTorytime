@@ -24,8 +24,10 @@ func main() {
 	ctx := SST.Open(load_arrows)
 
 	context := []string{""}
-	chapter := "maze"
+	//chapter := "double slit"
+	//arrow := SST.GetDBArrowByName(ctx,"backwards")
 
+	chapter := "maze"
 	arrow := SST.GetDBArrowByName(ctx,"fwd")
 
 	UseGetAppointmentArrayByArrow(ctx,arrow,chapter,context,2)
