@@ -144,7 +144,7 @@ Analysing chapter "multi slit interference", context [] to path length 6
 </pre>
 
 Another example:
-</pre>
+<pre>
 $ go run graph_report.go -chapter maze -sttype L
 ----------------------------------------------------------------
 Analysing chapter "maze", context [] to path length 6
