@@ -7,6 +7,9 @@ are likely to change in the near future as the software is tested in use.
 For now, you can get started by trying the examples, e.g.
 
 <pre>
+./searchN4L  -limit 4 -chapter chinese -browse pe tiger |more
+./searchN4L  -limit 4 -chapter multi A |more
+
 
 </pre>
 

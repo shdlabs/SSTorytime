@@ -190,14 +190,48 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 		fmt.Println("   - Acyclic")
 	}
 
+	// Look for appointed nodes
+
+	fmt.Println("\n* APPOINTED NODES (nodes pointed to by at least 2 others thus correlating them) ")
+
+	for st := range sttypes {
+		var ama map[SST.ArrowPtr][]SST.Appointment
+		
+		ama = SST.GetAppointedNodesBySTType(ctx,sttypes[st],context,chapter,2)
+		
+		for arrowptr := range ama {
+			
+			arr_dir := SST.GetDBArrowByPtr(ctx,arrowptr)
+			
+			// Appointment list
+			for n := 0; n < len(ama[arrowptr]); n++ {
+				
+				appointed_nptr := ama[arrowptr][n].NTo
+				appointed := SST.GetDBNodeByNodePtr(ctx,appointed_nptr)
+				dim := len(ama[arrowptr][n].NFrom)
+				
+				fmt.Printf("\n   Appointer correlates -> %d appointed nodes (%s ...) in chapter \"%s\"\n\n",dim,appointed.S,chapter)
+				
+				// Appointers list
+				for m := range ama[arrowptr][n].NFrom {
+					node := SST.GetDBNodeByNodePtr(ctx,ama[arrowptr][n].NFrom[m])
+					stname := SST.STTypeName(SST.STIndexToSTType(arr_dir.STAindex))
+					fmt.Printf("     %.40s --(%s : %s)--> %.40s...   - in context %v\n",node.S,arr_dir.Long,stname,appointed.S,context)
+				}
+			}
+			
+			fmt.Println()
+		}
+	}
+
+	// Now find the undirected graph properties 
+
 	fmt.Println("")
 	evc := SST.ComputeEVC(sadj)
 
 	fmt.Println("* SYMMETRIZED EIGENVECTOR CENTRALITY = FLOW RESERVOIR CAPACITANCE AT EQUILIBRIUM = \n")
 
 	PrintVector(ctx,evc,nodekey)
-
-	// Now find the undirected graph properties 
 
 	regions,evctop,path := SST.FindGradientFieldTop(sadj,evc)
 
