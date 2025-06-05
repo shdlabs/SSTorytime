@@ -2574,7 +2574,10 @@ func DefineStoredFunctions(ctx PoSST) {
 		"         IF this.chn::Link[] IS NOT NULL THEN\n"+
 		"           FOREACH lnk IN ARRAY this.chn::Link[]\n" +
 		"           LOOP\n" +
-		"	       IF lnk.Arr = arrow AND match_context(lnk.Ctx::text[],context) THEN\n" +
+		"	       IF arrow > 0 AND lnk.Arr = arrow AND match_context(lnk.Ctx::text[],context) THEN\n" +
+		"  	          count = count + 1;\n" +
+		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
+		"              ELSIF arrow < 0 AND match_context(lnk.Ctx::text[],context) THEN\n"+
 		"  	          count = count + 1;\n" +
 		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
 		"              END IF;\n" +
@@ -2602,7 +2605,10 @@ func DefineStoredFunctions(ctx PoSST) {
 		"         IF this.chn::Link[] IS NOT NULL THEN\n"+
 		"           FOREACH lnk IN ARRAY this.chn::Link[]\n" +
 		"           LOOP\n" +
-		"	       IF lnk.Arr = arrow AND match_context(lnk.Ctx::text[],context) THEN\n" +
+		"	       IF arrow > 0 AND lnk.Arr = arrow AND match_context(lnk.Ctx::text[],context) THEN\n" +
+		"  	          count = count + 1;\n" +
+		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
+		"              ELSIF arrow < 0 AND match_context(lnk.Ctx::text[],context) THEN\n"+
 		"  	          count = count + 1;\n" +
 		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
 		"              END IF;\n" +
@@ -4915,6 +4921,53 @@ func GetAppointedNodesByArrow(ctx PoSST,arrow ArrowPtr,cn []string,chap string,s
 	}
 
 	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))",int(reverse_arrow),sttype,size,chap_col,context,remove_chap_accents)
+
+	row, err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("QUERY GetAppointedNodesByArrow Failed",err,qstr)
+	}
+
+	var whole string
+
+	var retval = make(map[ArrowPtr][]Appointment)
+	
+	for row.Next() {
+		err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
+
+		next := ParseAppointedNodeCluster(whole)
+		retval[next.Arr] = append(retval[next.Arr],next)
+	}
+	
+	row.Close()
+	
+	return retval
+}
+
+// **************************************************************************
+
+func GetAppointedNodesBySTType(ctx PoSST,sttype int,cn []string,chap string,size int) map[ArrowPtr][]Appointment {
+
+	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
+        // grouped by arrow
+
+	_,cn_stripped := IsBracketedSearchList(cn)
+	context := FormatSQLStringArray(cn_stripped)
+
+	var chap_col,chap_stripped string
+	var remove_chap_accents bool
+
+	if chap != "any" && chap != "" {	
+		remove_chap_accents,chap_stripped = IsBracketedSearchTerm(chap)
+		
+		if remove_chap_accents {
+			chap_col = "%"+chap_stripped+"%"
+		} else {
+			chap_col = "%"+chap+"%"
+		}
+	}
+
+	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))",-1,sttype,size,chap_col,context,remove_chap_accents)
 
 	row, err := ctx.DB.Query(qstr)
 	
