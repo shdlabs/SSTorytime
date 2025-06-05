@@ -2579,6 +2579,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
 		"              ELSIF arrow < 0 AND match_context(lnk.Ctx::text[],context) THEN\n"+
 		"  	          count = count + 1;\n" +
+		"                 app.Arr = lnk.Arr;"+
 		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
 		"              END IF;\n" +
 		"           END LOOP;\n" +
@@ -2610,6 +2611,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
 		"              ELSIF arrow < 0 AND match_context(lnk.Ctx::text[],context) THEN\n"+
 		"  	          count = count + 1;\n" +
+		"                 app.Arr = lnk.Arr;"+
 		" 	          app.NFrom = array_append(app.NFrom,lnk.Dst);\n" +
 		"              END IF;\n" +
 		"           END LOOP;\n" +
