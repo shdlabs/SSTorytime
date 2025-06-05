@@ -13,6 +13,16 @@ tool helps us to get a technical overview of the graph.
 * *Sources* and *Sinks*: these are nodes that start and end a path through the graph.
 They exchange places if one changes the sign of the link type.
 
+* *Appointed nodes*: when several nodes point to a single hub that appointee is called an appointed
+agent in Promise Theory. The cluster of nodes all pointing / electing a single individual are
+thus correlated by the appointee (they have it in common). Such structures help us to see
+processes and process histories.
+
+* * For "leads to" arrows, these structures are confluences of arrows or explosions from a point.
+* * For "contains" arrows, these structures are the containers or shared members
+* * For "property expression" arrows, these structures are compositions of attributes or shared attributes common to several compositions
+* * For "near" arrows, these structures are synonym / alias / or density clusters
+
 * *Eigenvector centrality*: undirected graphs have a property by virtue of the 
 Frobenious-Perron theorem that every undirected graph has a non-negative principal
 eigenvector. It ranks the 'connectedness' of nodes, or their importance, by measuring
@@ -30,6 +40,111 @@ directions but preserving their weights.
 
 For example, the report on the "demo_pocs/search_maze" example graph, for leadsto links:
 <pre>
+go run graph_report.go  -chapter multi|more
+----------------------------------------------------------------
+Analysing chapter "multi slit interference", context [] to path length 6
+----------------------------------------------------------------
+
+* TOTAL NODES IN THE SEARCH REGION 13
+
+* TOTAL DIRECTED LINKS = 17 of possible 156 = 0.11 %
+
+* DISTRIBUTION OF NAME TYPE/LENGTHS:
+  - single word ngram : 10 / 13
+  - two word ngram : 3 / 13
+
+* PROCESS ORIGINS / ROOT DEPENDENCIES / PATH SOURCES for ("+leads to") in multi slit interference
+
+   - NPtr(1,0) -> start
+
+* FINAL END-STATES / PATH SINK NODES for ("+leads to") in multi slit interference
+
+   - NPtr(2,2) -> target 3
+   - NPtr(2,0) -> target 1
+   - NPtr(2,1) -> target 2
+
+* DIRECTED LOOPS AND CYCLES:
+
+   - Acyclic
+
+* APPOINTED NODES (nodes pointed to by at least 2 others thus correlating them) 
+
+   Appointer correlates -> 2 appointed nodes (gate ...) in chapter "multi slit interference"
+
+     tram --(comes from / arriving from : -comes from)--> gate...   - in context []
+     bike --(comes from / arriving from : -comes from)--> gate...   - in context []
+
+   Appointer correlates -> 4 appointed nodes (start ...) in chapter "multi slit interference"
+
+     door --(comes from / arriving from : -comes from)--> start...   - in context []
+     port --(comes from / arriving from : -comes from)--> start...   - in context []
+     hole --(comes from / arriving from : -comes from)--> start...   - in context []
+     gate --(comes from / arriving from : -comes from)--> start...   - in context []
+
+   Appointer correlates -> 3 appointed nodes (door ...) in chapter "multi slit interference"
+
+     passage --(comes from / arriving from : -comes from)--> door...   - in context []
+     road --(comes from / arriving from : -comes from)--> door...   - in context []
+     river --(comes from / arriving from : -comes from)--> door...   - in context []
+
+   Appointer correlates -> 2 appointed nodes (port ...) in chapter "multi slit interference"
+
+     river --(comes from / arriving from : -comes from)--> port...   - in context []
+     tram --(comes from / arriving from : -comes from)--> port...   - in context []
+
+* SYMMETRIZED EIGENVECTOR CENTRALITY = FLOW RESERVOIR CAPACITANCE AT EQUILIBRIUM = 
+
+   ( 0.993 ) <- 0 = tram
+   ( 0.768 ) <- 1 = target 3
+   ( 0.847 ) <- 2 = gate
+   ( 0.496 ) <- 3 = bike
+   ( 1.000 ) <- 4 = start
+   ( 0.787 ) <- 5 = door
+   ( 0.940 ) <- 6 = port
+   ( 0.678 ) <- 7 = hole
+   ( 0.767 ) <- 8 = river
+   ( 0.272 ) <- 9 = passage
+   ( 0.093 ) <- 10 = target 1
+   ( 0.272 ) <- 11 = road
+   ( 0.093 ) <- 12 = target 2
+
+* THERE ARE 2 LOCAL MAXIMA IN THE EQUILIBRIUM EVC LANDSCAPE:
+
+  - subregion of maximum 0 consisting of nodes [0 1]
+     - where 0 -> tram
+     - where 1 -> target 3
+  - subregion of maximum 4 consisting of nodes [2 3 4 5 6 7 8 9 10 11 12]
+     - where 2 -> gate
+     - where 3 -> bike
+     - where 4 -> start
+     - where 5 -> door
+     - where 6 -> port
+     - where 7 -> hole
+     - where 8 -> river
+     - where 9 -> passage
+     - where 10 -> target 1
+     - where 11 -> road
+     - where 12 -> target 2
+
+* HILL-CLIMBING EVC-LAMDSCAPE GRADIENT PATHS:
+
+     - Path node 0 has local maximum at node * 0 *, hop distance 0 along [0]
+     - Path node 1 has local maximum at node * 0 *, hop distance 1 along [1 0]
+     - Path node 2 has local maximum at node * 4 *, hop distance 1 along [2 4]
+     - Path node 3 has local maximum at node * 4 *, hop distance 2 along [3 2 4]
+     - Path node 4 has local maximum at node * 4 *, hop distance 0 along [4]
+     - Path node 5 has local maximum at node * 4 *, hop distance 1 along [5 4]
+     - Path node 6 has local maximum at node * 4 *, hop distance 1 along [6 4]
+     - Path node 7 has local maximum at node * 4 *, hop distance 1 along [7 4]
+     - Path node 8 has local maximum at node * 4 *, hop distance 2 along [8 6 4]
+     - Path node 9 has local maximum at node * 4 *, hop distance 2 along [9 5 4]
+     - Path node 10 has local maximum at node * 4 *, hop distance 3 along [10 9 5 4]
+     - Path node 11 has local maximum at node * 4 *, hop distance 2 along [11 5 4]
+     - Path node 12 has local maximum at node * 4 *, hop distance 3 along [12 11 5 4]
+</pre>
+
+Another example:
+</pre>
 $ go run graph_report.go -chapter maze -sttype L
 ----------------------------------------------------------------
 Analysing chapter "maze", context [] to path length 6
@@ -48,8 +163,6 @@ Analysing chapter "maze", context [] to path length 6
    - NPtr(1,3107) -> a7
    - NPtr(1,3135) -> d1
    - NPtr(1,3136) -> f1
-
-
 
 * FINAL END-STATES / PATH SINK NODES for ("+leads to") in maze
 
