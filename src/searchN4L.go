@@ -149,14 +149,14 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 		searchtext = ""
 	}
 
-	EventSearch(ctx,chapter,context,searchtext)
+	EventSearch(ctx,chapter,context,searchtext,limit)
 
 	if EXPLORE {
-		BroadByName(ctx,chapter,context,searchtext,arrows)
+		BroadByName(ctx,chapter,context,searchtext,arrows,limit)
 	}
 
 	if BROWSE {
-		Systematic(ctx,chapter,context,searchtext,arrows)
+		Systematic(ctx,chapter,context,searchtext,arrows,limit)
 	}
 
 	chaps := SST.GetDBChaptersMatchingName(ctx,"")
@@ -168,11 +168,17 @@ func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,search
 
 //******************************************************************
 
-func EventSearch(ctx SST.PoSST, chaptext string,context []string,searchtext string) {
+func EventSearch(ctx SST.PoSST, chaptext string,context []string,searchtext string,limit int) {
 	
+	var count int
+
 	nptrs := SST.GetDBNodePtrMatchingName(ctx,searchtext,chaptext)
 
 	for nptr := range nptrs {
+		count++
+		if count > limit {
+			return
+		}
 		fmt.Print("\n",nptr,": ")
 		SST.PrintNodeOrbit(ctx,nptrs[nptr],100)
 	}
@@ -180,7 +186,7 @@ func EventSearch(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 
 //******************************************************************
 
-func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string) {
+func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string,limit int) {
 
 	const maxdepth = 5
 	
@@ -193,6 +199,10 @@ func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 	}
 
 	for start := range start_set {
+
+		if start+1 > limit {
+			return
+		}
 
 		for sttype := SST.NEAR; sttype <= SST.EXPRESS; sttype++ {
 
@@ -236,7 +246,7 @@ func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 
 //******************************************************************
 
-func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string) {
+func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string,limit int) {
 
 	chaptext = strings.TrimSpace(chaptext)
 	searchtext = strings.TrimSpace(searchtext)
@@ -260,8 +270,16 @@ func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext strin
 
 	var prev string
 	var header []string
+	var count int
 
 	for q := range qnodes {
+
+		count++
+
+		if count > limit {
+			break
+		}
+
 		if qnodes[q].Context != prev {
 			prev = qnodes[q].Context
 			header = SST.ParseSQLArrayString(qnodes[q].Context)

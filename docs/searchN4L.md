@@ -5,6 +5,12 @@ This is an experimental tool for querying the database. The details
 are likely to change in the near future as the software is tested in use.
 
 For now, you can get started by trying the examples, e.g.
+
+<pre>
+
+</pre>
+
+
 <pre>
 $ cd examples
 $ ../src/N4L-db -wipe -u chinese*n4l doors.n4l Mary.n4l brains.n4l
@@ -83,7 +89,7 @@ river  (lt) target 3
 tram   (lt)  "
 bike   (lt)   "
 
-
+</pre>
 
 
 
