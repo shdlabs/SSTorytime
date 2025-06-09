@@ -850,36 +850,41 @@ for (let nptr of obj.paths)
    col1.appendChild(hd1)
    let lst1 = document.createElement('ol');
 
-   for (let centrality of nptr.BTWC)
-      {
-      let li = document.createElement('li');
-      li.textContent = centrality;
-      lst1.appendChild(li);
+   // For paths solve <a|b>
+
+   if (nptr.BTWC != null) 
+   {
+      for (let centrality of nptr.BTWC)
+         {
+         let li = document.createElement('li');
+         li.textContent = centrality;
+         lst1.appendChild(li);
+         }
+      col1.appendChild(lst1)
+
+      let col2 = document.createElement('td');
+      let hd2 = document.createElement('h4');
+      hd2.textContent = "Supernode summary";
+      col2.appendChild(hd2)
+      let lst2 = document.createElement('ol');
+
+      for (let snode of nptr.Supernodes)
+         {
+         let li = document.createElement('li');
+         li.textContent = snode;
+         lst2.appendChild(li);
+         }
+      col2.appendChild(lst2)
+
+      row.appendChild(col1)
+      row.appendChild(col2)
+
+      tab.appendChild(row);
+      panel.appendChild(tab);
+
+      let hr = document.createElement('hr');
+      panel.appendChild(hr);
       }
-   col1.appendChild(lst1)
-
-   let col2 = document.createElement('td');
-   let hd2 = document.createElement('h4');
-   hd2.textContent = "Supernode summary";
-   col2.appendChild(hd2)
-   let lst2 = document.createElement('ol');
-
-   for (let snode of nptr.Supernodes)
-      {
-      let li = document.createElement('li');
-      li.textContent = snode;
-      lst2.appendChild(li);
-      }
-   col2.appendChild(lst2)
-
-   row.appendChild(col1)
-   row.appendChild(col2)
-
-   tab.appendChild(row);
-   panel.appendChild(tab);
-
-   let hr = document.createElement('hr');
-   panel.appendChild(hr);
    }
 }
 
@@ -1126,7 +1131,6 @@ async function sendconeData() {
          }
 
       DoHeader(resp);
-      //DoConePanel(resp);
       DoEntireConePanel(resp);
       MathJax.typeset();
 

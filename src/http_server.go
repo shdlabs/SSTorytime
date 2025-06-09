@@ -193,9 +193,9 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 	maxdepth := 20
 	var count int
 
-	// Encode
-
 	multicone  := "{ \"paths\" : [\n"
+
+	// Encode forward cone first
 
 	for n := 0; n < len(nptrs); n++ {
 
@@ -204,7 +204,36 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 		thiscone += fmt.Sprintf("   \"Title\" : \"%s\",\n",name)
 		empty := true
 
-		cone,span := SST.GetEntireConePathsAsLinks(CTX,"any",nptrs[n],maxdepth)
+		cone,span := SST.GetEntireConePathsAsLinks(CTX,"fwd",nptrs[n],maxdepth)
+		
+		json := SST.JSONCone(CTX,cone,chapter,cntxt)
+		
+		if span > 0 {
+			empty = false
+		}
+		
+		thiscone += fmt.Sprintf("\"Entire\" : %s ",json)		
+		thiscone += "\n}"
+
+		if !empty {
+			if count > 0 {
+				thiscone = "\n,"+thiscone
+			}
+			multicone += thiscone
+			count++
+		}
+	}
+
+	// Encode backward cone
+
+	for n := 0; n < len(nptrs); n++ {
+
+		thiscone := fmt.Sprintf(" { \"NClass\" : %d,\n",nptrs[n].Class)
+		thiscone += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptrs[n].CPtr)
+		thiscone += fmt.Sprintf("   \"Title\" : \"%s\",\n",name)
+		empty := true
+
+		cone,span := SST.GetEntireConePathsAsLinks(CTX,"bwd",nptrs[n],maxdepth)
 		
 		json := SST.JSONCone(CTX,cone,chapter,cntxt)
 		
@@ -226,6 +255,7 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 
 	multicone += "]\n}\n"
 
+	fmt.Println("CONE",multicone)
 	w.Write([]byte(multicone))
 	fmt.Println("Reply Cone sent")
 }
