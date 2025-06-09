@@ -4685,7 +4685,7 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr) string {
 
 // **************************************************************************
 
-func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string) string {
+func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string, direction string) string {
 
 	var jstr string = "["
 

@@ -206,7 +206,7 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 
 		cone,span := SST.GetEntireConePathsAsLinks(CTX,"fwd",nptrs[n],maxdepth)
 		
-		json := SST.JSONCone(CTX,cone,chapter,cntxt)
+		json := SST.JSONCone(CTX,cone,chapter,cntxt,"+")
 		
 		if span > 0 {
 			empty = false
@@ -235,7 +235,7 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 
 		cone,span := SST.GetEntireConePathsAsLinks(CTX,"bwd",nptrs[n],maxdepth)
 		
-		json := SST.JSONCone(CTX,cone,chapter,cntxt)
+		json := SST.JSONCone(CTX,cone,chapter,cntxt,"-")
 		
 		if span > 0 {
 			empty = false
@@ -321,7 +321,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,begin,end,chapter,cn
 			json += fmt.Sprintf("   \"BTWC\" : [ %s ],\n",SST.BetweenNessCentrality(CTX,solutions))
 			json += fmt.Sprintf("   \"Supernodes\" : [ %s ],\n",SST.SuperNodes(CTX,solutions,maxdepth))
 
-			json += fmt.Sprintf("\"Entire\" : %s ",SST.JSONCone(CTX,solutions,chapter,context))	
+			json += fmt.Sprintf("\"Entire\" : %s ",SST.JSONCone(CTX,solutions,chapter,context,"+"))
 			json += "\n}\n]\n}"
 
 			count++
@@ -446,7 +446,7 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 		for i := range order {
 			sttype := order[i]
 			cone,_ := SST.GetFwdPathsAsLinks(CTX,qnodes[q].NPtr,sttype,maxdepth[i])
-			json := SST.JSONCone(CTX,cone,chapter,context)
+			json := SST.JSONCone(CTX,cone,chapter,context,"+")
 			thiscone += fmt.Sprintf("\"%s\" : %s ",SST.STTypeDBChannel(sttype),json)
 			
 			if i < len(order)-1 {
