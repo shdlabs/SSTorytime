@@ -83,8 +83,11 @@ return yt;
 function Node(x,y,z,r)
 {
 CTX.beginPath();
+
 let x0 = Tx(x,y,z);
 let y0 = Ty(x,y,z);
+let scale = HORIZON / (HORIZON + z)
+r = r * scale;
 
 const grad = CTX.createLinearGradient(x0,y0,x0+r,y0+r);
 grad.addColorStop(0, "lightblue");
@@ -100,17 +103,17 @@ CTX.closePath();
 
 function Arrow(x0,y0,z0,xp,yp,zp,colour,thickness)
 {
-var headlen = 20;
-var noderadius = 10;
 SST_Line(x0,y0,z0,xp,yp,zp,colour);
 
 let frx = Tx(x0,y0,z0);
 let fry = Ty(x0,y0,z0);
 let tox = Tx(xp,yp,zp);
 let toy = Ty(xp,yp,zp);
-
-var angle = Math.atan2(toy-fry,tox-frx);
-var headangle = Math.PI/12;
+let scale = HORIZON / (HORIZON + zp)
+let angle = Math.atan2(toy-fry,tox-frx);
+let headangle = Math.PI/12;
+let headlen = 20 * scale;
+let noderadius = 10 * scale;
 
 CTX.beginPath();
 CTX.strokeStyle = colour;
