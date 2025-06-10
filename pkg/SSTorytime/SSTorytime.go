@@ -126,11 +126,21 @@ type PageView struct {
 
 //**************************************************************
 
+type Coords struct {
+	X float32
+	Y float32
+	Z float32
+        T rune // {'e','t','c'}
+}
+
+//**************************************************************
+
 type WebPath struct {
 	NPtr    NodePtr
 	Arr     ArrowPtr
 	STindex int
 	Name    string
+	XYZ     Coords
 }
 
 //**************************************************************
@@ -3576,6 +3586,79 @@ func DownloadArrowsFromDB(ctx PoSST) {
 // Transition/path integral matrix
 // **************************************************************************
 
+func AssignConeCoordinates(cone [][]Link) map[NodePtr]Coords {
+
+	var directory = make(map[NodePtr]Coords)
+	var unique = make(map[NodePtr]int)
+
+	maxlen := 0
+
+	for p := range cone {
+		if len(cone[p]) > maxlen {
+			maxlen = len(cone[p])
+		}
+	}
+
+	// Count the expanding wavefront sections for unique node entries
+
+	N := make([]float32,maxlen)
+	var maxwidth float32 = 0.0
+
+	for cs := 0; cs < maxlen; cs++ {
+
+		for p := range cone {
+
+			if cs < len(cone[p]) {
+				_,already := unique[cone[p][cs].Dst]
+
+				if !already {
+					unique[cone[p][cs].Dst]++
+					N[cs]++
+				}
+			}
+
+			if N[cs] > maxwidth {
+				maxwidth = N[cs]
+			}
+		}
+	}
+
+	average_node_x_spacing := 1.0 / maxwidth
+	average_node_tz_spacing := 1.0 / float32(maxlen)
+
+	for cs := 0; cs < maxlen; cs++ {
+
+		// there are N[cs] nodes to place at this path depth
+
+		var xyz Coords
+
+		xyz.X = average_node_x_spacing * N[cs] / 2
+		xyz.Y = 0
+		xyz.Z = average_node_tz_spacing * float32(cs)
+
+		for p := range cone {
+
+			if cs < len(cone[p]) {
+
+				nptr := cone[p][cs].Dst
+
+				_,ledgexists := directory[nptr]
+
+				// Assign each unique NPtr an x,y,z coordinate once
+
+				if !ledgexists {
+					directory[nptr] = xyz
+				}
+			}
+
+		}
+	}
+
+	return directory
+}
+
+// **************************************************************************
+
 func GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,context []string,maxdepth int) [][]Link {
 
 	var left_paths, right_paths [][]Link
@@ -4689,6 +4772,12 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string, directio
 
 	var jstr string = "["
 
+	// The cone is a flattened array, we can assign spatial coordinates for visualization
+
+	directory := AssignConeCoordinates(cone)
+
+	// JSONify the cone structure, converting []Link into []WebPath
+
 	for p := 0; p < len(cone); p++ {
 
 		path_start := GetDBNodeByNodePtr(ctx,cone[p][0].Dst)		
@@ -4713,6 +4802,7 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string, directio
 				var ws WebPath
 				ws.Name = path_start.S
 				ws.NPtr = cone[p][0].Dst
+				ws.XYZ = directory[cone[p][0].Dst]
 				path = append(path,ws)
 				start_shown = true
 			}
