@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="myCanvas" width="900" height="900" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML canvas tag.</canvas>
+
+<script>
+var c = document.getElementById("myCanvas");
+var CTX = c.getContext("2d");
+
+let ORGX = 300;
+let ORGY = 300;
+let WIDTH = c.offsetWidth;
+let HEIGHT = c.offsetHeight;
+let THETA = Math.PI/8;
+let PHI = Math.PI/8;
+let HORIZON = 500;
+
+Node(0,0,0,10);
+
+DrawGrid(0,0,300);
+
+// *************************************************
+
+function DrawGrid(x,z,length)
+{
+for (let xi = x; xi <= x + length; xi += 50) 
+   {
+   SST_Line(xi,0,0,xi,0,length,'lightgrey');
+   }
+
+for (let zi = z; zi <= z + length; zi += 50) 
+   {
+   SST_Line(0,0,zi,length,0,zi,'lightgrey');
+   }
+
+SST_Line(-length,0,0,0,0,0,'lightgrey');
+SST_Line(0,0,-length,0,0,0,'lightgrey');
+SST_Line(0,-length,0,0,length,0,'lightgrey');
+}
+
+// *************************************************
+
+function SST_Line(x0,y0,z0,xp,yp,zp,colour)
+{
+CTX.beginPath();
+let xb = Tx(x0,y0,z0);
+let yb = Ty(x0,y0,z0);
+let xe = Tx(xp,yp,zp);
+let ye = Ty(xp,yp,zp);
+
+CTX.moveTo(xb,yb);
+CTX.lineTo(xe,ye);
+CTX.strokeStyle = colour;
+CTX.stroke();
+CTX.closePath();
+}
+
+// *************************************************
+
+function Tx(x,y,z) 
+{
+let scale = HORIZON / (HORIZON + z)
+
+let xt = ORGX + scale * (x * Math.cos(THETA) + z * Math.cos(PHI));
+return xt;
+}
+
+// *************************************************
+
+function Ty(x,y,z) 
+{
+let scale = HORIZON / (HORIZON + z)
+let yt = HEIGHT - ORGY - scale * (y + z * Math.sin(PHI) - x * Math.sin(THETA));
+return yt;
+}
+
+// *************************************************
+
+function Node(x,y,z,r)
+{
+CTX.beginPath();
+let x0 = Tx(x,y,z);
+let y0 = Ty(x,y,z);
+const my_gradient = CTX.createLinearGradient(0, 0, 0, 170);
+my_gradient.addColorStop(0, "black");
+my_gradient.addColorStop(0.5, "red");
+my_gradient.addColorStop(1, "white");
+CTX.arc(x0, y0, r, 0, Math.PI*2);
+CTX.fillStyle = 'red'; //my_gradient;
+CTX.fill();
+CTX.closePath();
+}
+
+// *************************************************
+
+//ball(50,60,10);
+/*
+//DrawAxes(400,400,300);
+//ball(50,60,10);
+//ball(80,60,10);
+//ball(90,60,10);
+CTX.beginPath();
+CTX.moveTo(0,0);
+CTX.lineTo(900,900);
+CTX.moveTo(500,500);
+CTX.lineTo(400,600);
+CTX.moveTo(10, 100);// quad-curve starts from here
+CTX.quadraticCurveTo(110, 55, 210, 100);// curve upward
+CTX.moveTo(10, 100);// back here, let's draw one below
+CTX.quadraticCurveTo(110, 145, 210, 100);// curve below
+CTX.stroke();
+CTX.closePath();
+*/
+</script>
+
+</body>
+</html>
+
