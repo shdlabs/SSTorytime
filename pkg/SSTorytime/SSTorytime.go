@@ -4814,12 +4814,14 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string, directio
 				wl.Name = arr.Long
 				wl.Arr = cone[p][l].Arr
 				wl.STindex = arr.STAindex
+				wl.XYZ = directory[cone[p][l].Dst]
 				path = append(path,wl)
 			}
 
 			var wn WebPath
 			wn.Name = nextnode.S
 			wn.NPtr = cone[p][l].Dst
+			wn.XYZ = directory[cone[p][l].Dst]
 			path = append(path,wn)
 
 		}
