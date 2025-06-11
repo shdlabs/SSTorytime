@@ -3586,10 +3586,12 @@ func DownloadArrowsFromDB(ctx PoSST) {
 // Transition/path integral matrix
 // **************************************************************************
 
-func AssignConeCoordinates(cone [][]Link) map[NodePtr]Coords {
+func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 
 	var directory = make(map[NodePtr]Coords)
-	var unique = make(map[NodePtr]int)
+	var unique = make([]map[NodePtr]int,0)
+
+	// This is segment this of total, which has range (width=1.0)/total * [this-this+1]
 
 	maxlen := 0
 
@@ -3602,55 +3604,59 @@ func AssignConeCoordinates(cone [][]Link) map[NodePtr]Coords {
 	// Count the expanding wavefront sections for unique node entries
 
 	N := make([]float32,maxlen)
-	var maxwidth float32 = 0.0
 
 	for cs := 0; cs < maxlen; cs++ {
+
+		var unique_section = make(map[NodePtr]int)
 
 		for p := range cone {
 
 			if cs < len(cone[p]) {
-				_,already := unique[cone[p][cs].Dst]
+				_,already := unique_section[cone[p][cs].Dst]
 
 				if !already {
-					unique[cone[p][cs].Dst]++
+					unique_section[cone[p][cs].Dst]++
 					N[cs]++
 				}
 			}
-
-			if N[cs] > maxwidth {
-				maxwidth = N[cs]
-			}
 		}
+		unique = append(unique,unique_section)
 	}
 
-	average_node_x_spacing := 1.0 / maxwidth
-	average_node_tz_spacing := 1.0 / float32(maxlen)
+	// This is the depth dimenion of the paths -1 to +1
+
+	average_node_tz_spacing := 2.0 / float32(maxlen) 
+
+	x_range := 2.0 / float32(total)
+
+	z_0 := -float32(1)
 
 	for cs := 0; cs < maxlen; cs++ {
 
+		// Now we want the coordinates for each unique node per section
 		// there are N[cs] nodes to place at this path depth
+
+		average_section_space := x_range / (N[cs]+1)
+		x_begin := 1 - float32(this) * x_range - average_section_space/2.0
 
 		var xyz Coords
 
-		xyz.X = average_node_x_spacing * N[cs] / 2
+		xyz.X = x_begin
 		xyz.Y = 0
-		xyz.Z = average_node_tz_spacing * float32(cs)
+		xyz.Z = z_0 + average_node_tz_spacing * float32(cs)
 
-		for p := range cone {
+		for uniqptr := range unique[cs] {
 
-			if cs < len(cone[p]) {
+			fmt.Println("THIS/TOT=",this,"/",total,"SECTION",cs,"UNIQ",uniqptr,xyz)
 
-				nptr := cone[p][cs].Dst
-
-				_,ledgexists := directory[nptr]
-
-				// Assign each unique NPtr an x,y,z coordinate once
-
-				if !ledgexists {
-					directory[nptr] = xyz
-				}
+			_,ledgexists := directory[uniqptr]
+			
+			// Assign each unique NPtr an x,y,z coordinate once
+			
+			if !ledgexists {
+				directory[uniqptr] = xyz
 			}
-
+			xyz.X -= average_section_space
 		}
 	}
 
@@ -4768,13 +4774,13 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr) string {
 
 // **************************************************************************
 
-func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string, direction string) string {
+func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string,n,total int) string {
 
 	var jstr string = "["
 
 	// The cone is a flattened array, we can assign spatial coordinates for visualization
 
-	directory := AssignConeCoordinates(cone)
+	directory := AssignConeCoordinates(cone,n,total)
 
 	// JSONify the cone structure, converting []Link into []WebPath
 

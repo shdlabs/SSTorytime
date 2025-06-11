@@ -312,33 +312,40 @@ MathJax.Hub.Config({
 
 var API_SERVER = 'http://localhost:8080';
 
-const Im3 = 0
-const Im2 = 1
-const Im1 = 2
-const In0 = 3
-const Il1 = 4
-const Ic2 = 5
-const Ie3 = 6
-const ST_TOP = 7
+const Im3 = 0;
+const Im2 = 1;
+const Im1 = 2;
+const In0 = 3;
+const Il1 = 4;
+const Ic2 = 5;
+const Ie3 = 6;
+const ST_TOP = 7;
+const ST_ZER0 = 3;
 
-const STINDICES = ["is a property expressed by","is contained by","comes from","is near/smimilar to","leads to","contains","expresses property"]
+const STINDICES = ["is a property expressed by","is contained by","comes from","is near/smimilar to","leads to","contains","expresses property"];
 
 /***********************************************************/
 // Graphics vaiewport
 /***********************************************************/
 
-var c = document.getElementById("myCanvas");
-var CTX = c.getContext("2d");
+var CANVAS = document.getElementById("myCanvas");
+var CTX = CANVAS.getContext("2d");
 
 // Adjust coordinates
-let HORIZON = 700;
-let PERSPEC = 2.5;
-let WIDTH = c.offsetWidth;
-let HEIGHT = c.offsetHeight;
+
+let WIDTH = CANVAS.offsetWidth;
+let HEIGHT = CANVAS.offsetHeight;
 let ORGX = WIDTH/2;
 let ORGY = HEIGHT/2;
 let THETA = Math.PI/8;
 let PHI = Math.PI/8;
+let SCALE = 0.9;
+let OBS_X = 1;
+let OBS_Y = 1;
+let OBS_Z = -1;
+let VP_X = 0;
+let VP_Y = 4;
+let VP_Z = 8;
 
 /***********************************************************/
 // Disable ENTER submission
@@ -514,13 +521,27 @@ if (array.length < 1)
    return parent;
    }
 
+let lastx = 0;
+let lasty = 0;
+let lastz = 0;
+let lastarrow = 0;
+
+ClearCanvas();
+Thing(0.1,0.1,0.1);
+DrawGrid(0,0,1);
+
+
+Label(-1,0,0,"MINUS1",30,"black");
+Label(+1,0,0,"PLUS1",30,"black");
 
 for (let path = 0; path < array.length; path++)
    {
    if (array[path] == null)
-     {
-     continue;
-     }
+      {
+      continue;
+      }
+
+   // The WebPath protocol alternates node-arrow...
 
    for (let i = 0; i < array[path].length; i++)
       {
@@ -529,6 +550,50 @@ for (let path = 0; path < array.length; path++)
          let str = array[path][i].Name;
          let ncptr = array[path][i].NCPtr;
          let nclass = array[path][i].NClass;
+
+         let xyz = array[path][i].XYZ;
+
+         thisx = xyz.X;
+         thisy = xyz.Y;
+         thisz = xyz.Z;
+
+console.log(xyz);
+
+         if (lastx != 0 && lasty != 0 && lastz != 0)
+            {
+            switch (lastarrow)
+               {
+               case -3:
+                  Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case -2:
+                  Contains(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case -1:
+                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case 0:
+                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case 1:
+                  LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
+                  break;
+               case 2:
+                  Contains(lastx,lasty,lastz,thisx,thisy,thisz);
+                  break;
+               case 3:
+                  Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
+                  break;
+               }
+            }
+
+         lastx = thisx;
+         lasty = thisy;
+         lastz = thisz;
+
+         Event(thisx,thisy,thisz);
+         //Label(thisx,thisy,thisz,str,16,"black");
+         LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
 
          if (array[path][i].NPtr != null)
             {
@@ -572,6 +637,8 @@ for (let path = 0; path < array.length; path++)
          let arrptr = array[path][i].Arr
          let stindex = array[path][i].STindex
 
+         lastarrow = stindex;// - ST_TOP;
+
          if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
             {
             let hr = document.createElement('p');
@@ -585,8 +652,6 @@ for (let path = 0; path < array.length; path++)
          arrow_link.title = STINDICES[stindex];
          arrow_link.style.fontFamily = 'Verdana';
 
-         //arrow_link.className = 'arrow';
-         //arrow_link.style.href = 'http...';
          parent.appendChild(arrow_link);
          }
       }
@@ -663,18 +728,19 @@ titlebar.style.fontSize = "70%"
 
 // Graphic
 
-DrawGrid(0,0,500);
+CTX.save();
+DrawGrid(0,0,1);
 
-let orbit = 50;
+let orbit = 0.5;
 let x0 = 0
 let y0 = 0
 
-for (let z = 400; z > -200; z -= orbit) 
+for (let z = 1; z > -0.5; z -= orbit) 
    {
    LeadsTo(x0,y0,z,0,0,z+orbit);
    Event(x0,y0,z,10);
 
-   Label(x0,y0,z,"SST event "+z,16,"darkblue");
+   Label(x0,y0,z,"SST event",16,"darkblue");
 
    for (let a = 0; a < 2*Math.PI; a += Math.PI/6) 
       {
@@ -685,17 +751,7 @@ for (let z = 400; z > -200; z -= orbit)
       }
    }
 
-Label(-400,50,-100,"Welcome to Semantic Spacetime ... still in development! Thanks for your patience",30,"darkgreen");
-
-
-Event(-100,100,-100,10);
-Thing(100,200,200,10);
-Concept(0,200,200,10);
-
-Contains(-100,100,-100,100,200,200);
-Label(100,200,200,"THING",20,"lightgreen");
-Expresses(-100,100,-100,0,200,200);
-Label(0,200,200,"CONCEPT",20,"lightblue");
+CTX.restore();
 }
 
 /***********************************************************/
@@ -1597,37 +1653,61 @@ button.addEventListener("click", (event) => { event.preventDefault();  sendTOCDa
 
 function DrawGrid(x,z,length)
 {
-for (let xi = x; xi <= x + length; xi += 50) 
+for (let xi = -length; xi <= length; xi += 0.1) 
    {
-   SST_Line(xi,0,0,xi,0,length,'lightgrey',1);
+   SST_Line(xi,0,-length,xi,0,length,'lightgrey',1);
    }
 
-for (let zi = z; zi <= z + length; zi += 50) 
+for (let zi = -length; zi <= length; zi += 0.1) 
    {
-   SST_Line(0,0,zi,length,0,zi,'lightgrey',1);
+   SST_Line(-length,0,zi,length,0,zi,'lightgrey',1);
    }
 
 SST_Line(-length/2,0,0,0,0,0,'lightgrey',1);
 SST_Line(0,0,-length/2,0,0,0,'lightgrey',1);
 SST_Line(0,-length/2,0,0,length,0,'lightgrey',1);
+
+/*
+for (let xi = -length; xi <= length; xi += 0.5)
+   {
+   for (let zi = -length; zi <= length; zi += 0.5) 
+     {
+     Concept(xi,0,zi);
+     Label(xi,0,zi,xi+","+zi,16,"black");
+     }
+  }*/
 }
 
 // *************************************************
 
 function SST_Line(x0,y0,z0,xp,yp,zp,colour,thickness)
 {
+CTX.save();
 CTX.beginPath();
 let xb = Tx(x0,y0,z0);
 let yb = Ty(x0,y0,z0);
 let xe = Tx(xp,yp,zp);
 let ye = Ty(xp,yp,zp);
 
+//CTX.globalAlpha = 1;
 CTX.moveTo(xb,yb);
 CTX.lineTo(xe,ye);
 CTX.strokeStyle = colour;
 CTX.lineWidth = thickness;
 CTX.stroke();
 CTX.closePath();
+CTX.restore();
+}
+
+// *************************************************
+
+function ClearCanvas()
+{
+CTX.save();
+CTX.fillStyle = 'rgba(0, 0, 0, 1)';
+CTX.fillRect(0, 0, CANVAS.width, CANVAS.height);
+//CTX.globalCompositeOperation = 'source-over';
+CTX.restore();
 }
 
 // *************************************************
@@ -1636,9 +1716,9 @@ function Label(x,y,z,text,size,colour)
 {
 CTX.save();
 let font = "bold "+size+"px Arial";
-xr = Tx(x,y,z) + 100;
+xr = Tx(x,y,z) + 30;
 yr = Ty(x,y,z);
-
+CTX.beginPath();
 let w = CTX.measureText(text).width;
 let h = parseInt(font,size);
 CTX.fillStyle = 'white';
@@ -1651,9 +1731,16 @@ CTX.restore();
 
 // *************************************************
 
+function Horizon(x,y,z)
+{
+return Math.sqrt((x-OBS_X)*(x-OBS_X)+(y-OBS_Y)*(y-OBS_Y)+(z-OBS_Z)*(z-OBS_Z));
+}
+
+// *************************************************
+
 function Tx(x,y,z) 
 {
-let scale = HORIZON / (HORIZON + PERSPEC * z)
+let scale = SCALE * WIDTH / (1 + 1.5 * Horizon(x,y,z));
 
 let xt = ORGX + scale * (x * Math.cos(THETA) + z * Math.cos(PHI));
 return xt;
@@ -1663,7 +1750,8 @@ return xt;
 
 function Ty(x,y,z) 
 {
-let scale = HORIZON / (HORIZON + PERSPEC * z)
+let scale = SCALE * WIDTH / (1 + 1.5 * Horizon(x,y,z));
+
 let yt = HEIGHT - ORGY - scale * (y + z * Math.sin(PHI) - x * Math.sin(THETA));
 return yt;
 }
@@ -1672,42 +1760,51 @@ return yt;
 
 function LeadsTo(x0,y0,z0,xp,yp,zp)
 {
-let scale = HORIZON / (HORIZON + PERSPEC * z0)
-Arrow(x0,y0,z0,xp,yp,zp,"red",3*scale);
+Arrow(x0,y0,z0,xp,yp,zp,"red",3);
 }
+
+// *************************************************
 
 function Contains(x0,y0,z0,xp,yp,zp)
 {
-let scale = HORIZON / (HORIZON + PERSPEC * z0)
-Arrow(x0,y0,z0,xp,yp,zp,"grey",1*scale);
+Arrow(x0,y0,z0,xp,yp,zp,"grey",2);
 }
+
+// *************************************************
 
 function Expresses(x0,y0,z0,xp,yp,zp)
 {
-let scale = HORIZON / (HORIZON + PERSPEC * z0)
-Arrow(x0,y0,z0,xp,yp,zp,"orange",1*scale);
+Arrow(x0,y0,z0,xp,yp,zp,"orange",2);
 }
+
+// *************************************************
 
 function Near(x0,y0,z0,xp,yp,zp)
 {
-let scale = HORIZON / (HORIZON + PERSPEC * z)
-Arrow(x0,y0,z0,xp,yp,zp,"darkgrey",thickness,1*scale);
+Arrow(x0,y0,z0,xp,yp,zp,"darkgrey",1);
 }
 
 // *************************************************
 
 function Event(x,y,z) 
 {
-Node(x,y,z,12,"darkred","orange");
+console.log("EVENT",x,y,x);
+Node(x,y,z,10,"darkred","orange");
 }
+
+// *************************************************
 
 function Thing(x,y,z) 
 {
+console.log("THING",x,y,x);
 Node(x,y,z,8,"darkgreen","lightgreen");
 }
 
+// *************************************************
+
 function Concept(x,y,z) 
 {
+console.log("CONCEPT",x,y,x);
 Node(x,y,z,6,"darkblue","lightblue");
 }
 
@@ -1715,21 +1812,19 @@ Node(x,y,z,6,"darkblue","lightblue");
 
 function Node(x,y,z,r,col1,col2)
 {
+CTX.save();
 CTX.beginPath();
-
 let x0 = Tx(x,y,z);
 let y0 = Ty(x,y,z);
-let scale = HORIZON / (HORIZON + z)
-r = r * scale;
-
-const grad = CTX.createLinearGradient(x0,y0,x0+r,y0+r);
+r = r * (2-z)*0.6;
+let grad = CTX.createLinearGradient(x0,y0,x0+r,y0+r);
 grad.addColorStop(0,col2);
 grad.addColorStop(1,col1);
-CTX.globalAlpha = Math.abs(1 - z /HORIZON);
+CTX.globalAlpha = (2-z)*0.6;
 CTX.arc(x0, y0, r, 0, Math.PI*2);
 CTX.fillStyle = grad;
 CTX.fill();
-CTX.closePath();
+CTX.restore();
 }
 
 // *************************************************
@@ -1742,26 +1837,24 @@ let frx = Tx(x0,y0,z0);
 let fry = Ty(x0,y0,z0);
 let tox = Tx(xp,yp,zp);
 let toy = Ty(xp,yp,zp);
-let scale = HORIZON / (HORIZON + zp)
+let scale = (1.1-zp);
 let angle = Math.atan2(toy-fry,tox-frx);
 let headangle = Math.PI/12;
 let headlen = 20 * scale;
 let noderadius = 10 * scale;
 
+CTX.save();
 CTX.beginPath();
+CTX.globalAlpha = 1;
 CTX.strokeStyle = colour;
 CTX.lineWidth = thickness;
-
 CTX.moveTo(tox-noderadius*Math.cos(angle),toy-noderadius*Math.sin(angle));
 CTX.lineTo(tox-headlen*Math.cos(angle-headangle),toy-headlen*Math.sin(angle-headangle));
 CTX.moveTo(tox-noderadius*Math.cos(angle),toy-noderadius*Math.sin(angle));
 CTX.lineTo(tox-headlen*Math.cos(angle+headangle),toy-headlen*Math.sin(angle+headangle));
 CTX.stroke();
-CTX.closePath();
+CTX.restore();
 }
-
-// *************************************************
-
 
 /***********************************************************/
 
