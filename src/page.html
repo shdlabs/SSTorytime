@@ -589,9 +589,18 @@ console.log("STTTY",lastarrow);
                }
             }
 
+      if (i < array[path].length-1)
+         {
          lastx = thisx;
          lasty = thisy;
          lastz = thisz;
+         }
+      else
+         {
+         lastx = 0;
+         lasty = 0;
+         lastz = 0;
+         }
 
          Event(thisx,thisy,thisz);
          Label(thisx,thisy,thisz,str.slice(0,10),12,"black");
