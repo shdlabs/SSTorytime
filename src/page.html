@@ -320,7 +320,7 @@ const Il1 = 4;
 const Ic2 = 5;
 const Ie3 = 6;
 const ST_TOP = 7;
-const ST_ZER0 = 3;
+const ST_ZERO = 3;
 
 const STINDICES = ["is a property expressed by","is contained by","comes from","is near/smimilar to","leads to","contains","expresses property"];
 
@@ -341,7 +341,7 @@ let THETA = Math.PI/8;
 let PHI = Math.PI/8;
 let SCALE = 0.9;
 let OBS_X = 1;
-let OBS_Y = 1;
+let OBS_Y = 0.5;
 let OBS_Z = -1;
 let VP_X = 0;
 let VP_Y = 4;
@@ -527,12 +527,13 @@ let lastz = 0;
 let lastarrow = 0;
 
 ClearCanvas();
-Thing(0.1,0.1,0.1);
 DrawGrid(0,0,1);
 
-
+/* TEST ...
+Thing(0.1,0.1,0.1);
+Thing(1,0.5,-0.8);
 Label(-1,0,0,"MINUS1",30,"black");
-Label(+1,0,0,"PLUS1",30,"black");
+Label(+1,0,0,"PLUS1",30,"black"); */
 
 for (let path = 0; path < array.length; path++)
    {
@@ -557,10 +558,9 @@ for (let path = 0; path < array.length; path++)
          thisy = xyz.Y;
          thisz = xyz.Z;
 
-console.log(xyz);
-
-         if (lastx != 0 && lasty != 0 && lastz != 0)
+         if (lastx != 0 || lasty != 0 || lastz != 0)
             {
+console.log("STTTY",lastarrow);
             switch (lastarrow)
                {
                case -3:
@@ -584,6 +584,8 @@ console.log(xyz);
                case 3:
                   Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
                   break;
+               default:
+                  console.log("Bad value",lastarrow);
                }
             }
 
@@ -592,8 +594,7 @@ console.log(xyz);
          lastz = thisz;
 
          Event(thisx,thisy,thisz);
-         //Label(thisx,thisy,thisz,str,16,"black");
-         LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
+         Label(thisx,thisy,thisz,str.slice(0,10),12,"black");
 
          if (array[path][i].NPtr != null)
             {
@@ -637,7 +638,7 @@ console.log(xyz);
          let arrptr = array[path][i].Arr
          let stindex = array[path][i].STindex
 
-         lastarrow = stindex;// - ST_TOP;
+         lastarrow = stindex - ST_ZERO;
 
          if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
             {
@@ -721,7 +722,7 @@ if (title.length < 60 || IsMath(title))
    } 
 else 
    {
-   titlebar.textContent = title.slice(0.60) + "...";
+   titlebar.textContent = title.slice(0,60) + "...";
    }
 
 titlebar.style.fontSize = "70%"
@@ -735,12 +736,12 @@ let orbit = 0.5;
 let x0 = 0
 let y0 = 0
 
-for (let z = 1; z > -0.5; z -= orbit) 
+for (let z = 1; z > -1.0; z -= orbit) 
    {
    LeadsTo(x0,y0,z,0,0,z+orbit);
    Event(x0,y0,z,10);
 
-   Label(x0,y0,z,"SST event",16,"darkblue");
+   Label(x0,y0,z,"SST event "+z,16,"darkblue");
 
    for (let a = 0; a < 2*Math.PI; a += Math.PI/6) 
       {
@@ -1680,34 +1681,12 @@ for (let xi = -length; xi <= length; xi += 0.5)
 
 // *************************************************
 
-function SST_Line(x0,y0,z0,xp,yp,zp,colour,thickness)
-{
-CTX.save();
-CTX.beginPath();
-let xb = Tx(x0,y0,z0);
-let yb = Ty(x0,y0,z0);
-let xe = Tx(xp,yp,zp);
-let ye = Ty(xp,yp,zp);
-
-//CTX.globalAlpha = 1;
-CTX.moveTo(xb,yb);
-CTX.lineTo(xe,ye);
-CTX.strokeStyle = colour;
-CTX.lineWidth = thickness;
-CTX.stroke();
-CTX.closePath();
-CTX.restore();
-}
-
-// *************************************************
-
 function ClearCanvas()
 {
-CTX.save();
-CTX.fillStyle = 'rgba(0, 0, 0, 1)';
+CTX.fillStyle = 'white';
 CTX.fillRect(0, 0, CANVAS.width, CANVAS.height);
-//CTX.globalCompositeOperation = 'source-over';
-CTX.restore();
+CTX.globalCompositeOperation = 'source-over';
+CTX.globalAlpha = 0.5;
 }
 
 // *************************************************
@@ -1734,6 +1713,21 @@ CTX.restore();
 function Horizon(x,y,z)
 {
 return Math.sqrt((x-OBS_X)*(x-OBS_X)+(y-OBS_Y)*(y-OBS_Y)+(z-OBS_Z)*(z-OBS_Z));
+}
+
+// *************************************************
+
+function Alpha(x,y,z)
+{
+let alpha = 1.5/Math.sqrt((x-OBS_X)*(x-OBS_X)+(y-OBS_Y)*(y-OBS_Y)+(z-OBS_Z)*(z-OBS_Z));
+if (alpha > 1)
+   {
+   return 1;
+   }
+if (alpha < 0.1)
+   {
+   return 0.1;
+   }
 }
 
 // *************************************************
@@ -1788,24 +1782,21 @@ Arrow(x0,y0,z0,xp,yp,zp,"darkgrey",1);
 
 function Event(x,y,z) 
 {
-console.log("EVENT",x,y,x);
-Node(x,y,z,10,"darkred","orange");
+Node(x,y,z,4,"darkred","orange");
 }
 
 // *************************************************
 
 function Thing(x,y,z) 
 {
-console.log("THING",x,y,x);
-Node(x,y,z,8,"darkgreen","lightgreen");
+Node(x,y,z,4,"darkgreen","lightgreen");
 }
 
 // *************************************************
 
 function Concept(x,y,z) 
 {
-console.log("CONCEPT",x,y,x);
-Node(x,y,z,6,"darkblue","lightblue");
+Node(x,y,z,4,"darkblue","lightblue");
 }
 
 // *************************************************
@@ -1816,11 +1807,12 @@ CTX.save();
 CTX.beginPath();
 let x0 = Tx(x,y,z);
 let y0 = Ty(x,y,z);
-r = r * (2-z)*0.6;
+r = r * 2 / Horizon(x,y,z);
 let grad = CTX.createLinearGradient(x0,y0,x0+r,y0+r);
 grad.addColorStop(0,col2);
 grad.addColorStop(1,col1);
-CTX.globalAlpha = (2-z)*0.6;
+
+CTX.globalAlpha = 1-Alpha(x,y,x)/3;
 CTX.arc(x0, y0, r, 0, Math.PI*2);
 CTX.fillStyle = grad;
 CTX.fill();
@@ -1845,7 +1837,7 @@ let noderadius = 10 * scale;
 
 CTX.save();
 CTX.beginPath();
-CTX.globalAlpha = 1;
+CTX.globalAlpha = Alpha(xp,yp,zp);
 CTX.strokeStyle = colour;
 CTX.lineWidth = thickness;
 CTX.moveTo(tox-noderadius*Math.cos(angle),toy-noderadius*Math.sin(angle));
@@ -1853,6 +1845,27 @@ CTX.lineTo(tox-headlen*Math.cos(angle-headangle),toy-headlen*Math.sin(angle-head
 CTX.moveTo(tox-noderadius*Math.cos(angle),toy-noderadius*Math.sin(angle));
 CTX.lineTo(tox-headlen*Math.cos(angle+headangle),toy-headlen*Math.sin(angle+headangle));
 CTX.stroke();
+CTX.restore();
+}
+
+// *************************************************
+
+function SST_Line(x0,y0,z0,xp,yp,zp,colour,thickness)
+{
+CTX.save();
+CTX.beginPath();
+let xb = Tx(x0,y0,z0);
+let yb = Ty(x0,y0,z0);
+let xe = Tx(xp,yp,zp);
+let ye = Ty(xp,yp,zp);
+
+//CTX.globalAlpha = 1;
+CTX.moveTo(xb,yb);
+CTX.lineTo(xe,ye);
+CTX.strokeStyle = colour;
+CTX.lineWidth = thickness;
+CTX.stroke();
+CTX.closePath();
 CTX.restore();
 }
 

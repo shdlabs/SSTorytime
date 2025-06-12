@@ -3642,7 +3642,7 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 		var xyz Coords
 
 		xyz.X = x_begin
-		xyz.Y = 0
+		xyz.Y = 0.3
 		xyz.Z = z_0 + average_node_tz_spacing * float32(cs)
 
 		for uniqptr := range unique[cs] {

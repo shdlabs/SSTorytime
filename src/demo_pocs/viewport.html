@@ -9,6 +9,8 @@ Your browser does not support the HTML canvas tag.</canvas>
 var c = document.getElementById("myCanvas");
 var CTX = c.getContext("2d");
 
+CTX.clearRect(c.width,c.height);
+
 // Adjust coordinates
 let HORIZON = 700;
 let PERSPEC = 2.5;
