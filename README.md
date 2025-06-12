@@ -17,9 +17,13 @@
 * * [The Shape of Knowledge](https://medium.com/@mark-burgess-oslo-mb/semantic-spacetime-1-the-shape-of-knowledge-86daced424a5)
 * * [Why you still can’t find what you’re looking for…](https://medium.com/p/922d113177e7)
 
-This project aims to turn intentionally created data (like written notes or snippets
-cut and pasted into a file) into linked and searchable knowledge maps, tracing the stories that we call 
-reasoning, and solving puzzles by connecting the dots between bits of information you curate.
+This project aims to turn intentionally created data (like written
+notes or snippets cut and pasted into a file) into linked and
+searchable knowledge maps, tracing the stories that we call reasoning,
+and solving puzzles by connecting the dots between bits of information
+you curate.
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/front.png 'Testing a web interface')
 
 Knowledge maps are graph (network) structures that link together
 events, things, and ideas into a web of relationships. They are great
@@ -43,6 +47,8 @@ human perception--though the results may be used together with "AI" in the futur
 Finally, there will be an API for programmers to incorporate these methods
 into their own explorations, either in Go or in Python. As a sort of "better, faster Python",
 Go is recommended for power scripting.
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/graph.png 'Testing a web interface')
 
 Note-taking may be an intuitive but semi-formal approach to
 getting facts for reasoning, for knowledge capture, querying, and
