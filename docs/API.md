@@ -37,7 +37,7 @@ func main() {
 
 </pre>
 
-### Add nodes and links from data
+### Add nodes and simple links from data
 
 For the meat of an AddStory function, we can use the Vertex and Edge functions to avoid low level details.
 Adding nodes to a database, without using the N4L language is straightforward:
@@ -68,6 +68,30 @@ Adding nodes to a database, without using the N4L language is straightforward:
 	SST.Edge(ctx,n5,"then",n6,context,w)
 
 </pre>
+
+### Adding hub-joins or hyperlinks from data
+
+See `API_EXAMPLE_2.go`. In a `HubJoin()` we provide a list of node pointers
+to be linked together via  a common hub. This respects the Semantic Spacetime
+rules and simulates a hyperlink.
+<pre>
+	// Then create a container mummy_node for all and arrow type is "is contained by"
+
+	created := SST.HubJoin(ctx,"mummy_node","my chapter",nptrs,"is contained by",nil,nil)
+	fmt.Println("Creates hub node",created2)
+
+        // Create 
+</pre>
+If you don't set the chapter, and all the nodes belong to the same chapter,
+then the method will adopt the same chapter as the children  belong to.
+Similarly, if you don't want to give the hub node a name, then leave it empty:
+<pre>
+	created := SST.HubJoin(ctx,"","",nptrs,"then",context,weights)
+	fmt.Println("Creates hub node",created1)
+
+</pre>
+the name of the node will be uniquely formed from a list of the node pointers,
+starting "hub_<arrow>_<nodelist>".
 
 ### Reading the graph back
 
