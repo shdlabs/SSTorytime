@@ -130,7 +130,6 @@ type Coords struct {
 	X float32
 	Y float32
 	Z float32
-        T rune // {'e','t','c'}
 }
 
 //**************************************************************
@@ -3629,7 +3628,7 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 
 	x_range := 2.0 / float32(total)
 
-	z_0 := -float32(1)
+	z_0 := -float32(1.0)
 
 	for cs := 0; cs < maxlen; cs++ {
 
@@ -3655,6 +3654,7 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 				directory[unique[cs][uniqptr]] = xyz
 			}
 			xyz.X -= average_section_space
+			fmt.Printf("%d,%d = %d ....%d of (%.2f,%.2f,%.2f)\n",this,total,maxlen,cs,xyz.X,xyz.Y,xyz.Z)
 		}
 	}
 

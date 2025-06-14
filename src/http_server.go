@@ -199,14 +199,18 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 
 	for n := 0; n < len(nptrs); n++ {
 
+		cone,span := SST.GetEntireConePathsAsLinks(CTX,"fwd",nptrs[n],maxdepth)
+
+		if span == 0 {
+			continue
+		}
+
 		thiscone := fmt.Sprintf(" { \"NClass\" : %d,\n",nptrs[n].Class)
 		thiscone += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptrs[n].CPtr)
 		thiscone += fmt.Sprintf("   \"Title\" : \"%s\",\n",name)
 		empty := true
 
-		cone,span := SST.GetEntireConePathsAsLinks(CTX,"fwd",nptrs[n],maxdepth)
-		
-		json := SST.JSONCone(CTX,cone,chapter,cntxt,n,len(nptrs))
+		json := SST.JSONCone(CTX,cone,chapter,cntxt,count,len(nptrs))
 		
 		if span > 0 {
 			empty = false
@@ -443,7 +447,7 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 		thiscone += fmt.Sprintf(" \"Title\" : %s,\n",string(title))
 		comma = ","
 		
-		for i := range order {
+		for i := 0; i < len(order); i++ {
 			sttype := order[i]
 			cone,_ := SST.GetFwdPathsAsLinks(CTX,qnodes[q].NPtr,sttype,maxdepth[i])
 			json := SST.JSONCone(CTX,cone,chapter,context,i,len(order))
