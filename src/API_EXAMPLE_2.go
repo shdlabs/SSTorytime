@@ -19,23 +19,29 @@ func main () {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	names := []string{"node1","node2","node3"}
+	names := []string{"test_node1","test_node2","test_node3"}
 	weights := []float32{0.2, 0.4, 1.0}
 	context := []string{"some","context","tags"}
 
 	var nodes []SST.Node
 	var nptrs []SST.NodePtr
 
-	for n := range names {
+	// Create a set of nodes tolink
 
+	for n := range names {
 		nodes = append(nodes,SST.Vertex(ctx,names[n],"my chapter"))
 		nptrs = append(nptrs,nodes[n].NPtr)
 	}
 
+	// Create a hyperlink between all the nodes to a common hub, with arrow "then"
 
-	created := SST.HubJoin(ctx,"","",nptrs,"then",context,weights)
+	created1 := SST.HubJoin(ctx,"","",nptrs,"then",context,weights)
+	fmt.Println("Creates hub node",created1)
 
-	fmt.Println("Creates hub node",created)
+	// Then create a container for all
+
+	created2 := SST.HubJoin(ctx,"mummy_node","",nptrs,"is contained by",nil,nil)
+	fmt.Println("Creates hub node",created2)
 
 	SST.Close(ctx)
 }

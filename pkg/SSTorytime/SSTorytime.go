@@ -1198,11 +1198,8 @@ func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 	to.S = name
 
 	if chap != "" {
-
 		to.Chap = chap
-
 	} else 	if chap == "" && len(chaps) == 1 {
-
 		for ch := range chaps {
 			to.Chap = ch
 		}
@@ -1216,16 +1213,15 @@ func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 
 		var link Link
 		link.Arr = arrowptr
-		link.Dst = to.NPtr
+		link.Dst = container.NPtr
 		link.Wgt = weight[nptr]
 		link.Ctx = context
-
-		from := GetDBNodeByNodePtr(ctx,nptrs[nptr])		
-		IdempDBAddLink(ctx,from,link,to)
+		from := GetDBNodeByNodePtr(ctx,nptrs[nptr])
+		IdempDBAddLink(ctx,from,link,container)
 		CreateDBNodeArrowNode(ctx,nptrs[nptr],link,sttype)
 	}
 
-	return container
+	return GetDBNodeByNodePtr(ctx,container.NPtr)
 }
 
 // **************************************************************************

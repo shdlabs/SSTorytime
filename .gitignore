@@ -38,7 +38,8 @@ N4L-db
 http_server
 pathsolve
 graph_report
-API_EXAMPLE
+API_EXAMPLE_1
+API_EXAMPLE_2
 searchN4L
 search_broad 
 search_by_node 
