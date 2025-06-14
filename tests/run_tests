@@ -129,7 +129,7 @@ fi
 
 
 
-DB_TEST_PROG="../src/API_EXAMPLE"
+DB_TEST_PROG="../src/API_EXAMPLE_1"
 
 if $DB_TEST_PROG > /dev/null; 
    then 
