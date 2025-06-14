@@ -3589,7 +3589,7 @@ func DownloadArrowsFromDB(ctx PoSST) {
 func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 
 	var directory = make(map[NodePtr]Coords)
-	var unique = make([]map[NodePtr]int,0)
+	var unique = make([][]NodePtr,0)
 
 	// This is segment this of total, which has range (width=1.0)/total * [this-this+1]
 
@@ -3604,18 +3604,18 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 	// Count the expanding wavefront sections for unique node entries
 
 	N := make([]float32,maxlen)
+	already := make(map[NodePtr]bool)
 
 	for cs := 0; cs < maxlen; cs++ {
 
-		var unique_section = make(map[NodePtr]int)
+		var unique_section = make([]NodePtr,0)
 
 		for p := range cone {
 
 			if cs < len(cone[p]) {
-				_,already := unique_section[cone[p][cs].Dst]
-
-				if !already {
-					unique_section[cone[p][cs].Dst]++
+				if !already[cone[p][cs].Dst] {
+					unique_section = append(unique_section,cone[p][cs].Dst)
+					already[cone[p][cs].Dst] = true
 					N[cs]++
 				}
 			}
@@ -3645,16 +3645,14 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 		xyz.Y = 0.3
 		xyz.Z = z_0 + average_node_tz_spacing * float32(cs)
 
-		for uniqptr := range unique[cs] {
+		for uniqptr := 0; uniqptr < len(unique[cs]); uniqptr++ {
 
-			fmt.Println("THIS/TOT=",this,"/",total,"SECTION",cs,"UNIQ",uniqptr,xyz)
-
-			_,ledgexists := directory[uniqptr]
+			_,ledgexists := directory[unique[cs][uniqptr]]
 			
 			// Assign each unique NPtr an x,y,z coordinate once
 			
 			if !ledgexists {
-				directory[uniqptr] = xyz
+				directory[unique[cs][uniqptr]] = xyz
 			}
 			xyz.X -= average_section_space
 		}
