@@ -1161,6 +1161,63 @@ func Edge(ctx PoSST,from Node,arrow string,to Node,context []string,weight float
 }
 
 // **************************************************************************
+
+func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []string,weight float32) Node {
+
+	// Create a container node joining several other nodes in a list, like a hyperlink
+
+	if nptrs == nil {
+		fmt.Println("Call to HubJoin with a null list of pointers")
+		os.Exit(-1)
+	}
+
+	var chaps = make(map[string]int)
+
+	if name == "" {
+		name = "hub_"+arrow+"_"
+		for n := range nptrs {
+			name += fmt.Sprintf("(%d,%d)",nptrs[n].Class,nptrs[n].CPtr)
+			node := GetDBNodeByNodePtr(ctx,nptrs[n])
+			chaps[node.Chap]++
+		}
+	}
+
+	var to Node
+
+	to.S = name
+
+	if chap != "" {
+
+		to.Chap = chap
+
+	} else 	if chap == "" && len(chaps) == 1 {
+
+		for ch := range chaps {
+			to.Chap = ch
+		}
+	}
+
+	container := IdempDBAddNode(ctx,to)
+
+	arrowptr,sttype := GetDBArrowsWithArrowName(ctx,arrow)
+
+	for nptr := range nptrs {
+
+		var link Link
+		link.Arr = arrowptr
+		link.Dst = to.NPtr
+		link.Wgt = weight
+		link.Ctx = context
+
+		from := GetDBNodeByNodePtr(ctx,nptrs[nptr])		
+		IdempDBAddLink(ctx,from,link,to)
+		CreateDBNodeArrowNode(ctx,nptrs[nptr],link,sttype)
+	}
+
+	return container
+}
+
+// **************************************************************************
 // Lower level functions
 // **************************************************************************
 
