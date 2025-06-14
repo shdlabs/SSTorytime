@@ -1162,12 +1162,23 @@ func Edge(ctx PoSST,from Node,arrow string,to Node,context []string,weight float
 
 // **************************************************************************
 
-func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []string,weight float32) Node {
+func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []string,weight []float32) Node {
 
 	// Create a container node joining several other nodes in a list, like a hyperlink
 
 	if nptrs == nil {
 		fmt.Println("Call to HubJoin with a null list of pointers")
+		os.Exit(-1)
+	}
+
+	if weight == nil {
+		for n := 0; n < len(nptrs); n++ {
+			weight = append(weight,1.0)
+		}
+	}
+
+	if len(nptrs) != len(weight) {
+		fmt.Println("Call to HubJoin with inconsistent node/weight pointer arrays: dimensions ",len(nptrs),"vs",len(weight))
 		os.Exit(-1)
 	}
 
@@ -1206,7 +1217,7 @@ func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 		var link Link
 		link.Arr = arrowptr
 		link.Dst = to.NPtr
-		link.Wgt = weight
+		link.Wgt = weight[nptr]
 		link.Ctx = context
 
 		from := GetDBNodeByNodePtr(ctx,nptrs[nptr])		
