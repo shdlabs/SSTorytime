@@ -117,11 +117,12 @@ article a {
   margin-top: 5px;
 }
 
-pictureframe  {
+pictureframe {
 width: 1500px;
-height: 700px;
-padding:10px;
-margin-bottom: 10px;
+height: 800px;
+padding: 10px;
+float: left;
+
 }
 
 #radius-1 {
@@ -301,7 +302,7 @@ MathJax.Hub.Config({
   </nav>
 
   <pictureframe>
- <canvas height="100" width="150"></canvas>
+ <canvas height="700" width="150"></canvas>
   </pictureframe>
 
   <article>
@@ -344,7 +345,7 @@ var CTX = CANVAS.getContext("2d");
 let WIDTH = CANVAS.offsetWidth;
 let HEIGHT = CANVAS.offsetHeight;
 let ORGX = WIDTH/2;
-let ORGY = HEIGHT/2;
+let ORGY = HEIGHT/2 + 100;
 let THETA = Math.PI/8;
 let PHI = Math.PI/8;
 let SCALE = 0.9;
@@ -601,7 +602,7 @@ for (let path = 0; path < array.length; path++)
          }
 
          Event(thisx,thisy,thisz);
-         Label(thisx,thisy,thisz,str.slice(0,10),12,"black");
+         Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
 
          if (array[path][i].NPtr != null)
             {
@@ -928,8 +929,6 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
-//ClearCanvas();
-//ResetCanvas();
 CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
 
@@ -1693,16 +1692,18 @@ CTX.restore();
 function CreateCanvas() 
 {
 let oldcanvas = document.getElementById("myCanvas");
+
 if (oldcanvas != null)
    {
    oldcanvas.remove();
    }
+
 let parent = document.querySelector('pictureframe');
 canvas = document.createElement("canvas");
 canvas.id = "myCanvas";
 canvas.width = 1500;
 canvas.height = 700;
-canvas.style.position = "float";
+canvas.style.position = "absolute";
 canvas.style.border = "1px solid";
 CTX = canvas.getContext("2d");
 parent.appendChild(canvas);
@@ -1853,7 +1854,7 @@ CTX.save();
 CTX.beginPath();
 let x0 = Tx(x,y,z);
 let y0 = Ty(x,y,z);
-r = r * 2 / Horizon(x,y,z);
+r = r * 1.6 / Horizon(x,y,z);
 
 let grad = CTX.createLinearGradient(x0,y0,x0+r,y0+r);
 
