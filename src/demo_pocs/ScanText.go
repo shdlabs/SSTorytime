@@ -500,7 +500,7 @@ func GetLinkArrowByName(token string) SST.Link {
 	// Return a preregistered link/arrow ptr bythe name of a link
 
 	var reln []string
-	var weight float64 = 1
+	var weight float32 = 1
 	var weightcount int
 	var ctx []string
 	var name string
@@ -531,7 +531,7 @@ func GetLinkArrowByName(token string) SST.Link {
 					ParseError(ERR_TOO_MANY_WEIGHTS+token)
 					os.Exit(-1)
 				}
-				weight = v
+				weight = float32(v)
 				weightcount++
 			} else {
 				ctx = append(ctx,reln[i])
