@@ -1,6 +1,7 @@
 
 //
 // transform random text suggesting arrow hints for N4LParser
+//   Conclusion : this approach is misguided. Need something more authoritative 
 //
 
 package main
