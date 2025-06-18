@@ -293,8 +293,10 @@ MathJax.Hub.Config({
 
   </nav>
 
+  <pictureframe>
    <canvas id="myCanvas" width="1500" height="700" style="border:1px solid #d3d3d3;">
     Your browser does not support the HTML canvas tag.</canvas>
+  </pictureframe>
 
   <article>
 
@@ -527,6 +529,7 @@ let lastz = 0;
 let lastarrow = 0;
 
 ClearCanvas();
+ResetCanvas();
 DrawGrid(0,0,1);
 
 /* TEST ...
@@ -1686,20 +1689,36 @@ CTX.restore();
 
 // *************************************************
 
-function ClearCanvas()
+function ResetCanvas() 
 {
 
+//CANVAS.remove();
+
+CANVAS = document.createElement("canvas");
+CANVAS.id="myCanvas"
+CANVAS.width = 1500;
+CANVAS.height = 700;
+CANVAS.style.position = "absolute";
+CANVAS.style.border = "1px solid";
+
+let parent = document.querySelector('pictureframe');
+parent.appendChild(CANVAS);
+CTX = CANVAS.getContext("2d");
+}
+
+// *************************************************
+
+function ClearCanvas()
+{
 // clearRect/fillRect method causes seriously pathological behaviour in colour transparency!? WHY!?
-
-return;  // Don't know how to clear the screen
-
+// Don't know how to clear the screen
+return;
 CTX.save();
-CTX.fillStyle = 'white';
 CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
-CTX.globalCompositeOperation = 'source-over';
 CTX.globalAlpha = 0.5;
-CTX.beginPath();
 CTX.restore();
+CTX.beginPath();
+
 }
 
 // *************************************************
@@ -1749,7 +1768,7 @@ if (alpha < 0.1)
 
 function Tx(x,y,z) 
 {
-let scale = SCALE * WIDTH / (1 + 1.5 * Horizon(x,y,z));
+let scale = SCALE * WIDTH / (1 + 1.2 * Horizon(x,y,z));
 
 let xt = ORGX + scale * (x * Math.cos(THETA) + z * Math.cos(PHI));
 return xt;
