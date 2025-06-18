@@ -3690,7 +3690,7 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 
 	average_node_tz_spacing := 2.0 / float32(maxlen) 
 
-	x_range := 2.0 / float32(total)
+	x_range := 2.0 / (1+float32(total))
 
 	z_0 := -float32(1.0)
 
