@@ -9,6 +9,9 @@ package main
 import (
 	"fmt"
 	"time"
+	"regexp"
+	"io/ioutil"
+
 //	"strings"
 
         SST "SSTorytime"
@@ -26,11 +29,13 @@ func main() {
 
 	fmt.Println("TIME_CLASSES",c,"\nSLOT",slot)
 
+
+	txtcls := ContextFromFormatFile("/home/mark/Laptop/Work/NLnet/SemanticKnowledgeProject/org-42/roam/how-i-org.org")
+
+	fmt.Println("TEXT_CLASSES",txtcls)
+
 	SST.Close(ctx)
 }
-
-
-
 
 // ****************************************************************************
 // Semantic 2D time
@@ -137,3 +142,32 @@ func GetUnixTimeKey(now int64) string {
 
 	return slot
 }
+
+//******************************************************************
+// Read text file
+//******************************************************************
+
+func ContextFromFormatFile(name string) string {
+
+	file := ReadFormatFile(name)
+	return file
+}
+
+// *****************************************************************
+
+func ReadFormatFile(filename string) string {
+
+	// Read a string and strip out characters that can't be used in kenames
+	// to yield a "pure" text for n-gram classification, with fewer special chars
+	// The text marks end of sentence with a # for later splitting
+
+	content, _ := ioutil.ReadFile(filename)
+
+	// Start by stripping HTML / XML tags before para-split
+	// if they haven't been removed already
+
+	m1 := regexp.MustCompile("<[^>]*>") 
+	cleaned := m1.ReplaceAllString(string(content),";") 
+	return cleaned
+}
+

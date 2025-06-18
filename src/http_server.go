@@ -172,6 +172,10 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 	chapter = strings.TrimSpace(chapter)
 	name = strings.TrimSpace(name)
 
+	if len(name) == 0  {
+		name = "x7jsnfoqn.asnfbkg"
+	}
+
 	arrnames,_ := SST.Str2Array(arrstr)
 	cntxt,_ := SST.Str2Array(cntstr)
 

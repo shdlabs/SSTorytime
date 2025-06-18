@@ -117,6 +117,13 @@ article a {
   margin-top: 5px;
 }
 
+pictureframe  {
+width: 1500px;
+height: 700px;
+padding:10px;
+margin-bottom: 10px;
+}
+
 #radius-1 {
    margin-left: 50px;
 }
@@ -294,8 +301,7 @@ MathJax.Hub.Config({
   </nav>
 
   <pictureframe>
-   <canvas id="myCanvas" width="1500" height="700" style="border:1px solid #d3d3d3;">
-    Your browser does not support the HTML canvas tag.</canvas>
+ <canvas height="100" width="150"></canvas>
   </pictureframe>
 
   <article>
@@ -330,7 +336,7 @@ const STINDICES = ["is a property expressed by","is contained by","comes from","
 // Graphics vaiewport
 /***********************************************************/
 
-var CANVAS = document.getElementById("myCanvas");
+var CANVAS = CreateCanvas(); 
 var CTX = CANVAS.getContext("2d");
 
 // Adjust coordinates
@@ -527,16 +533,6 @@ let lastx = 0;
 let lasty = 0;
 let lastz = 0;
 let lastarrow = 0;
-
-ClearCanvas();
-ResetCanvas();
-DrawGrid(0,0,1);
-
-/* TEST ...
-Thing(0.1,0.1,0.1);
-Thing(1,0.5,-0.8);
-Label(-1,0,0,"MINUS1",30,"black");
-Label(+1,0,0,"PLUS1",30,"black"); */
 
 for (let path = 0; path < array.length; path++)
    {
@@ -931,6 +927,11 @@ let section = document.querySelector('article');
 let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
+
+//ClearCanvas();
+//ResetCanvas();
+CANVAS = CreateCanvas();
+DrawGrid(0,0,1);
 
 for (let nptr of obj.paths) 
    {
@@ -1689,21 +1690,29 @@ CTX.restore();
 
 // *************************************************
 
+function CreateCanvas() 
+{
+let oldcanvas = document.getElementById("myCanvas");
+if (oldcanvas != null)
+   {
+   oldcanvas.remove();
+   }
+let parent = document.querySelector('pictureframe');
+canvas = document.createElement("canvas");
+canvas.id = "myCanvas";
+canvas.width = 1500;
+canvas.height = 700;
+canvas.style.position = "float";
+canvas.style.border = "1px solid";
+CTX = canvas.getContext("2d");
+parent.appendChild(canvas);
+CTX.beginPath();
+return canvas;
+}
+
 function ResetCanvas() 
 {
 
-//CANVAS.remove();
-
-CANVAS = document.createElement("canvas");
-CANVAS.id="myCanvas"
-CANVAS.width = 1500;
-CANVAS.height = 700;
-CANVAS.style.position = "absolute";
-CANVAS.style.border = "1px solid";
-
-let parent = document.querySelector('pictureframe');
-parent.appendChild(CANVAS);
-CTX = CANVAS.getContext("2d");
 }
 
 // *************************************************
@@ -1718,7 +1727,6 @@ CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
 CTX.globalAlpha = 0.5;
 CTX.restore();
 CTX.beginPath();
-
 }
 
 // *************************************************
