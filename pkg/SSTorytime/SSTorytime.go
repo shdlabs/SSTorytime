@@ -11,6 +11,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"io/ioutil"
 	"strings"
 	"unicode"
 	"sort"
@@ -25,8 +26,10 @@ import (
 //**************************************************************
 
 const (
-	ERR_ST_OUT_OF_BOUNDS="Link STtype is out of bounds (must be -3 to +3)"
-	ERR_ILLEGAL_LINK_CLASS="ILLEGAL LINK CLASS"
+	CREDENTIALS_FILE = ".SSTorytime" // user's home directory
+
+	ERR_ST_OUT_OF_BOUNDS = "Link STtype is out of bounds (must be -3 to +3)"
+	ERR_ILLEGAL_LINK_CLASS = "ILLEGAL LINK CLASS"
 	ERR_NO_SUCH_ARROW = "No such arrow has been declared in the configuration: "
 	ERR_MEMORY_DB_ARROW_MISMATCH = "Arrows in database are not in synch (shouldn't happen)"
 	WARN_DIFFERENT_CAPITALS = "WARNING: Another capitalization exists"
@@ -376,13 +379,13 @@ func Open(load_arrows bool) PoSST {
 
 	// Replace this with a private file
 
-	const (
-		host     = "localhost"
-		port     = 5432
+	var (
 		user     = "sstoryline"
 		password = "sst_1234"
 		dbname   = "sstoryline"
 	)
+
+	user,password,dbname = OverrideCredentials(user,password,dbname)
 
         connStr := "user="+user+" dbname="+dbname+" password="+password+" sslmode=disable"
 
@@ -407,6 +410,88 @@ func Open(load_arrows bool) PoSST {
 	NO_NODE_PTR.CPtr =  -1
 
 	return ctx
+}
+
+// **************************************************************************
+
+func OverrideCredentials(u,p,d string) (string,string,string) {
+
+	dirname, err := os.UserHomeDir()
+
+	if err != nil && len(dirname) > 1 {
+		fmt.Println("Unable to determine user's home directory")
+		os.Exit(-1)
+	}
+
+	filename := dirname+"/"+CREDENTIALS_FILE
+	content,err := ioutil.ReadFile(filename)
+
+	if err != nil {
+		return u,p,d
+	}
+
+	/* format
+          dbname: sstoryline 
+          user:sstoryline 
+          passwd: sst_1234
+        */
+
+	var (
+		offset,delta int
+		user=u
+		password=p
+		dbname=d
+	)
+
+	for offset = 0; offset < len(content); offset = offset {
+
+		var conf string
+		fmt.Sscanf(string(content[offset:]),"%s",&conf)
+
+		if len(conf) > 0 && conf[len(conf)-1] != ':' { // missing space
+
+			for delta = 0; delta < len(conf); delta++ {
+				if conf[delta] == ':' {
+					conf = conf[:delta+1]
+				}
+			}
+		}
+
+		switch(conf) {
+		case "user:":
+			delta = len(conf)
+			user,offset = GetLine(content,offset+delta)
+		case "passwd:","password:":
+			delta = len(conf)
+			password,offset = GetLine(content,offset+delta)
+		case "db:","dbname:":
+			delta = len(conf)
+			dbname,offset = GetLine(content,offset+delta)
+		default:
+			offset++
+		}
+	}
+
+	return user,password,dbname
+}
+
+// **************************************************************************
+
+func GetLine(s []byte,i int) (string,int) {
+
+	var result []byte
+
+	for o := i; o < len(s); o++ {
+
+		if s[o] == '\n' {
+			i = o
+			break
+		}
+
+		result = append(result,s[o])
+	}
+
+	return string(result),i
 }
 
 // **************************************************************************

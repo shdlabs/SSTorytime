@@ -2620,7 +2620,7 @@ func ParseError(message string) {
 func ReadTUF8File(filename string) []rune {
 	
 	content,err := ioutil.ReadFile(filename)
-	
+
 	if err != nil {
 		ParseError(ERR_NO_SUCH_FILE_FOUND+filename)
 		os.Exit(-1)
