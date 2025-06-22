@@ -46,6 +46,10 @@ func PageHandler(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		page,err := os.ReadFile("./page.html")
 
+		localAddr := r.Context().Value(http.LocalAddrContextKey) 
+		ipaddr := fmt.Sprintf("%s",localAddr)
+		page = []byte(strings.Replace(string(page),"localhost:8080",ipaddr,-1))
+
 		if err != nil {
 			fmt.Println("Can't find ./page.html")
 			os.Exit(-1)
