@@ -78,13 +78,6 @@ The `\l` command lists the databases, and you should now see the database.
 
 * * (as postgres user) Locate the file `locate pg_hba.conf` for your distribution (you might have to search for it) and edit it as the postgres user.
 
-* IF YOU WANT TO CHANGE THE DATABASE CREDENTIALS from the defaults, by creating a file with these lines into a file `$HOME/.SSTorytime` :
-<pre>
-dbname: my_sstoryline 
-user: my_sstoryline_user
-passwd: new_password_for_sst_1234
-</pre>
-
 <pre>
 $ myfavouriteeditor /var/lib/pgsql/data/pg_hba.conf
 
@@ -116,6 +109,13 @@ $ psql sstoryline
 *Cleary this is not a secure configuration, so you should only use this for testing on your laptop.
 Also, note that this will not allow you to login until you also open up the configuration of postgres
 as below.*
+
+* IF YOU WANT TO CHANGE THE DATABASE CREDENTIALS from the defaults, by creating a file with these lines into a file `$HOME/.SSTorytime` :
+<pre>
+dbname: my_sstoryline 
+user: my_sstoryline_user
+passwd: new_password_for_sst_1234
+</pre>
 
 
 Postgres is finnicky if you're not used to running it, but once these details are set up
