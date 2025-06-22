@@ -12,6 +12,8 @@ languages N4L and examples of scripting your own programs.
 
 * Install the `postgres` database, `postgres-contrib` extensions, and `psql` shell command line client.
 
+* You need to make a decision about authentication credentials for the database. For personal use on a personal device, everything is local and private so there is no real need to set complex passwords for privacy. However, if you are setting up a shared resource, you might want to change the name of the database, user, and mickymouse password etc. That requires an extra step, changing the defaults and creating a file `$HOME/.SSTorytime` with those choices in your home directory.
+
 * Install the Go(lang) programming and build environment. 
 
 * Get started by uploading ready-made examples.
@@ -75,6 +77,13 @@ GRANT ALL PRIVILEGES ON DATABASE sstoryline TO myusername;
 The `\l` command lists the databases, and you should now see the database.
 
 * * (as postgres user) Locate the file `locate pg_hba.conf` for your distribution (you might have to search for it) and edit it as the postgres user.
+
+* IF YOU WANT TO CHANGE THE DATABASE CREDENTIALS from the defaults, by creating a file with these lines into a file `$HOME/.SSTorytime` :
+<pre>
+dbname: my_sstoryline 
+user: my_sstoryline_user
+passwd: new_password_for_sst_1234
+</pre>
 
 <pre>
 $ myfavouriteeditor /var/lib/pgsql/data/pg_hba.conf
