@@ -518,7 +518,7 @@ func MemoryInit() {
 		NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
 	}
 
-	for i := 1; i < N_GRAM_MAX; i++ {
+	for i := N_GRAM_MIN; i < N_GRAM_MAX; i++ {
 
 		STM_NGRAM_RANK[i] = make(map[string]float64)
 	}
@@ -5574,12 +5574,6 @@ func ContextFromFile(name string) {
 			}
 		}
 	}
-
-	for n := 1; n < N_GRAM_MAX; n++ {
-		for g := range STM_NGRAM_RANK[n] {
-			fmt.Println("ng",n,g)
-		}
-	}
 }
 
 // *****************************************************************
@@ -5604,11 +5598,12 @@ func ReadFile(filename string) string {
 // Text Fractionation (alphabetic language)
 //**************************************************************
 
-const N_GRAM_MAX = 5
+const N_GRAM_MAX = 6
+const N_GRAM_MIN = 3
 
 // Promise bindings in English. This domain knowledge saves us a lot of training analysis
 
-var FORBIDDEN_ENDING = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "be", "with", "using", "that", "who", "to" ,"no", "because","at","but","yes","no","yeah","yay", "in", "which", "what","as","he","she","they","all","I","they"}
+var FORBIDDEN_ENDING = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "was", "has", "be", "with", "using", "that", "who", "to" ,"no", "because","at","but","yes","no","yeah","yay", "in", "which", "what","as","he","she","they","all","I","they","from"}
 
 var FORBIDDEN_STARTER = []string{"and","or","of","the","it","because","in","that","these","those","is","are","was","were","but","yes","no","yeah","yay","also","me","them","him","but"}
 
@@ -5721,7 +5716,7 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) (float64,[N_GRAM_MAX][]
 
 	var rank float64 = 0
 
-	for n := 2; n < N_GRAM_MAX; n++ {
+	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
 		
 		// Pop from round-robin
 
@@ -5759,7 +5754,7 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) (float64,[N_GRAM_MAX][]
 
 	frag = strings.ToLower(frag)
 	
-	if !ExcludedByBindings(frag,frag) {
+	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag) {
 		STM_NGRAM_RANK[1][frag]++
 		rank += Intentionality(1,frag)
 	}
