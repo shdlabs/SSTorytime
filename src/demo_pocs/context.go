@@ -30,9 +30,9 @@ func main() {
 	fmt.Println("TIME_CLASSES",c,"\nSLOT",slot)
 
 
-	txtcls := ContextFromFormatFile("/home/mark/Laptop/Work/NLnet/SemanticKnowledgeProject/org-42/roam/how-i-org.org")
+	txtcls := ContextFromFormatFile("/home/mark/Laptop/Work/SST/data_samples/MobyDick.dat")
 
-	fmt.Println("TEXT_CLASSES",txtcls)
+	fmt.Println("FILE_SCAN_CLASSES",txtcls)
 
 	SST.Close(ctx)
 }

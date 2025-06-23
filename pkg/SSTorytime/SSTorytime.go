@@ -1,7 +1,7 @@
-
 //**************************************************************
 //
-// An interface for postgres for graph analytics and semantics
+// Library of methods and tools for Semantic Spacetime Graph Processes
+// (All in one file for easy searching)
 //
 //**************************************************************
 
@@ -20,6 +20,12 @@ import (
 	_ "github.com/lib/pq"
 
 )
+
+//**************************************************************
+//
+// Part 1: N4L language and Graph Representation
+//
+//**************************************************************
 
 //**************************************************************
 // Errors
@@ -4057,7 +4063,9 @@ func InNodeSet(list []NodePtr,node NodePtr) bool {
 }
 
 // **************************************************************************
-// Adjacency matrix representation and graph vector support
+//
+// Part 2: Adjacency matrix representation and graph vector support
+//
 // **************************************************************************
 
 func GetDBAdjacentNodePtrBySTType(ctx PoSST,sttypes []int,chap string,cn []string,transpose bool) ([][]float32,[]NodePtr) {
@@ -4569,7 +4577,9 @@ func IdempAddNote(list []Orbit, item Orbit) []Orbit {
 }
 
 // **************************************************************************
-// Axial paths
+//
+// Part 3: Model data retrieval, and data marshalling, with JSON etc
+//
 // **************************************************************************
 
 func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Story {
@@ -5428,7 +5438,16 @@ func SuperNodes(ctx PoSST,solutions [][]Link, maxdepth int) string {
 }
 
 // **************************************************************************
-// SQL marshalling Tools
+//
+// Part 4: Context processing
+//
+// **************************************************************************
+
+
+// **************************************************************************
+//
+// Toolkits: generic helper functions
+//
 // **************************************************************************
 
 func SQLEscape(s string) string {
@@ -5987,12 +6006,6 @@ func EscapeString(s string) string {
 	// Don't do this here, move to SQLEscape()
 	return s
 }
-
-
-
-
-
-
 
 //******************************************************************
 
