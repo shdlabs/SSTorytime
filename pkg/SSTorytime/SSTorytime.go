@@ -5574,6 +5574,12 @@ func ContextFromFile(name string) {
 			}
 		}
 	}
+
+	for n := 1; n < N_GRAM_MAX; n++ {
+		for g := range STM_NGRAM_RANK[n] {
+			fmt.Println("ng",n,g)
+		}
+	}
 }
 
 // *****************************************************************
@@ -5602,9 +5608,9 @@ const N_GRAM_MAX = 5
 
 // Promise bindings in English. This domain knowledge saves us a lot of training analysis
 
-var FORBIDDEN_ENDING = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "be", "with", "using", "that", "who", "to" ,"no", "because","at","but","yes","no","yeah","yay", "in", "which", "what","as","he","she","they","all"}
+var FORBIDDEN_ENDING = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "be", "with", "using", "that", "who", "to" ,"no", "because","at","but","yes","no","yeah","yay", "in", "which", "what","as","he","she","they","all","I","they"}
 
-var FORBIDDEN_STARTER = []string{"and","or","of","the","it","because","in","that","these","those","is","are","was","were","but","yes","no","yeah","yay","also"}
+var FORBIDDEN_STARTER = []string{"and","or","of","the","it","because","in","that","these","those","is","are","was","were","but","yes","no","yeah","yay","also","me","them","him","but"}
 
 // **************************************************************
 
@@ -5664,14 +5670,15 @@ func SplitIntoParaSentences(text string) [][][]string {
 
 			// now split on any punctuation that's not a hyphen
 
-			re := regexp.MustCompile("[!?.,:;—]")
+			re := regexp.MustCompile("[\"!?.,:;—“”_()'‘’]")
 			frags := re.Split(sentences[s], -1)
 
 			var codons []string
 
 			for f := range frags {
 				content := strings.TrimSpace(frags[f])
-				if len(content) > 0 {			
+
+				if len(content) > 2 {			
 					codons = append(codons,content)
 				}
 			}
@@ -5686,8 +5693,6 @@ func SplitIntoParaSentences(text string) [][][]string {
 
 func FractionateAndRank(frag string) float64 {
 
-	fmt.Println("FARCTION",frag)
-
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
 
@@ -5695,9 +5700,14 @@ func FractionateAndRank(frag string) float64 {
 	var sentence_significance_rank float64 = 0
 	var rank float64
 
-	rank, rrbuffer = NextWord(frag,rrbuffer)
-	sentence_significance_rank += rank
-	
+	words := strings.Split(frag," ")
+
+	for w := range words {
+		
+		rank, rrbuffer = NextWord(words[w],rrbuffer)
+		sentence_significance_rank += rank
+	}
+
 	return sentence_significance_rank
 }
 
@@ -5736,6 +5746,8 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) (float64,[N_GRAM_MAX][]
 				}
 			}
 
+			key = strings.ToLower(key)
+
 			if ExcludedByBindings(rrbuffer[n][0],rrbuffer[n][n-1]) {
 				continue
 			}
@@ -5745,8 +5757,12 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) (float64,[N_GRAM_MAX][]
 		}
 	}
 
-	STM_NGRAM_RANK[1][frag]++
-	rank += Intentionality(1,frag)
+	frag = strings.ToLower(frag)
+	
+	if !ExcludedByBindings(frag,frag) {
+		STM_NGRAM_RANK[1][frag]++
+		rank += Intentionality(1,frag)
+	}
 
 	return rank, rrbuffer
 }
@@ -5762,7 +5778,7 @@ func ExcludedByBindings(firstword,lastword string) bool {
 	// Rather than looking for semantics, look at spacetime promises only - words that bind strongly
 	// to a prior or posterior word.
 
-	if (len(firstword) == 1) || len(lastword) == 1 {
+	if (len(firstword) <= 2) || len(lastword) <= 2 {
 		return true
 	}
 
