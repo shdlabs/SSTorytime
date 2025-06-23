@@ -16,7 +16,9 @@ import (
 	"unicode"
 	"sort"
 	"encoding/json"
-
+	"regexp"
+	"math"
+	"time"
 	_ "github.com/lib/pq"
 
 )
@@ -515,6 +517,12 @@ func MemoryInit() {
 	if NODE_DIRECTORY.N3grams == nil {
 		NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
 	}
+
+	for i := 1; i < N_GRAM_MAX; i++ {
+
+		STM_NGRAM_RANK[i] = make(map[string]float64)
+	}
+
 }
 
 // **************************************************************************
@@ -5442,6 +5450,372 @@ func SuperNodes(ctx PoSST,solutions [][]Link, maxdepth int) string {
 // Part 4: Context processing
 //
 // **************************************************************************
+
+// ****************************************************************************
+// Semantic 2D time
+// ****************************************************************************
+
+var GR_DAY_TEXT = []string{
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+    }
+        
+var GR_MONTH_TEXT = []string{
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+}
+        
+var GR_SHIFT_TEXT = []string{
+        "Night",
+        "Morning",
+        "Afternoon",
+        "Evening",
+    }
+
+// For second resolution Unix time
+
+const CF_MONDAY_MORNING = 345200
+const CF_MEASURE_INTERVAL = 5*60
+const CF_SHIFT_INTERVAL = 6*3600
+
+const MINUTES_PER_HOUR = 60
+const SECONDS_PER_MINUTE = 60
+const SECONDS_PER_HOUR = (60 * SECONDS_PER_MINUTE)
+const SECONDS_PER_DAY = (24 * SECONDS_PER_HOUR)
+const SECONDS_PER_WEEK = (7 * SECONDS_PER_DAY)
+const SECONDS_PER_YEAR = (365 * SECONDS_PER_DAY)
+const HOURS_PER_SHIFT = 6
+const SECONDS_PER_SHIFT = (HOURS_PER_SHIFT * SECONDS_PER_HOUR)
+const SHIFTS_PER_DAY = 4
+const SHIFTS_PER_WEEK = (4*7)
+
+// ****************************************************************************
+// Semantic spacetime timeslots
+// ****************************************************************************
+
+func DoNowt(then time.Time) (string,string) {
+
+	//then := given.UnixNano()
+
+	// Time on the torus (donut/doughnut) (CFEngine style)
+	// The argument is a Golang time unit e.g. then := time.Now()
+	// Return a db-suitable keyname reflecting the coarse-grained SST time
+	// The function also returns a printable summary of the time
+
+	year := fmt.Sprintf("Yr%d",then.Year())
+	month := GR_MONTH_TEXT[int(then.Month())-1]
+	day := then.Day()
+	hour := fmt.Sprintf("Hr%02d",then.Hour())
+	mins := fmt.Sprintf("Min%02d",then.Minute())
+	quarter := fmt.Sprintf("Q%d",then.Minute()/15 + 1)
+	shift :=  fmt.Sprintf("%s",GR_SHIFT_TEXT[then.Hour()/6])
+
+	//secs := then.Second()
+	//nano := then.Nanosecond()
+
+	dayname := then.Weekday()
+	dow := fmt.Sprintf("%.3s",dayname)
+	daynum := fmt.Sprintf("Day%d",day)
+
+	// 5 minute resolution capture
+        interval_start := (then.Minute() / 5) * 5
+        interval_end := (interval_start + 5) % 60
+        minD := fmt.Sprintf("Min%02d_%02d",interval_start,interval_end)
+
+	var when string = fmt.Sprintf("%s,%s,%s,%s,%s at %s %s %s %s",shift,dayname,daynum,month,year,hour,mins,quarter,minD)
+	var key string = fmt.Sprintf("%s:%s:%s",dow,hour,minD)
+
+	return when, key
+}
+
+// ****************************************************************************
+
+func GetUnixTimeKey(now int64) string {
+
+	// Time on the torus (donut/doughnut) (CFEngine style)
+	// The argument is in traditional UNIX "time_t" unit e.g. then := time.Unix()
+	// This is a simple wrapper to DoNowt() returning only a db-suitable keyname
+
+	t := time.Unix(now, 0)
+	_,slot := DoNowt(t)
+
+	return slot
+}
+
+//******************************************************************
+// Read text file
+//******************************************************************
+
+func ContextFromFile(name string) {
+
+	file := ReadFile(name)
+	proto_text := CleanText(file)
+	pbs := SplitIntoParaSentences(proto_text)
+
+	for p := range pbs {
+		for s := range pbs[p] {
+			for f := range pbs[p][s] {
+			FractionateAndRank(pbs[p][s][f])
+			}
+		}
+	}
+}
+
+// *****************************************************************
+
+func ReadFile(filename string) string {
+
+	// Read a string and strip out characters that can't be used in kenames
+	// to yield a "pure" text for n-gram classification, with fewer special chars
+	// The text marks end of sentence with a # for later splitting
+
+	content, _ := ioutil.ReadFile(filename)
+
+	// Start by stripping HTML / XML tags before para-split
+	// if they haven't been removed already
+
+	m1 := regexp.MustCompile("<[^>]*>") 
+	cleaned := m1.ReplaceAllString(string(content),";") 
+	return cleaned
+}
+
+//**************************************************************
+// Text Fractionation (alphabetic language)
+//**************************************************************
+
+const N_GRAM_MAX = 5
+
+// Promise bindings in English. This domain knowledge saves us a lot of training analysis
+
+var FORBIDDEN_ENDING = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "be", "with", "using", "that", "who", "to" ,"no", "because","at","but","yes","no","yeah","yay", "in", "which", "what","as","he","she","they","all"}
+
+var FORBIDDEN_STARTER = []string{"and","or","of","the","it","because","in","that","these","those","is","are","was","were","but","yes","no","yeah","yay","also"}
+
+// **************************************************************
+
+var EXCLUSIONS []string
+var LEG_WINDOW int = 100  // sentences per leg
+var STM_NGRAM_RANK [N_GRAM_MAX]map[string]float64
+
+//**************************************************************
+
+func CleanText(s string) string {
+
+	// Start by stripping HTML / XML tags before para-split
+	// if they haven't been removed already
+
+	m := regexp.MustCompile("<[^>]*>") 
+	s = m.ReplaceAllString(s,":\n") 
+
+	// Weird English abbrev
+	s = strings.Replace(s,"Mr.","Mr",-1) 
+	s = strings.Replace(s,"Ms.","Ms",-1) 
+	s = strings.Replace(s,"Mrs.","Mrs",-1) 
+	s = strings.Replace(s,"Dr.","Dr",-1)
+	s = strings.Replace(s,"St.","St",-1) 
+	s = strings.Replace(s,"[","",-1) 
+	s = strings.Replace(s,"]","",-1) 
+
+	// Encode sentence space boudnaries and end of sentence markers with a # for later splitting
+
+	m = regexp.MustCompile("[?!.]+[ \n]")  // end of sentence punctuation
+	s = m.ReplaceAllString(s,"$0#")
+
+	m = regexp.MustCompile("[\n][\n]")     // paragraph or highlighted sentence
+	s = m.ReplaceAllString(s,">>\n")
+
+	m = regexp.MustCompile("[\n]+")        // spurious spaces
+	s = m.ReplaceAllString(s," ")
+
+	return s
+}
+
+//**************************************************************
+
+func SplitIntoParaSentences(text string) [][][]string {
+
+	var pbsf [][][]string
+
+	paras := strings.Split(text,">>")
+
+	for p := 0; p < len(paras); p++ {
+
+		re := regexp.MustCompile("[^#]#")
+		sentences := re.Split(paras[p], -1)
+		
+		var cleaned [][]string
+		
+		for s := range sentences{
+
+			// now split on any punctuation that's not a hyphen
+
+			re := regexp.MustCompile("[!?.,:;—]")
+			frags := re.Split(sentences[s], -1)
+
+			var codons []string
+
+			for f := range frags {
+				content := strings.TrimSpace(frags[f])
+				if len(content) > 0 {			
+					codons = append(codons,content)
+				}
+			}
+			cleaned = append(cleaned,codons)
+		}
+		pbsf = append(pbsf,cleaned)
+	}
+	return pbsf
+}
+
+//**************************************************************
+
+func FractionateAndRank(frag string) float64 {
+
+	fmt.Println("FARCTION",frag)
+
+	// A round robin cyclic buffer for taking fragments and extracting
+	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
+
+	var rrbuffer [N_GRAM_MAX][]string
+	var sentence_significance_rank float64 = 0
+	var rank float64
+
+	rank, rrbuffer = NextWord(frag,rrbuffer)
+	sentence_significance_rank += rank
+	
+	return sentence_significance_rank
+}
+
+//**************************************************************
+
+func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) (float64,[N_GRAM_MAX][]string) {
+
+	// Word by word, we form a superposition of scores from n-grams of different lengths
+	// as a simple sum. This means lower lengths will dominate as there are more of them
+	// so we define intentionality proportional to the length also as compensation
+
+	var rank float64 = 0
+
+	for n := 2; n < N_GRAM_MAX; n++ {
+		
+		// Pop from round-robin
+
+		if (len(rrbuffer[n]) > n-1) {
+			rrbuffer[n] = rrbuffer[n][1:n]
+		}
+		
+		// Push new to maintain length
+
+		rrbuffer[n] = append(rrbuffer[n],frag)
+
+		// Assemble the key, only if complete cluster
+		
+		if (len(rrbuffer[n]) > n-1) {
+			
+			var key string
+			
+			for j := 0; j < n; j++ {
+				key = key + rrbuffer[n][j]
+				if j < n-1 {
+					key = key + " "
+				}
+			}
+
+			if ExcludedByBindings(rrbuffer[n][0],rrbuffer[n][n-1]) {
+				continue
+			}
+
+			STM_NGRAM_RANK[n][key]++
+			rank += Intentionality(n,key)
+		}
+	}
+
+	STM_NGRAM_RANK[1][frag]++
+	rank += Intentionality(1,frag)
+
+	return rank, rrbuffer
+}
+
+//**************************************************************
+// Heuristics
+//**************************************************************
+
+func ExcludedByBindings(firstword,lastword string) bool {
+
+	// A standalone fragment can't start/end with these words, because they
+	// Promise to bind to something else...
+	// Rather than looking for semantics, look at spacetime promises only - words that bind strongly
+	// to a prior or posterior word.
+
+	if (len(firstword) == 1) || len(lastword) == 1 {
+		return true
+	}
+
+	for s := range FORBIDDEN_ENDING {
+		if strings.ToLower(lastword) == FORBIDDEN_ENDING[s] {
+			return true
+		}
+	}
+	
+	for s := range FORBIDDEN_STARTER {
+		if strings.ToLower(firstword) == FORBIDDEN_STARTER[s] {
+			return true
+		}
+	}
+
+	return false 
+}
+
+//**************************************************************
+
+func Intentionality(n int, s string) float64 {
+
+	// Compute the effective intent of a string s at a position count
+	// within a document of many sentences. The weighting due to
+	// inband learning uses an exponential deprecation based on
+	// SST scales (see "leg" meaning).
+
+	occurrences := STM_NGRAM_RANK[n][s]
+	work := float64(len(s))
+
+	if occurrences < 3 {
+		return 0
+	}
+
+	if work < 5 {
+		return 0
+	}
+
+	// lambda should have a cutoff for insignificant words, like "a" , "of", etc that occur most often
+
+	lambda := occurrences / float64(LEG_WINDOW)
+
+	// This constant is tuned to give words a growing importance up to a limit
+	// or peak occurrences, then downgrade
+
+	// Things that are repeated too often are not important
+	// but length indicates purposeful intent
+
+	scale := 0.1
+	meaning := lambda * work / (1.0 + math.Exp(lambda-scale))
+
+return meaning
+}
 
 
 // **************************************************************************
