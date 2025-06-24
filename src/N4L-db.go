@@ -1424,7 +1424,7 @@ func IdempAddNode(s string) (SST.NodePtr,string) {
 
 func ReadFile(filename string) []rune {
 
-	text := ReadTUF8File(filename)
+	text := ReadUTF8File(filename)
 
 	// clean unicode nonsense
 
@@ -2192,7 +2192,7 @@ func ParseError(message string) {
 
 //**************************************************************
 
-func ReadTUF8File(filename string) []rune {
+func ReadUTF8File(filename string) []rune {
 	
 	content,err := ioutil.ReadFile(filename)
 	

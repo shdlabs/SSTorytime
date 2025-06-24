@@ -1777,7 +1777,7 @@ func LinearFindText(in []Node,event Node,ignore_caps bool) (ClassedNodePtr,bool)
 
 func ReadFile(filename string) []rune {
 
-	text := ReadTUF8File(filename)
+	text := ReadUTF8File(filename)
 
 	// clean unicode nonsense
 
@@ -2617,7 +2617,7 @@ func ParseError(message string) {
 
 //**************************************************************
 
-func ReadTUF8File(filename string) []rune {
+func ReadUTF8File(filename string) []rune {
 	
 	content,err := ioutil.ReadFile(filename)
 
