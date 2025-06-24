@@ -5570,7 +5570,7 @@ func FractionateTextFile(name string) {
 		for s := range pbs[p] {
 			for f := range pbs[p][s] {
 				// Note passing map is always by reference in go
-				FractionateAndRank(pbs[p][s][f],STM_NGRAM_RANK)
+				FractionateAndRank(pbs[p][s][f],STM_NGRAM_RANK,N_GRAM_MIN)
 			}
 		}
 	}
@@ -5702,7 +5702,7 @@ func SplitIntoParaSentences(text string) [][][]string {
 
 //**************************************************************
 
-func FractionateAndRank(frag string,thismap [N_GRAM_MAX]map[string]float64) float64 {
+func FractionateAndRank(frag string,thismap [N_GRAM_MAX]map[string]float64,min int) float64 {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
@@ -5715,7 +5715,7 @@ func FractionateAndRank(frag string,thismap [N_GRAM_MAX]map[string]float64) floa
 
 	for w := range words {
 		
-		rank, rrbuffer = NextWord(words[w],rrbuffer,thismap)
+		rank, rrbuffer = NextWord(words[w],rrbuffer,thismap,min)
 		sentence_significance_rank += rank
 	}
 
@@ -5724,7 +5724,7 @@ func FractionateAndRank(frag string,thismap [N_GRAM_MAX]map[string]float64) floa
 
 //**************************************************************
 
-func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string,thismap [N_GRAM_MAX]map[string]float64) (float64,[N_GRAM_MAX][]string) {
+func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string,thismap [N_GRAM_MAX]map[string]float64,min int) (float64,[N_GRAM_MAX][]string) {
 
 	// Word by word, we form a superposition of scores from n-grams of different lengths
 	// as a simple sum. This means lower lengths will dominate as there are more of them
@@ -5732,7 +5732,7 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string,thismap [N_GRAM_MAX]map[
 
 	var rank float64 = 0
 
-	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+	for n := min; n < N_GRAM_MAX; n++ {
 		
 		// Pop from round-robin
 

@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"time"
+	"strings"
 	"os"
         SST "SSTorytime"
 )
@@ -31,40 +32,50 @@ func main() {
 	fmt.Println("HOST",name)
 
 
-	// Look at ad hoc text input (small language model)
+	// SEARCH
 
+	search := "meds medicine"
+	fmt.Println("SEARCHING FOR",search)
+
+	ngrams := SST.NewNgramMap()
+	nmin := 1
+	SST.FractionateAndRank(search,ngrams,nmin)
+
+
+	// Look at ad hoc text input (small language model)
+	
 	input_stream := "/home/mark/Laptop/Work/SST/data_samples/MobyDick.dat"
 	input_stream = "../../../org-42/roam/how-i-org.org"
-
 	SST.FractionateTextFile(input_stream)
-
 	fmt.Println("INPUT_STREAM",input_stream)
 
-	for n := SST.N_GRAM_MIN; n < SST.N_GRAM_MAX; n++ {
-		for g := range SST.STM_NGRAM_RANK[n] {
-			fmt.Println("ng",n,g)
+	for nsearch := SST.N_GRAM_MAX-1; nsearch >= nmin; nsearch-- {
+		for each := range ngrams[nsearch] {
+		
+			for ntext := SST.N_GRAM_MIN; ntext < SST.N_GRAM_MAX; ntext++ {
+				for g := range SST.STM_NGRAM_RANK[ntext] {
+					
+					if strings.Contains(g,each) {
+						fmt.Println("ng",ntext,g,"by",each,nsearch)
+					}
+				}
+			}
+			
+			// When we search for something already in the db, we need to look at 
+			// the EntireCone to see what concepts context joins together
+			// If we find a match, then we know that there are nodes related that might not contain
+			// the search string directly, offering a level of indirection
+			
+			ctx_set := SST.GetDBContextsMatchingName(ctx,each)
+			if len(ctx_set) > 0 {
+				fmt.Println("Context relevance items",nsearch,each,"->",ctx_set)
+			}
 		}
 	}
-
-	// When we search for something already in the db, we need to look at 
-	// the EntireCone to see what concepts context joins together
-	// If we find a match, then we know that there are nodes related that might not contain
-	// the search string directly, offering a level of indirection
-
-	search := "pay bill"
-
-
-	pbs := SST.SplitIntoParaSentences(search)
-
-	fmt.Println(pbs)
-return
-
-	ctx_set := SST.GetDBContextsMatchingName(ctx,search)
-
-	fmt.Println("\nDIRECT CONTEXT SEARCH",ctx_set)
-
-
+	
 	// Now look for nodes that match by name, and their orbits
+
+	fmt.Println("DATABASE ...")
 
 	chap := ""
 	nptrs := SST.GetDBNodePtrMatchingName(ctx,search,chap)
@@ -92,8 +103,6 @@ return
 			}
 		}
 	}
-
-	fmt.Println("MAP for",search)
 
 	for c := range patches {
 		fmt.Println("  ... ",c," ->",patches[c])
