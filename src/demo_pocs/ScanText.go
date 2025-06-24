@@ -43,20 +43,46 @@ func main() {
 	for input := 0; input < len(args); input++ {
 
 		NewFile(args[input])
-		SST.FractionateTextFile(CURRENT_FILE)
-		AnnotateFile()
+
+		pbsf := SST.FractionateTextFile(CURRENT_FILE)
+
+		AnnotateFile(pbsf)
 	}
 }
 
 //**************************************************************
 
-func AnnotateFile() {
+func AnnotateFile(pbsf [][][]string) {
 	
-	for n := SST.N_GRAM_MIN; n < SST.N_GRAM_MAX; n++ {
+/*	for n := SST.N_GRAM_MIN; n < SST.N_GRAM_MAX; n++ {
 		for g := range SST.STM_NGRAM_RANK[n] {
 
 			fmt.Println("ng",n,g)
 		}
+	}*/
+
+
+	for p := range pbsf {
+
+		pr := ""
+
+		for s := range pbsf[p] {
+
+			for f := range pbsf[p][s] {
+
+				pr += " " + pbsf[p][s][f]
+
+				if f < len(pbsf[p][s])-1 {
+					pr += ","
+				} else {
+					pr += ". "
+				}
+
+			}
+
+		}
+		SST.ShowText(pr,80)
+		fmt.Println("\n\n")
 	}
 }
 

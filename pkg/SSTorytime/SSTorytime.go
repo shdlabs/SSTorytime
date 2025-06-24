@@ -5564,18 +5564,17 @@ func FractionateTextFile(name string) [][][]string {
 
 	file := ReadFile(name)
 	proto_text := CleanText(file)
-	pbs := SplitIntoParaSentences(proto_text)
+	pbsf := SplitIntoParaSentences(proto_text)
 
-	for p := range pbs {
-		for s := range pbs[p] {
-			for f := range pbs[p][s] {
+	for p := range pbsf {
+		for s := range pbsf[p] {
+			for f := range pbsf[p][s] {
 				// Note passing map is always by reference in go
-				FractionateAndRank(pbs[p][s][f],STM_NGRAM_RANK,N_GRAM_MIN)
+				Fractionate(pbsf[p][s][f],STM_NGRAM_RANK,N_GRAM_MIN)
 			}
 		}
 	}
-
-	return pbs
+	return pbsf
 }
 
 // *****************************************************************
@@ -5683,7 +5682,7 @@ func SplitIntoParaSentences(text string) [][][]string {
 
 			// now split on any punctuation that's not a hyphen
 
-			re := regexp.MustCompile("[\"!?.,:;—“”_()'‘’]")
+			re := regexp.MustCompile("[\"!?.,:;—“”_()]")
 			frags := re.Split(sentences[s], -1)
 
 			var codons []string
@@ -5704,35 +5703,28 @@ func SplitIntoParaSentences(text string) [][][]string {
 
 //**************************************************************
 
-func FractionateAndRank(frag string,thismap [N_GRAM_MAX]map[string]float64,min int) float64 {
+func Fractionate(frag string,frequency [N_GRAM_MAX]map[string]float64,min int) {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
 
 	var rrbuffer [N_GRAM_MAX][]string
-	var sentence_significance_rank float64 = 0
-	var rank float64
 
 	words := strings.Split(frag," ")
 
 	for w := range words {
 		
-		rank, rrbuffer = NextWord(words[w],rrbuffer,thismap,min)
-		sentence_significance_rank += rank
+		rrbuffer = NextWord(words[w],rrbuffer,frequency,min)
 	}
-
-	return sentence_significance_rank
 }
 
 //**************************************************************
 
-func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string,thismap [N_GRAM_MAX]map[string]float64,min int) (float64,[N_GRAM_MAX][]string) {
+func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string,frequency [N_GRAM_MAX]map[string]float64,min int) [N_GRAM_MAX][]string {
 
 	// Word by word, we form a superposition of scores from n-grams of different lengths
 	// as a simple sum. This means lower lengths will dominate as there are more of them
 	// so we define intentionality proportional to the length also as compensation
-
-	var rank float64 = 0
 
 	for n := min; n < N_GRAM_MAX; n++ {
 		
@@ -5765,19 +5757,17 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string,thismap [N_GRAM_MAX]map[
 				continue
 			}
 
-			thismap[n][key]++
-			rank += Intentionality(n,key)
+			frequency[n][key]++
 		}
 	}
 
 	frag = strings.ToLower(frag)
 	
 	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag) {
-		thismap[1][frag]++
-		rank += Intentionality(1,frag)
+		frequency[1][frag]++
 	}
 
-	return rank, rrbuffer
+	return rrbuffer
 }
 
 //**************************************************************
@@ -5830,20 +5820,12 @@ func Intentionality(n int, s string) float64 {
 		return 0
 	}
 
-	// lambda should have a cutoff for insignificant words, like "a" , "of", etc that occur most often
-
 	lambda := occurrences / float64(LEG_WINDOW)
+	scale := 10000.0 / float64(LEG_WINDOW)        // doc len
 
-	// This constant is tuned to give words a growing importance up to a limit
-	// or peak occurrences, then downgrade
-
-	// Things that are repeated too often are not important
-	// but length indicates purposeful intent
-
-	scale := 0.1
 	meaning := lambda * work / (1.0 + math.Exp(lambda-scale))
 
-return meaning
+	return meaning
 }
 
 
