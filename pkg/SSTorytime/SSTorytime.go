@@ -5561,7 +5561,7 @@ func GetUnixTimeKey(now int64) string {
 // Read text file
 //******************************************************************
 
-func ContextFromFile(name string) {
+func FractionateTextFile(name string) {
 
 	file := ReadFile(name)
 	proto_text := CleanText(file)
