@@ -522,7 +522,6 @@ func MemoryInit() {
 
 		STM_NGRAM_RANK[i] = make(map[string]float64)
 	}
-
 }
 
 // **************************************************************************
@@ -5570,7 +5569,8 @@ func FractionateTextFile(name string) {
 	for p := range pbs {
 		for s := range pbs[p] {
 			for f := range pbs[p][s] {
-			FractionateAndRank(pbs[p][s][f])
+				// Note passing map is always by reference in go
+				FractionateAndRank(pbs[p][s][f],STM_NGRAM_RANK)
 			}
 		}
 	}
@@ -5615,6 +5615,19 @@ var STM_NGRAM_RANK [N_GRAM_MAX]map[string]float64
 
 //**************************************************************
 
+func NewNgramMap() [N_GRAM_MAX]map[string]float64 {
+
+	var thismap [N_GRAM_MAX]map[string]float64
+
+	for i := 1; i < N_GRAM_MAX; i++ {
+		thismap[i] = make(map[string]float64)
+	}
+
+	return thismap
+}
+
+//**************************************************************
+
 func CleanText(s string) string {
 
 	// Start by stripping HTML / XML tags before para-split
@@ -5649,6 +5662,9 @@ func CleanText(s string) string {
 //**************************************************************
 
 func SplitIntoParaSentences(text string) [][][]string {
+
+	// Take arbitrary text (preprocessed by clean text) and return coherent
+	// semantic fragments as separate elements
 
 	var pbsf [][][]string
 
@@ -5686,7 +5702,7 @@ func SplitIntoParaSentences(text string) [][][]string {
 
 //**************************************************************
 
-func FractionateAndRank(frag string) float64 {
+func FractionateAndRank(frag string,thismap [N_GRAM_MAX]map[string]float64) float64 {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
@@ -5699,7 +5715,7 @@ func FractionateAndRank(frag string) float64 {
 
 	for w := range words {
 		
-		rank, rrbuffer = NextWord(words[w],rrbuffer)
+		rank, rrbuffer = NextWord(words[w],rrbuffer,thismap)
 		sentence_significance_rank += rank
 	}
 
@@ -5708,7 +5724,7 @@ func FractionateAndRank(frag string) float64 {
 
 //**************************************************************
 
-func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) (float64,[N_GRAM_MAX][]string) {
+func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string,thismap [N_GRAM_MAX]map[string]float64) (float64,[N_GRAM_MAX][]string) {
 
 	// Word by word, we form a superposition of scores from n-grams of different lengths
 	// as a simple sum. This means lower lengths will dominate as there are more of them
@@ -5747,7 +5763,7 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) (float64,[N_GRAM_MAX][]
 				continue
 			}
 
-			STM_NGRAM_RANK[n][key]++
+			thismap[n][key]++
 			rank += Intentionality(n,key)
 		}
 	}
@@ -5755,7 +5771,7 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) (float64,[N_GRAM_MAX][]
 	frag = strings.ToLower(frag)
 	
 	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag) {
-		STM_NGRAM_RANK[1][frag]++
+		thismap[1][frag]++
 		rank += Intentionality(1,frag)
 	}
 

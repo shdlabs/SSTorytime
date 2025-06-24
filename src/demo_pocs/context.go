@@ -48,31 +48,55 @@ func main() {
 
 	// When we search for something already in the db, we need to look at 
 	// the EntireCone to see what concepts context joins together
+	// If we find a match, then we know that there are nodes related that might not contain
+	// the search string directly, offering a level of indirection
 
-	search := "pay"
+	search := "pay bill"
+
+
+	pbs := SST.SplitIntoParaSentences(search)
+
+	fmt.Println(pbs)
+return
 
 	ctx_set := SST.GetDBContextsMatchingName(ctx,search)
 
-	fmt.Println("DIRECT CONTEXT SEARCH",ctx_set)
+	fmt.Println("\nDIRECT CONTEXT SEARCH",ctx_set)
 
 
-	// Now look for nodes and their orbits
+	// Now look for nodes that match by name, and their orbits
 
 	chap := ""
 	nptrs := SST.GetDBNodePtrMatchingName(ctx,search,chap)
 
 	confidence := 2
 
+	var patches = make(map[string]int)
+
 	for i := range nptrs {
 		n := SST.GetDBNodeByNodePtr(ctx,nptrs[i])
+		fmt.Print("\n- From \"")
+		SST.ShowText(n.S,80)
+		patches[n.S]++
+		fmt.Println("\"")
 		paths,_ := SST.GetEntireConePathsAsLinks(ctx,"any",nptrs[i],confidence)
 		for p := range paths {
 			for d := range paths[p] {
 				if len(paths[p][d].Ctx) > 1 {
-					fmt.Println("from",n.S," - ",paths[p][d].Ctx)
+
+					fmt.Println("\n    - ",paths[p][d].Ctx)
+					for each := range paths[p][d].Ctx {
+						patches[paths[p][d].Ctx[each]]++
+					}
 				}
 			}
 		}
+	}
+
+	fmt.Println("MAP for",search)
+
+	for c := range patches {
+		fmt.Println("  ... ",c," ->",patches[c])
 	}
 
 	SST.Close(ctx)
