@@ -34,23 +34,25 @@ func main() {
 
 	// SEARCH
 
-	search := "meds medicine"
+	search := "taste smell"
 	fmt.Println("SEARCHING FOR",search)
 
 	ngrams := SST.NewNgramMap()
 	nmin := 1
-	SST.FractionateAndRank(search,ngrams,nmin)
-
+	SST.FractionateAndRank(search,ngrams,nmin) // -> ngrams
 
 	// Look at ad hoc text input (small language model)
 	
 	input_stream := "/home/mark/Laptop/Work/SST/data_samples/MobyDick.dat"
-	input_stream = "../../../org-42/roam/how-i-org.org"
+//	input_stream = "../../../org-42/roam/how-i-org.org"
 	SST.FractionateTextFile(input_stream)
 	fmt.Println("INPUT_STREAM",input_stream)
 
 	for nsearch := SST.N_GRAM_MAX-1; nsearch >= nmin; nsearch-- {
+
 		for each := range ngrams[nsearch] {
+
+			fmt.Println("\nMatching",each)
 		
 			for ntext := SST.N_GRAM_MIN; ntext < SST.N_GRAM_MAX; ntext++ {
 				for g := range SST.STM_NGRAM_RANK[ntext] {
@@ -70,42 +72,44 @@ func main() {
 			if len(ctx_set) > 0 {
 				fmt.Println("Context relevance items",nsearch,each,"->",ctx_set)
 			}
-		}
-	}
 	
-	// Now look for nodes that match by name, and their orbits
-
-	fmt.Println("DATABASE ...")
-
-	chap := ""
-	nptrs := SST.GetDBNodePtrMatchingName(ctx,search,chap)
-
-	confidence := 2
-
-	var patches = make(map[string]int)
-
-	for i := range nptrs {
-		n := SST.GetDBNodeByNodePtr(ctx,nptrs[i])
-		fmt.Print("\n- From \"")
-		SST.ShowText(n.S,80)
-		patches[n.S]++
-		fmt.Println("\"")
-		paths,_ := SST.GetEntireConePathsAsLinks(ctx,"any",nptrs[i],confidence)
-		for p := range paths {
-			for d := range paths[p] {
-				if len(paths[p][d].Ctx) > 1 {
-
-					fmt.Println("\n    - ",paths[p][d].Ctx)
-					for each := range paths[p][d].Ctx {
-						patches[paths[p][d].Ctx[each]]++
+			// Now look for nodes that match by name, and their orbits
+			
+			fmt.Println("DATABASE ...searching for related patches of meaning")
+			
+			chap := ""
+			nptrs := SST.GetDBNodePtrMatchingName(ctx,each,chap)
+			
+			confidence := 2
+			
+			var patches = make(map[string]int)
+			
+			for i := range nptrs {
+				n := SST.GetDBNodeByNodePtr(ctx,nptrs[i])
+				fmt.Print("\n- From \"")
+				SST.ShowText(n.S,80)
+				patches[n.S]++
+				fmt.Println("\"")
+				paths,_ := SST.GetEntireConePathsAsLinks(ctx,"any",nptrs[i],confidence)
+				for p := range paths {
+					for d := range paths[p] {
+						if len(paths[p][d].Ctx) > 1 {
+							
+							for each := range paths[p][d].Ctx {
+								fmt.Println("    - found related context: ",paths[p][d].Ctx[each])
+								patches[paths[p][d].Ctx[each]]++
+							}
+						}
 					}
 				}
 			}
+			
+			fmt.Println("Summary of related contexts: ")
+			
+			for c := range patches {
+				fmt.Println("  ... ",c," ->",patches[c])
+			}
 		}
-	}
-
-	for c := range patches {
-		fmt.Println("  ... ",c," ->",patches[c])
 	}
 
 	SST.Close(ctx)
