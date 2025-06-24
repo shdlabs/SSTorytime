@@ -34,7 +34,7 @@ func main() {
 
 	// SEARCH
 
-	search := "taste smell"
+	search := "motor neurons"
 	fmt.Println("SEARCHING FOR",search)
 
 	ngrams := SST.NewNgramMap()
