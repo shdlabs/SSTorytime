@@ -14,6 +14,16 @@ or just notes about your favourite movies.)
 * Once you've got a bunch of notes, you can upload them into a searchable format and analyze them for patterns
 and hidden connections.
 
+* Alternatively, you can upload structured data from some source to form a graph, using the API. This
+requires programming knowledge, and a clear idea about how to use a graph in the first place.
+Many articles and books about graph data give bad modelling advice, so read on first!
+
+Note that: when you write notes, they are usually strongly intended, full of rich semantics, but
+when you upload large amounts of data they are usually from sources that are unintended by you
+and have weak semantics. What they lose in intentional semantics, they try to make up in statistical
+measure. You can use tools like `graph_report` to study large data. For small data, *you* are the
+most important part of the model.
+
 How how can you compete with AI and with other people in the information age?
 It's a bit like going to the gym to get fit. No one can do it for you, but there
 are tools to help you. So here is a methodology with tools, to improve the user experience 
