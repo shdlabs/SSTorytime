@@ -59,14 +59,22 @@ of course  (eh) 当然 (hp) Dāngrán
   "  (e.g.) Wǒ méi qùguò nà jiā fànguǎn (ph) 我没去过那家饭馆 (he) I've never been to that restaurant
   "  (see also) $meirule.1
 
-:: and , or ::
+:: and , or, still, yet ::
 
     hé  (ph) 和 (hp) and 
+   bìng (ph) 并 (hp) and
+    hái (ph) 还 (he)  and/yet/still/also
 
  huòzhě (ph) 或者 (he) or, when giving options
 
  háishì (ph) 还是 (he) still, yet / or, when asking question
       " (e.g.) Háishì zuò fēijī kuài (ph) 还是坐飞机快 (he) it's still faster to fly
+
+
+I like to find problems and I like to solve them (eh) 我喜欢发现问题 并 喜欢解决问题 (hp)  wǒ xǐhuān fāxiàn wèntí bìng xǐhuān jiějué wèntí (ex) bìng
+     "                                           (eh) 我喜欢发现问题 还 喜欢解决问题。(hp) wǒ xǐhuān fāxiàn wèntí hái xǐhuān jiějué wèntí (ex) hái
+
+
 
  bùlùn (ph) 不论 (he) whether
    "   (e.g.) Bùlùn dàshì huòzhě xiǎoshì .. (ph) 不论大事或者小事.. (he) Whether big or small ..
@@ -707,6 +715,14 @@ xīngqítiān (ph) 星期天 (he) sunday
 
 星期  (hp) xīngqí (pe) week
 
+zhè ge xīngqí (ph) 这个星期 (he) this week
+      "      (e.g.) wǒ zhè ge xīngqí měitiān yào jiābān (ph) 我这个星期每天要加班  (he) i have to work overtime every day this week
+
+zhè ge xīngqí nèi (ph) 这个星期内 (he) within this week 
+         "       (e.g.) zhè ge xīngqí nèi wǒ huì gěi nǐ fā yóujiàn (ph) 这个星期内我会给你发邮件 (he) I will email you within this week
+
+
+
 :: year | time ::
 
 nián  (ph) 年 (he) year
@@ -750,7 +766,7 @@ now (eh) 现在 (hp) xiànzài
 zhèng (ph) 正 (he) just
 zhèngzài (ph) 正在  (he) just now, right now
 
-+:: yi ::
++:: yi patterns ::
 
  共 (hp) gòng (pe) altogether
 一共 (hp) yīgòng (pe) altogether
@@ -766,7 +782,9 @@ yǐhòu (ph) 以后 (he) after
 yībiān (ph) 一边 (he) at the same time / alongside
 yībān (ph) 一般 (he) usually 
 
-+ :: early, late ::
+
+
+ :: early, late ::
 
 early  (eh) 早   (hp) zǎo
 chídào (ph) 迟到 (he) be late 
@@ -774,12 +792,21 @@ what happened to him later? (eh) 他后来怎么了 (hp) tā hòulái zěnmeliǎ
 he was almost late (eh) 他几乎迟到了 (hp) tā jīhū chídào le 
 almost (eh)  几乎 (hp) jīhū
 
-
 on time/punctual  (eh) 准时 (hp) zhǔnshí
+
+
+
+ :: emphasis adverbs, superlative ::
+
+zhēn de (ph) 真的 (he)real/really
+zhēn (ph) 真 (he) real/really
+
+fēicháng (ph) 非常 (he) very 
 
 wǒ zhè duàn shíjiān (ph) 我这段时间 (he) during my time
    " (e.g.) wǒ zhè duàn shíjiān hěn máng (ph) 我这段时间很忙 (he) i'm very busy at this time
 
+$PREV.2 (ex) hěn (ph) 很 (he) very / really
 
 just/only  (eh) 只是 (hp) zhǐshì
 just i.e. just happened (eh)  刚 (hp) gāng
@@ -1060,7 +1087,7 @@ shàng gè  (ph) 上个  (he) previous/up
 
 ####################################################################
 
-:: common verbs ::
+:: common verbs , see, look,  ::
 
 有  (hp) yǒu  (pe) have
 是  (hp) shì  (pe) be/is
@@ -1068,6 +1095,10 @@ shàng gè  (ph) 上个  (he) previous/up
 
 读  (hp)dú  (pe)read
 看  (hp)kàn  (pe)look
+
+     qídài (ph)  期待  (he) expect
+        "  (e.g.) wǒ hěn qídài (ph)  我很 期待  (he) I'm looking forward to it
+
 
 seek/search (eh) 找 (hp) zhǎo
 search/find (eh) 寻找   (hp) xúnzhǎo
@@ -1167,10 +1198,8 @@ sorry  (eh) 对不起 (hp) duìbùqǐ
 
 +:: answer, question, query, ask ::
 
-answer respond  (eh) 回答 (hp)  huídá
-answer (eh) 答 dá
-
-
+answer respond  (eh) 回答 (hp)  huídá (contains) huí
+answer (eh) 答 (hp) dá (element) huídá
 
 
 ###########################################################
@@ -1429,9 +1458,6 @@ serious-ly  (eh) 认真 (hp) rènzhēn
 
 
 
-
-i'm worried about the chinese exam  (eh) 我为中文考试担心 (hp) wǒ wéi zhōngwén kǎoshì dānxīn
-
 tired (ep) lèi (ph) 累
 
 feel (ep) juédé (ph)觉得
@@ -1446,8 +1472,6 @@ warm hearted/enthusiastic (eh) 热情 (hp) rè qíng
 affection (eh) 情 (hp) qíng
 
 hope  (eh) 希望 (hp) xīwàng
-zhēn de (ph) 真的 (he)real/really
-zhēn (ph) 真 (he) real/really
 thank you so much  (eh) 非常感谢 (hp) fēicháng gǎnxiè
 
 pleasant/joyous  (eh) 愉快 (hp) yúkuài
@@ -1455,7 +1479,7 @@ pleasant/joyous  (eh) 愉快 (hp) yúkuài
 notice/pay attention to (ep) zhùyì (ph) 注意
 
 think/consider/assume  (eh) 认为 (hp) rènwéi
-discover/realize  (eh) 发现 (hp) fāxiàn
+discover / realize  (eh) 发现 (hp) fāxiàn
 
 bothersome (eh)  麻烦(hp) máfan
 mǎnyì 满意 satisfy/be happy with
@@ -1868,16 +1892,28 @@ tiàowǔ (ph) 跳舞  (he)dance
 ##############################################
 
 
-:: work | occupation | school , study ::
+:: experience ::
 
 beginner (eh) 菜鸟 (hp) càiniǎo
 novice / new hand (eh) 新手 (hp) xīnshǒu
 
 
-学习 (hp)xuéxí (pe)study
-the exam is coming soon (eh) 试快到了 (hp) kǎoshì kuài dàole
+:: work | occupation | school , study ::
 
+
+学习 (hp)  xuéxí (pe) study
+the exam is coming soon (eh) 试快到了 (hp) kǎoshì kuài dàole
 test/exam (eh) 考试 (hp) kǎoshì
+
+jiéguǒ (ph) 结果 (he) result
+
+   " (e.g.) wǒ hěn qídài miànshì jiéguǒ (ph) 我很期待面试结果 (he) I am looking forward to the interview results.
+
+nǐ méi huídá zhège wèntí (ph) 你没回答这个问题 (he) you didn't answer the question
+
+zìjǐ (e.g.) wǒ xiān jièshào yīxià zìjǐ (ph) 我先介绍一下自己 (he) let me introduce myself first
+
+dānxīn (e.g.) wǒ wéi zhōngwén kǎoshì dānxīn (ph) 我为中文考试担心 (he) i'm worried about the chinese exam 
 
 
 
@@ -1890,6 +1926,9 @@ school grade i.e. year  (eh) 年级 (hp) niánjí
 junior high school  (eh) 初中 (hp) chūzhōng
 high school  (eh) 高中 (hp) gāozhōng 
 high school diploma  (eh) 高中文凭 (hp) gāozhōng wénpíng
+
+
+tā gānggāng bìyè méiyǒu jīngyàn (ph) 他刚刚毕业没有经验 (he) he just graduated and has no experience.
 
 xuéshēng (ph) 学生 (he) student
 
@@ -2076,9 +2115,12 @@ i got promoted  (eh) 我升职 (hp) wǒ shēng zhí
 
 
 happy with/satisfied  (eh) 满意 (hp) mǎnyì
-interview  (eh) 面试 (hp) miànshì
-meeting  (eh) 开会 (hp) kāihuì
 
+meeting  (eh) 开会 (hp) kāihuì
+interview  (eh) 面试 (hp) miànshì
+
+ $PREV.3 (e.g.) shàng yīcì miànshì (ph) 上一次面试 (he) last interview
+   "     (e.g.) shàng yīcì miànshì wǒ hěn jǐnzhāng (ph) 上一次面试我很紧张 (he) I was very nervous during my last interview.
 
 
 business trip  (eh) 出差 (hp) chūchāi
@@ -2118,7 +2160,7 @@ qǐngwèn guì gōngsī zài nǎlǐ (ph) 请问贵公司在哪里  (he) where is
 
 
 gōngsī shénme shíhòu fā jiǎngjīn (ph) 公司什么时候发奖金  (he) when does the company pay bonuses?
-wǒ zhège xīngqí měitiān yào jiābān (ph) 我这个星期每天要加班  (he) i have to work overtime every day this week
+
 
 wǒ xiǎng gēn péngyǒu kāishǐ zuò shēngyì (ph) 我想跟朋友开始做生意  (he) i want to start a business with my friends
 
