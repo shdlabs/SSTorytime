@@ -5667,6 +5667,8 @@ func SplitIntoParaSentences(text string) [][][]string {
 	// Take arbitrary text (preprocessed by clean text) and return coherent
 	// semantic fragments as separate elements
 
+	// If the text contains parenthetic remarks, these appear unexpanded and expanded
+
 	var pbsf [][][]string
 
 	paras := strings.Split(text,">>")
@@ -5680,10 +5682,7 @@ func SplitIntoParaSentences(text string) [][][]string {
 		
 		for s := range sentences{
 
-			// now split on any punctuation that's not a hyphen
-
-			re := regexp.MustCompile("[\"!?.,:;—“”_()]")
-			frags := re.Split(sentences[s], -1)
+			frags := SplitPunctuationText(sentences[s])
 
 			var codons []string
 
@@ -5699,6 +5698,145 @@ func SplitIntoParaSentences(text string) [][][]string {
 		pbsf = append(pbsf,cleaned)
 	}
 	return pbsf
+}
+
+//**************************************************************
+
+func SplitPunctuationText(s string) []string {
+
+	// first split sentence on intentional separators
+
+	var subfrags []string
+
+	frags := CountParens(s)
+
+	for f := 0; f < len(frags); f++ {
+
+		contents,hasparen := UnParen(frags[f])
+
+		var sfrags []string
+
+		if hasparen {
+			// contiguous parenthesis
+			subfrags = append(subfrags,frags[f])
+			// and fractionated contents (recurse)
+			sfrags = SplitPunctuationText(contents)
+		} else {
+			re := regexp.MustCompile("[\"!?.,:;—“”。]")
+			sfrags = re.Split(contents, -1)
+		}
+
+		for sf := range sfrags {
+			sfrags[sf] = strings.TrimSpace(sfrags[sf])
+			
+			if len(sfrags[sf]) > 1 {
+				subfrags = append(subfrags,sfrags[sf])
+			}
+		}
+	}
+
+	// handle parentheses first as a single fragment because this could mean un-accenting
+
+	// now split on any punctuation that's not a hyphen
+	
+	return subfrags
+}
+
+//**************************************************************
+
+func UnParen(s string) (string,bool) {
+
+	var counter byte = ' '
+
+	switch s[0] {
+	case '(':
+		counter = ')'
+	case '[':
+		counter = ']'
+	case '{':
+		counter = '}'
+	}
+
+	if counter != ' ' {
+		if s[len(s)-1] == counter {
+			trimmed := strings.TrimSpace(s[1:len(s)-1])
+			return trimmed,true
+		}
+	}
+	return strings.TrimSpace(s),false
+}
+
+//**************************************************************
+
+func CountParens(s string) []string {
+
+	var text = []rune(strings.TrimSpace(s))
+
+	var match rune = ' '
+	var count = make(map[rune]int)
+
+	var subfrags []string
+	var fragstart int = 0
+
+	for i := 0; i < len(text); i++ {
+
+		switch text[i] {
+		case '(':
+			count[')']++
+			if match == ' ' {
+				match = ')'
+				frag := strings.TrimSpace(string(text[fragstart:i]))
+				fragstart = i
+				if len(frag) > 0 {
+					subfrags = append(subfrags,frag)
+				}
+			}
+		case '[':
+			count[']']++
+			if match == ' ' {
+				match = ']'
+				frag := strings.TrimSpace(string(text[fragstart:i]))
+				fragstart = i
+				if len(frag) > 0 {
+					subfrags = append(subfrags,frag)
+				}
+			}
+		case '{':
+			count['}']++
+			if match == ' ' {
+				match = '}'
+				frag := strings.TrimSpace(string(text[fragstart:i]))
+				fragstart = i
+				if len(frag) > 0 {
+					subfrags = append(subfrags,frag)
+				}
+			}
+
+			// end
+
+		case ')',']','}':
+			count[text[i]]--
+			if count[match] == 0 {
+				frag := text[fragstart:i+1]
+				fragstart = i+1
+				subfrags = append(subfrags,string(frag))
+			}
+		}
+
+	}
+
+	lastfrag := strings.TrimSpace(string(text[fragstart:len(text)]))
+
+	if len(lastfrag) > 0 {
+		subfrags = append(subfrags,string(lastfrag))
+	}
+
+	if count[match] != 0 {
+		fmt.Println("Unbalanced parentheses \"",string(match),"\" in",string(text))
+		return []string{s}
+	}
+
+	return subfrags
 }
 
 //**************************************************************
