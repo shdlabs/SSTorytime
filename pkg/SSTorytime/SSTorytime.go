@@ -2270,25 +2270,23 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   RETURN true;\n"+
 		"END IF;\n"+
 
-		"IF array_length(db_set,1) IS NULL THEN\n"+
-		"   RETURN true;\n"+
+		"IF array_length(db_set,1) IS NOT NULL THEN\n"+
+		"   FOREACH item IN ARRAY db_set LOOP\n" +
+		"      db_ref := array_append(db_ref,lower(unaccent(item)));\n" +
+		"   END LOOP;\n" +
+
+		"   FOREACH item IN ARRAY user_set LOOP\n" +
+		"      IF item = 'any' OR item = '' THEN\n"+
+		"        RETURN true;"+
+		"      END IF;"+
+		"      unicode := replace(item,'|','');\n" +
+		"     FOREACH try IN ARRAY db_ref LOOP\n"+
+		"        IF length(substring(try from lower(unicode))) > 3 THEN \n" + // unaccented unicode match
+	        "           RETURN true;\n" +
+		"        END IF;\n" +
+		"     END LOOP;"+
+		"   END LOOP;\n" +
 		"END IF;\n"+
-
-		"FOREACH item IN ARRAY db_set LOOP\n" +
-		"   db_ref := array_append(db_ref,lower(unaccent(item)));\n" +
-		"END LOOP;\n" +
-
-		"FOREACH item IN ARRAY user_set LOOP\n" +
-		"   IF item = 'any' OR item = '' THEN\n"+
-		"     RETURN true;"+
-		"   END IF;"+
-		"  unicode := replace(item,'|','');\n" +
-		"  FOREACH try IN ARRAY db_ref LOOP\n"+
-		"     IF length(substring(try from lower(unicode))) > 3 THEN \n" + // unaccented unicode match
-	        "        RETURN true;\n" +
-		"     END IF;\n" +
-		"  END LOOP;"+
-		"END LOOP;\n" +
 		"RETURN false;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
@@ -3292,6 +3290,51 @@ func GetDBNodeContextsMatchingArrow(ctx PoSST,searchtext string,chap string,cn [
 		qptr.Context = nctx
 
 		return_value = append(return_value,qptr)
+	}
+
+	row.Close()
+	return return_value
+}
+
+// **************************************************************************
+
+func GetDBNodeArrowNodeByContexts(ctx PoSST,chap string,cn []string) []NodeArrowNode {
+
+	var qstr string
+
+	_,cn_stripped := IsBracketedSearchList(cn)
+	context := FormatSQLStringArray(cn_stripped)
+
+	qstr = fmt.Sprintf("SELECT DISTINCT NFrom,Arr,STType,NTo,Ctx FROM NodeArrowNode WHERE match_context(Ctx,%s)",context)
+	row, err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("GetDBNodesInContexts Failed:",err,qstr)
+	}
+
+	var return_value []NodeArrowNode
+
+	var nan NodeArrowNode
+	var fromptr NodePtr
+	var toptr NodePtr
+	var from string
+	var to string
+	var nctx string
+	var arr ArrowPtr
+	var sttype int
+
+	for row.Next() {
+		nctx = ""
+		err = row.Scan(&from,&arr,&sttype,&to,&nctx)
+
+		fmt.Sscanf(from,"(%d,%d)",&fromptr.Class,&fromptr.CPtr)
+		nan.NFrom = fromptr
+		fmt.Sscanf(to,"(%d,%d)",&toptr.Class,&toptr.CPtr)
+		nan.NTo = toptr
+		nan.Ctx = ParseSQLArrayString(nctx)
+		nan.Arr = arr
+		nan.STType = sttype
+		return_value = append(return_value,nan)
 	}
 
 	row.Close()

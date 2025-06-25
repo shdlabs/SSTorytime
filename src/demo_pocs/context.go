@@ -32,12 +32,10 @@ func main() {
 	name,_ := os.Hostname()
 	fmt.Println("HOST",name)
 
-	reader := bufio.NewReader(os.Stdin)
-
-
 	fmt.Println("\n\nEnter chapter text (e.g. poetry,chinese, etc):")
+	reader := bufio.NewReader(os.Stdin)
 	search, _ := reader.ReadString('\n')
-
+	search = strings.TrimSpace(search)
 	// SEARCH
 
 	//search := "motor neurons"
@@ -78,9 +76,19 @@ func main() {
 			ctx_set := SST.GetDBContextsMatchingName(ctx,each)
 
 			if len(ctx_set) > 0 {
+
 				fmt.Println("Context relevance items",nsearch,each,"->",ctx_set)
 			}
-	
+
+			nan := SST.GetDBNodeArrowNodeByContexts(ctx,"",[]string{each})
+
+			for n := range nan {
+				fr := SST.GetDBNodeByNodePtr(ctx,nan[n].NFrom).S
+				to := SST.GetDBNodeByNodePtr(ctx,nan[n].NTo).S
+				arr := SST.GetDBArrowByPtr(ctx,nan[n].Arr).Long
+				fmt.Println("  - ",fr,arr,to)
+			}
+
 			// Now look for nodes that match by name, and their orbits
 			
 			fmt.Println("Look for graph node names ....")
