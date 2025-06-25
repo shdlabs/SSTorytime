@@ -12,6 +12,7 @@ import (
 	"time"
 	"strings"
 	"os"
+	"bufio"
         SST "SSTorytime"
 )
 
@@ -31,28 +32,33 @@ func main() {
 	name,_ := os.Hostname()
 	fmt.Println("HOST",name)
 
+	reader := bufio.NewReader(os.Stdin)
+
+
+	fmt.Println("\n\nEnter chapter text (e.g. poetry,chinese, etc):")
+	search, _ := reader.ReadString('\n')
 
 	// SEARCH
 
-	search := "motor neurons"
+	//search := "motor neurons"
 	fmt.Println("SEARCHING FOR",search)
 
 	ngrams := SST.NewNgramMap()
 	nmin := 1
-	SST.FractionateAndRank(search,ngrams,nmin) // -> ngrams
+	SST.Fractionate(search,ngrams,nmin) // -> ngrams
 
 	// Look at ad hoc text input (small language model)
-	
+/*	
 	input_stream := "/home/mark/Laptop/Work/SST/data_samples/MobyDick.dat"
 //	input_stream = "../../../org-42/roam/how-i-org.org"
 	SST.FractionateTextFile(input_stream)
 	fmt.Println("INPUT_STREAM",input_stream)
-
+*/
 	for nsearch := SST.N_GRAM_MAX-1; nsearch >= nmin; nsearch-- {
 
 		for each := range ngrams[nsearch] {
 
-			fmt.Println("\nMatching",each)
+			fmt.Println("\nMatching longest N=",nsearch,"GRAM",each,"--------------------")
 		
 			for ntext := SST.N_GRAM_MIN; ntext < SST.N_GRAM_MAX; ntext++ {
 				for g := range SST.STM_NGRAM_RANK[ntext] {
@@ -67,15 +73,17 @@ func main() {
 			// the EntireCone to see what concepts context joins together
 			// If we find a match, then we know that there are nodes related that might not contain
 			// the search string directly, offering a level of indirection
-			
+
+			fmt.Println("Look for direct matches in the proposed notes context fields.....\n")			
 			ctx_set := SST.GetDBContextsMatchingName(ctx,each)
+
 			if len(ctx_set) > 0 {
 				fmt.Println("Context relevance items",nsearch,each,"->",ctx_set)
 			}
 	
 			// Now look for nodes that match by name, and their orbits
 			
-			fmt.Println("DATABASE ...searching for related patches of meaning")
+			fmt.Println("Look for graph node names ....")
 			
 			chap := ""
 			nptrs := SST.GetDBNodePtrMatchingName(ctx,each,chap)
@@ -86,7 +94,7 @@ func main() {
 			
 			for i := range nptrs {
 				n := SST.GetDBNodeByNodePtr(ctx,nptrs[i])
-				fmt.Print("\n- From \"")
+				fmt.Printf("\n- %d Probe from \"",i)
 				SST.ShowText(n.S,80)
 				patches[n.S]++
 				fmt.Println("\"")

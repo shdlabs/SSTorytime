@@ -5676,11 +5676,14 @@ func SplitIntoParaSentences(text string) [][][]string {
 	for p := 0; p < len(paras); p++ {
 
 		re := regexp.MustCompile("[^#]#")
+
 		sentences := re.Split(paras[p], -1)
 		
 		var cleaned [][]string
 		
 		for s := range sentences{
+
+			// NB, if parentheses contain multiple sentences, this complains, TBD
 
 			frags := SplitPunctuationText(sentences[s])
 
@@ -5832,7 +5835,7 @@ func CountParens(s string) []string {
 	}
 
 	if count[match] != 0 {
-		fmt.Println("Unbalanced parentheses \"",string(match),"\" in",string(text))
+		fmt.Println("Ambiguous or unbalanced parentheses \"",string(match),"\" in",string(text))
 		return []string{s}
 	}
 
