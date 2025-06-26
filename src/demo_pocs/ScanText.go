@@ -73,7 +73,7 @@ func AnnotateFile(pbsf [][][]string) {
 				pr += " " + pbsf[p][s][f]
 
 				if f < len(pbsf[p][s])-1 {
-					pr += ","
+					pr += ", "
 				} else {
 					pr += ". "
 				}

@@ -5691,8 +5691,12 @@ func CleanText(s string) string {
 
 	// Encode sentence space boudnaries and end of sentence markers with a # for later splitting
 
-	m = regexp.MustCompile("[?!.]+[ \n]")  // end of sentence punctuation
+	m = regexp.MustCompile("([?!.。]+[ \n])")  // end of sentence punctuation
 	s = m.ReplaceAllString(s,"$0#")
+
+	// ellipsis
+	m = regexp.MustCompile("([.][.][.])+")  // end of sentence punctuation
+	s = m.ReplaceAllString(s,"---")
 
 	m = regexp.MustCompile("[\n][\n]")     // paragraph or highlighted sentence
 	s = m.ReplaceAllString(s,">>\n")
@@ -5768,7 +5772,7 @@ func SplitPunctuationText(s string) []string {
 			// and fractionated contents (recurse)
 			sfrags = SplitPunctuationText(contents)
 		} else {
-			re := regexp.MustCompile("[\"!?.,:;—“”。]")
+			re := regexp.MustCompile("([\"—“”!?,:;]+[ \n])")
 			sfrags = re.Split(contents, -1)
 		}
 
@@ -5877,10 +5881,10 @@ func CountParens(s string) []string {
 		subfrags = append(subfrags,string(lastfrag))
 	}
 
-	if count[match] != 0 {
+	/*if count[match] != 0 {
 		fmt.Println("Ambiguous or unbalanced parentheses \"",string(match),"\" in",string(text))
 		return []string{s}
-	}
+	}*/
 
 	return subfrags
 }

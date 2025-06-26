@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"time"
 	"strings"
+	"flag"
 	"os"
-	"bufio"
         SST "SSTorytime"
 )
 
@@ -32,10 +32,9 @@ func main() {
 	name,_ := os.Hostname()
 	fmt.Println("HOST",name)
 
-	fmt.Println("\n\nEnter chapter text (e.g. poetry,chinese, etc):")
-	reader := bufio.NewReader(os.Stdin)
-	search, _ := reader.ReadString('\n')
+	search := Init()
 	search = strings.TrimSpace(search)
+
 	// SEARCH
 
 	//search := "motor neurons"
@@ -84,9 +83,9 @@ func main() {
 
 			for n := range nan {
 				fr := SST.GetDBNodeByNodePtr(ctx,nan[n].NFrom).S
-				to := SST.GetDBNodeByNodePtr(ctx,nan[n].NTo).S
 				arr := SST.GetDBArrowByPtr(ctx,nan[n].Arr).Long
-				fmt.Println("  - ",fr,arr,to)
+				to := SST.GetDBNodeByNodePtr(ctx,nan[n].NTo).S
+				fmt.Println("  - ",fr,"(",arr,")",to)
 			}
 
 			// Now look for nodes that match by name, and their orbits
@@ -129,5 +128,23 @@ func main() {
 	}
 
 	SST.Close(ctx)
+}
+
+//**************************************************************
+
+func Init() string {
+
+	flag.Parse()
+	args := flag.Args()
+
+	search := ""
+
+	for i := range args {
+		search += args[i] + " "
+	}
+
+	SST.MemoryInit()
+
+	return search
 }
 
