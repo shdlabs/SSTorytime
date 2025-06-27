@@ -17,6 +17,9 @@
    " (e.g.) qǐng děng yīxià      (ph) 请等一下 (he) please wait a bit
    " (e.g.) qǐng zuò             (ph) 请坐    (he) please sit
 
+Sūn nǚshì qǐng jìn (ph)  孙女士请进  (he) Ms Sun, please come in
+     " (ex) qǐng jìn
+
 :: yes, no, negative :: 
 
  yes       (eh) 是的 (hp) Shì de
@@ -690,8 +693,9 @@ radio telescope  (eh) 射电望远镜  (hp) shèdiàn wàngyuǎnjìng (e.g.) sh�
 
 :: day | sky | time  ::
 
-tiān (ph) 天 (he) sky
+rìlì  (ph)  日历  (he)  calendar
 
+tiān (ph) 天 (he) sky
 
 jīn tiān (ph) 今天 (he) today
 míng tiān (ph) 明天 (he) tomorrow
@@ -1932,8 +1936,11 @@ junior high school  (eh) 初中 (hp) chūzhōng
 high school  (eh) 高中 (hp) gāozhōng 
 high school diploma  (eh) 高中文凭 (hp) gāozhōng wénpíng
 
+ bìyè   (ph) 毕业 (he) graduate verb
 
 tā gānggāng bìyè méiyǒu jīngyàn (ph) 他刚刚毕业没有经验 (he) he just graduated and has no experience.
+
+Nǐ shì shénme shíhòu bìyè de (ph) 你是什么时候毕业的 (he) When did you graduate?
 
 xuéshēng (ph) 学生 (he) student
 
@@ -1953,7 +1960,9 @@ winter holiday  (eh) 寒假 (hp) hánjià
 
 math  (eh) 数学 (hp) shùxué
 science  (eh) 科学(hp)  kēxué
-physics (eh) 物理 (hp) wùlǐ
+physics (eh) 物理 (hp) wùlǐ (e.g.) wùlǐ shíyàn shì (ph)  物理实验室  (he) physics laboratory
+
+wùlǐ zhuānyè (ph)  物理专业  (he) physics major/graduate
 
   " (e.g.) Yánjiū wùlǐ tèbié yǒuqù (ph) 研究物理特别有趣 (he) researching/studying physics is especially interesting
 
@@ -2128,12 +2137,28 @@ i got promoted  (eh) 我升职 (hp) wǒ shēng zhí
 happy with/satisfied  (eh) 满意 (hp) mǎnyì
 
 meeting  (eh) 开会 (hp) kāihuì
+
++:: interview ::
+
 interview  (eh) 面试 (hp) miànshì
 
  $PREV.3 (e.g.) shàng yīcì miànshì (ph) 上一次面试 (he) last interview
    "     (e.g.) shàng yīcì miànshì wǒ hěn jǐnzhāng (ph) 上一次面试我很紧张 (he) I was very nervous during my last interview.
 
 
+Nǐ jiǎng yīxià zìjǐ  (ph) 你讲一下自己 (he)  Tell me about yourself
+
+Nǐ jiǎng yīxià zìjǐ de jīnglì  (ph) 你讲一下自己的经历  (he) Tell me about your experience
+
+Nǐ yǐqián shèjìguò shèn me (ph)  你以前设计过什么  (he) What have you designed before?
+
+Zuìdà de tiǎozhàn shì shénme (ph) 最大的挑战是什么  (he) What is the biggest challenge?
+
+Měi gè yuángōng dōu yǒu diànnǎo  (ph) 每个员工都有电脑  (he) Every employee has a computer
+
+Shíxí jīngyàn (ph)  实习经验  (he) Internship experience
+
+-:: interview ::
 
  yuángōng (ph) 员工  (he) employee
 
