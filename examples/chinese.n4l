@@ -45,7 +45,7 @@ Wǒ jīntiān méiyǒu qù xuéxiào (ph) 我今天没有去学校 (he) I didn't
      " (e.g.) $meirule.1
 
 @bu I did not meet with him last weekend (eh)  上周末我没有见到他 (hp) Shàng zhōumò wǒ méiyǒu jiàn dào tā 
-      " (prop) WRONG: Wǒ shàng gè zhōumò bù gēn tā jiànmiàn (ph) XXX: 我 上个 周末 不 跟 他 见面 (see) $bu.2
+      " (prop) WRONG: Wǒ shàng gè zhōumò bù gēn tā jiànmiàn (ph) 我 上个 周末 不 跟 他 见面 (see) $bu.2
 
 
 of course  (eh) 当然 (hp) Dāngrán
@@ -610,6 +610,7 @@ liǎn (ph) 脸 (he) face
 
 miàn (ph) 面  (he) face
 
+cosmetics (ph) 化妆品 (he) huàzhuāngpǐn
 
 shēntǐ (ph) 身体 (he) body 
 
@@ -903,7 +904,7 @@ frequent/often  (eh) 经常  (hp) jīngcháng
 
 shāngchǎng (sl) chángcháng # shopping mall
 
-   " (ex) Cóng shāngchǎng dào wǒjiā yào èrshí duō fēnzhōng (ph) 从商场到我家要二十多分钟 (he) It takes more than 20 minutes from the mall to my home.
+   " (ex) cóng shāngchǎng dào wǒjiā yào èrshí duō fēnzhōng (ph) 从商场到我家要二十多分钟 (he) It takes more than 20 minutes from the mall to my home.
 
 
 :: age ::
@@ -978,14 +979,14 @@ wǒ huāle tài duō shíjiān zuò zhège shìqíng  (ph) 我花了太多时间
 
 #######################################################
 
-:: money | time , cost ::
-
-# spend money or time
+:: money | time , cost , spend money or time ::
 
 wallet  (eh) 钱包 (hp) qiánbāo
 
 flower/spend/expend  (eh) 花 (hp) huā
 expenditure/to spend  (eh) 花费 (hp) huā  fèi
+
+nǐ huā qián mǎile shénme (ph) 你花钱买了什么 (he) what did you spend your money on?
 
 pass by/spend time  (ep) guò (ph) 过
 
@@ -1370,9 +1371,11 @@ màn  (ph) 慢  (pe)  slow
 
 kuài   (ph) 快 (he) quick
 
-asap  (eh) 尽快  (hp) jǐnkuài
+ " (e.g.) nǐ kuài huíláile ma  (ph) 你快回来了吗 (he) Are you coming back soon?
+ " (e.g.) nǐ kuài huílái  (ph) 你快回来 (he) Come back soon
+ " (e.g.) nǒ kuài dào tíngchē chǎngle  (ph) 我快到停车场了 (he) I'm almost at the parking lot.
 
-:: 
+ " (e.g.) jǐnkuài  (ph) 尽快  (he) A.S.A.P. 
 
 kuàizi (ph) 筷子 (he) chopsticks
 kuài   (ph) 块 (he) yuan / quid
@@ -1661,7 +1664,10 @@ refrigerator (eh) 冰箱 (hp) bīngxiāng
 :: directions ::
 
 shàng  (ph) 上   (he) up, above, upon, top, superior
+   "   (e.g.) nǐ shànglái zhǎo wǒ (ph) 你上来找我 (he) come up and find me
+
 xià    (ph) 下   (he) down, below, under
+
 
 
 shàngwǎng (ph) 上网 (he) go online
@@ -1714,9 +1720,6 @@ i am not interested  (eh) 我没有兴趣 (hp) wǒ méiyǒu xìngqù
 想 (hp) xiǎng (pe) want/would like
 想 (hp) xiǎng (pe) to miss/think about someone
 
-向 (hp) xiàng (pe) from/to/towards
-向我 (hp) xiàng wǒ (pe) from me
-
 
 想干 (hp) xiǎnggàn (pe) want to do
 香港 (hp) xiānggǎng (pe) hong kong
@@ -1766,10 +1769,17 @@ the lift is going down (eh) 电梯正在下降 (hp) diàntī zhèngzài xiàjià
 wǒmen zuò diàntī xiàqùle (ph) 我们坐电梯下去了 (he) We took the elevator down.
 tā gǎn gāng jìnle diàntī  (ph) 他敢刚进了电梯  (he) He just got into the elevator
 
-Tā zài dìxià (ph) 他在地下 (he) he is underground
+tā zài dìxià (ph) 他在地下 (he) he is underground
 
-Tā zài dìxià yī céng hái méi shàngqù (ph) 他在地下一层还没上去 (he) He is on the underground floor and hasn't come up yet.
+tā zài dìxià yī céng hái méi shàngqù (ph) 他在地下一层还没上去 (he) He is on the underground floor and hasn't come up yet.
 
+chāoshì zài dìxià yī céng (ph) 超市在地下一层 (he) the supermarket is on the basement floor
+
+floor  (eh) 楼 (hp) lóu
+
+first floor/layer  (eh) 一层(hp)  yī céng
+
+tíngchē chǎng zài dìxià èr céng (ph)  停车场在地下二层  (he) Parking lot is on the second underground floor
 
 
  -::examples::
@@ -1861,7 +1871,17 @@ near  (eh) 近  (hp) jìn
 how far is it to the museum (eh) 到博物馆有多远 (hp) dào bówùguǎn yǒu duō yuǎn
 how far is it from the hotel to the museum  (eh) 从酒店到博物馆有多远  (hp) cóng jiǔdiàn dào bówùguǎn yǒu duō yuǎn
 
-:: directions, layout, position, configuration  ::
+:: directions, layout, position, configuration , from, toward ::
+
+向 (hp) xiàng (pe) from/to/towards
+向我 (hp) xiàng wǒ (pe) from me
+
+cóng..dào (eh) 从..到 (he) from..to
+
+bié cóng dàmén jìnlái (ph) 别从大门进来 (he) don't come through the main entrance
+bié cóng dàmén (ph) 别从大门 (he) not from the main entrance
+
+
 
 wǒjiā zhōuwéi yǒu hěnduō chē 我家周围有很多车 there are many cars around my house
 wǒjiā zhōuwéi yǒu hěnduō shāngdiàn 我家周围有很多商店 there are many shops around my house
@@ -1881,7 +1901,7 @@ the yellow river is in the middle of china (eh)  黄河在中国中部  (hp) hu�
 
 the taxi is waiting outside the hotel (eh)  "出租车已在酒店外等(候)" (hp)  "chūzūchē zài jiǔdiàn wài děng (hòu)"
 
-the forbidden city in beijing is not far from the metro  (eh) 北京故宫离地铁不远 (hp) běijīng gùgōng lí dìtiě bù yuǎn
+
 
 ##############################################
 
@@ -2449,7 +2469,7 @@ green  (eh) 绿色 (hp) lǜ sè
 yellow  (eh) 黄色 (hp) huáng sè
 orange  (eh) 橙子(hp)  chéngzi
 purple  (eh) 紫色 (hp) zǐ sè
-
+fěnsè (ph) 粉色 (he) pink
 
 :: family, kin, relatives ::
 
@@ -2554,7 +2574,7 @@ winter vacation 寒假 hánjià
 summer vacation 暑假 shǔjià
 
 
-:: weather, seasons, environment ::
+:: weather, seasons, environment,climate ::
 
 weather  (eh) 天气 (hp) tiānqì
 
@@ -2571,7 +2591,7 @@ the wind is very strong now  (eh) 现在的风很大 (hp) xiànzài de fēng hě
 hot  (eh) 热 (hp) rè
 warm  (eh) 暖和 (hp) nuǎnhuo
 cold  (eh) 冷 (hp) lěng
-cool 凉快 liángkuai
+cool (eh) 凉快 (hp) liángkuai
 wet/humid (eh) 湿 (hp) shī 
 dry  (eh) 干燥 (hp) gānzào
 temperature (eh)  温度 (hp) wēndù
@@ -2585,7 +2605,7 @@ tiānqì hěn gānzào nǐ yào duō hē shuǐ(ph) 天气很干燥你要多喝�
 这里  (hp) zhè lǐ  (pe) here
 那里  (hp) nà lǐ  (pe) there
 
-cóng..dào (eh) 从..到 (he) from..to
+
 
 library  (eh) 图书馆 túshū guǎn
 city  (eh) 城市(hp)  chéngshì
@@ -2596,7 +2616,7 @@ hospital  (eh) 医院 (hp) yīyuàn
 gym  (eh) 体育馆 (hp) tǐyùguǎn
 cafe (eh)  咖啡馆 (hp) kāfēi guǎn
 
-tíngchē chǎng zài dìxià èr céng (ph)  停车场在地下二层  (he) Parking lot is on the second underground floor
+
 
 place/area/district  (eh) 地方 (hp) dìfāng 
 around /nearby/surroundings (eh)  周围(hp)  zhōuwéi 
@@ -2720,8 +2740,6 @@ willing  (eh) 愿意 (hp) yuànyì
 :: environment ::
 
 grass  (eh) 草 (hp) cǎo
-floor  (eh) 楼 (hp) lóu
-floor/layer  (eh) 一层(hp)  yī céng
 
 environment/surroundings  (eh) 环境 (hp) huánjìng
 neighbour  (eh) 邻居(hp)  línjū
@@ -2895,7 +2913,7 @@ how long is the yangtze river?  (eh) 长江有多长  (hp) chángjiāng yǒu du�
 
 
 huánghé (ph) 黄河 (he) yellow river
-gùgōng (ph) 故宫 (he) forbidden city
+gùgōng (ph) 故宫 (he) forbidden city (e.g.) the forbidden city in beijing is not far from the metro  (eh) 北京故宫离地铁不远 (hp) běijīng gùgōng lí dìtiě bù yuǎn
 
 ::: nature :::
 
