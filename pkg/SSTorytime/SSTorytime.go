@@ -520,7 +520,7 @@ func MemoryInit() {
 
 	for i := N_GRAM_MIN; i < N_GRAM_MAX; i++ {
 
-		STM_NGRAM_RANK[i] = make(map[string]float64)
+		STM_NGRAM_FREQ[i] = make(map[string]float64)
 	}
 }
 
@@ -5603,21 +5603,25 @@ func GetUnixTimeKey(now int64) string {
 // Read text file
 //******************************************************************
 
-func FractionateTextFile(name string) [][][]string {
+func FractionateTextFile(name string) ([][][]string,int) {
 
 	file := ReadFile(name)
 	proto_text := CleanText(file)
 	pbsf := SplitIntoParaSentences(proto_text)
 
+	count := 0
+
 	for p := range pbsf {
 		for s := range pbsf[p] {
+
+			count++
+
 			for f := range pbsf[p][s] {
-				// Note passing map is always by reference in go
-				Fractionate(pbsf[p][s][f],STM_NGRAM_RANK,N_GRAM_MIN)
+				Fractionate2Learn(pbsf[p][s][f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
 			}
 		}
 	}
-	return pbsf
+	return pbsf,count
 }
 
 // *****************************************************************
@@ -5643,7 +5647,7 @@ func ReadFile(filename string) string {
 //**************************************************************
 
 const N_GRAM_MAX = 6
-const N_GRAM_MIN = 3
+const N_GRAM_MIN = 1
 
 // Promise bindings in English. This domain knowledge saves us a lot of training analysis
 
@@ -5654,8 +5658,7 @@ var FORBIDDEN_STARTER = []string{"and","or","of","the","it","because","in","that
 // **************************************************************
 
 var EXCLUSIONS []string
-var LEG_WINDOW int = 100  // sentences per leg
-var STM_NGRAM_RANK [N_GRAM_MAX]map[string]float64
+var STM_NGRAM_FREQ [N_GRAM_MAX]map[string]float64
 
 //**************************************************************
 
@@ -5738,7 +5741,6 @@ func SplitIntoParaSentences(text string) [][][]string {
 
 			for f := range frags {
 				content := strings.TrimSpace(frags[f])
-
 				if len(content) > 2 {			
 					codons = append(codons,content)
 				}
@@ -5881,17 +5883,14 @@ func CountParens(s string) []string {
 		subfrags = append(subfrags,string(lastfrag))
 	}
 
-	/*if count[match] != 0 {
-		fmt.Println("Ambiguous or unbalanced parentheses \"",string(match),"\" in",string(text))
-		return []string{s}
-	}*/
+	// Ignore unbalanced parentheses, because it's unclear why in natural language
 
 	return subfrags
 }
 
 //**************************************************************
 
-func Fractionate(frag string,frequency [N_GRAM_MAX]map[string]float64,min int) {
+func Fractionate2Learn(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
@@ -5902,17 +5901,44 @@ func Fractionate(frag string,frequency [N_GRAM_MAX]map[string]float64,min int) {
 
 	for w := range words {
 		
-		rrbuffer = NextWord(words[w],rrbuffer,frequency,min)
+		const learn = true
+		rrbuffer,_ = NextWord(words[w],L,rrbuffer,frequency,min,learn)
 	}
 }
 
 //**************************************************************
 
-func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string,frequency [N_GRAM_MAX]map[string]float64,min int) [N_GRAM_MAX][]string {
+func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) float64 {
+
+	// A round robin cyclic buffer for taking fragments and extracting
+	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
+
+	var rrbuffer [N_GRAM_MAX][]string
+	var score float64
+
+	words := strings.Split(frag," ")
+
+	for w := range words {
+		
+		var assess float64
+		const updating = false
+
+		rrbuffer,assess = NextWord(words[w],L,rrbuffer,frequency,min,updating)
+		score += assess
+	}
+
+	return score
+}
+
+//**************************************************************
+
+func NextWord(frag string,L int,rrbuffer [N_GRAM_MAX][]string,frequency [N_GRAM_MAX]map[string]float64,min int,update bool) ([N_GRAM_MAX][]string,float64) {
 
 	// Word by word, we form a superposition of scores from n-grams of different lengths
 	// as a simple sum. This means lower lengths will dominate as there are more of them
 	// so we define intentionality proportional to the length also as compensation
+
+	var score float64
 
 	for n := min; n < N_GRAM_MAX; n++ {
 		
@@ -5945,17 +5971,24 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string,frequency [N_GRAM_MAX]ma
 				continue
 			}
 
-			frequency[n][key]++
+			if update {
+				frequency[n][key]++
+			}
+
+			score += Intentionality(n,L,key,frequency[n][key])
 		}
 	}
 
 	frag = strings.ToLower(frag)
 	
 	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag) {
-		frequency[1][frag]++
+		if update {
+			frequency[1][frag]++
+		}
+		score += Intentionality(1,L,frag,frequency[1][frag])
 	}
 
-	return rrbuffer
+	return rrbuffer,score
 }
 
 //**************************************************************
@@ -5990,32 +6023,29 @@ func ExcludedByBindings(firstword,lastword string) bool {
 
 //**************************************************************
 
-func Intentionality(n int, s string) float64 {
+func Intentionality(n,L int, s string, freq float64) float64 {
 
 	// Compute the effective intent of a string s at a position count
 	// within a document of many sentences. The weighting due to
 	// inband learning uses an exponential deprecation based on
 	// SST scales (see "leg" meaning).
 
-	occurrences := STM_NGRAM_RANK[n][s]
-	work := float64(len(s))
+	work := float64(len(s)) 
 
-	if occurrences < 3 {
-		return 0
-	}
+	// measure occurrences relative to total length L in sentences
 
-	if work < 5 {
-		return 0
-	}
+	phi := freq
+	phi_0 := float64(L)
 
-	lambda := occurrences / float64(LEG_WINDOW)
-	scale := 10000.0 / float64(LEG_WINDOW)        // doc len
+	// How often is too often for a concept?
+	const rho = 0.1/20.0
 
-	meaning := lambda * work / (1.0 + math.Exp(lambda-scale))
+	crit := phi/phi_0 - rho
+
+	meaning := phi * work / (1.0 + math.Exp(crit))
 
 	return meaning
 }
-
 
 // **************************************************************************
 //

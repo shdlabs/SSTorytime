@@ -9,6 +9,7 @@
 .deps
 .libs
 stamp-h1
+plot
 
 /aclocal.m4
 /autom4te.cache

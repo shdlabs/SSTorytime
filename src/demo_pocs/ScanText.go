@@ -7,26 +7,10 @@
 package main
 
 import (
-	"strings"
-	"os"
-	"flag"
 	"fmt"
-	"regexp"
-
+	"math"
         SST "SSTorytime"
 )
-
-//**************************************************************
-
-var CURRENT_FILE string
-var VERBOSE bool
-var LINE_NUM int
-
-type Match struct {
-	Arrow   string
-	Before  string
-	After   string
-}
 
 //**************************************************************
 // BEGIN
@@ -34,256 +18,103 @@ type Match struct {
 
 func main() {
 
-// load arrows
+	const max_class = 100
+	var freq_dist [10][max_class]int
 
-	args := Init()
-
-	// input := "/home/mark/Laptop/Work/SST/data_samples/MobyDick.dat"
-
-	for input := 0; input < len(args); input++ {
-
-		NewFile(args[input])
-
-		pbsf := SST.FractionateTextFile(CURRENT_FILE)
-
-		AnnotateFile(pbsf)
-	}
-}
-
-//**************************************************************
-
-func AnnotateFile(pbsf [][][]string) {
-	
-/*	for n := SST.N_GRAM_MIN; n < SST.N_GRAM_MAX; n++ {
-		for g := range SST.STM_NGRAM_RANK[n] {
-
-			fmt.Println("ng",n,g)
-		}
-	}*/
-
-
-	for p := range pbsf {
-
-		pr := ""
-
-		for s := range pbsf[p] {
-
-			for f := range pbsf[p][s] {
-
-				pr += " " + pbsf[p][s][f]
-
-				if f < len(pbsf[p][s])-1 {
-					pr += ", "
-				} else {
-					pr += ". "
-				}
-
-			}
-
-		}
-		SST.ShowText(pr,80)
-		fmt.Println("\n\n")
-	}
-}
-
-//**************************************************************
-
-func Analyze(s string) []Match {
-
-	var matches []Match
-
-	for arr := range SST.ARROW_DIRECTORY {
-
-		arrow := SST.ARROW_DIRECTORY[arr].Long
-
-		if arrow == "is not" {
-			continue
-		}
-
-		arrow = strings.Replace(arrow,"is","",-1)
-		arrow = strings.Replace(arrow,"has","",-1)
-
-		var match Match
-		pos := strings.Index(s,arrow)
-
-		if pos >= 0 {
-			match.Arrow = SST.ARROW_DIRECTORY[arr].Long
-			match.After = s[pos:]
-			match.Before = s[:pos]
-			matches = append(matches,match)
-			continue
-		}
-
-		if len(SST.ARROW_DIRECTORY[arr].Short) > 3 {
-			pos = strings.Index(s,SST.ARROW_DIRECTORY[arr].Short)
-
-			if pos >= 0 {
-				match.Arrow = SST.ARROW_DIRECTORY[arr].Long
-				match.After = s[pos:]
-				match.Before = s[:pos]
-				matches = append(matches,match)
-			}
-		}
-	}
-
-	return matches
-}
-
-//**************************************************************
-
-func CleanText(s string) string {
-
-	// Start by stripping HTML / XML tags before para-split
-	// if they haven't been removed already
-
-	s = strings.Replace(s,"(","[",-1)
-	s = strings.Replace(s,")","]",-1)
-
-	m := regexp.MustCompile("<[^>]*>") 
-	s = m.ReplaceAllString(s,":\n") 
-
-	// Weird English abbrev
-	s = strings.Replace(s,"Mr.","Mr",-1) 
-	s = strings.Replace(s,"Ms.","Ms",-1) 
-	s = strings.Replace(s,"Mrs.","Mrs",-1) 
-	s = strings.Replace(s,"Dr.","Dr",-1)
-	s = strings.Replace(s,"St.","St",-1) 
-
-	// Encode end of sentence markers with a # for later splitting
-
-	m = regexp.MustCompile("[\n][\n]")
-	s = m.ReplaceAllString(s,">>\n")
-
-	m = regexp.MustCompile("[?!.]+[ \n]")
-	s = m.ReplaceAllString(s,"$0#")
-
-	m = regexp.MustCompile("[\n]+")
-	s = m.ReplaceAllString(s," ")
-
-	return s
-}
-
-//**************************************************************
-
-func ParaBySentence(paras []string) [][]string {
-	
-	var pbs [][]string
-	
-	for s := range paras {
-		
-		var para []string
-		
-		sentences := strings.Split(paras[s],"#")
-		
-		for s := range sentences {
-			sentence := strings.TrimSpace(sentences[s])
-			if sentence != ":" && sentence != "" {
-				para = append(para,sentence)
-			}
-		}
-		pbs = append(pbs,para)
-	}
-
-	return pbs
-}
-
-//**************************************************************
-
-func Init() []string {
-
-	flag.Usage = Usage
-	verbosePtr := flag.Bool("v", false,"verbose")
-
-	flag.Parse()
-	args := flag.Args()
-
-	if len(args) < 1 {
-		Usage()
-		os.Exit(1);
-	}
-
-	if *verbosePtr {
-		VERBOSE = true
-	}
+	input := "/home/mark/Laptop/Work/SST/data_samples/MobyDick.dat"
 
 	SST.MemoryInit()
 
-	return args
-}
-
-//**************************************************************
-
-func NewFile(filename string) {
-
-	CURRENT_FILE = filename
-
-	Box("Parsing new file",filename)
-
-	LINE_NUM = 1
-}
-
-//**************************************************************
-
-func Usage() {
+	psf,L := SST.FractionateTextFile(input)
 	
-	fmt.Printf("usage: ScanText [-v] [file].dat\n")
-	flag.PrintDefaults()
-	os.Exit(2)
-}
+	for n := range SST.STM_NGRAM_FREQ {
+		
+		maxf := 0.0
+		maxI := 0.0
+		
+		for ngram := range SST.STM_NGRAM_FREQ[n] {
 
-//**************************************************************
+			freq := SST.STM_NGRAM_FREQ[n][ngram]
+			valueI := SST.Intentionality(n,L,ngram,freq)
+			
+			if freq > maxf {
+				maxf = freq
+			}
 
-func Verbose(a ...interface{}) {
+			if valueI > maxI {
+				maxI = valueI
+			}
 
-	line := fmt.Sprintln(a...)
-	
-	if VERBOSE {
-		fmt.Print(line)
-	}
-}
+			class := int(valueI) / 50
 
-//**************************************************************
-
-func PVerbose(a ...interface{}) {
-
-	const green = "\x1b[36m"
-	const endgreen = "\x1b[0m"
-
-	if VERBOSE {
-		fmt.Print(LINE_NUM,":\t",green)
-		fmt.Println(a...)
-		fmt.Print(endgreen)
-	}
-}
-
-//**************************************************************
-
-func Box(a ...interface{}) {
-
-	if VERBOSE {
-
-		fmt.Println("\n------------------------------------")
-		fmt.Println(a...)
-		fmt.Println("------------------------------------\n")
-	}
-}
-
-//**************************************************************
-
-func StripParen(token string) string {
-
-	token =	strings.TrimSpace(token[1:])
-
-	if token[0] == '(' {
-		token =	strings.TrimSpace(token[1:])
+			if class < max_class {
+				freq_dist[n][class]++
+			}
+		}
+		fmt.Println("N",n,"f=",maxf,"I=",maxI,"of",L)
 	}
 
-	if token[len(token)-1] == ')' {
-		token =	token[:len(token)-1]
+// plot
+
+	for f := 1; f < 50; f++ {
+
+		fmt.Printf("%f ",math.Log(float64(f)))
+		for n := 1; n < 5; n++ {
+			fmt.Printf("%f ",math.Log(float64(1+freq_dist[n][f])))
+		}
+		fmt.Println()
 	}
 
-	return token
+	freq := SST.STM_NGRAM_FREQ[1]["you"]
+	valueI := SST.Intentionality(1,L,"you",freq)
+	fmt.Println("you = ",freq,valueI)
+
+	freq = SST.STM_NGRAM_FREQ[1]["Ahab"]
+	valueI = SST.Intentionality(1,L,"Ahab",freq)
+	fmt.Println("Ahab = ",freq,valueI)
+
+	freq = SST.STM_NGRAM_FREQ[1]["Ahab"]
+	valueI = SST.Intentionality(1,L,"Ahab",freq)
+	fmt.Println("Ahab = ",freq,valueI)
+
+	freq = SST.STM_NGRAM_FREQ[3]["desires to paint"]
+	valueI = SST.Intentionality(3,L,"desires to paint",freq)
+	fmt.Println("He desires to paint = ",freq,valueI)
+
+	freq = SST.STM_NGRAM_FREQ[1]["whale-boat"]
+	valueI = SST.Intentionality(1,L,"whale-boat",freq)
+	fmt.Println("whaling ship = ",freq,valueI)
+
+	// Rank sentences
+
+	sentence := 0
+
+	for p := range psf {
+
+		for s := range psf[p] {
+
+			score := 0.0
+			text := ""
+
+			for f := 0; f < len(psf[p][s]); f++ {
+
+				score += SST.AssessIntent(psf[p][s][f],L,SST.STM_NGRAM_FREQ,1)
+
+				text += psf[p][s][f]
+
+				if f < len(psf[p][s])-1 {
+					text += ", "
+				} else {
+					text += ". "
+				}
+			}
+
+			sentence++
+			fmt.Println(sentence,score,text,"\n")
+		}
+	}
+
+	// Now print upper fraction 20% say
+
 }
-
-
 
