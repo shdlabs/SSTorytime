@@ -46,10 +46,6 @@
  	# these translations are causal transformations, not just properties.
  	# they have transitive meaning
 
- 	# if we insist on using + or - in the name, then quote it
-
- //	+ "positive (+)" (+) - "negative (-)" (-)
-
         # More examples to play with, semantics are always reversible
 
  	+ gives or results in (gives) - is a result of (result of)
@@ -62,6 +58,8 @@
         + invented (invent) - invented by (inventby)
 
         + is used for (usefor) - makes use of (uses)
+
+        + could possibly be used for (maybeused) - could possibly make use of (maybetry)
 
         # Numbers can be interpreted either as set order (value) 
         # or by set containment (count), so be careful with semantics!
@@ -97,25 +95,18 @@
 
 - contains
 
- + has component (has) - is component of (part)
- + is a set of (setof) - is part of set (inset) // designations can be multi-valued
- + contains (contain)  - is contained by (element)
- + subsumes (sub)      - is subsumed by (subby)
- + encloses (encl)     - is enclosed by (isencl)
- + swallows (sw)       - is swallowed by (swby)
- + consists of (cons)  - is part of (pt)
+ + has component (has)     - is component of (part)
+ + is a set of (setof)     - is part of set (inset) // designations can be multi-valued
+ + contains (contain)      - is contained by (element)
+ + subsumes (sub)          - is subsumed by (subby)
+ + encloses (encl)         - is enclosed by (isencl)
+ + swallows (sw)           - is swallowed by (swby)
+ + consists of (consists)  - is part of (pt)
 
- + has aspect (aspect) - is an aspect of (aspect of)
- + has key issue (key issue) - is a key issue of (is key)
- + generalizes (general) - is a special case of (special)
- + includes (includes) - is a kind of of (kind of)
  + has member (memb) - belongs to (belong)
  + is the publisher of (published) - was published by (pub by)
 
  + has a story (story) - is the text of the story (isstory)
-
- + discusses (disc) - is discussed in (isdisc)
- + obeys the rule (rule) - is a rule for (rule4)
 
  + linux container (linux pkg) - in linux package (in linux pkg)
 
@@ -142,12 +133,24 @@
  # properties are more type-centric in a logical sense
  # because they are ontological
 
+ # if we insist on using (), +, or - in the name, then quote everything
+
+ //	+ "positive (+)" (+) - "negative (-)" (-)
+
  #  A (expresses) B, B (is expressed by) A
 
- + used for (for)            - is a possible use of (useof)
+ + used for (for)            - is a use of (useof)
+ + might be used for (perhaps used) - is a possible use of (perhaps useof)
  + has example (e.g.)        - is an example of (ex)
  + has name (name)           - is the name of (nameof)
  + has abbreviation (abbrev) - is short for (short for)
+
+ + discusses (disc) - is discussed in (isdisc)
+ + obeys the rule (rule) - is a rule for (rule4)
+ + has aspect (aspect) - is an aspect of (aspect of)
+ + has key issue (key issue) - is a key issue of (is key)
+ + generalizes (general) - is a special case of (special)
+ + includes (includes) - is a kind of of (kind of)
 
  + has resource/reference (resource) - is a resource for (isresource)
  + has feature (feat)        - is a feature of (isfeat)
@@ -156,6 +159,7 @@
  + represents (represents)       - is represented by  (representedby)
  + has property (prop)       - is a property of (propof)
  + means (means)             - is meant by (meansb)
+ + defined by (def)          - is the definition of (isdef)
  + is pronounced as (pronas) - is the pronunciation for (pronof)
  + has friend (fr) - is considered a friend of (isfrof)
  + speaks language/dialect (speaks) - is a language or dialect spoken by (spokenby)
@@ -216,6 +220,8 @@
 
  looks like         	(ll)
  sounds like        	(sl)
+
+ related word form      (variant)
 
  equals             	(eq)
  same as                (=)
