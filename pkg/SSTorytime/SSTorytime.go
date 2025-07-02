@@ -5599,32 +5599,9 @@ func GetUnixTimeKey(now int64) string {
 	return slot
 }
 
-//******************************************************************
+//*****************************************************************
 // Read text file
-//******************************************************************
-
-func FractionateTextFile(name string) ([][][]string,int) {
-
-	file := ReadFile(name)
-	proto_text := CleanText(file)
-	pbsf := SplitIntoParaSentences(proto_text)
-
-	count := 0
-
-	for p := range pbsf {
-		for s := range pbsf[p] {
-
-			count++
-
-			for f := range pbsf[p][s] {
-				Fractionate2Learn(pbsf[p][s][f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
-			}
-		}
-	}
-	return pbsf,count
-}
-
-// *****************************************************************
+//*****************************************************************
 
 func ReadFile(filename string) string {
 
@@ -5710,6 +5687,37 @@ func CleanText(s string) string {
 	return s
 }
 
+//******************************************************************
+
+func FractionateTextFile(name string) ([][][]string,int) {
+
+	file := ReadFile(name)
+	proto_text := CleanText(file)
+	pbsf := SplitIntoParaSentences(proto_text)
+
+	count := 0
+
+	for p := range pbsf {
+		for s := range pbsf[p] {
+
+			count++
+
+			for f := range pbsf[p][s] {
+
+				change_set := Fractionate2Learn(pbsf[p][s][f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
+
+				// Update n-gram frequencies for fragment
+				for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+					for ngram := range change_set[n] {
+						STM_NGRAM_FREQ[n][change_set[n][ngram]]++
+					}
+				}
+			}
+		}
+	}
+	return pbsf,count
+}
+
 //**************************************************************
 
 func SplitIntoParaSentences(text string) [][][]string {
@@ -5773,6 +5781,7 @@ func SplitPunctuationText(s string) []string {
 			subfrags = append(subfrags,frags[f])
 			// and fractionated contents (recurse)
 			sfrags = SplitPunctuationText(contents)
+			sfrags = nil // count but don't repeat
 		} else {
 			re := regexp.MustCompile("([\"—“”!?,:;]+[ \n])")
 			sfrags = re.Split(contents, -1)
@@ -5890,20 +5899,21 @@ func CountParens(s string) []string {
 
 //**************************************************************
 
-func Fractionate2Learn(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) {
+func Fractionate2Learn(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) [N_GRAM_MAX][]string {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
 
 	var rrbuffer [N_GRAM_MAX][]string
+	var change_set [N_GRAM_MAX][]string
 
 	words := strings.Split(frag," ")
 
 	for w := range words {
-		
-		const learn = true
-		rrbuffer,_ = NextWord(words[w],L,rrbuffer,frequency,min,learn)
+		rrbuffer,change_set = NextWord(words[w],L,rrbuffer)
 	}
+
+	return change_set
 }
 
 //**************************************************************
@@ -5913,18 +5923,22 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
 
+	var change_set [N_GRAM_MAX][]string
 	var rrbuffer [N_GRAM_MAX][]string
 	var score float64
 
 	words := strings.Split(frag," ")
 
 	for w := range words {
-		
-		var assess float64
-		const updating = false
 
-		rrbuffer,assess = NextWord(words[w],L,rrbuffer,frequency,min,updating)
-		score += assess
+		rrbuffer,change_set = NextWord(words[w],L,rrbuffer)
+
+		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+			for ng := range change_set[n] {
+				ngram := change_set[n][ng]
+				score += Intentionality(n,L,ngram,STM_NGRAM_FREQ[n][ngram])
+			}
+		}
 	}
 
 	return score
@@ -5932,15 +5946,15 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 
 //**************************************************************
 
-func NextWord(frag string,L int,rrbuffer [N_GRAM_MAX][]string,frequency [N_GRAM_MAX]map[string]float64,min int,update bool) ([N_GRAM_MAX][]string,float64) {
+func NextWord(frag string,L int,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[N_GRAM_MAX][]string) {
 
 	// Word by word, we form a superposition of scores from n-grams of different lengths
 	// as a simple sum. This means lower lengths will dominate as there are more of them
 	// so we define intentionality proportional to the length also as compensation
 
-	var score float64
+	var change_set [N_GRAM_MAX][]string
 
-	for n := min; n < N_GRAM_MAX; n++ {
+	for n := 1; n < N_GRAM_MAX; n++ {
 		
 		// Pop from round-robin
 
@@ -5970,25 +5984,17 @@ func NextWord(frag string,L int,rrbuffer [N_GRAM_MAX][]string,frequency [N_GRAM_
 			if ExcludedByBindings(rrbuffer[n][0],rrbuffer[n][n-1]) {
 				continue
 			}
-
-			if update {
-				frequency[n][key]++
-			}
-
-			score += Intentionality(n,L,key,frequency[n][key])
+			change_set[n] = append(change_set[n],key)
 		}
 	}
 
 	frag = strings.ToLower(frag)
 	
 	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag) {
-		if update {
-			frequency[1][frag]++
-		}
-		score += Intentionality(1,L,frag,frequency[1][frag])
+		change_set[1] = append(change_set[1],frag)
 	}
 
-	return rrbuffer,score
+	return rrbuffer,change_set
 }
 
 //**************************************************************
@@ -6025,7 +6031,7 @@ func ExcludedByBindings(firstword,lastword string) bool {
 
 func Intentionality(n,L int, s string, freq float64) float64 {
 
-	// Compute the effective intent of a string s at a position count
+	// Compute the effective significance of a string s
 	// within a document of many sentences. The weighting due to
 	// inband learning uses an exponential deprecation based on
 	// SST scales (see "leg" meaning).

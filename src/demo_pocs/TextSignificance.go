@@ -8,7 +8,7 @@ package main
 
 import (
 	"fmt"
-	"math"
+//	"math"
         SST "SSTorytime"
 )
 
@@ -22,6 +22,9 @@ func main() {
 	var freq_dist [10][max_class]int
 
 	input := "/home/mark/Laptop/Work/SST/data_samples/MobyDick.dat"
+	//input := "/home/mark/Laptop/Work/SST/data_samples/obama.dat"
+	//input := "/home/mark/Laptop/Work/SST/data_samples/bede.dat"
+	//input := "/home/mark/Laptop/Work/SST/data_samples/pt1.dat"
 
 	SST.MemoryInit()
 
@@ -54,40 +57,16 @@ func main() {
 		fmt.Println("N",n,"f=",maxf,"I=",maxI,"of",L)
 	}
 
-// plot
-
-	for f := 1; f < 50; f++ {
-
-		fmt.Printf("%f ",math.Log(float64(f)))
-		for n := 1; n < 5; n++ {
-			fmt.Printf("%f ",math.Log(float64(1+freq_dist[n][f])))
-		}
-		fmt.Println()
-	}
-
-	freq := SST.STM_NGRAM_FREQ[1]["you"]
-	valueI := SST.Intentionality(1,L,"you",freq)
-	fmt.Println("you = ",freq,valueI)
-
-	freq = SST.STM_NGRAM_FREQ[1]["Ahab"]
-	valueI = SST.Intentionality(1,L,"Ahab",freq)
-	fmt.Println("Ahab = ",freq,valueI)
-
-	freq = SST.STM_NGRAM_FREQ[1]["Ahab"]
-	valueI = SST.Intentionality(1,L,"Ahab",freq)
-	fmt.Println("Ahab = ",freq,valueI)
-
-	freq = SST.STM_NGRAM_FREQ[3]["desires to paint"]
-	valueI = SST.Intentionality(3,L,"desires to paint",freq)
-	fmt.Println("He desires to paint = ",freq,valueI)
-
-	freq = SST.STM_NGRAM_FREQ[1]["whale-boat"]
-	valueI = SST.Intentionality(1,L,"whale-boat",freq)
-	fmt.Println("whaling ship = ",freq,valueI)
-
 	// Rank sentences
 
-	sentence := 0
+	type Rank struct {
+		Significance float64
+		Sentence string
+	} 
+
+	var selections []Rank
+
+	maxscore := 0.0
 
 	for p := range psf {
 
@@ -104,17 +83,64 @@ func main() {
 
 				if f < len(psf[p][s])-1 {
 					text += ", "
-				} else {
-					text += ". "
 				}
 			}
 
-			sentence++
-			fmt.Println(sentence,score,text,"\n")
+			var this Rank
+			this.Sentence = text
+			this.Significance = score
+			selections = append(selections,this)
+			if score > maxscore {
+				maxscore = score
+			}
 		}
 	}
 
-	// Now print upper fraction 20% say
+	// Measure relative threshold for percentage of document
+	// the lower the threshold, the lower the significance of the document
+
+	const threshold = 0.1
+	const parts = 1000
+	var cumulative [parts]int
+	var total int
+	var cutoff float64
+
+	for i := range selections {
+		selclass := selections[i].Significance / maxscore * float64(parts-1)
+		cumulative[int(selclass)]++
+		total++
+	}
+
+	// calc the threshold to keep fraction of entries
+
+	cum := 0
+
+	for i := parts-1; i >= 0; i-- {
+		cum += cumulative[i]
+
+		if float64(cum)/float64(total) >= threshold {
+			cutoff = float64(i)/float64(parts) * maxscore
+			break
+		}
+	}
+
+	// Now print only upper scoring fraction 20%
+
+	printed := 0
+	totald := 0
+
+	for i := range selections {
+		totald += len(selections[i].Sentence)
+
+		if selections[i].Significance > cutoff {
+			printed += len(selections[i].Sentence)
+			fmt.Print(i,".")
+			SST.ShowText(selections[i].Sentence,100)
+			fmt.Println()
+		}
+	}
+
+	fmt.Println("Fraction of document = ",float64(printed)/float64(totald))
 
 }
 
