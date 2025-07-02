@@ -39,7 +39,7 @@ func Intentionality(n,L int, freq int) float64 {
 	// measure occurrences relative to total length L in sentences
 
 	phi := float64(freq)
-	phi_0 := float64(L/20)
+	phi_0 := float64(L/10)
 
 	// How often is too often for a concept? density/efficiency
 
