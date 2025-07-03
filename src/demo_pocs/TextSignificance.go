@@ -38,7 +38,7 @@ func main() {
 		for ngram := range SST.STM_NGRAM_FREQ[n] {
 
 			freq := SST.STM_NGRAM_FREQ[n][ngram]
-			valueI := SST.Intentionality(n,L,ngram,freq)
+			valueI := SST.Intentionality(L,ngram,freq)
 			
 			if freq > maxf {
 				maxf = freq
@@ -59,12 +59,7 @@ func main() {
 
 	// Rank sentences
 
-	type Rank struct {
-		Significance float64
-		Sentence string
-	} 
-
-	var selections []Rank
+	var selections []SST.TextRank
 
 	maxscore := 0.0
 
@@ -87,7 +82,7 @@ func main() {
 			}
 
 			var this Rank
-			this.Sentence = text
+			this.Fragment = text
 			this.Significance = score
 			selections = append(selections,this)
 			if score > maxscore {
@@ -130,12 +125,12 @@ func main() {
 	totald := 0
 
 	for i := range selections {
-		totald += len(selections[i].Sentence)
+		totald += len(selections[i].Fragment)
 
 		if selections[i].Significance > cutoff {
-			printed += len(selections[i].Sentence)
+			printed += len(selections[i].Fragment)
 			fmt.Print(i,".")
-			SST.ShowText(selections[i].Sentence,100)
+			SST.ShowText(selections[i].Fragment,100)
 			fmt.Println()
 		}
 	}

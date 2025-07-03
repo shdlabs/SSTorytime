@@ -521,6 +521,7 @@ func MemoryInit() {
 	for i := N_GRAM_MIN; i < N_GRAM_MAX; i++ {
 
 		STM_NGRAM_FREQ[i] = make(map[string]float64)
+		STM_NGRAM_LOCA[i] = make(map[string][]int)
 	}
 }
 
@@ -5626,16 +5627,16 @@ func ReadFile(filename string) string {
 const N_GRAM_MAX = 6
 const N_GRAM_MIN = 1
 
-// Promise bindings in English. This domain knowledge saves us a lot of training analysis
-
-var FORBIDDEN_ENDING = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "was", "has", "be", "with", "using", "that", "who", "to" ,"no", "because","at","but","yes","no","yeah","yay", "in", "which", "what","as","he","she","they","all","I","they","from"}
-
-var FORBIDDEN_STARTER = []string{"and","or","of","the","it","because","in","that","these","those","is","are","was","were","but","yes","no","yeah","yay","also","me","them","him","but"}
-
 // **************************************************************
 
 var EXCLUSIONS []string
 var STM_NGRAM_FREQ [N_GRAM_MAX]map[string]float64
+var STM_NGRAM_LOCA [N_GRAM_MAX]map[string][]int
+
+type TextRank struct {
+	Significance float64
+	Fragment     string
+}
 
 //**************************************************************
 
@@ -5706,10 +5707,13 @@ func FractionateTextFile(name string) ([][][]string,int) {
 
 				change_set := Fractionate2Learn(pbsf[p][s][f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
 
-				// Update n-gram frequencies for fragment
+				// Update global n-gram frequencies for fragment, and location histories
+
 				for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
-					for ngram := range change_set[n] {
-						STM_NGRAM_FREQ[n][change_set[n][ngram]]++
+					for ng := range change_set[n] {
+						ngram := change_set[n][ng]
+						STM_NGRAM_FREQ[n][ngram]++
+						STM_NGRAM_LOCA[n][ngram] = append(STM_NGRAM_LOCA[n][ngram],s)
 					}
 				}
 			}
@@ -5933,15 +5937,80 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 
 		rrbuffer,change_set = NextWord(words[w],L,rrbuffer)
 
-		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+		for n := min; n < N_GRAM_MAX; n++ {
 			for ng := range change_set[n] {
 				ngram := change_set[n][ng]
-				score += Intentionality(n,L,ngram,STM_NGRAM_FREQ[n][ngram])
+				score += Intentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
 			}
 		}
 	}
 
 	return score
+}
+
+//**************************************************************
+
+func AssessLongitudinalSignificance(L int) [N_GRAM_MAX][]TextRank {
+
+	var selections [N_GRAM_MAX][]TextRank
+	
+	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+
+		for ngram := range STM_NGRAM_LOCA[n] {
+
+			var dl int = 0
+			var dlmin int = 99
+			var dlmax int = 0
+
+			occurrences := len(STM_NGRAM_LOCA[n][ngram])
+			sig := Intentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
+
+			if occurrences > 1 {
+				for occ := 0; occ < occurrences; occ++ {
+					
+					// find distance between n-grams (in sentences)
+					
+					d := STM_NGRAM_LOCA[n][ngram][occ]
+					delta := d - dl
+					dl := d
+					
+					if dl == 0 {
+						continue
+					}
+					
+					if dl > dlmax {
+						dlmax = delta
+					}
+					
+					if dl < dlmin {
+						dlmin = delta
+					}
+				}
+
+				const independence_gap = 10
+				
+				if (dlmax < independence_gap * dlmin) {
+					continue
+				}
+			} else {
+				// If a pattern occurs only once, then check its significance
+				// this means typically n > 3, so use fractions
+
+				sig = AssessIntent(ngram,L,STM_NGRAM_FREQ,1)
+			}
+
+			var ns TextRank
+			ns.Significance = sig
+			ns.Fragment = ngram
+			selections[n] = append(selections[n],ns)
+		}
+
+		sort.Slice(selections[n], func(i, j int) bool {
+			return selections[n][i].Significance > selections[n][j].Significance
+		})
+	}
+
+	return selections
 }
 
 //**************************************************************
@@ -5979,22 +6048,33 @@ func NextWord(frag string,L int,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]st
 				}
 			}
 
-			key = strings.ToLower(key)
+			key = CleanNgram(key)
 
-			if ExcludedByBindings(rrbuffer[n][0],rrbuffer[n][n-1]) {
+			if ExcludedByBindings(CleanNgram(rrbuffer[n][0]),CleanNgram(rrbuffer[n][n-1])) {
 				continue
 			}
+
 			change_set[n] = append(change_set[n],key)
 		}
 	}
 
-	frag = strings.ToLower(frag)
+	frag = CleanNgram(frag)
 	
 	if N_GRAM_MIN <= 1 && !ExcludedByBindings(frag,frag) {
 		change_set[1] = append(change_set[1],frag)
 	}
 
 	return rrbuffer,change_set
+}
+
+//**************************************************************
+
+func CleanNgram(s string) string {
+
+	re := regexp.MustCompile("[\"—“”!?,.:;]+")
+	s= re.ReplaceAllString(s,"") 
+
+	return strings.ToLower(s)
 }
 
 //**************************************************************
@@ -6008,18 +6088,24 @@ func ExcludedByBindings(firstword,lastword string) bool {
 	// Rather than looking for semantics, look at spacetime promises only - words that bind strongly
 	// to a prior or posterior word.
 
+	// Promise bindings in English. This domain knowledge saves us a lot of training analysis
+	
+	var forbidden_ending = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "was", "has", "be", "with", "using", "that", "who", "to" ,"no", "because","at","but","yes","no","yeah","yay", "in", "which", "what","as","he","she","they","all","I","they","from","for","then"}
+	
+	var forbidden_starter = []string{"and","or","of","the","it","because","in","that","these","those","is","are","was","were","but","yes","no","yeah","yay","also","me","them","him","but"}
+
 	if (len(firstword) <= 2) || len(lastword) <= 2 {
 		return true
 	}
 
-	for s := range FORBIDDEN_ENDING {
-		if strings.ToLower(lastword) == FORBIDDEN_ENDING[s] {
+	for s := range forbidden_ending {
+		if strings.ToLower(lastword) == forbidden_ending[s] {
 			return true
 		}
 	}
 	
-	for s := range FORBIDDEN_STARTER {
-		if strings.ToLower(firstword) == FORBIDDEN_STARTER[s] {
+	for s := range forbidden_starter {
+		if strings.ToLower(firstword) == forbidden_starter[s] {
 			return true
 		}
 	}
@@ -6029,7 +6115,7 @@ func ExcludedByBindings(firstword,lastword string) bool {
 
 //**************************************************************
 
-func Intentionality(n,L int, s string, freq float64) float64 {
+func Intentionality(L int, s string, freq float64) float64 {
 
 	// Compute the effective significance of a string s
 	// within a document of many sentences. The weighting due to
