@@ -5950,9 +5950,14 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 
 //**************************************************************
 
-func AssessLongitudinalSignificance(L int) [N_GRAM_MAX][]TextRank {
+func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank,[N_GRAM_MAX][]TextRank) {
 
-	var selections [N_GRAM_MAX][]TextRank
+	// Look for the longitudinal persistence of ngram fragments if there is significant repetition,
+	// else look at the basic Intentionality() score for unique fragments. Those that are unique
+	// become intent, while the others are ambient context
+
+	var anomalous [N_GRAM_MAX][]TextRank
+	var ambient [N_GRAM_MAX][]TextRank
 	
 	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
 
@@ -5965,7 +5970,7 @@ func AssessLongitudinalSignificance(L int) [N_GRAM_MAX][]TextRank {
 			occurrences := len(STM_NGRAM_LOCA[n][ngram])
 			sig := Intentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
 
-			if occurrences > 1 {
+			if occurrences > 3 {
 				for occ := 0; occ < occurrences; occ++ {
 					
 					// find distance between n-grams (in sentences)
@@ -5992,25 +5997,36 @@ func AssessLongitudinalSignificance(L int) [N_GRAM_MAX][]TextRank {
 				if (dlmax < independence_gap * dlmin) {
 					continue
 				}
+
+				var ns TextRank
+				ns.Significance = sig
+				ns.Fragment = ngram
+				ambient[n] = append(ambient[n],ns)
+
+
 			} else {
 				// If a pattern occurs only once, then check its significance
 				// this means typically n > 3, so use fractions
 
 				sig = AssessIntent(ngram,L,STM_NGRAM_FREQ,1)
+				var ns TextRank
+				ns.Significance = sig
+				ns.Fragment = ngram
+				anomalous[n] = append(anomalous[n],ns)
 			}
 
-			var ns TextRank
-			ns.Significance = sig
-			ns.Fragment = ngram
-			selections[n] = append(selections[n],ns)
 		}
 
-		sort.Slice(selections[n], func(i, j int) bool {
-			return selections[n][i].Significance > selections[n][j].Significance
+		sort.Slice(anomalous[n], func(i, j int) bool {
+			return anomalous[n][i].Significance > anomalous[n][j].Significance
+		})
+
+		sort.Slice(ambient[n], func(i, j int) bool {
+			return ambient[n][i].Significance > ambient[n][j].Significance
 		})
 	}
 
-	return selections
+	return anomalous,ambient
 }
 
 //**************************************************************
