@@ -409,6 +409,8 @@ return goods  (eh) 退货 (hp) tuìhuò
 买 (hp) mǎi (pe) buy
 卖 (hp) mài (pe)sell
 
+women's clothing  (ph) 女装 (he) nǚzhuāng
+
 zhè tiáo kùzǐ èrbǎi wǔshí duō kuài (ph) 这条裤子二百五十多块 (he) This pair of pants costs more than 250 yuan
 
 zhè jiàn chènshān de zhìliàng hěn hǎo  (ph) 这件衬衫的质量很好 (he)  the quality of this shirt is very good
@@ -1090,7 +1092,7 @@ bǎi (sl) bái
 
 #######################################################
 
-:: qualifiers | pronouns , amounts , cases, this, that, other ::
+:: qualifiers , pronouns , cases, this, that, other ::
 
 nà  (ph) 那  (he) that
 nǎ  (ph) 哪  (he) which
@@ -1099,10 +1101,17 @@ nà (sl) nǎ
 nǐ qítā de dàyī  (eh) 你其他的大衣 (hp) your other coat
 yòubiān nà shì shénme (ph)  右边那是什么 (he) what is that on the right 
 
-+:: amounts ::
++:: amount, little, a lot, much, a few, many ::
 
 dōu (ph) 都 (he) all
   " (e.g.) 我们都喜欢古典音乐 (hp) wǒmen dōu xǐhuān gǔdiǎn yīnyuè (pe) we all like classical music
+
+wǒ yào zuò hěnduō shìqíng  (ph) 我要做很多事情  (he) i have to do a lot of things
+
+
+jǐ gè wàidì rén  (ph) 几个外地人  (he) a few outsiders
+jǐ jiā  (ph) 几家 (he) several
+
 
 yīgè  (ph) 一个  (he)   one of
 liǎng gè  (ph) 两个 (he) two of
@@ -1262,6 +1271,9 @@ kàojìn  (ph) 靠近 approach/come close
 don't come near me  (eh) 别靠近我  (hp) bié kàojìn wǒ
 
 :: sport ::
+
+
+taichi  (eh) 太极  (hp) tàijí
 
 yùndòng  (eh) 运动 (hp) sport 
 
@@ -1431,6 +1443,9 @@ i don't have international roaming (eh)  我没有国际漫游 (hp)  wǒ méiyǒ
 customs  (eh) 海关 (hp) hǎiguān
 security  (eh) 安全 (hp) ānquán
 check  (eh) 检查 (hp) jiǎnchá
+yào chá  (ph) 要查  (he) want to check
+   " (e.g.) wǒ yào chá yīxià wǒ de rìlì  (ph) 我要查一下我的日历 (he) I need to check my calendar
+
 security check  (eh) 安全 检查 (hp) ānquán jiǎnchá
 allow  (eh) 准 (hp) zhǔn
 
@@ -1635,6 +1650,10 @@ lǎogōng  (ph) 老公 (he) husband
 ###########################################################
 
 :: buildings | rooms ::
+
+entrance (eh) 入口 (hp) rùkǒu
+exit     (eh) 出口 (hp) chūkǒu (e.g.) nǐmen kuài dào chūkǒule ma 你们快到出口了吗 are you approaching the exit?
+
 
 酒店  (hp) jiǔdiàn  (pe) hotel
 房间  (hp) fángjiān  (pe) room
@@ -2028,7 +2047,9 @@ learn/study  (eh) 学习 (hp) xuéxí
 study abroad  (eh) 留学 (hp) liúxué
 
 guówài (ph) 国外 (he) foreign / abroad 
-jǐ gè wàidì rén  (ph) 几个外地人  (he) A few outsiders
+wàidì rén  (ph) 外地人  (he) outsiders
+wàiguórén  (ph) 外国人  (he) foreigners
+
 
 classroom  (eh) 课堂 (hp) kètáng
 jiàoshì    (ph) 教室 (he) classroom
@@ -2634,6 +2655,10 @@ hospital  (eh) 医院 (hp) yīyuàn
 gym  (eh) 体育馆 (hp) tǐyùguǎn
 cafe (eh)  咖啡馆 (hp) kāfēi guǎn
 
+community centre (eh) 社区中心 (hp) shèqū zhōngxīn
+  " (ex) community (eh) 社区 (hp) shèqū
+  " (ex) centre (eh) 中心 (hp) zhōngxīn
+
 
 
 place/area/district  (eh) 地方 (hp) dìfāng 
@@ -2774,10 +2799,15 @@ turn the music down a bit  (eh) 音乐声音小一点 (hp) yīnyuè shēngyīn x
 
 :: at home, domestic  ::
 
+
+
 wash clothes  (eh) 洗衣服(hp)  xǐ yīfú
 wash  (eh) 洗 (hp) xǐ
 apartment  (eh) 公寓 (hp) gōngyù
 
+jiājù  (ph) 家具 (he) furniture
+
+  " (e.g.) qǐngwèn jiājù qū zài nǎlǐ (ph) 请问家具区在哪里 (he) where is the furniture section?
 
 guest  (eh) 客人 (hp) kèrén
 air conditioner  (eh) 空调 (hp) kòngtiáo
@@ -2981,7 +3011,7 @@ tā yǒu duōshǎo péngyǒu  (ph) 他有多少朋友  (he) how many friends doe
 
 nǐ néng lái ma?  (ph) 你能来吗？ (he)  can you come?
 
-wǒ yào zuò hěnduō shìqíng  (ph) 我要做很多事情  (he) i have to do a lot of things
+
 
 
 # cai only came home
