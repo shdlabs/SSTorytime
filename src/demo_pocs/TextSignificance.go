@@ -19,7 +19,6 @@ import (
 func main() {
 
 	const max_class = 100
-	var freq_dist [10][max_class]int
 
 	input := "/home/mark/Laptop/Work/SST/data_samples/MobyDick.dat"
 	//input := "/home/mark/Laptop/Work/SST/data_samples/obama.dat"
@@ -30,33 +29,6 @@ func main() {
 
 	psf,L := SST.FractionateTextFile(input)
 	
-	for n := range SST.STM_NGRAM_FREQ {
-		
-		maxf := 0.0
-		maxI := 0.0
-		
-		for ngram := range SST.STM_NGRAM_FREQ[n] {
-
-			freq := SST.STM_NGRAM_FREQ[n][ngram]
-			valueI := SST.Intentionality(L,ngram,freq)
-			
-			if freq > maxf {
-				maxf = freq
-			}
-
-			if valueI > maxI {
-				maxI = valueI
-			}
-
-			class := int(valueI) / 50
-
-			if class < max_class {
-				freq_dist[n][class]++
-			}
-		}
-		fmt.Println("N",n,"f=",maxf,"I=",maxI,"of",L)
-	}
-
 	// Rank sentences
 
 	var selections []SST.TextRank
@@ -81,7 +53,7 @@ func main() {
 				}
 			}
 
-			var this Rank
+			var this SST.TextRank
 			this.Fragment = text
 			this.Significance = score
 			selections = append(selections,this)
