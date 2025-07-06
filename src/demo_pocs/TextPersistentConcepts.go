@@ -23,8 +23,8 @@ func main() {
 	//input := "/home/mark/Laptop/Work/SST/data_samples/obama.dat"
 	//input := "/home/mark/Laptop/Work/SST/data_samples/bede.dat"
 	//input := "/home/mark/Laptop/Work/SST/data_samples/pt1.dat"
-	//input := "/home/mark/Laptop/Work/SST/data_samples/Darwin.dat"
-	input := "/home/mark/Laptop/Work/NLnet/SemanticKnowledgeProject/org-42/roam/how-i-org.org"
+	input := "/home/mark/Laptop/Work/SST/data_samples/Darwin.dat"
+	//input := "/home/mark/Laptop/Work/NLnet/SemanticKnowledgeProject/org-42/roam/how-i-org.org"
 
 	SST.MemoryInit()
 

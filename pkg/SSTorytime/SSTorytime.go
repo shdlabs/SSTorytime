@@ -5679,6 +5679,9 @@ func CleanText(s string) string {
 	m = regexp.MustCompile("([.][.][.])+")  // end of sentence punctuation
 	s = m.ReplaceAllString(s,"---")
 
+	m = regexp.MustCompile("[—]+")  // endash
+	s = m.ReplaceAllString(s,", ")
+
 	m = regexp.MustCompile("[\n][\n]")     // paragraph or highlighted sentence
 	s = m.ReplaceAllString(s,">>\n")
 
@@ -5787,7 +5790,7 @@ func SplitPunctuationText(s string) []string {
 			sfrags = SplitPunctuationText(contents)
 			sfrags = nil // count but don't repeat
 		} else {
-			re := regexp.MustCompile("([\"—“”!?,:;]+[ \n])")
+			re := regexp.MustCompile("([\"—“”!?,:;—]+[ \n])")
 			sfrags = re.Split(contents, -1)
 		}
 
@@ -5952,14 +5955,47 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 
 func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank,[N_GRAM_MAX][]TextRank) {
 
-	// Look for the longitudinal persistence of ngram fragments if there is significant repetition,
-	// else look at the basic Intentionality() score for unique fragments. Those that are unique
-	// become intent, while the others are ambient context
+	// Try to split a text into intentional + contextual  parts
+
+	const coherence_length = 50.0   // approx narrative range or #sentences before new point/topic
+	const order_of_magnitude = 10.0
 
 	var anomalous [N_GRAM_MAX][]TextRank
 	var ambient [N_GRAM_MAX][]TextRank
+
+	if L < coherence_length {	// very short text, so nothing of statistical significance
+
+		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+			
+			for ngram := range STM_NGRAM_FREQ[n] {
+
+				// if anything is repeated, it's probably insignificant
+
+				if STM_NGRAM_FREQ[n][ngram] > 1 {
+					continue
+				}
+				var ns TextRank
+				ns.Significance = Intentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
+				ns.Fragment = ngram
+				
+				anomalous[n] = append(anomalous[n],ns)
+			}
+		}
+		return anomalous,ambient
+	}
+
+	// Look for the longitudinal persistence of ngram fragments if there is significant repetition,
+	// else look at the basic Intentionality() score for unique fragments. Those that are unique
+	// become intent, while the others are ambient context. The lower n, the harder it is to be intentional
+
+	const max_intentional = 100
 	
 	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+
+		var noise_level = ((N_GRAM_MAX - n) * L)/(coherence_length * N_GRAM_MAX)
+		var ambience_threshold = noise_level / order_of_magnitude
+
+		counter := 0
 
 		for ngram := range STM_NGRAM_LOCA[n] {
 
@@ -5970,10 +6006,8 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 			occurrences := len(STM_NGRAM_LOCA[n][ngram])
 			sig := Intentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
 
-			const independence_gap = 10   // This is a scale invariant of the stream
-			const ambience_threshold = 3  This needs to be related to length
+			if occurrences > ambience_threshold || counter > max_intentional {
 
-			if occurrences > ambience_threshold {
 				for occ := 0; occ < occurrences; occ++ {
 					
 					// find distance between n-grams (in sentences)
@@ -5994,8 +6028,8 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 						dlmin = delta
 					}
 				}
-				
-				if (dlmax < independence_gap * dlmin) {
+
+				if (dlmax < coherence_length * order_of_magnitude / 2.0) {
 					continue
 				}
 
@@ -6009,6 +6043,7 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 				// If a pattern occurs under the threshold it is very special
 				// this means typically n > 3, so use fractions
 
+				counter++
 				sig = AssessIntent(ngram,L,STM_NGRAM_FREQ,1)
 				var ns TextRank
 				ns.Significance = sig
@@ -6088,7 +6123,7 @@ func NextWord(frag string,L int,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]st
 
 func CleanNgram(s string) string {
 
-	re := regexp.MustCompile("[\"—“”!?,.:;]+")
+	re := regexp.MustCompile("[\"—“”!?,.:;—]+")
 	s= re.ReplaceAllString(s,"") 
 
 	return strings.ToLower(s)
