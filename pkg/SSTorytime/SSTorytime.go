@@ -5970,7 +5970,10 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 			occurrences := len(STM_NGRAM_LOCA[n][ngram])
 			sig := Intentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
 
-			if occurrences > 3 {
+			const independence_gap = 10   // This is a scale invariant of the stream
+			const ambience_threshold = 3  This needs to be related to length
+
+			if occurrences > ambience_threshold {
 				for occ := 0; occ < occurrences; occ++ {
 					
 					// find distance between n-grams (in sentences)
@@ -5991,8 +5994,6 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 						dlmin = delta
 					}
 				}
-
-				const independence_gap = 10
 				
 				if (dlmax < independence_gap * dlmin) {
 					continue
@@ -6005,7 +6006,7 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 
 
 			} else {
-				// If a pattern occurs only once, then check its significance
+				// If a pattern occurs under the threshold it is very special
 				// this means typically n > 3, so use fractions
 
 				sig = AssessIntent(ngram,L,STM_NGRAM_FREQ,1)
