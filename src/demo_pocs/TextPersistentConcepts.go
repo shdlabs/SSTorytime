@@ -1,13 +1,12 @@
-
 //
-// Look for longitudinal persistence, which has worked quite well in the past
+// Scan a document and pick out the n-grams that are persistent
+// but relatively anomalous, so that they stand out intentionally
 //
 
 package main
 
 import (
 	"fmt"
-//	"math"
         SST "SSTorytime"
 )
 
@@ -19,12 +18,12 @@ func main() {
 
 	const max_class = 100
 
-	//input := "/home/mark/Laptop/Work/SST/data_samples/MobyDick.dat"
-	//input := "/home/mark/Laptop/Work/SST/data_samples/obama.dat"
-	//input := "/home/mark/Laptop/Work/SST/data_samples/bede.dat"
-	input := "/home/mark/Laptop/Work/SST/data_samples/pt1.dat"
-	//input := "/home/mark/Laptop/Work/SST/data_samples/Darwin.dat"
-	//input := "/home/mark/Laptop/Work/NLnet/SemanticKnowledgeProject/org-42/roam/how-i-org.org"
+	input := "../../examples/example_data/MobyDick.dat"
+	//input := "../../examples/example_data/obama.dat"
+	//input := "../../examples/example_data/bede.dat"
+	//input := "../../examples/example_data/pt1.dat"
+	//input := "../../examples/example_data/Darwin.dat"
+	//input := "../../examples/example_data/orgmode"
 
 	SST.MemoryInit()
 

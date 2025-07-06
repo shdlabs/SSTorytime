@@ -5630,7 +5630,7 @@ const N_GRAM_MIN = 1
 const DUNBAR_5 =5
 const DUNBAR_15 = 15
 const DUNBAR_30 = 45
-const DUNBAR_150 = 120
+const DUNBAR_150 = 150
 
 // **************************************************************
 
@@ -5968,12 +5968,8 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 	var ambient [N_GRAM_MAX][]TextRank
 
 	// There will be basic cognitive limits on how many things can be significant. 1-grams are never.
-
-	var max_intentional = [N_GRAM_MAX]int{0,0,DUNBAR_150,DUNBAR_30,DUNBAR_30,DUNBAR_15}
 	
 	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
-
-		counter := 0
 
 		for ngram := range STM_NGRAM_LOCA[n] {
 
@@ -5981,13 +5977,11 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 			ns.Significance = AssessIntent(ngram,L,STM_NGRAM_FREQ,1)
 			ns.Fragment = ngram
 
-			if IntentionalNgram(n,ngram,L,coherence_length) && counter < max_intentional[n] {
+			if IntentionalNgram(n,ngram,L,coherence_length) {
 				anomalous[n] = append(anomalous[n],ns)
 			} else {
 				ambient[n] = append(ambient[n],ns)
 			}
-			
-			counter++
 		}
 		
 		sort.Slice(anomalous[n], func(i, j int) bool {
@@ -5999,7 +5993,22 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 		})
 	}
 
-	return anomalous,ambient
+	var intent [N_GRAM_MAX][]TextRank
+	var context [N_GRAM_MAX][]TextRank
+	var max_intentional = [N_GRAM_MAX]int{0,0,DUNBAR_150,DUNBAR_150,DUNBAR_30,DUNBAR_15}
+
+	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+
+		for i := 0; i < max_intentional[n] && i < len(anomalous[n]); i++ {
+			intent[n] = append(intent[n],anomalous[n][i])
+		}
+
+		for i := 0; i < max_intentional[n] && i < len(ambient[n]); i++ {
+			context[n] = append(context[n],ambient[n][i])
+		}
+	}
+
+	return intent,context
 }
 
 //**************************************************************
