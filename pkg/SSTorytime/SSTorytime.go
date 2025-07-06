@@ -5627,6 +5627,11 @@ func ReadFile(filename string) string {
 const N_GRAM_MAX = 6
 const N_GRAM_MIN = 1
 
+const DUNBAR_5 =5
+const DUNBAR_15 = 15
+const DUNBAR_30 = 45
+const DUNBAR_150 = 120
+
 // **************************************************************
 
 var EXCLUSIONS []string
@@ -5957,102 +5962,34 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 
 	// Try to split a text into intentional + contextual  parts
 
-	const coherence_length = 50.0   // approx narrative range or #sentences before new point/topic
-	const order_of_magnitude = 10.0
+	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
 	var anomalous [N_GRAM_MAX][]TextRank
 	var ambient [N_GRAM_MAX][]TextRank
 
-	if L < coherence_length {	// very short text, so nothing of statistical significance
+	// There will be basic cognitive limits on how many things can be significant. 1-grams are never.
 
-		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
-			
-			for ngram := range STM_NGRAM_FREQ[n] {
-
-				// if anything is repeated, it's probably insignificant
-
-				if STM_NGRAM_FREQ[n][ngram] > 1 {
-					continue
-				}
-				var ns TextRank
-				ns.Significance = Intentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
-				ns.Fragment = ngram
-				
-				anomalous[n] = append(anomalous[n],ns)
-			}
-		}
-		return anomalous,ambient
-	}
-
-	// Look for the longitudinal persistence of ngram fragments if there is significant repetition,
-	// else look at the basic Intentionality() score for unique fragments. Those that are unique
-	// become intent, while the others are ambient context. The lower n, the harder it is to be intentional
-
-	const max_intentional = 100
+	var max_intentional = [N_GRAM_MAX]int{0,0,DUNBAR_150,DUNBAR_30,DUNBAR_30,DUNBAR_15}
 	
 	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
-
-		var noise_level = ((N_GRAM_MAX - n) * L)/(coherence_length * N_GRAM_MAX)
-		var ambience_threshold = noise_level / order_of_magnitude
 
 		counter := 0
 
 		for ngram := range STM_NGRAM_LOCA[n] {
 
-			var dl int = 0
-			var dlmin int = 99
-			var dlmax int = 0
+			var ns TextRank
+			ns.Significance = AssessIntent(ngram,L,STM_NGRAM_FREQ,1)
+			ns.Fragment = ngram
 
-			occurrences := len(STM_NGRAM_LOCA[n][ngram])
-			sig := Intentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
-
-			if occurrences > ambience_threshold || counter > max_intentional {
-
-				for occ := 0; occ < occurrences; occ++ {
-					
-					// find distance between n-grams (in sentences)
-					
-					d := STM_NGRAM_LOCA[n][ngram][occ]
-					delta := d - dl
-					dl := d
-					
-					if dl == 0 {
-						continue
-					}
-					
-					if dl > dlmax {
-						dlmax = delta
-					}
-					
-					if dl < dlmin {
-						dlmin = delta
-					}
-				}
-
-				if (dlmax < coherence_length * order_of_magnitude / 2.0) {
-					continue
-				}
-
-				var ns TextRank
-				ns.Significance = sig
-				ns.Fragment = ngram
-				ambient[n] = append(ambient[n],ns)
-
-
-			} else {
-				// If a pattern occurs under the threshold it is very special
-				// this means typically n > 3, so use fractions
-
-				counter++
-				sig = AssessIntent(ngram,L,STM_NGRAM_FREQ,1)
-				var ns TextRank
-				ns.Significance = sig
-				ns.Fragment = ngram
+			if IntentionalNgram(n,ngram,L,coherence_length) && counter < max_intentional[n] {
 				anomalous[n] = append(anomalous[n],ns)
+			} else {
+				ambient[n] = append(ambient[n],ns)
 			}
-
+			
+			counter++
 		}
-
+		
 		sort.Slice(anomalous[n], func(i, j int) bool {
 			return anomalous[n][i].Significance > anomalous[n][j].Significance
 		})
@@ -6063,6 +6000,68 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 	}
 
 	return anomalous,ambient
+}
+
+//**************************************************************
+
+func IntentionalNgram(n int,ngram string,L int,coherence_length int) bool {
+
+	// If short file, everything is probably significant
+
+	if n == 1 {
+		return false 
+	}
+
+	if L < coherence_length {
+		return true
+	}
+
+	occurrences,minr,maxr := IntervalRadius(n,ngram)
+
+	// if too few occurrences, no difference between max and min delta
+
+	if occurrences < 2 {
+		return true
+	}
+
+	//scale_factor := N_GRAM_MAX - n
+
+//	ambience_radius := scale_factor * minr / 100
+
+	return maxr > minr + coherence_length
+}
+
+//**************************************************************
+
+func IntervalRadius(n int, ngram string) (int,int,int) {
+
+	// find minimax distances between n-grams (in sentences)
+
+	occurrences := len(STM_NGRAM_LOCA[n][ngram])
+	var dl int = 0
+	var dlmin int = 99
+	var dlmax int = 0
+
+	for occ := 0; occ < occurrences; occ++ {
+
+		d := STM_NGRAM_LOCA[n][ngram][occ]
+		delta := d - dl
+		dl = d
+		
+		if dl == 0 {
+			continue
+		}
+		
+		if dl > dlmax {
+			dlmax = delta
+		}
+		
+		if dl < dlmin {
+			dlmin = delta
+		}
+	}
+
+	return occurrences,dlmin,dlmax
 }
 
 //**************************************************************
@@ -6123,7 +6122,7 @@ func NextWord(frag string,L int,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]st
 
 func CleanNgram(s string) string {
 
-	re := regexp.MustCompile("[\"—“”!?,.:;—]+")
+	re := regexp.MustCompile("[\"—“”!?,.:;—()]+")
 	s= re.ReplaceAllString(s,"") 
 
 	return strings.ToLower(s)
