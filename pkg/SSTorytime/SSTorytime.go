@@ -5610,7 +5610,12 @@ func ReadFile(filename string) string {
 	// to yield a "pure" text for n-gram classification, with fewer special chars
 	// The text marks end of sentence with a # for later splitting
 
-	content, _ := ioutil.ReadFile(filename)
+	content,err := ioutil.ReadFile(filename)
+
+	if err != nil {
+		fmt.Println("Couldn't find or open",filename)
+		os.Exit(-1)
+	}
 
 	// Start by stripping HTML / XML tags before para-split
 	// if they haven't been removed already
