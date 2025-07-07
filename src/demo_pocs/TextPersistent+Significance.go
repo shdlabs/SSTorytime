@@ -19,10 +19,10 @@ func main() {
 
 	const max_class = 100
 
-	//input := "../../examples/example_data/MobyDick.dat"
+	input := "../../examples/example_data/MobyDick.dat"
 	//input := "../../examples/example_data/obama.dat"
 	//input := "../../examples/example_data/bede.dat"
-	input := "../../examples/example_data/promisetheory1.dat"
+	//input := "../../examples/example_data/promisetheory1.dat"
 	//input := "../../examples/example_data/Darwin.dat"
 	//input := "../../examples/example_data/orgmode.dat"
 
@@ -54,15 +54,15 @@ func main() {
 
 		for s := range psf[p] {
 
-			keep := false
+			keep := 0.0
 			text := ""
 
 			for f := 0; f < len(psf[p][s]); f++ {
 
-				for n := 3; n < SST.N_GRAM_MAX; n++ {
+				for n := 1; n < SST.N_GRAM_MAX; n++ {
 					for ngram := range intentions[n] {
 						if strings.Contains(psf[p][s][f],intentions[n][ngram].Fragment) {
-							keep = true
+							keep = 1.0
 						}
 					}
 				}
@@ -73,19 +73,30 @@ func main() {
 					text += ", "
 				}
 			}
-
-			if keep {
-				var this SST.TextRank
-				this.Fragment = text
-				selections = append(selections,this)
-			}
+			
+			var this SST.TextRank
+			this.Fragment = text
+			this.Significance = keep
+			selections = append(selections,this)
 		}
 	}
 
+	// Now print only upper scoring fraction 20%
+
+	printed := 0
+	totald := 0
+
 	for i := range selections {
-		fmt.Print(i,".")
-		SST.ShowText(selections[i].Fragment,100)
-		fmt.Println()
+		totald += len(selections[i].Fragment)
+
+		if selections[i].Significance > 0 {
+			printed += len(selections[i].Fragment)
+			fmt.Print(i,".")
+			SST.ShowText(selections[i].Fragment,100)
+			fmt.Println()
+		}
 	}
+
+	fmt.Println("Fraction of document = ",float64(printed)/float64(totald))
 }
 
