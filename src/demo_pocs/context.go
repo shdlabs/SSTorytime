@@ -23,8 +23,8 @@ func main() {
 	//input := "../../examples/example_data/obama.dat"
 	//input := "../../examples/example_data/bede.dat"
 	//input := "../../examples/example_data/promisetheory1.dat"
-	input := "../../examples/example_data/Darwin.dat"
-	//input := "../../examples/example_data/orgmode.dat"
+	//input := "../../examples/example_data/Darwin.dat"
+	input := "../../examples/example_data/orgmode.dat"
 
 	SST.MemoryInit()
 

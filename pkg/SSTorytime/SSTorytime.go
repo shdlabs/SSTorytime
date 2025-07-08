@@ -6118,14 +6118,26 @@ func AssessHubFields(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]
 		}
 
 		// now run through linearly and split nearest neighbours
-		
-		for pi := 0; pi < len(P[n]); pi++ {
-			for pj := pi+1; pj < len(P[n]); pj++ {
-				for ngram := range P[n][pi] {
-					if P[n][pi][ngram] == 0 && P[n][pj][ngram] > 0 || P[n][pj][ngram] == 0 && P[n][pi][ngram] > 0 {
-						H[n][pi][ngram]++
-					} else if P[n][pi][ngram] > 0 && P[n][pj][ngram] > 0 {
-						B[n][pi][ngram]++
+
+		// very short excerpts
+
+		if len(P[n]) < 2 {
+			for ngram := range P[n][0] {
+				B[n][0][ngram]++
+			}
+
+		// ordinary files etc
+
+		} else {
+
+			for pi := 0; pi < len(P[n]); pi++ {
+				for pj := pi+1; pj < len(P[n]); pj++ {
+					for ngram := range P[n][pi] {
+						if P[n][pi][ngram] == 0 && P[n][pj][ngram] > 0 || P[n][pj][ngram] == 0 && P[n][pi][ngram] > 0 {
+							H[n][pi][ngram]++
+						} else if P[n][pi][ngram] > 0 && P[n][pj][ngram] > 0 {
+							B[n][pi][ngram]++
+						}
 					}
 				}
 			}
