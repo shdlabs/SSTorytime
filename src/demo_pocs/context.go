@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
         SST "SSTorytime"
 )
 
@@ -29,18 +30,39 @@ func main() {
 
 	_,L := SST.FractionateTextFile(input)  // loads STM_NGRAM*
 
-	intent,context,parts := SST.AssessHubFields(L)
+	common,localized,_ := SST.AssessHubFields(L,SST.STM_NGRAM_LOCA)
 
 	for n := 1; n < SST.N_GRAM_MAX; n++ {
 
-		for ngram := range intent[n] {
-			fmt.Println("common",n,ngram,intent[n][ngram],"of",parts,SST.Intentionality(L,ngram,SST.STM_NGRAM_FREQ[n][ngram]))
+		var com []string
+		var loc []string
+
+		for ngram := range common[n] {
+			com = append(com,ngram)
 		}
 
-		for ngram := range context[n] {
-			fmt.Println("localized",n,ngram,context[n][ngram],"of",parts,SST.Intentionality(L,ngram,SST.STM_NGRAM_FREQ[n][ngram]))
+		for ngram := range localized[n] {
+			loc = append(loc,ngram)
 		}
 		fmt.Println("-------------------------------")
+
+		// Sort by intentionality
+
+		sort.Slice(com, func(i, j int) bool {
+			return SST.Intentionality(L,com[i],SST.STM_NGRAM_FREQ[n][com[i]]) > SST.Intentionality(L,com[j],SST.STM_NGRAM_FREQ[n][com[j]])
+		})
+		sort.Slice(loc, func(i, j int) bool {
+			return SST.Intentionality(L,loc[i],SST.STM_NGRAM_FREQ[n][loc[i]]) > SST.Intentionality(L,loc[j],SST.STM_NGRAM_FREQ[n][loc[j]])
+		})
+
+		for i := range com {
+			fmt.Println(n,"common",com[i],SST.Intentionality(L,com[i],SST.STM_NGRAM_FREQ[n][com[i]]))
+		}
+
+		for i := range loc {
+			fmt.Println(n,"local",loc[i])
+		}
 	}
+	
 }
 

@@ -6080,7 +6080,7 @@ func IntervalRadius(n int, ngram string) (int,int,int) {
 
 //**************************************************************
 
-func AssessHubFields(L int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]int,int) {
+func AssessHubFields(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]int,int) {
 
 	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
@@ -6107,13 +6107,13 @@ func AssessHubFields(L int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]i
 			B[n][p] = make(map[string]int)
 		}
 
-		for ngram := range STM_NGRAM_LOCA[n] {
+		for ngram := range ngram_loc[n] {
 
 			// commute indices and expand to a sparse representation for simplicity
 
-			for s := range STM_NGRAM_LOCA[n][ngram] {
-				p := STM_NGRAM_LOCA[n][ngram][s] / coherence_length
-				P[n][p][ngram] = STM_NGRAM_LOCA[n][ngram][s]
+			for s := range ngram_loc[n][ngram] {
+				p := ngram_loc[n][ngram][s] / coherence_length
+				P[n][p][ngram]++
 			}
 		}
 
@@ -6122,7 +6122,7 @@ func AssessHubFields(L int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]i
 		for pi := 0; pi < len(P[n]); pi++ {
 			for pj := pi+1; pj < len(P[n]); pj++ {
 				for ngram := range P[n][pi] {
-					if P[n][pi][ngram] == 0 && P[n][pj][ngram] > 0 {
+					if P[n][pi][ngram] == 0 && P[n][pj][ngram] > 0 || P[n][pj][ngram] == 0 && P[n][pi][ngram] > 0 {
 						H[n][pi][ngram]++
 					} else if P[n][pi][ngram] > 0 && P[n][pj][ngram] > 0 {
 						B[n][pi][ngram]++
@@ -6133,15 +6133,19 @@ func AssessHubFields(L int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]i
 
 		// return as pointers to the sections where they occur
 		
-		for p := 0; p < len(P[n]); p++ {
-			for ngram := range P[n][p] {
+		for p := 0; p < len(H[n]); p++ {
+			for ngram := range H[n][p] {
 				if H[n][p][ngram] > 1 {
 					mutual[n][ngram]++
 				}
+			}
+		}
 
+		for p := 0; p < len(B[n]); p++ {
+			for ngram := range B[n][p] {
 				if B[n][p][ngram] > partitions/2 {
 					mutual[n][ngram]++
-				} else if B[n][p][ngram] > 1 {
+				} else if B[n][p][ngram] > 0 {
 					localized[n][ngram]++
 				}
 			}
