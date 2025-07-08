@@ -5718,7 +5718,7 @@ func FractionateTextFile(name string) ([][][]string,int) {
 
 			for f := range pbsf[p][s] {
 
-				change_set := Fractionate2Learn(pbsf[p][s][f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
+				change_set := Fractionate(pbsf[p][s][f],count,STM_NGRAM_FREQ,N_GRAM_MIN)
 
 				// Update global n-gram frequencies for fragment, and location histories
 
@@ -5916,7 +5916,7 @@ func CountParens(s string) []string {
 
 //**************************************************************
 
-func Fractionate2Learn(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) [N_GRAM_MAX][]string {
+func Fractionate(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) [N_GRAM_MAX][]string {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
@@ -6076,6 +6076,79 @@ func IntervalRadius(n int, ngram string) (int,int,int) {
 	}
 
 	return occurrences,dlmin,dlmax
+}
+
+//**************************************************************
+
+func AssessHubFields(L int) ([N_GRAM_MAX]map[string][]int,[N_GRAM_MAX]map[string][]int,int) {
+
+	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
+
+	partitions := L/coherence_length + 1
+
+	var P [N_GRAM_MAX][]map[string]int
+	var H [N_GRAM_MAX][]map[string]int
+	var B [N_GRAM_MAX][]map[string]int
+
+	var intent [N_GRAM_MAX]map[string][]int
+	var context [N_GRAM_MAX]map[string][]int
+
+	for n := 1; n < N_GRAM_MAX; n++ {
+
+		P[n] = make([]map[string]int,partitions)
+		H[n] = make([]map[string]int,partitions)
+		B[n] = make([]map[string]int,partitions)
+		intent[n] = make(map[string][]int,partitions)
+		context[n] = make(map[string][]int,partitions)
+
+		for p := 0; p < partitions; p++ {
+			P[n][p] = make(map[string]int)
+			H[n][p] = make(map[string]int)
+			B[n][p] = make(map[string]int)
+		}
+
+		for ngram := range STM_NGRAM_LOCA[n] {
+
+			// commute indices and expand to a sparse representation for simplicity
+
+			for s := range STM_NGRAM_LOCA[n][ngram] {
+				p := STM_NGRAM_LOCA[n][ngram][s] / coherence_length
+				P[n][p][ngram] = STM_NGRAM_LOCA[n][ngram][s]
+			}
+		}
+
+		// now run through linearly and split nearest neighbours
+		
+		for pi := 0; pi < len(P[n]); pi++ {
+			for pj := pi+1; pj < len(P[n]); pj++ {
+				for ngram := range P[n][pi] {
+					if P[n][pi][ngram] == 0 && P[n][pj][ngram] > 0 {
+						H[n][pi][ngram]++
+					} else if P[n][pi][ngram] > 0 && P[n][pj][ngram] > 0 {
+						B[n][pi][ngram]++
+					}
+				}
+			}
+		}
+
+		// return as pointers to the sections where they occur
+		
+		for p := 0; p < len(P[n]); p++ {
+			for ngram := range P[n][p] {
+				if H[n][p][ngram] > 1 {
+					intent[n][ngram] = append(intent[n][ngram],p)
+				}
+
+				if B[n][p][ngram] > partitions/2 {
+					intent[n][ngram] = append(intent[n][ngram],p)
+				} else if B[n][p][ngram] > 1 {
+					context[n][ngram] = append(context[n][ngram],p)
+				}
+			}
+		}
+	}
+
+	return intent,context,partitions
 }
 
 //**************************************************************
