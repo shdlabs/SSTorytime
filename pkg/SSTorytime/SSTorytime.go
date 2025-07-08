@@ -6080,26 +6080,26 @@ func IntervalRadius(n int, ngram string) (int,int,int) {
 
 //**************************************************************
 
-func AssessHubFields(L int) ([N_GRAM_MAX]map[string][]int,[N_GRAM_MAX]map[string][]int,int) {
+func AssessHubFields(L int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]int,int) {
 
 	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
 	partitions := L/coherence_length + 1
 
-	var P [N_GRAM_MAX][]map[string]int
-	var H [N_GRAM_MAX][]map[string]int
-	var B [N_GRAM_MAX][]map[string]int
+	var P [N_GRAM_MAX][]map[string]int  // raw ngrams aggregated into partitions
+	var H [N_GRAM_MAX][]map[string]int  // independent part of index
+	var B [N_GRAM_MAX][]map[string]int  // overlap between neighbours of index
 
-	var intent [N_GRAM_MAX]map[string][]int
-	var context [N_GRAM_MAX]map[string][]int
+	var mutual [N_GRAM_MAX]map[string]int
+	var localized [N_GRAM_MAX]map[string]int
 
 	for n := 1; n < N_GRAM_MAX; n++ {
 
 		P[n] = make([]map[string]int,partitions)
 		H[n] = make([]map[string]int,partitions)
 		B[n] = make([]map[string]int,partitions)
-		intent[n] = make(map[string][]int,partitions)
-		context[n] = make(map[string][]int,partitions)
+		mutual[n] = make(map[string]int)
+		localized[n] = make(map[string]int)
 
 		for p := 0; p < partitions; p++ {
 			P[n][p] = make(map[string]int)
@@ -6136,19 +6136,19 @@ func AssessHubFields(L int) ([N_GRAM_MAX]map[string][]int,[N_GRAM_MAX]map[string
 		for p := 0; p < len(P[n]); p++ {
 			for ngram := range P[n][p] {
 				if H[n][p][ngram] > 1 {
-					intent[n][ngram] = append(intent[n][ngram],p)
+					mutual[n][ngram]++
 				}
 
 				if B[n][p][ngram] > partitions/2 {
-					intent[n][ngram] = append(intent[n][ngram],p)
+					mutual[n][ngram]++
 				} else if B[n][p][ngram] > 1 {
-					context[n][ngram] = append(context[n][ngram],p)
+					localized[n][ngram]++
 				}
 			}
 		}
 	}
 
-	return intent,context,partitions
+	return mutual,localized,partitions
 }
 
 //**************************************************************

@@ -34,11 +34,11 @@ func main() {
 	for n := 1; n < SST.N_GRAM_MAX; n++ {
 
 		for ngram := range intent[n] {
-			fmt.Println("intent",n,ngram,intent[n][ngram],"of",parts)
+			fmt.Println("common",n,ngram,intent[n][ngram],"of",parts,SST.Intentionality(L,ngram,SST.STM_NGRAM_FREQ[n][ngram]))
 		}
 
 		for ngram := range context[n] {
-			fmt.Println("context",n,ngram,context[n][ngram],"of",parts)
+			fmt.Println("localized",n,ngram,context[n][ngram],"of",parts,SST.Intentionality(L,ngram,SST.STM_NGRAM_FREQ[n][ngram]))
 		}
 		fmt.Println("-------------------------------")
 	}
