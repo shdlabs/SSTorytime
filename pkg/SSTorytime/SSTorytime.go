@@ -5649,6 +5649,7 @@ var STM_NGRAM_LAST [N_GRAM_MAX]map[string]int
 type TextRank struct {
 	Significance float64
 	Fragment     string
+	Order        int
 }
 
 //**************************************************************
@@ -6207,6 +6208,7 @@ func CleanNgram(s string) string {
 	re := regexp.MustCompile("[\"—“”!?,.:;—()_]+")
 	s = re.ReplaceAllString(s,"")
 	s = strings.Replace(s,"  "," ",-1)
+	s = strings.Trim(s,"-")
 
 	return strings.ToLower(s)
 }
@@ -6271,7 +6273,7 @@ func RunningIntentionality(t int, frag string) float64 {
 
 				lastseen := STM_NGRAM_LAST[n][ngram]
 
-				score += float64(len(ngram)) * math.Exp(float64(lastseen-t)/decayrate)
+				score += float64(len(ngram)) / math.Exp(float64(t-lastseen)/(decayrate))
 
 				STM_NGRAM_LAST[n][ngram] = t
 			}

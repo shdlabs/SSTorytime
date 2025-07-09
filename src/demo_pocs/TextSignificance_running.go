@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
         SST "SSTorytime"
 )
 
@@ -18,12 +19,12 @@ func main() {
 
 	const max_class = 100
 
-	//input := "../../examples/example_data/MobyDick.dat"
+	input := "../../examples/example_data/MobyDick.dat"
 	//input := "../../examples/example_data/obama.dat"
 	//input := "../../examples/example_data/bede.dat"
 	//input := "../../examples/example_data/promisetheory1.dat"
 	//input := "../../examples/example_data/Darwin.dat"
-	input := "../../examples/example_data/orgmode.dat"
+	//input := "../../examples/example_data/orgmode.dat"
 
 	SST.MemoryInit()
 
@@ -31,9 +32,9 @@ func main() {
 	
 	// Rank sentences
 
+	var sentences []SST.TextRank
 	var selections []SST.TextRank
-
-	maxscore := 0.0
+	var count int
 
 	for p := range psf {
 
@@ -44,7 +45,7 @@ func main() {
 
 			for f := 0; f < len(psf[p][s]); f++ {
 
-				score += SST.RunningIntent(s,psf[p][s][f])
+				score += SST.RunningIntentionality(s,psf[p][s][f])
 
 				text += psf[p][s][f]
 
@@ -56,60 +57,40 @@ func main() {
 			var this SST.TextRank
 			this.Fragment = text
 			this.Significance = score
-			selections = append(selections,this)
-			if score > maxscore {
-				maxscore = score
-			}
+			this.Order = count
+			sentences = append(sentences,this)
+			count++
 		}
 	}
+
+	sort.Slice(sentences, func(i, j int) bool {
+		return sentences[i].Significance > sentences[j].Significance
+	})
 
 	// Measure relative threshold for percentage of document
 	// the lower the threshold, the lower the significance of the document
 
-	const threshold = 0.1
-	const parts = 1000
-	var cumulative [parts]int
-	var total int
-	var cutoff float64
+	const threshold = 0.2
 
-	fmt.Println("Summarize approx",threshold*100,"percent\n\n")
+	limit := int(threshold * float64(len(sentences)))
 
-	for i := range selections {
-		selclass := selections[i].Significance / maxscore * float64(parts-1)
-		cumulative[int(selclass)]++
-		total++
+	for i := 0; i < limit; i++ {
+		selections = append(selections,sentences[i])
 	}
 
-	// calc the threshold to keep fraction of entries
-
-	cum := 0
-
-	for i := parts-1; i >= 0; i-- {
-		cum += cumulative[i]
-
-		if float64(cum)/float64(total) >= threshold {
-			cutoff = float64(i)/float64(parts) * maxscore
-			break
-		}
-	}
+	sort.Slice(selections, func(i, j int) bool {
+		return selections[i].Order < selections[j].Order
+	})
 
 	// Now print only upper scoring fraction 20%
 
-	printed := 0
-	totald := 0
-
-	for i := range selections {
-		totald += len(selections[i].Fragment)
-
-		if selections[i].Significance > cutoff {
-			printed += len(selections[i].Fragment)
-			fmt.Print(i,".")
-			SST.ShowText(selections[i].Fragment,100)
-			fmt.Println()
-		}
+	for i := 0; i < limit; i++ {
+		fmt.Print(selections[i].Order, ": ")
+		SST.ShowText(selections[i].Fragment,100)
+		fmt.Println()
 	}
 
-	fmt.Println("Fraction of document = ",float64(printed)/float64(totald))
+	fmt.Println("Fraction of document = ",float64(limit)/float64(len(sentences)))
 
 }
 
