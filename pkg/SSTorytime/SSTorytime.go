@@ -6098,17 +6098,13 @@ func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int
 
 		// now run through linearly and split nearest neighbours
 
-		// very short excerpts,there is nothing we can do in a single coherence zone
-
-		if len(C[n]) < 2 {
+		// very short excerpts,there is nothing we can do in a single coherence set
+		if partitions < 2 {
 			for ngram := range C[n][0] {
 				overlap[n][ngram]++
 			}
-
 		// multiple coherence zones
-
 		} else {
-
 			for pi := 0; pi < len(C[n]); pi++ {
 				for pj := pi+1; pj < len(C[n]); pj++ {
 					for ngram := range C[n][pi] {
