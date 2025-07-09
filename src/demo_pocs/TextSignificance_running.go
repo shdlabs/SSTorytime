@@ -70,7 +70,7 @@ func main() {
 	// Measure relative threshold for percentage of document
 	// the lower the threshold, the lower the significance of the document
 
-	const threshold = 0.2
+	const threshold = 0.3
 
 	limit := int(threshold * float64(len(sentences)))
 
@@ -85,12 +85,12 @@ func main() {
 	// Now print only upper scoring fraction 20%
 
 	for i := 0; i < limit; i++ {
-		fmt.Print(selections[i].Order, ": ")
+		fmt.Print(i,"=",selections[i].Order, ": ")
 		SST.ShowText(selections[i].Fragment,100)
 		fmt.Println()
 	}
 
-	fmt.Println("Fraction of document = ",float64(limit)/float64(len(sentences)))
+	fmt.Println("Fraction of document = ",limit,"->", float64(limit)/float64(len(sentences)))
 
 }
 
