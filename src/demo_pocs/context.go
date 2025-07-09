@@ -30,7 +30,7 @@ func main() {
 
 	_,L := SST.FractionateTextFile(input)  // loads STM_NGRAM*
 
-	ambient,condensed,_ := SST.AssessHubFields(L,SST.STM_NGRAM_LOCA)
+	ambient,condensed,_ := SST.AssessTextCoherentCoactivation(L,SST.STM_NGRAM_LOCA)
 
 	for n := 1; n < SST.N_GRAM_MAX; n++ {
 

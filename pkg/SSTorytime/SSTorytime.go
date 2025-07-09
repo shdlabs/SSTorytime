@@ -5968,7 +5968,7 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 
 func AssessTextAnomalies(L int,frequencies [N_GRAM_MAX]map[string]float64,locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank,[N_GRAM_MAX][]TextRank) {
 
-	// Try to split a text into intentional + contextual  parts
+	// Try to split a text into anomalous/ambient i.e. intentional + contextual  parts
 
 	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
@@ -6081,7 +6081,7 @@ func IntervalRadius(n int, ngram string) (int,int,int) {
 
 //**************************************************************
 
-func AssessHubFields(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]int,int) {
+func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]int,int) {
 
 	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
