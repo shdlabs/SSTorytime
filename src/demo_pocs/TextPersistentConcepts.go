@@ -29,7 +29,7 @@ func main() {
 
 	_,L := SST.FractionateTextFile(input)
 
-	intentions,context := SST.AssessTextSignificance(L,SST.STM_NGRAM_FREQ,SST.STM_NGRAM_LOCA)
+	intentions,context := SST.AssessTextAnomalies(L,SST.STM_NGRAM_FREQ,SST.STM_NGRAM_LOCA)
 
 	for n := range intentions {
 		for ngram := range intentions[n] {

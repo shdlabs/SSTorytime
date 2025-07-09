@@ -5956,7 +5956,7 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 		for n := min; n < N_GRAM_MAX; n++ {
 			for ng := range change_set[n] {
 				ngram := change_set[n][ng]
-				score += Intentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
+				score += StaticIntentionality(L,ngram,STM_NGRAM_FREQ[n][ngram])
 			}
 		}
 	}
@@ -5966,7 +5966,7 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 
 //**************************************************************
 
-func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank,[N_GRAM_MAX][]TextRank) {
+func AssessTextAnomalies(L int,frequencies [N_GRAM_MAX]map[string]float64,locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank,[N_GRAM_MAX][]TextRank) {
 
 	// Try to split a text into intentional + contextual  parts
 
@@ -5975,8 +5975,6 @@ func AssessTextSignificance(L int,frequencies [N_GRAM_MAX]map[string]float64,loc
 	var anomalous [N_GRAM_MAX][]TextRank
 	var ambient [N_GRAM_MAX][]TextRank
 
-	// There will be basic cognitive limits on how many things can be significant. 1-grams are never.
-	
 	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
 
 		for ngram := range STM_NGRAM_LOCA[n] {
@@ -6272,7 +6270,7 @@ func ExcludedByBindings(firstword,lastword string) bool {
 
 //**************************************************************
 
-func RunningIntent(t int, frag string) float64 {
+func RunningIntentionality(t int, frag string) float64 {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
@@ -6307,7 +6305,7 @@ func RunningIntent(t int, frag string) float64 {
 
 //**************************************************************
 
-func Intentionality(L int, s string, freq float64) float64 {
+func StaticIntentionality(L int, s string, freq float64) float64 {
 
 	// Compute the effective significance of a string s
 	// within a document of many sentences. The weighting due to

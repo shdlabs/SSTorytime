@@ -31,21 +31,7 @@ func main() {
 	psf,L := SST.FractionateTextFile(input)
 
 	//intentions,context
-	intentions,_ := SST.AssessTextSignificance(L,SST.STM_NGRAM_FREQ,SST.STM_NGRAM_LOCA)
-
-/*
-
-	for n := range intentions {
-		for ngram := range intentions[n] {
-			fmt.Println("-Intended: ",n,intentions[n][ngram].Fragment,intentions[n][ngram].Significance)
-		}
-	}
-	for n := range context {
-		for ngram := range context[n] {
-			fmt.Println("-Context: ",n,context[n][ngram].Fragment,context[n][ngram].Significance)
-		}
-	}
-*/
+	intentions,_ := SST.AssessTextAnomalies(L,SST.STM_NGRAM_FREQ,SST.STM_NGRAM_LOCA)
 
 	var selections []SST.TextRank
 
@@ -71,6 +57,8 @@ func main() {
 
 				if f < len(psf[p][s])-1 {
 					text += ", "
+				} else {
+					text += ". "
 				}
 			}
 			
