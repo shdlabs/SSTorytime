@@ -19,10 +19,10 @@ func main() {
 
 	const max_class = 100
 
-	input := "../../examples/example_data/MobyDick.dat"
+	//input := "../../examples/example_data/MobyDick.dat"
 	//input := "../../examples/example_data/obama.dat"
 	//input := "../../examples/example_data/bede.dat"
-	//input := "../../examples/example_data/promisetheory1.dat"
+	input := "../../examples/example_data/promisetheory1.dat"
 	//input := "../../examples/example_data/Darwin.dat"
 	//input := "../../examples/example_data/orgmode.dat"
 
@@ -91,6 +91,10 @@ func main() {
 	}
 
 	fmt.Println("Fraction of document = ",limit,"->", float64(limit)/float64(len(sentences)))
+
+	for i := 0; i < limit; i++ {
+		fmt.Print(selections[i].Order," ")
+	}
 
 }
 
