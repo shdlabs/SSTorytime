@@ -30,37 +30,41 @@ func main() {
 
 	_,L := SST.FractionateTextFile(input)  // loads STM_NGRAM*
 
-	common,localized,_ := SST.AssessHubFields(L,SST.STM_NGRAM_LOCA)
+	ambient,condensed,_ := SST.AssessHubFields(L,SST.STM_NGRAM_LOCA)
 
 	for n := 1; n < SST.N_GRAM_MAX; n++ {
 
-		var com []string
-		var loc []string
+		var amb []string
+		var cond []string
 
-		for ngram := range common[n] {
-			com = append(com,ngram)
+		for ngram := range ambient[n] {
+			if ambient[n][ngram] > 1 {
+				amb = append(amb,ngram)
+			}
 		}
 
-		for ngram := range localized[n] {
-			loc = append(loc,ngram)
+		for ngram := range condensed[n] {
+			if condensed[n][ngram] > 1 {
+				cond = append(cond,ngram)
+			}
 		}
 		fmt.Println("-------------------------------")
 
 		// Sort by intentionality
 
-		sort.Slice(com, func(i, j int) bool {
-			return SST.StaticIntentionality(L,com[i],SST.STM_NGRAM_FREQ[n][com[i]]) > SST.StaticIntentionality(L,com[j],SST.STM_NGRAM_FREQ[n][com[j]])
+		sort.Slice(amb, func(i, j int) bool {
+			return SST.StaticIntentionality(L,amb[i],SST.STM_NGRAM_FREQ[n][amb[i]]) > SST.StaticIntentionality(L,amb[j],SST.STM_NGRAM_FREQ[n][amb[j]])
 		})
-		sort.Slice(loc, func(i, j int) bool {
-			return SST.StaticIntentionality(L,loc[i],SST.STM_NGRAM_FREQ[n][loc[i]]) > SST.StaticIntentionality(L,loc[j],SST.STM_NGRAM_FREQ[n][loc[j]])
+		sort.Slice(cond, func(i, j int) bool {
+			return SST.StaticIntentionality(L,cond[i],SST.STM_NGRAM_FREQ[n][cond[i]]) > SST.StaticIntentionality(L,cond[j],SST.STM_NGRAM_FREQ[n][cond[j]])
 		})
 
-		for i := range com {
-			fmt.Println(n,"common",com[i],SST.StaticIntentionality(L,com[i],SST.STM_NGRAM_FREQ[n][com[i]]))
+		for i := 0 ; i < 150 && i < len(amb); i++ {
+			fmt.Println(n,"ambient",amb[i],"       ",SST.StaticIntentionality(L,amb[i],SST.STM_NGRAM_FREQ[n][amb[i]]))
 		}
 
-		for i := range loc {
-			fmt.Println(n,"local",loc[i])
+		for i := 0 ; i < 150 && i < len(cond); i++ {
+			fmt.Println(n,"condensate",cond[i],"       ",SST.StaticIntentionality(L,cond[i],SST.STM_NGRAM_FREQ[n][cond[i]]))
 		}
 	}
 	

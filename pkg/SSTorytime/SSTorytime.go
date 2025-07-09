@@ -6087,25 +6087,18 @@ func AssessHubFields(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]
 
 	partitions := L/coherence_length + 1
 
-	var P [N_GRAM_MAX][]map[string]int  // raw ngrams aggregated into partitions
-	var H [N_GRAM_MAX][]map[string]int  // independent part of index
-	var B [N_GRAM_MAX][]map[string]int  // overlap between neighbours of index
-
-	var mutual [N_GRAM_MAX]map[string]int
-	var localized [N_GRAM_MAX]map[string]int
+	var C [N_GRAM_MAX][]map[string]int        // raw ngrams aggregated into partitions
+	var overlap [N_GRAM_MAX]map[string]int
+	var condensate [N_GRAM_MAX]map[string]int
 
 	for n := 1; n < N_GRAM_MAX; n++ {
 
-		P[n] = make([]map[string]int,partitions)
-		H[n] = make([]map[string]int,partitions)
-		B[n] = make([]map[string]int,partitions)
-		mutual[n] = make(map[string]int)
-		localized[n] = make(map[string]int)
+		C[n] = make([]map[string]int,partitions)
+		overlap[n] = make(map[string]int)
+		condensate[n] = make(map[string]int)
 
 		for p := 0; p < partitions; p++ {
-			P[n][p] = make(map[string]int)
-			H[n][p] = make(map[string]int)
-			B[n][p] = make(map[string]int)
+			C[n][p] = make(map[string]int)
 		}
 
 		for ngram := range ngram_loc[n] {
@@ -6114,58 +6107,43 @@ func AssessHubFields(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]
 
 			for s := range ngram_loc[n][ngram] {
 				p := ngram_loc[n][ngram][s] / coherence_length
-				P[n][p][ngram]++
+				C[n][p][ngram]++
 			}
 		}
 
 		// now run through linearly and split nearest neighbours
 
-		// very short excerpts
+		// very short excerpts,there is nothing we can do in a single coherence zone
 
-		if len(P[n]) < 2 {
-			for ngram := range P[n][0] {
-				B[n][0][ngram]++
+		if len(C[n]) < 2 {
+			for ngram := range C[n][0] {
+				overlap[n][ngram]++
 			}
 
-		// ordinary files etc
+		// multiple coherence zones
 
 		} else {
 
-			for pi := 0; pi < len(P[n]); pi++ {
-				for pj := pi+1; pj < len(P[n]); pj++ {
-					for ngram := range P[n][pi] {
-						if P[n][pi][ngram] == 0 && P[n][pj][ngram] > 0 || P[n][pj][ngram] == 0 && P[n][pi][ngram] > 0 {
-							H[n][pi][ngram]++
-						} else if P[n][pi][ngram] > 0 && P[n][pj][ngram] > 0 {
-							B[n][pi][ngram]++
+			for pi := 0; pi < len(C[n]); pi++ {
+				for pj := pi+1; pj < len(C[n]); pj++ {
+					for ngram := range C[n][pi] {
+						if C[n][pi][ngram] > 0 && C[n][pj][ngram] > 0 {
+							// ambients
+							delete(condensate[n],ngram)
+							overlap[n][ngram]++
+						} else {
+							// unique things here
+							_,ambient := overlap[n][ngram]
+							if !ambient {
+								condensate[n][ngram]++
+							}
 						}
 					}
 				}
 			}
 		}
-
-		// return as pointers to the sections where they occur
-		
-		for p := 0; p < len(H[n]); p++ {
-			for ngram := range H[n][p] {
-				if H[n][p][ngram] > 1 {
-					mutual[n][ngram]++
-				}
-			}
-		}
-
-		for p := 0; p < len(B[n]); p++ {
-			for ngram := range B[n][p] {
-				if B[n][p][ngram] > partitions/2 {
-					mutual[n][ngram]++
-				} else if B[n][p][ngram] > 0 {
-					localized[n][ngram]++
-				}
-			}
-		}
 	}
-
-	return mutual,localized,partitions
+	return overlap,condensate,partitions
 }
 
 //**************************************************************
@@ -6226,8 +6204,9 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[
 
 func CleanNgram(s string) string {
 
-	re := regexp.MustCompile("[\"—“”!?,.:;—()]+")
-	s= re.ReplaceAllString(s,"") 
+	re := regexp.MustCompile("[\"—“”!?,.:;—()_]+")
+	s = re.ReplaceAllString(s,"")
+	s = strings.Replace(s,"  "," ",-1)
 
 	return strings.ToLower(s)
 }
