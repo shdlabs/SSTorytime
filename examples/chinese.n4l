@@ -24,7 +24,12 @@ Sūn nǚshì qǐng jìn (ph)  孙女士请进  (he) Ms Sun, please come in
 
  yes       (eh) 是的 (hp) Shì de
   "        (note) There is no simple one to one translation for yes and no
- yes/right (eh) 对   (hp) Duì
+ yes/right/correct (eh) 对   (hp) Duì (e.g.) nǐ duì  (ph) 你对  (he) you are right
+
+nǐ duì gōngzī mǎnyì ma  (ph) 你对工资满意吗  (he)  Are you satisfied with your salary?
+
+
+
 
  no        (eh) 不   (hp) Bù
  no        (eh) 没有  (hp) Méiyǒu
@@ -48,6 +53,9 @@ using 不/bù versus  没有/méiyǒu (rule) 不/bù Negates in the Present and 
 
 Wǒ jīntiān méiyǒu qù xuéxiào (ph) 我今天没有去学校 (he) I didn't go to school today
      " (e.g.) $meirule.1
+
+Wǒmen de yuángōng bù duō (ph) 我们的员工不多 (he)  We don't have many employees
+Nǐ méi huídá zhège wèntí  (ph) 你没回答这个问题  (he) You didn't answer the question
 
 @bu I did not meet with him last weekend (eh)  上周末我没有见到他 (hp) Shàng zhōumò wǒ méiyǒu jiàn dào tā 
       " (prop) WRONG: Wǒ shàng gè zhōumò bù gēn tā jiànmiàn (ph) 我 上个 周末 不 跟 他 见面 (see) $bu.2
@@ -296,7 +304,7 @@ someone  (eh) 有人 (hp) yǒurén
 
 wǒ shàngbān shàng dé tèbié zǎo (ph)  我上班上得特别早  (he) I go to work especially early
 
-tā wán fēipán, wán dé hǎobù hǎo  (ph) 他玩飞盘玩得好不好  (he) Is he good at playing Frisbee?
+
 
  +:: job , profession ::
 
@@ -964,6 +972,8 @@ television  (eh) 电视 (hp) diànshì
 
 mahjong  (eh) 麻将 (hp) májiàng
   " (e.g.) tā dǎ májiàng dǎ dé hǎobù hǎo (ph)  他打麻将打得好不好 (he)  Is he good at playing mahjong?
+
+tā wán fēipán, wán dé hǎobù hǎo  (ph) 他玩飞盘玩得好不好  (he) Is he good at playing Frisbee?
 
 he is interested in american culture  (eh) 他对美国文化感兴趣 (hp) tā duì měiguó wénhuà gǎn xìngqù
 
@@ -2317,17 +2327,25 @@ interview  (eh) 面试 (hp) miànshì
    "     (e.g.) shàng yīcì miànshì wǒ hěn jǐnzhāng (ph) 上一次面试我很紧张 (he) I was very nervous during my last interview.
 
 
-Nǐ jiǎng yīxià zìjǐ  (ph) 你讲一下自己 (he)  Tell me about yourself
+dǎyìn (ph) 打印 (he) print
 
-Nǐ jiǎng yīxià zìjǐ de jīnglì  (ph) 你讲一下自己的经历  (he) Tell me about your experience
-
-Nǐ yǐqián shèjìguò shèn me (ph)  你以前设计过什么  (he) What have you designed before?
+  " (e.g.) wǒ dǎyìnle tā de jiǎnlì  (ph) 我打印了她的简历  (he) I printed her resume
 
 
+nǐ jiǎng yīxià zìjǐ  (ph) 你讲一下自己 (he)  Tell me about yourself
+
+nǐ jiǎng yīxià zìjǐ de jīnglì  (ph) 你讲一下自己的经历  (he) Tell me about your experience
+
+ shèjì  (ph) 我设计  (he)  design
+  " (e.g.) nǐ yǐqián shèjìguò shèn me (ph)  你以前设计过什么  (he) What have you designed before?
+
+  " (e.g.) wǒ shèjìguò hěnduō chǎnpǐn (ph)  我设计过很多产品  (he) I have designed many products
+
+chǎnpǐn (ph) 产品 (he) product
 
 Měi gè yuángōng dōu yǒu diànnǎo  (ph) 每个员工都有电脑  (he) Every employee has a computer
 
-Shíxí jīngyàn (ph)  实习经验  (he) Internship experience
+shíxí jīngyàn (ph)  实习经验  (he) Internship experience
 
 -:: interview ::
 
@@ -2530,7 +2548,13 @@ huì zuò (ph) 会做 (he) going to do/will do
 physical education (ep) tǐyù (ph)体育
 tǐ yù jiémù (ph)体育节目 (he)sports programme
 
-language (eh) 语言 (hp) yǔyán
+yǔyán (ph)  语言  (he) language
+  " (e.g.) wǒ xǐhuān yǔyán hái hěn shàncháng xué wàiyǔ  (ph) 我喜欢语言还很擅长学外语  (he) I like languages ​​and I am good at learning foreign languages
+
+$PREV.2 (ex) shàncháng  (ph) 擅长  (he) proficient in/good at
+wàiyǔ (ph)  外语  (he) foreign languages
+
+
 grammar (eh) 语法 (hp) yǔfǎ
 
 韩国人 (hp) hánguó rén (pe) koreans
@@ -2626,7 +2650,10 @@ stop the car  (eh) 停车  (hp) tíngchē
 stop the train  (eh) 停止火车  (hp) tíng zhǐ huǒchē
 
 drive  (eh)  开车  (hp) kāichē
-i drive to the office (eh)  我开车去办公室  (hp) wǒ kāichē qù bàngōngshì
+   " (e.g.) wǒ kāichē qù bàngōngshì (ph)  我开车去办公室  (he) i drive to the office 
+   " (e.g.) wǒ bùdàn huì kāichē érqiě huì xiū chē (ph)  我不但会开车而且会修车  (he) I can not only drive but also repair cars
+
+xiū chē (ph) 修车 (he) repair car
 
 ticket  (eh) 票  (hp) piào
 
