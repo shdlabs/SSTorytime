@@ -6086,31 +6086,15 @@ func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int
 
 	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
-	partitions := L/coherence_length + 1
-
-	var C [N_GRAM_MAX][]map[string]int        // raw ngrams aggregated into partitions
 	var overlap [N_GRAM_MAX]map[string]int
 	var condensate [N_GRAM_MAX]map[string]int
 
+	C,partitions := CoherenceSet(ngram_loc,L,coherence_length)
+
 	for n := 1; n < N_GRAM_MAX; n++ {
 
-		C[n] = make([]map[string]int,partitions)
 		overlap[n] = make(map[string]int)
 		condensate[n] = make(map[string]int)
-
-		for p := 0; p < partitions; p++ {
-			C[n][p] = make(map[string]int)
-		}
-
-		for ngram := range ngram_loc[n] {
-
-			// commute indices and expand to a sparse representation for simplicity
-
-			for s := range ngram_loc[n][ngram] {
-				p := ngram_loc[n][ngram][s] / coherence_length
-				C[n][p][ngram]++
-			}
-		}
 
 		// now run through linearly and split nearest neighbours
 
@@ -6145,6 +6129,35 @@ func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int
 		}
 	}
 	return overlap,condensate,partitions
+}
+
+//**************************************************************
+
+func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L,coherence_length int) ([N_GRAM_MAX][]map[string]int,int) {
+
+	var C [N_GRAM_MAX][]map[string]int
+
+	partitions := L/coherence_length + 1
+
+	for n := 1; n < N_GRAM_MAX; n++ {
+		
+		C[n] = make([]map[string]int,partitions)
+		for p := 0; p < partitions; p++ {
+			C[n][p] = make(map[string]int)
+		}
+
+		for ngram := range ngram_loc[n] {
+			
+			// commute indices and expand to a sparse representation for simplicity
+			
+			for s := range ngram_loc[n][ngram] {
+				p := ngram_loc[n][ngram][s] / coherence_length
+				C[n][p][ngram]++
+			}
+		}
+	}
+
+	return C,partitions
 }
 
 //**************************************************************
