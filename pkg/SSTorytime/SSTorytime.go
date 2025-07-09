@@ -522,6 +522,7 @@ func MemoryInit() {
 
 		STM_NGRAM_FREQ[i] = make(map[string]float64)
 		STM_NGRAM_LOCA[i] = make(map[string][]int)
+		STM_NGRAM_LAST[i] = make(map[string]int)
 	}
 }
 
@@ -5640,8 +5641,10 @@ const DUNBAR_150 = 150
 // **************************************************************
 
 var EXCLUSIONS []string
+
 var STM_NGRAM_FREQ [N_GRAM_MAX]map[string]float64
 var STM_NGRAM_LOCA [N_GRAM_MAX]map[string][]int
+var STM_NGRAM_LAST [N_GRAM_MAX]map[string]int
 
 type TextRank struct {
 	Significance float64
@@ -5927,7 +5930,7 @@ func Fractionate(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min 
 	words := strings.Split(frag," ")
 
 	for w := range words {
-		rrbuffer,change_set = NextWord(words[w],L,rrbuffer)
+		rrbuffer,change_set = NextWord(words[w],rrbuffer)
 	}
 
 	return change_set
@@ -5948,7 +5951,7 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 
 	for w := range words {
 
-		rrbuffer,change_set = NextWord(words[w],L,rrbuffer)
+		rrbuffer,change_set = NextWord(words[w],rrbuffer)
 
 		for n := min; n < N_GRAM_MAX; n++ {
 			for ng := range change_set[n] {
@@ -6038,9 +6041,7 @@ func IntentionalNgram(n int,ngram string,L int,coherence_length int) bool {
 		return true
 	}
 
-	//scale_factor := N_GRAM_MAX - n
-
-//	ambience_radius := scale_factor * minr / 100
+	// the distribution of intraspacings is broad, so not just a regular pattern
 
 	return maxr > minr + coherence_length
 }
@@ -6055,6 +6056,8 @@ func IntervalRadius(n int, ngram string) (int,int,int) {
 	var dl int = 0
 	var dlmin int = 99
 	var dlmax int = 0
+
+	// Find the width of the intraspacing distribution
 
 	for occ := 0; occ < occurrences; occ++ {
 
@@ -6169,7 +6172,7 @@ func AssessHubFields(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]
 
 //**************************************************************
 
-func NextWord(frag string,L int,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[N_GRAM_MAX][]string) {
+func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[N_GRAM_MAX][]string) {
 
 	// Word by word, we form a superposition of scores from n-grams of different lengths
 	// as a simple sum. This means lower lengths will dominate as there are more of them
@@ -6265,6 +6268,41 @@ func ExcludedByBindings(firstword,lastword string) bool {
 	}
 
 	return false 
+}
+
+//**************************************************************
+
+func RunningIntent(t int, frag string) float64 {
+
+	// A round robin cyclic buffer for taking fragments and extracting
+	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
+
+	var change_set [N_GRAM_MAX][]string
+	var rrbuffer [N_GRAM_MAX][]string
+	var score float64
+
+	words := strings.Split(frag," ")
+	decayrate := float64(DUNBAR_30)
+
+	for w := range words {
+
+		rrbuffer,change_set = NextWord(words[w],rrbuffer)
+
+		for n := 1; n < N_GRAM_MAX; n++ {
+			for ng := range change_set[n] {
+				ngram := change_set[n][ng]
+
+				lastseen := STM_NGRAM_LAST[n][ngram]
+
+				score += float64(len(ngram)) * math.Exp(float64(lastseen-t)/decayrate)
+
+				STM_NGRAM_LAST[n][ngram] = t
+			}
+		}
+	}
+
+	return score
+
 }
 
 //**************************************************************
