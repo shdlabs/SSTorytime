@@ -5730,7 +5730,7 @@ func FractionateTextFile(name string) ([][][]string,int) {
 					for ng := range change_set[n] {
 						ngram := change_set[n][ng]
 						STM_NGRAM_FREQ[n][ngram]++
-						STM_NGRAM_LOCA[n][ngram] = append(STM_NGRAM_LOCA[n][ngram],s)
+						STM_NGRAM_LOCA[n][ngram] = append(STM_NGRAM_LOCA[n][ngram],count)
 					}
 				}
 			}
@@ -6129,6 +6129,55 @@ func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int
 
 //**************************************************************
 
+func AssessTextFastSlow(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]map[string]int,[N_GRAM_MAX][]map[string]int,int) {
+
+	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
+
+	var slow [N_GRAM_MAX][]map[string]int
+	var fast [N_GRAM_MAX][]map[string]int
+
+	C,partitions := CoherenceSet(ngram_loc,L,coherence_length)
+
+	for n := 1; n < N_GRAM_MAX; n++ {
+
+		slow[n] = make([]map[string]int,partitions)
+		fast[n] = make([]map[string]int,partitions)
+
+		// now run through linearly and split nearest neighbours
+
+		// very short excerpts,there is nothing we can do in a single coherence set
+		if partitions < 2 {
+			slow[n][0] = make(map[string]int)
+			fast[n][0] = make(map[string]int)
+
+			for ngram := range C[n][0] {
+				fast[n][0][ngram]++
+			}
+		// multiple coherence zones
+		} else {
+			for p := 1; p < partitions; p++ {
+
+				slow[n][p-1] = make(map[string]int)
+				fast[n][p-1] = make(map[string]int)
+
+				for ngram := range C[n][p-1] {
+					if C[n][p][ngram] > 0 && C[n][p-1][ngram] > 0 {
+						// ambients
+						slow[n][p-1][ngram]++
+					} else {
+						// unique things here
+						fast[n][p-1][ngram]++
+					}
+				}
+			}
+		}
+	}
+
+	return slow,fast,partitions
+}
+
+//**************************************************************
+
 func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L,coherence_length int) ([N_GRAM_MAX][]map[string]int,int) {
 
 	var C [N_GRAM_MAX][]map[string]int
@@ -6145,7 +6194,7 @@ func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L,coherence_length int
 		for ngram := range ngram_loc[n] {
 			
 			// commute indices and expand to a sparse representation for simplicity
-			
+
 			for s := range ngram_loc[n][ngram] {
 				p := ngram_loc[n][ngram][s] / coherence_length
 				C[n][p][ngram]++
@@ -6223,7 +6272,7 @@ func CleanNgram(s string) string {
 }
 
 //**************************************************************
-// Heuristics
+// Heuristics for Text Processing
 //**************************************************************
 
 func ExcludedByBindings(firstword,lastword string) bool {
@@ -6307,10 +6356,10 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 	// measure occurrences relative to total length L in sentences
 
 	phi := freq
-	phi_0 := float64(L)
+	phi_0 := 30.0 //float64(L)
 
 	// How often is too often for a concept?
-	const rho = 0.1/20.0
+	const rho = 1/30.0 // 0.1/30.0
 
 	crit := phi/phi_0 - rho
 
