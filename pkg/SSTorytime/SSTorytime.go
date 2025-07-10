@@ -6263,10 +6263,13 @@ func NextWord(frag string,rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,[
 
 func CleanNgram(s string) string {
 
-	re := regexp.MustCompile("[\"—“”!?,.:;—()_]+")
+	re := regexp.MustCompile("[-][-][-].*")
+	s = re.ReplaceAllString(s,"")
+	re = regexp.MustCompile("[\"—“”!?`,.:;—()_]+")
 	s = re.ReplaceAllString(s,"")
 	s = strings.Replace(s,"  "," ",-1)
 	s = strings.Trim(s,"-")
+	s = strings.Trim(s,"'")
 
 	return strings.ToLower(s)
 }
