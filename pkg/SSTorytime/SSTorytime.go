@@ -6331,10 +6331,10 @@ func RunningIntentionality(t int, frag string) float64 {
 		for n := 1; n < N_GRAM_MAX; n++ {
 			for ng := range change_set[n] {
 				ngram := change_set[n][ng]
-
+				work := float64(len(ngram))
 				lastseen := STM_NGRAM_LAST[n][ngram]
 
-				score += float64(len(ngram)) / math.Exp(float64(t-lastseen)/(decayrate))
+				score += work * (1 - math.Exp(-float64(t-lastseen)/decayrate))
 
 				STM_NGRAM_LAST[n][ngram] = t
 			}
@@ -6356,13 +6356,15 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 
 	work := float64(len(s)) 
 
-	// measure occurrences relative to total length L in sentences
+	// tempting to measure occurrences relative to total length L in sentences
+	// but this is not the relevant scale. Coherence is on a shorter scale
+	// set by cognitive limits, not author expansiveness / article scope ...
 
 	phi := freq
-	phi_0 := 30.0 //float64(L)
+	phi_0 := float64(DUNBAR_30) // not float64(L)
 
 	// How often is too often for a concept?
-	const rho = 1/30.0 // 0.1/30.0
+	const rho = 1/30.0 
 
 	crit := phi/phi_0 - rho
 
