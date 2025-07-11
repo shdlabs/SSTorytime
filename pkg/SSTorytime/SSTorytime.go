@@ -6084,6 +6084,10 @@ func IntervalRadius(n int, ngram string) (int,int,int) {
 
 func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]map[string]int,[N_GRAM_MAX]map[string]int,int) {
 
+	// In this global assessment of coherence intervals, we separate each into text that is unique (intentional)
+	// and fragments that are repeated in any other interval, so this is an extreme view. Compare to fast/slow method
+	// below
+
 	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
 	var overlap [N_GRAM_MAX]map[string]int
@@ -6130,6 +6134,10 @@ func AssessTextCoherentCoactivation(L int,ngram_loc [N_GRAM_MAX]map[string][]int
 //**************************************************************
 
 func AssessTextFastSlow(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]map[string]int,[N_GRAM_MAX][]map[string]int,int) {
+
+	// Use a running evaluation of context intervals to separate ngrams that are varying quickly (intentional)
+	// from those changing slowly (context). For each region, what if different from the last in fast and what
+	// remains the same as last is slow. This is remarkably effective and quick to calculate.
 
 	const coherence_length = DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
@@ -6334,7 +6342,11 @@ func RunningIntentionality(t int, frag string) float64 {
 				work := float64(len(ngram))
 				lastseen := STM_NGRAM_LAST[n][ngram]
 
-				score += work * (1 - math.Exp(-float64(t-lastseen)/decayrate))
+				if lastseen == 0 {
+					score = work
+				} else {
+					score += work * (1 - math.Exp(-float64(t-lastseen)/decayrate))
+				}
 
 				STM_NGRAM_LAST[n][ngram] = t
 			}

@@ -45,7 +45,7 @@ func main() {
 
 			for f := 0; f < len(psf[p][s]); f++ {
 
-				score += SST.RunningIntentionality(s,psf[p][s][f])
+				score += SST.RunningIntentionality(count,psf[p][s][f])
 
 				text += psf[p][s][f]
 
