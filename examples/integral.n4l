@@ -1,7 +1,7 @@
 
 - Evaluate the integral 
 
-  :: _sequence_ ::
+  :: _sequence_ , mathematics , integration, integrate , differentiate under integral::
 
   "Evaluate \( I(\nu) = \int_0^\infty \; \nu^\frac{1}{2}\, e^{-\nu}\; d\nu \)" (note) "\(I(\nu)\) is not to be understood as a function of \(\nu\)"
 
