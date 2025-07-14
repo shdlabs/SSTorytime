@@ -347,6 +347,18 @@ type PoSST struct {
 
 //******************************************************************
 
+type SearchParameters struct {
+
+	// marshalled for searching
+
+	NPtr    []NodePtr
+	Chapter []string
+	Context []string
+	Arrows  []string
+}
+
+//******************************************************************
+
 type Story struct {
 
 	ContainNPtr NodePtr
