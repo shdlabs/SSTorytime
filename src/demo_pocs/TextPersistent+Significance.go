@@ -19,8 +19,8 @@ func main() {
 
 	const max_class = 100
 
-	input := "../../examples/example_data/MobyDick.dat"
-	//input := "../../examples/example_data/obama.dat"
+	//input := "../../examples/example_data/MobyDick.dat"
+	input := "../../examples/example_data/obama.dat"
 	//input := "../../examples/example_data/bede.dat"
 	//input := "../../examples/example_data/promisetheory1.dat"
 	//input := "../../examples/example_data/Darwin.dat"
@@ -31,7 +31,7 @@ func main() {
 	psf,L := SST.FractionateTextFile(input)
 
 	//intentions,context
-	intentions,_ := SST.AssessTextAnomalies(L,SST.STM_NGRAM_FREQ,SST.STM_NGRAM_LOCA)
+	intentions,_ := SST.AssessStaticTextAnomalies(L,SST.STM_NGRAM_FREQ,SST.STM_NGRAM_LOCA)
 
 	var selections []SST.TextRank
 

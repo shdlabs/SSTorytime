@@ -5951,7 +5951,7 @@ func Fractionate(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min 
 
 //**************************************************************
 
-func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) float64 {
+func AssessStaticIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min int) float64 {
 
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
@@ -5979,7 +5979,7 @@ func AssessIntent(frag string,L int,frequency [N_GRAM_MAX]map[string]float64,min
 
 //**************************************************************
 
-func AssessTextAnomalies(L int,frequencies [N_GRAM_MAX]map[string]float64,locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank,[N_GRAM_MAX][]TextRank) {
+func AssessStaticTextAnomalies(L int,frequencies [N_GRAM_MAX]map[string]float64,locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank,[N_GRAM_MAX][]TextRank) {
 
 	// Try to split a text into anomalous/ambient i.e. intentional + contextual  parts
 
@@ -5993,7 +5993,7 @@ func AssessTextAnomalies(L int,frequencies [N_GRAM_MAX]map[string]float64,locati
 		for ngram := range STM_NGRAM_LOCA[n] {
 
 			var ns TextRank
-			ns.Significance = AssessIntent(ngram,L,STM_NGRAM_FREQ,1)
+			ns.Significance = AssessStaticIntent(ngram,L,STM_NGRAM_FREQ,1)
 			ns.Fragment = ngram
 
 			if IntentionalNgram(n,ngram,L,coherence_length) {

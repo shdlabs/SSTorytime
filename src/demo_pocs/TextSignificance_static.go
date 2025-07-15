@@ -45,7 +45,7 @@ func main() {
 
 			for f := 0; f < len(psf[p][s]); f++ {
 
-				score += SST.AssessIntent(psf[p][s][f],L,SST.STM_NGRAM_FREQ,1)
+				score += SST.AssessStaticIntent(psf[p][s][f],L,SST.STM_NGRAM_FREQ,1)
 
 				text += psf[p][s][f]
 
