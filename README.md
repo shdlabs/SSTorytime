@@ -81,6 +81,7 @@ job summary by an LLM text tool in which you get an answer `take it or leave it'
 * [searchN4L - preliminary search/testing tool](docs/searchN4L.md)
 * [pathsolve - preliminary path solving tool](docs/pathsolve.md)
 * [Related work and links](docs/outreach.md)
+* [API](docs/API.md) - An overview of the golang programmers API.
 * [FAQ](docs/FAQ.md)
 
 ## History
@@ -135,8 +136,6 @@ The tool-set consistent of several components, starting with:
 * [graph_report](docs/graph_report.md) - a simple and experimental command line tool for reporting on graph data, detecting loops, sources, sinks, etc, symmetrizing on different links and finding eigenvector centrality.
 
 * [http_server](docs/Tutorial.md) - a prototype webserver providing the SSTorytime browsing service
-
-* [API](docs/API.md) - An overview of the golang programmers API.
 
 * [API_EXAMPLE_1](src/API_EXAMPLE_1.go) - a simple store and retrieve example of the graph database.
 
