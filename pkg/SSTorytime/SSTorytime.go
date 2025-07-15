@@ -6296,6 +6296,117 @@ func CleanNgram(s string) string {
 }
 
 //**************************************************************
+
+func ExtractIntentionalTokens(L int) ([][]string,[][]string,[]string,[]string) {
+
+	slow,fast,doc_parts := AssessTextFastSlow(L,STM_NGRAM_LOCA)
+
+	var grad_amb [N_GRAM_MAX]map[string]float64
+	var grad_oth [N_GRAM_MAX]map[string]float64
+
+	// returns
+
+	var fastparts = make([][]string,doc_parts)
+	var slowparts = make([][]string,doc_parts)
+	var fastwhole []string
+	var slowwhole []string
+
+	for n := 1; n < N_GRAM_MAX; n++ {
+		grad_amb[n] = make(map[string]float64)
+		grad_oth[n] = make(map[string]float64)
+	}
+
+	for p := 0; p < doc_parts; p++ {
+
+		for n := 1; n < N_GRAM_MAX; n++ {
+
+			var amb []string
+			var other []string
+
+			for ngram := range fast[n][p] {
+				other = append(other,ngram)
+			}
+
+			for ngram := range slow[n][p] {
+				amb = append(amb,ngram)
+			}
+			
+			// Sort by intentionality
+
+			sort.Slice(amb, func(i, j int) bool {
+				ambi :=	StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
+				ambj := StaticIntentionality(L,amb[j],STM_NGRAM_FREQ[n][amb[j]])
+				return ambi > ambj
+			})
+
+			sort.Slice(other, func(i, j int) bool {
+				inti := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
+				intj := StaticIntentionality(L,other[j],STM_NGRAM_FREQ[n][other[j]])
+				return inti > intj
+			})
+			
+			for i := 0 ; i < 150 && i < len(amb); i++ {
+				v := StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
+				slowparts[p] = append(slowparts[p],amb[i])
+				grad_amb[n][amb[i]] += v
+			}
+			
+			for i := 0 ; i < 150 && i < len(other); i++ {
+				v := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
+				fastparts[p] = append(fastparts[p],other[i])
+				grad_oth[n][other[i]] += v
+			}
+		}
+	}
+	
+	// Summary ranking of whole doc
+	
+	for n := 1; n < N_GRAM_MAX; n++ {
+		
+		var amb []string
+		var other []string
+				
+		// there is possible overlap
+
+		for ngram := range grad_oth[n] {
+			_,dup := grad_amb[n][ngram]
+			if dup {
+				continue
+			}
+			other = append(other,ngram)
+		}
+
+		for ngram := range grad_amb[n] {
+			amb = append(amb,ngram)
+		}
+
+		// Sort by intentionality
+		
+		sort.Slice(amb, func(i, j int) bool {
+			ambi := StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
+			ambj := StaticIntentionality(L,amb[j],STM_NGRAM_FREQ[n][amb[j]])
+			return ambi > ambj
+		})
+		sort.Slice(other, func(i, j int) bool {
+			inti := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
+			intj := StaticIntentionality(L,other[j],STM_NGRAM_FREQ[n][other[j]])
+			return inti > intj
+		})
+		
+		for i := 0 ; i < 150 && i < len(amb); i++ {
+			slowwhole = append(slowwhole,amb[i])
+		}
+
+		for i := 0 ; i < 150 && i < len(other); i++ {
+			fastwhole = append(fastwhole,other[i])
+		}
+		fmt.Println()
+	}	
+
+	return fastparts,slowparts,fastwhole,slowwhole
+}
+
+//**************************************************************
 // Heuristics for Text Processing
 //**************************************************************
 
