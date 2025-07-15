@@ -57,23 +57,28 @@ func main() {
 			fmt.Println("----- PARTITION ",p," --------------------------")
 			
 			// Sort by intentionality
-			
+
 			sort.Slice(amb, func(i, j int) bool {
-				return SST.StaticIntentionality(L,amb[i],SST.STM_NGRAM_FREQ[n][amb[i]]) > SST.StaticIntentionality(L,amb[j],SST.STM_NGRAM_FREQ[n][amb[j]])
+				ambi :=	SST.StaticIntentionality(L,amb[i],SST.STM_NGRAM_FREQ[n][amb[i]])
+				ambj := SST.StaticIntentionality(L,amb[j],SST.STM_NGRAM_FREQ[n][amb[j]])
+				return ambi > ambj
 			})
+
 			sort.Slice(intent, func(i, j int) bool {
-				return SST.StaticIntentionality(L,intent[i],SST.STM_NGRAM_FREQ[n][intent[i]]) > SST.StaticIntentionality(L,intent[j],SST.STM_NGRAM_FREQ[n][intent[j]])
+				inti := SST.StaticIntentionality(L,intent[i],SST.STM_NGRAM_FREQ[n][intent[i]])
+				intj := SST.StaticIntentionality(L,intent[j],SST.STM_NGRAM_FREQ[n][intent[j]])
+				return inti > intj
 			})
 			
 			for i := 0 ; i < 150 && i < len(amb); i++ {
 				v := SST.StaticIntentionality(L,amb[i],SST.STM_NGRAM_FREQ[n][amb[i]])
-				fmt.Println(n,"slow: ",amb[i],"       ",v)
+				fmt.Println(n,"slow: ",amb[i])
 				grad_amb[n][amb[i]] += v
 			}
 			
 			for i := 0 ; i < 150 && i < len(intent); i++ {
 				v := SST.StaticIntentionality(L,intent[i],SST.STM_NGRAM_FREQ[n][intent[i]])
-				fmt.Println(n,"fast: ",intent[i],"       ",v)
+				fmt.Println(n,"fast: ",intent[i])
 				grad_int[n][intent[i]] += v
 			}
 		}
@@ -105,20 +110,22 @@ func main() {
 		// Sort by intentionality
 		
 		sort.Slice(amb, func(i, j int) bool {
-			return SST.StaticIntentionality(L,amb[i],SST.STM_NGRAM_FREQ[n][amb[i]]) > SST.StaticIntentionality(L,amb[j],SST.STM_NGRAM_FREQ[n][amb[j]])
+			ambi := SST.StaticIntentionality(L,amb[i],SST.STM_NGRAM_FREQ[n][amb[i]])
+			ambj := SST.StaticIntentionality(L,amb[j],SST.STM_NGRAM_FREQ[n][amb[j]])
+			return ambi > ambj
 		})
 		sort.Slice(intent, func(i, j int) bool {
-			return SST.StaticIntentionality(L,intent[i],SST.STM_NGRAM_FREQ[n][intent[i]]) > SST.StaticIntentionality(L,intent[j],SST.STM_NGRAM_FREQ[n][intent[j]])
+			inti := SST.StaticIntentionality(L,intent[i],SST.STM_NGRAM_FREQ[n][intent[i]])
+			intj := SST.StaticIntentionality(L,intent[j],SST.STM_NGRAM_FREQ[n][intent[j]])
+			return inti > intj
 		})
 		
 		for i := 0 ; i < 150 && i < len(amb); i++ {
-			v := SST.StaticIntentionality(L,amb[i],SST.STM_NGRAM_FREQ[n][amb[i]]) / float64(n)
-			fmt.Println(n,"slow v context: ",amb[i],"       ",v)
+			fmt.Println(n,"slow context: ",amb[i])
 		}
 		fmt.Println()
 		for i := 0 ; i < 150 && i < len(intent); i++ {
-			v := SST.StaticIntentionality(L,intent[i],SST.STM_NGRAM_FREQ[n][intent[i]]) / float64(n)
-			fmt.Println(n,"fast v intentional: ",intent[i],"       ",v)
+			fmt.Println(n,"fast intentional: ",intent[i])
 		}
 		fmt.Println()
 	}	
