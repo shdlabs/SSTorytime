@@ -7,11 +7,15 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"sort"
-
+	"flag"
         SST "SSTorytime"
 )
+
+var VERBOSE bool = false
+var TARGET_PERCENT float64 = 50.0
 
 //**************************************************************
 // BEGIN
@@ -20,27 +24,90 @@ import (
 func main() {
 
 	const max_class = 100
-	const percentage = 32.0
 
-	input := "../examples/example_data/MobyDick.dat"
+	input := GetArgs()
+
+	RipFile(input,TARGET_PERCENT)
+}
+
+//**************************************************************
+
+func GetArgs() string {
+
+	flag.Usage = Usage
+
+	verbosePtr := flag.Bool("v", false,"verbose")
+	limitPtr := flag.Float64("%", 50, "approximate percentage of file to skim (overestimates for small values)")
+
+	flag.Parse()
+	args := flag.Args()
+
+	if *verbosePtr {
+		VERBOSE = true
+	}
+
+	TARGET_PERCENT = *limitPtr
+
+	if len(args) != 1 {
+		fmt.Println("Missing pure text filename to scan")
+		os.Exit(-2)
+	} 
+
+	return args[0]
+}
+
+//**************************************************************
+
+func Usage() {
+	
+	fmt.Printf("usage: Text2N4L [-v] [-% percent] filename\n")
+	flag.PrintDefaults()
+
+	os.Exit(2)
+}
+
+//*******************************************************************
+
+func RipFile(filename string,percentage float64) {
 
 	SST.MemoryInit()
 
-	psf,L := SST.FractionateTextFile(input)
+	psf,L := SST.FractionateTextFile(filename)
 
 	ranking1 := SelectByRunningIntent(psf,L,percentage)
 	ranking2 := SelectByStaticIntent(psf,L,percentage)
 
 	selection := MergeText(ranking1,ranking2)
 
-	for i := range selection {
-		fmt.Println(i,selection[i])
-	}
+	// save result
 
-	fmt.Println("FRACTION",float64(len(selection)*100)/float64(L),"of requested",percentage)
+	if VERBOSE {
+
+		fmt.Println("\n(begin) ************")
+
+		for i := range selection {
+			fmt.Print("\n",i," line: ",selection[i].Order,"\n     ")
+			SST.ShowText(selection[i].Fragment,100)
+			fmt.Println()
+		}
+
+		fmt.Println("\n(end) ************")
+
+		fmt.Printf("\nFinal fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
+
+		fmt.Print("\nSelected ", len(selection)," samples of ",L,": ")
+
+		for i := range selection {
+			fmt.Print(selection[i].Order," ")
+		}
+
+		fmt.Println()
+
+
+	}
 }
 
-// ***************************************************
+//*******************************************************************
 
 func SelectByRunningIntent(psf [][][]string,L int,percentage float64) []SST.TextRank {
 
