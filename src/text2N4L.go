@@ -84,26 +84,38 @@ func RipFile2File(filename string,percentage float64){
 
 func WriteOutput(filename string,selection []SST.TextRank,L int, percentage float64) {
 
-	fmt.Println(" - Samples from ",filename)
+	outputfile := filename + "_edit_me.n4l"
 
-	fmt.Println("\n# (begin) ************")
+	fp, err := os.Create(outputfile)
+
+	if err != nil {
+		fmt.Println("Failed to open file for writing: ",outputfile)
+		os.Exit(-1)
+	}
+
+	defer fp.Close()
+
+	fmt.Fprintf(fp," - Samples from %s\n",filename)
+
+	fmt.Fprintf(fp,"\n# (begin) ************\n")
 	
 	for i := range selection {
-		fmt.Print("\n@sen",selection[i].Order,"  ",Sanitize(selection[i].Fragment))
-		fmt.Println()
+		fmt.Fprintf(fp,"\n@sen%d   %s\n",selection[i].Order,Sanitize(selection[i].Fragment))
 	}
 	
-	fmt.Println("\n# (end) ************")
+	fmt.Fprintf(fp,"\n# (end) ************\n")
 	
-	fmt.Printf("\nFinal fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
+	fmt.Fprintf(fp,"\n# Final fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
 	
-	fmt.Print("\nSelected ", len(selection)," samples of ",L,": ")
+	fmt.Fprintf(fp,"\n# Selected %d samples of %d: ",len(selection),L)
 	
 	for i := range selection {
-		fmt.Print(selection[i].Order," ")
+		fmt.Fprintf(fp,"%d ",selection[i].Order)
 		}
 	
-	fmt.Println()
+	fmt.Fprintf(fp,"\n#\n")
+
+	fmt.Println("Wrote file",outputfile)
 }
 
 //*******************************************************************
