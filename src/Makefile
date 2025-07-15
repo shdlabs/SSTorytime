@@ -1,8 +1,11 @@
 #
 
-OBJ=N4L N4L-db searchN4L http_server pathsolve notes graph_report API_EXAMPLE_1 API_EXAMPLE_2
+OBJ=text2N4L N4L N4L-db searchN4L http_server pathsolve notes graph_report API_EXAMPLE_1 API_EXAMPLE_2
 
 all: $(OBJ)
+
+text2N4L: text2N4L.go
+	go build -o $@ $@.go
 
 N4L: N4L.go
 	go build -o $@ $@.go

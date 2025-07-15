@@ -11,10 +11,10 @@ import (
 	"fmt"
 	"sort"
 	"flag"
+	"strings"
         SST "SSTorytime"
 )
 
-var VERBOSE bool = false
 var TARGET_PERCENT float64 = 50.0
 
 //**************************************************************
@@ -27,7 +27,8 @@ func main() {
 
 	input := GetArgs()
 
-	RipFile(input,TARGET_PERCENT)
+	RipFile2File(input,TARGET_PERCENT)
+
 }
 
 //**************************************************************
@@ -36,15 +37,10 @@ func GetArgs() string {
 
 	flag.Usage = Usage
 
-	verbosePtr := flag.Bool("v", false,"verbose")
 	limitPtr := flag.Float64("%", 50, "approximate percentage of file to skim (overestimates for small values)")
 
 	flag.Parse()
 	args := flag.Args()
-
-	if *verbosePtr {
-		VERBOSE = true
-	}
 
 	TARGET_PERCENT = *limitPtr
 
@@ -68,7 +64,7 @@ func Usage() {
 
 //*******************************************************************
 
-func RipFile(filename string,percentage float64) {
+func RipFile2File(filename string,percentage float64){
 
 	SST.MemoryInit()
 
@@ -81,30 +77,42 @@ func RipFile(filename string,percentage float64) {
 
 	// save result
 
-	if VERBOSE {
+	WriteOutput(filename,selection,L,percentage)
+}
 
-		fmt.Println("\n(begin) ************")
+//*******************************************************************
 
-		for i := range selection {
-			fmt.Print("\n",i," line: ",selection[i].Order,"\n     ")
-			SST.ShowText(selection[i].Fragment,100)
-			fmt.Println()
-		}
+func WriteOutput(filename string,selection []SST.TextRank,L int, percentage float64) {
 
-		fmt.Println("\n(end) ************")
+	fmt.Println(" - Samples from ",filename)
 
-		fmt.Printf("\nFinal fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
-
-		fmt.Print("\nSelected ", len(selection)," samples of ",L,": ")
-
-		for i := range selection {
-			fmt.Print(selection[i].Order," ")
-		}
-
+	fmt.Println("\n# (begin) ************")
+	
+	for i := range selection {
+		fmt.Print("\n@sen",selection[i].Order,"  ",Sanitize(selection[i].Fragment))
 		fmt.Println()
-
-
 	}
+	
+	fmt.Println("\n# (end) ************")
+	
+	fmt.Printf("\nFinal fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
+	
+	fmt.Print("\nSelected ", len(selection)," samples of ",L,": ")
+	
+	for i := range selection {
+		fmt.Print(selection[i].Order," ")
+		}
+	
+	fmt.Println()
+}
+
+//*******************************************************************
+
+func Sanitize(s string) string {
+
+	s = strings.Replace(s,"(","[",-1)
+	s = strings.Replace(s,")","]",-1)
+	return s
 }
 
 //*******************************************************************
