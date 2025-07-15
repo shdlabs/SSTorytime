@@ -29,32 +29,49 @@ func main() {
 
 	_,L := SST.FractionateTextFile(input)  // loads STM_NGRAM*
 
-	slow,fast,pts := SST.AssessTextFastSlow(L,SST.STM_NGRAM_LOCA)
+	f,s,ff,ss := ExtractIntentionalTokens(L)
+
+	fmt.Println("intentional fast by partition",f)
+	fmt.Println("ambient slow by partition",s)
+	fmt.Println("intentional fast summary",ff)
+	fmt.Println("ambient slow summary",ss)
+}
+
+//**************************************************************
+
+func ExtractIntentionalTokens(L int) ([][]string,[][]string,[]string,[]string) {
+
+	slow,fast,doc_parts := SST.AssessTextFastSlow(L,SST.STM_NGRAM_LOCA)
 
 	var grad_amb [SST.N_GRAM_MAX]map[string]float64
-	var grad_int [SST.N_GRAM_MAX]map[string]float64
+	var grad_oth [SST.N_GRAM_MAX]map[string]float64
+
+	// returns
+
+	var fastparts = make([][]string,doc_parts)
+	var slowparts = make([][]string,doc_parts)
+	var fastwhole []string
+	var slowwhole []string
 
 	for n := 1; n < SST.N_GRAM_MAX; n++ {
 		grad_amb[n] = make(map[string]float64)
-		grad_int[n] = make(map[string]float64)
+		grad_oth[n] = make(map[string]float64)
 	}
 
-	for p := 0; p < pts; p++ {
+	for p := 0; p < doc_parts; p++ {
 
 		for n := 1; n < SST.N_GRAM_MAX; n++ {
 
 			var amb []string
-			var intent []string
+			var other []string
 
 			for ngram := range fast[n][p] {
-				intent = append(intent,ngram)
+				other = append(other,ngram)
 			}
 
 			for ngram := range slow[n][p] {
 				amb = append(amb,ngram)
 			}
-			
-			fmt.Println("----- PARTITION ",p," --------------------------")
 			
 			// Sort by intentionality
 
@@ -64,43 +81,41 @@ func main() {
 				return ambi > ambj
 			})
 
-			sort.Slice(intent, func(i, j int) bool {
-				inti := SST.StaticIntentionality(L,intent[i],SST.STM_NGRAM_FREQ[n][intent[i]])
-				intj := SST.StaticIntentionality(L,intent[j],SST.STM_NGRAM_FREQ[n][intent[j]])
+			sort.Slice(other, func(i, j int) bool {
+				inti := SST.StaticIntentionality(L,other[i],SST.STM_NGRAM_FREQ[n][other[i]])
+				intj := SST.StaticIntentionality(L,other[j],SST.STM_NGRAM_FREQ[n][other[j]])
 				return inti > intj
 			})
 			
 			for i := 0 ; i < 150 && i < len(amb); i++ {
 				v := SST.StaticIntentionality(L,amb[i],SST.STM_NGRAM_FREQ[n][amb[i]])
-				fmt.Println(n,"slow: ",amb[i])
+				slowparts[p] = append(slowparts[p],amb[i])
 				grad_amb[n][amb[i]] += v
 			}
 			
-			for i := 0 ; i < 150 && i < len(intent); i++ {
-				v := SST.StaticIntentionality(L,intent[i],SST.STM_NGRAM_FREQ[n][intent[i]])
-				fmt.Println(n,"fast: ",intent[i])
-				grad_int[n][intent[i]] += v
+			for i := 0 ; i < 150 && i < len(other); i++ {
+				v := SST.StaticIntentionality(L,other[i],SST.STM_NGRAM_FREQ[n][other[i]])
+				fastparts[p] = append(fastparts[p],other[i])
+				grad_oth[n][other[i]] += v
 			}
 		}
 	}
 	
-	fmt.Println("\n===========================================\n")
-	fmt.Println(" SUMMARY")
-	fmt.Println("\n===========================================\n")
+	// Summary ranking of whole doc
 	
 	for n := 1; n < SST.N_GRAM_MAX; n++ {
 		
 		var amb []string
-		var intent []string
+		var other []string
 				
 		// there is possible overlap
 
-		for ngram := range grad_int[n] {
+		for ngram := range grad_oth[n] {
 			_,dup := grad_amb[n][ngram]
 			if dup {
 				continue
 			}
-			intent = append(intent,ngram)
+			other = append(other,ngram)
 		}
 
 		for ngram := range grad_amb[n] {
@@ -114,21 +129,23 @@ func main() {
 			ambj := SST.StaticIntentionality(L,amb[j],SST.STM_NGRAM_FREQ[n][amb[j]])
 			return ambi > ambj
 		})
-		sort.Slice(intent, func(i, j int) bool {
-			inti := SST.StaticIntentionality(L,intent[i],SST.STM_NGRAM_FREQ[n][intent[i]])
-			intj := SST.StaticIntentionality(L,intent[j],SST.STM_NGRAM_FREQ[n][intent[j]])
+		sort.Slice(other, func(i, j int) bool {
+			inti := SST.StaticIntentionality(L,other[i],SST.STM_NGRAM_FREQ[n][other[i]])
+			intj := SST.StaticIntentionality(L,other[j],SST.STM_NGRAM_FREQ[n][other[j]])
 			return inti > intj
 		})
 		
 		for i := 0 ; i < 150 && i < len(amb); i++ {
-			fmt.Println(n,"slow context: ",amb[i])
+			slowwhole = append(slowwhole,amb[i])
 		}
-		fmt.Println()
-		for i := 0 ; i < 150 && i < len(intent); i++ {
-			fmt.Println(n,"fast intentional: ",intent[i])
+
+		for i := 0 ; i < 150 && i < len(other); i++ {
+			fastwhole = append(fastwhole,other[i])
 		}
 		fmt.Println()
 	}	
+
+	return fastparts,slowparts,fastwhole,slowwhole
 }
 
 	
