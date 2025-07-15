@@ -5662,6 +5662,7 @@ type TextRank struct {
 	Significance float64
 	Fragment     string
 	Order        int
+	Partition    int
 }
 
 //**************************************************************

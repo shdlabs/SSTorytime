@@ -87,9 +87,8 @@
 
 - contains
 
- + has component (has) - is component of (part)
+ + has component (haspt) - is component of (part)
  + is a set of (setof) - is part of set (inset) // designations can be multi-valued
- + contains (cont)     - is an element of (el)
  + subsumes (sub)      - is subsumed by (subby)
  + swallows (sw)       - is swallowed by (swby)
  + consists of (cons)  - is part of (pt)
@@ -99,7 +98,7 @@
  + generalizes (general) - is a special case of (special)
  + includes (includes) - is a kind of of (kind of)
  + has example (e.g.) - is an example of (ex)
- + has member (memb) - belongs to (belong)
+ + has member (memb) - is a member of (ismemb)
  + is the publisher of (published) - was published by (pub by)
 
  + discusses (disc) - is discussed in (isdisc)

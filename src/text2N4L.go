@@ -98,9 +98,16 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	fmt.Fprintf(fp," - Samples from %s\n",filename)
 
 	fmt.Fprintf(fp,"\n# (begin) ************\n")
+
+	fmt.Fprintf(fp,"\n :: _sequence_ , %s::\n", filename)
+
+	var parts = make(map[string]bool)
 	
 	for i := range selection {
 		fmt.Fprintf(fp,"\n@sen%d   %s\n",selection[i].Order,Sanitize(selection[i].Fragment))
+		part := PartName(selection[i].Partition,filename)
+		fmt.Fprintf(fp,"              \" (is in) %s\n",part)
+		parts[part] = true
 	}
 	
 	fmt.Fprintf(fp,"\n# (end) ************\n")
@@ -115,7 +122,16 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	
 	fmt.Fprintf(fp,"\n#\n")
 
+
+
 	fmt.Println("Wrote file",outputfile)
+}
+
+//*******************************************************************
+
+func PartName(n int,s string) string {
+
+	return fmt.Sprintf("part %d of %s",n,s)
 }
 
 //*******************************************************************
@@ -133,8 +149,9 @@ func SelectByRunningIntent(psf [][][]string,L int,percentage float64) []SST.Text
 
 	// Rank sentences
 
-	var sentences []SST.TextRank
+	const coherence_length = SST.DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
+	var sentences []SST.TextRank
 	var sentence_counter int
 
 	for p := range psf {
@@ -159,6 +176,7 @@ func SelectByRunningIntent(psf [][][]string,L int,percentage float64) []SST.Text
 			this.Fragment = text
 			this.Significance = score
 			this.Order = sentence_counter
+			this.Partition = sentence_counter / coherence_length
 			sentences = append(sentences,this)
 			sentence_counter++
 		}
@@ -174,6 +192,8 @@ func SelectByRunningIntent(psf [][][]string,L int,percentage float64) []SST.Text
 func SelectByStaticIntent(psf [][][]string,L int,percentage float64) []SST.TextRank {
 
 	// Rank sentences
+
+	const coherence_length = SST.DUNBAR_30   // approx narrative range or #sentences before new point/topic
 
 	var sentences []SST.TextRank
 	var sentence_counter int
@@ -200,6 +220,7 @@ func SelectByStaticIntent(psf [][][]string,L int,percentage float64) []SST.TextR
 			this.Fragment = text
 			this.Significance = score
 			this.Order = sentence_counter
+			this.Partition = sentence_counter / coherence_length
 			sentences = append(sentences,this)
 			sentence_counter++
 		}

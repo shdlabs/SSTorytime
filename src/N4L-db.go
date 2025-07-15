@@ -1093,9 +1093,10 @@ func AddMandatory() {
 	inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
-	arr = SST.InsertArrowDirectory("contains","mn","mentions","+")
-        inv = SST.InsertArrowDirectory("contains","mnin","is mentioned in","-")
+	arr = SST.InsertArrowDirectory("contains","has","has","+")
+        inv = SST.InsertArrowDirectory("contains","in","is in","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
+
 }
 
 //**************************************************************

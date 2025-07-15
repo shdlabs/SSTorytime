@@ -95,15 +95,14 @@
 
 - contains
 
- + has component (has)     - is component of (part)
+ + has component (haspt)     - is component of (part)
  + is a set of (setof)     - is part of set (inset) // designations can be multi-valued
- + contains (contain)      - is contained by (element)
  + subsumes (sub)          - is subsumed by (subby)
  + encloses (encl)         - is enclosed by (isencl)
  + swallows (sw)           - is swallowed by (swby)
  + consists of (consists)  - is part of (pt)
 
- + has member (memb) - belongs to (belong)
+ + has member (memb) - is a member of (ismemb)
  + is the publisher of (published) - was published by (pub by)
 
  + has a story (story) - is the text of the story (isstory)
