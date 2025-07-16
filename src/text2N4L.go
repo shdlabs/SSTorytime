@@ -158,6 +158,8 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	}
 
 	fmt.Println("Wrote file",outputfile)
+	fmt.Printf("Final fraction %.2f of requested %.2f sampled\n",float64(len(selection)*100)/float64(L),percentage)
+
 }
 
 //*******************************************************************
