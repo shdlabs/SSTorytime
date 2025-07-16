@@ -72,17 +72,18 @@ func RipFile2File(filename string,percentage float64){
 
 	ranking1 := SelectByRunningIntent(psf,L,percentage)
 	ranking2 := SelectByStaticIntent(psf,L,percentage)
+	selection := MergeSelections(ranking1,ranking2)
 
-	selection := MergeText(ranking1,ranking2)
+	f,s,ff,ss := SST.ExtractIntentionalTokens(L)
 
-	// save result
-
-	WriteOutput(filename,selection,L,percentage)
+	WriteOutput(filename,selection,L,percentage,f,s,ff,ss)
 }
 
 //*******************************************************************
 
-func WriteOutput(filename string,selection []SST.TextRank,L int, percentage float64) {
+func WriteOutput(filename string,selection []SST.TextRank,L int, percentage float64,anom_by_part[][]string,ambi_by_part[][]string,all_anom[]string,all_ambi[]string) {
+
+	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
 
 	outputfile := filename + "_edit_me.n4l"
 
@@ -101,16 +102,22 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	fmt.Fprintf(fp,"\n :: _sequence_ , %s::\n", filename)
 
-	var parts = make(map[string]bool)
+	var partcheck = make(map[string]bool)
+	var parts []string
 	
 	for i := range selection {
 		fmt.Fprintf(fp,"\n@sen%d   %s\n",selection[i].Order,Sanitize(selection[i].Fragment))
 		part := PartName(selection[i].Partition,filename)
 		fmt.Fprintf(fp,"              \" (is in) %s\n",part)
-		parts[part] = true
+		if !partcheck[part] {
+			parts = append(parts,part)
+			partcheck[part] = true
+		}
 	}
 	
 	fmt.Fprintf(fp,"\n# (end) ************\n")
+
+	// some stats
 	
 	fmt.Fprintf(fp,"\n# Final fraction %.2f of requested %.2f\n",float64(len(selection)*100)/float64(L),percentage)
 	
@@ -122,7 +129,33 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	
 	fmt.Fprintf(fp,"\n#\n")
 
+	// document the parts
 
+	fmt.Fprintf(fp,"\n :: parts, sections ::\n")
+
+	for p := range parts {
+		fmt.Fprintf(fp,"\n %s\n",parts[p])
+		for w := range ambi_by_part[p] {
+			fmt.Fprintf(fp,"   \"       (mentions) %s\n",ambi_by_part[p][w])
+		}
+
+		for w := range anom_by_part[p] {
+			fmt.Fprintf(fp,"   \"       (emphasizes) %s\n",anom_by_part[p][w])
+		}
+	}
+
+	// whole document summary
+
+	fmt.Fprintf(fp,"\n :: whole document, about ::\n")
+
+	fmt.Fprintf(fp,"\n %s\n",filename)
+	for w := range all_ambi {
+		fmt.Fprintf(fp,"   \"       (mentions) %s\n",all_ambi[w])
+	}
+	
+	for w := range all_anom {
+		fmt.Fprintf(fp,"   \"       (emphasizes) %s\n",all_anom[w])
+	}
 
 	fmt.Println("Wrote file",outputfile)
 }
@@ -267,7 +300,7 @@ func OrderAndRank(sentences []SST.TextRank,percentage float64) []SST.TextRank {
 
 //*********************************************************************************
 
-func MergeText(one []SST.TextRank,two []SST.TextRank) []SST.TextRank{
+func MergeSelections(one []SST.TextRank,two []SST.TextRank) []SST.TextRank{
 
 	var merge []SST.TextRank
 	var already_selected = make(map[int]bool)

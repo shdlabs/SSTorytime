@@ -1134,6 +1134,14 @@ func AddMandatory() {
         inv = InsertArrowDirectory("contains","in","is in","-")
 	InsertInverseArrowDirectory(arr,inv)
 
+	arr = InsertArrowDirectory("contains","emphasizes proto-concept","emph","+")
+        inv = InsertArrowDirectory("contains","is an emphatic proto-concept in","is emph in","-")
+	InsertInverseArrowDirectory(arr,inv)
+
+	arr = InsertArrowDirectory("contains","mentions topic","ment","+")
+        inv = InsertArrowDirectory("contains","is mentioned in","ismentin","-")
+	InsertInverseArrowDirectory(arr,inv)
+
 }
 
 //**************************************************************

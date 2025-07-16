@@ -1097,6 +1097,14 @@ func AddMandatory() {
         inv = SST.InsertArrowDirectory("contains","in","is in","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
+	arr = SST.InsertArrowDirectory("contains","emphasizes proto-concept","emph","+")
+        inv = SST.InsertArrowDirectory("contains","is an emphatic proto-concept in","is emph in","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
+	arr = SST.InsertArrowDirectory("contains","mentions topic","ment","+")
+        inv = SST.InsertArrowDirectory("contains","is mentioned in","ismentin","-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
 }
 
 //**************************************************************

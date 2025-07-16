@@ -74,6 +74,10 @@ const (
 	LT128 = 4
 	LT1024 = 5
 	GT1024 = 6
+
+	// semantics, resverved names
+
+
 )
 
 var CLASS_CHANNEL_DESCRIPTION = []string{"","single word ngram","two word ngram","three word ngram",
