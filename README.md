@@ -127,7 +127,7 @@ The tool-set consistent of several components, starting with:
 
 * [searchN4L](docs/searchN4L.md) - a simple and experimental command line tool for testing the graph database
 
-* [text2N4L]() - scan a text file and turn it into a set of notes in N4L file for further editing
+* [text2N4L](docs/text2N4L.md) - scan a text file and turn it into a set of notes in N4L file for further editing
 
 * [notes](docs/notes.md) - a simple command line browser of notes in page view layout
 
