@@ -23,6 +23,7 @@ import (
 var TESTS = []string{ 
 	"head used as chinese",
 	"head context neuro",
+	"leg in chapter bodyparts",
 	"visual for ",	
 	"visual of ",	
 	"notes on",	
@@ -46,7 +47,7 @@ var TESTS = []string{
 	"containing / matching \"blub blub\"", 
 	"chinese kinds of meat", 
 	"images prince", 
-	"summary of chapter interference",
+	"summary chapter interference",
 	"showme greetings in norwegian",
         }
 
@@ -100,6 +101,7 @@ const (
 	CMD_CONTEXT = "context"
 	CMD_CHAPTER = "chapter"
 	CMD_SECTION = "section"
+	CMD_IN = "in"
 	CMD_ARROW = "arrow"
 	CMD_USEDAS = "as"
 )
@@ -114,7 +116,7 @@ func DecodeSearchField(cmd string) SST.SearchParameters {
 		"path",CMD_TO,"story", "stories", 
 		"sequence","story","stories",
 		CMD_CONTEXT,CMD_CTX,CMD_USEDAS,
-		CMD_CHAPTER,"in",CMD_SECTION,
+		CMD_CHAPTER,CMD_IN,CMD_SECTION,
 		"node", "vertex","image","node","match","summary","show", 
 		CMD_ARROW,
         }
@@ -166,18 +168,22 @@ func FillInParameters(cmd_parts [][]string) SST.SearchParameters {
 
 	var param SST.SearchParameters 
 
-	fmt.Println("CMD -->",cmd_parts)
-
 	for c := range cmd_parts {
-		switch cmd_parts[c] {
+		for p := range cmd_parts[c] {
 
+			fmt.Println("dealing with CMD -->",cmd_parts[c][p],"of",cmd_parts)
 
+			switch cmd_parts[c][p] {
+				
+			case CMD_CHAPTER:
+				//			param.Chapter
+			}
 		}
 	}
 
 	var nptr SST.NodePtr
 	param.NPtr = append(param.NPtr,nptr)
-	param.Chapter = append(param.Chapter,)
+
 	param.Context = append(param.Context,)
 	param.Arrows  = append(param.Arrows,)
 

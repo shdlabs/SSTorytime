@@ -358,7 +358,7 @@ type SearchParameters struct {
 	NPtr    []NodePtr
 	Begin   string
 	End     string
-	Chapter []string
+	Chapter string
 	Context []string
 	Arrows  []string
 	PageNr  int
