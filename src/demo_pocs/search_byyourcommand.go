@@ -21,6 +21,8 @@ import (
 //******************************************************************
 
 var TESTS = []string{ 
+	"head used as chinese",
+	"head context neuro",
 	"visual for ",	
 	"visual of ",	
 	"notes on",	
@@ -33,7 +35,7 @@ var TESTS = []string{
 	"arrows 1,-1",
 	"paths to/from arrows pe,ep, eh",
 	"paths from start to target",	
-	"a1 to b6",
+	"a2 to b5",
 	"a1 to b6 arrows then",
 	"forward cone for (bjorvika)",
 	"backward cone for (bjorvika)",
@@ -48,18 +50,6 @@ var TESTS = []string{
 	"showme greetings in norwegian",
         }
 
-var KEYWORDS = []string{ 
-	"note", "page","notes", 
-	"visual","img","image",
-	"story", "stories", 
-	"sequence","story","stories",
-	"context","not","used as", 
-	"chapter","in","section",
-	"node", "vertex","image","node","match","summary","show", 
-	"arrow", "link", "edge", 
-        }
-
-var IGNORE = []string{"about", "for", "on", "of" }
 
 //******************************************************************
 
@@ -75,7 +65,7 @@ func main() {
 	ctx := SST.Open(load_arrows)
 
 	for test := range TESTS {
-		search := DecodeSearch(TESTS[test])
+		search := DecodeSearchField(TESTS[test])
 		Search(ctx,search)
 	}
 
@@ -97,20 +87,41 @@ func Usage() {
 func GetArgs() []string {
 
 	flag.Usage = Usage
-
 	flag.Parse()
 	return flag.Args()
 }
 
 //******************************************************************
 
-func DecodeSearch(cmd string) SST.SearchParameters {
+const (
+	CMD_NOTE = "note"
+	CMD_TO = "to"
+	CMD_CTX = "ctx"
+	CMD_CONTEXT = "context"
+	CMD_CHAPTER = "chapter"
+	CMD_SECTION = "section"
+	CMD_ARROW = "arrow"
+	CMD_USEDAS = "as"
+)
 
+//******************************************************************
+
+func DecodeSearchField(cmd string) SST.SearchParameters {
+
+	var keywords = []string{ 
+		CMD_NOTE, "page",
+		"visual","img","image",
+		"path",CMD_TO,"story", "stories", 
+		"sequence","story","stories",
+		CMD_CONTEXT,CMD_CTX,CMD_USEDAS,
+		CMD_CHAPTER,"in",CMD_SECTION,
+		"node", "vertex","image","node","match","summary","show", 
+		CMD_ARROW,
+        }
+	
+	var ignore = []string{"about", "for", "on", "of", "used" }
+	
 	// parentheses are reserved for unaccenting
-
-	fmt.Println("\nDECODE",cmd)
-
-	var param SST.SearchParameters 
 
 	m := regexp.MustCompile("[ \t]+") 
 	cmd = m.ReplaceAllString(cmd," ") 
@@ -123,25 +134,52 @@ func DecodeSearch(cmd string) SST.SearchParameters {
 
 	for p := range pts {
 
-// retain quoted strings
-		subparts := strings.Split(pts[p]," ")
+		subparts := SplitQuotes(pts[p])
 
 		for w := range subparts {
-			if w > 0 && In(subparts[w],KEYWORDS) {
-				parts = append(parts,part)
-				part = nil
-				part = append(part,subparts[w])
-			} else if !In(subparts[w],IGNORE) {
+			if w > 0 && In(subparts[w],keywords) {
+				if strings.HasPrefix(subparts[w],"to") {
+					part = append(part,subparts[w])
+				} else {
+					parts = append(parts,part)
+					part = nil
+					part = append(part,subparts[w])
+				}
+			} else if !In(subparts[w],ignore) {
 				part = append(part,subparts[w])
 			}
 		}
 	}
 
-	parts=append(parts,part)
+	parts = append(parts,part)
 
-	for c := range parts {
-		fmt.Println("CMD",parts[c])
+	// command is now segmented
+
+	param := FillInParameters(parts)
+
+	return param
+}
+
+//******************************************************************
+
+func FillInParameters(cmd_parts [][]string) SST.SearchParameters {
+
+	var param SST.SearchParameters 
+
+	fmt.Println("CMD -->",cmd_parts)
+
+	for c := range cmd_parts {
+		switch cmd_parts[c] {
+
+
+		}
 	}
+
+	var nptr SST.NodePtr
+	param.NPtr = append(param.NPtr,nptr)
+	param.Chapter = append(param.Chapter,)
+	param.Context = append(param.Context,)
+	param.Arrows  = append(param.Arrows,)
 
 	return param
 }
@@ -151,11 +189,54 @@ func DecodeSearch(cmd string) SST.SearchParameters {
 func In(s string,list []string) bool {
 
 	for w := range list {
-		if strings.Contains(s,list[w]) {
+		if strings.HasPrefix(s,list[w]) {
 			return true
 		}
 	}
 	return false
+}
+
+//******************************************************************
+
+func SplitQuotes(s string) []string {
+
+	var items []string
+	var upto []rune
+	var blocked bool = false
+
+	quotes := strings.Count(s,"\"")
+
+	if quotes % 2 != 0 {
+		fmt.Println("Unpaired quotes in search",s,quotes)
+	}
+
+	cmd := []rune(s)
+
+	for r := 0; r < len(cmd); r++ {
+
+		switch cmd[r] {
+		case ' ':
+			if !blocked {
+				items = append(items,string(upto))
+				upto = nil
+				continue
+			}
+			break
+
+		case '"':
+			if blocked {
+				items = append(items,string(upto))
+				upto = nil
+			}
+			blocked = !blocked
+			continue
+		}
+
+		upto = append(upto,cmd[r])
+	}
+
+	items = append(items,string(upto))
+	return items
 }
 
 //******************************************************************
