@@ -12,15 +12,54 @@ import (
 	"fmt"
 	"os"
 	"flag"
+	"regexp"
+	"strings"
 
         SST "SSTorytime"
 )
 
 //******************************************************************
 
-var TESTS = []string{"api for Orbits",	"get a visualization",	"notes in chinese",	"notes about chinese",	"integrate in math",	"arrows pe,ep, eh",	"paths from start to target",	"a1 to b6",	"hubs for",	"stories about (bjorvika)",	"sequences about ",	"notes context \"not only\", \"come in\"",	"containing / matching \"(),\"", "page 2 of notes on brains", "notes page 3 brain", "chinese kinds of meat", "images prince", "summary of chapter interference" , "showme greetings in norwegian" }
+var TESTS = []string{ 
+	"visual for ",	
+	"visual of ",	
+	"notes on",	
+	"notes about",	
+	"(1,1), (1,3), (4,4) (3,3)",
+	"page 2 of notes on brains", 
+	"notes page 3 brain", 
+	"integrate in math",	
+	"arrows pe,ep, eh",
+	"arrows 1,-1",
+	"paths to/from arrows pe,ep, eh",
+	"paths from start to target",	
+	"a1 to b6",
+	"a1 to b6 arrows then",
+	"forward cone for (bjorvika)",
+	"backward cone for (bjorvika)",
+	"sequences about ",	
+	"stories about (bjorvika)",	
+	"context \"not only\"", 
+	"\"come in\"",	
+	"containing / matching \"blub blub\"", 
+	"chinese kinds of meat", 
+	"images prince", 
+	"summary of chapter interference",
+	"showme greetings in norwegian",
+        }
 
-var KEYWORDS = []{ "note", "page", "about" ,"in", "story", "stories", "sequence", "context", "chapter", "image", "match", "contain", "kind", "summary", "show", "arrow", "link", "edge", "node", "vertex" }
+var KEYWORDS = []string{ 
+	"note", "page","notes", 
+	"visual","img","image",
+	"story", "stories", 
+	"sequence","story","stories",
+	"context","not","used as", 
+	"chapter","in","section",
+	"node", "vertex","image","node","match","summary","show", 
+	"arrow", "link", "edge", 
+        }
+
+var IGNORE = []string{"about", "for", "on", "of" }
 
 //******************************************************************
 
@@ -65,20 +104,65 @@ func GetArgs() []string {
 
 //******************************************************************
 
-func DecodeSearch(s string) SST.SearchParameters {
+func DecodeSearch(cmd string) SST.SearchParameters {
 
-	var p SST.SearchParameters 
+	// parentheses are reserved for unaccenting
 
-	fmt.Println(s)
+	fmt.Println("\nDECODE",cmd)
 
-	return p
+	var param SST.SearchParameters 
+
+	m := regexp.MustCompile("[ \t]+") 
+	cmd = m.ReplaceAllString(cmd," ") 
+
+	cmd = strings.TrimSpace(cmd)
+	pts := SST.SplitPunctuationText(cmd)
+
+	var parts [][]string
+	var part []string
+
+	for p := range pts {
+
+// retain quoted strings
+		subparts := strings.Split(pts[p]," ")
+
+		for w := range subparts {
+			if w > 0 && In(subparts[w],KEYWORDS) {
+				parts = append(parts,part)
+				part = nil
+				part = append(part,subparts[w])
+			} else if !In(subparts[w],IGNORE) {
+				part = append(part,subparts[w])
+			}
+		}
+	}
+
+	parts=append(parts,part)
+
+	for c := range parts {
+		fmt.Println("CMD",parts[c])
+	}
+
+	return param
+}
+
+//******************************************************************
+
+func In(s string,list []string) bool {
+
+	for w := range list {
+		if strings.Contains(s,list[w]) {
+			return true
+		}
+	}
+	return false
 }
 
 //******************************************************************
 
 func Search(ctx SST.PoSST, search SST.SearchParameters) {
 
-	fmt.Println(search)
+
 }
 
 
