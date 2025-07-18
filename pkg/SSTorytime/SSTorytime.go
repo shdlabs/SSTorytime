@@ -351,21 +351,6 @@ type PoSST struct {
 
 //******************************************************************
 
-type SearchParameters struct {
-
-	// marshalled for searching
-
-	NPtr    []NodePtr
-	Begin   string
-	End     string
-	Chapter string
-	Context []string
-	Arrows  []string
-	PageNr  int
-}
-
-//******************************************************************
-
 type Story struct {
 
 	ContainNPtr NodePtr

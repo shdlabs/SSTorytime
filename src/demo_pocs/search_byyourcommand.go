@@ -21,9 +21,10 @@ import (
 //******************************************************************
 
 var TESTS = []string{ 
-	"head used as chinese",
+	"head used as chinese stuff",
 	"head context neuro",
 	"leg in chapter bodyparts",
+	"foot in bodyparts2",
 	"visual for ",	
 	"visual of ",	
 	"notes on",	
@@ -34,10 +35,6 @@ var TESTS = []string{
 	"integrate in math",	
 	"arrows pe,ep, eh",
 	"arrows 1,-1",
-	"paths to/from arrows pe,ep, eh",
-	"paths from start to target",	
-	"a2 to b5",
-	"a1 to b6 arrows then",
 	"forward cone for (bjorvika)",
 	"backward cone for (bjorvika)",
 	"sequences about ",	
@@ -49,6 +46,14 @@ var TESTS = []string{
 	"images prince", 
 	"summary chapter interference",
 	"showme greetings in norwegian",
+	"paths from arrows pe,ep, eh",
+	"paths from start to target",	
+	"paths to target3",	
+	"a2 to b5",
+	"to a5",
+	"from start",
+	"from (1,6)",
+	"a1 to b6 arrows then",
         }
 
 
@@ -66,8 +71,9 @@ func main() {
 	ctx := SST.Open(load_arrows)
 
 	for test := range TESTS {
+		fmt.Println("......................")
 		search := DecodeSearchField(TESTS[test])
-		Search(ctx,search)
+		Search(ctx,search,TESTS[test])
 	}
 
 	SST.Close(ctx)
@@ -94,30 +100,46 @@ func GetArgs() []string {
 
 //******************************************************************
 
+type SearchParameters struct {
+
+	Name     []string
+	From     []string
+	To       []string
+	Chapter  string
+	Context  []string
+	Arrows   []string
+	PageNr   int
+	Sequence bool
+}
+
 const (
+
 	CMD_NOTE = "note"
+	CMD_PAGE = "page"
+	CMD_PATH = "path"
+	CMD_STORY = "story"
+	CMD_SEQ = "sequence"
+	CMD_FROM = "from"
 	CMD_TO = "to"
 	CMD_CTX = "ctx"
 	CMD_CONTEXT = "context"
+	CMD_AS = "as"
 	CMD_CHAPTER = "chapter"
 	CMD_SECTION = "section"
 	CMD_IN = "in"
-	CMD_ARROW = "arrow"
-	CMD_USEDAS = "as"
+	CMD_ARROW = "arrows"
 )
 
 //******************************************************************
 
-func DecodeSearchField(cmd string) SST.SearchParameters {
+func DecodeSearchField(cmd string) SearchParameters {
 
 	var keywords = []string{ 
-		CMD_NOTE, "page",
-		"visual","img","image",
-		"path",CMD_TO,"story", "stories", 
-		"sequence","story","stories",
-		CMD_CONTEXT,CMD_CTX,CMD_USEDAS,
+		CMD_NOTE, CMD_PATH,
+		CMD_PATH,CMD_FROM,CMD_TO,CMD_STORY,
+		CMD_SEQ,
+		CMD_CONTEXT,CMD_CTX,CMD_AS,
 		CMD_CHAPTER,CMD_IN,CMD_SECTION,
-		"node", "vertex","image","node","match","summary","show", 
 		CMD_ARROW,
         }
 	
@@ -140,6 +162,8 @@ func DecodeSearchField(cmd string) SST.SearchParameters {
 
 		for w := range subparts {
 			if w > 0 && In(subparts[w],keywords) {
+				// special case for TO with implicit FROM, and USED AS
+
 				if strings.HasPrefix(subparts[w],"to") {
 					part = append(part,subparts[w])
 				} else {
@@ -147,6 +171,7 @@ func DecodeSearchField(cmd string) SST.SearchParameters {
 					part = nil
 					part = append(part,subparts[w])
 				}
+
 			} else if !In(subparts[w],ignore) {
 				part = append(part,subparts[w])
 			}
@@ -164,28 +189,131 @@ func DecodeSearchField(cmd string) SST.SearchParameters {
 
 //******************************************************************
 
-func FillInParameters(cmd_parts [][]string) SST.SearchParameters {
+func FillInParameters(cmd_parts [][]string) SearchParameters {
 
-	var param SST.SearchParameters 
+	var param SearchParameters 
 
-	for c := range cmd_parts {
+	for c := 0; c < len(cmd_parts); c++ {
+
+		lenp := len(cmd_parts[c])
+
 		for p := range cmd_parts[c] {
 
-			fmt.Println("dealing with CMD -->",cmd_parts[c][p],"of",cmd_parts)
-
 			switch cmd_parts[c][p] {
-				
-			case CMD_CHAPTER:
-				//			param.Chapter
+
+			case CMD_CHAPTER, CMD_IN:
+				if lenp > p+1 {
+					param.Chapter = cmd_parts[c][p+1]
+					break
+				}
+
+			case CMD_NOTE:
+				if lenp > p+1 {
+					param.Chapter = cmd_parts[c][p+1]
+					param.PageNr = 1
+					break
+				}
+
+			case CMD_PAGE:
+				// = GetIntParam(cmd_parts[c][p])
+				if lenp > p+1 {
+					var no int = 1
+					fmt.Sscanf(cmd_parts[c][p+1],"%d",&no)
+					param.PageNr = no
+					break
+				}
+
+			case CMD_ARROW:
+				if lenp > p+1 {
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.Arrows = append(param.Arrows,ult[u])
+						}
+					}
+					break
+				}
+
+			case CMD_CONTEXT, CMD_CTX,CMD_AS:
+				if lenp > p+1 {
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.Context = append(param.Context,ult[u])
+						}
+					}
+					break
+				}
+
+			case CMD_FROM:
+				if lenp > p+1 {
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.From = append(param.From,ult[u])
+						}
+					}
+					break
+				}
+
+			case CMD_TO:
+				if p > 0 && lenp > p+1 {
+
+					if param.From == nil {
+						param.From = append(param.From,cmd_parts[c][p-1])
+					}
+
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.To = append(param.To,ult[u])
+						}
+					}
+					break
+				}
+
+				if lenp > p+1 {
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.To = append(param.To,ult[u])
+						}
+					}
+					break
+				}
+
+
+
+			case CMD_PATH,CMD_STORY,CMD_SEQ:
+				param.Sequence = true
+
+			default:
+				//param.Name = append(param.Name,cmd_parts[c][p])
+
+				if lenp > p+1 {
+
+					if cmd_parts[c][p+1] == CMD_TO {
+						continue
+					}
+
+					for pp := p; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.Name = append(param.Name,ult[u])
+						}
+					}
+					break
+				}
 			}
+			break
 		}
 	}
-
-	var nptr SST.NodePtr
-	param.NPtr = append(param.NPtr,nptr)
-
-	param.Context = append(param.Context,)
-	param.Arrows  = append(param.Arrows,)
 
 	return param
 }
@@ -208,7 +336,7 @@ func SplitQuotes(s string) []string {
 
 	var items []string
 	var upto []rune
-	var blocked bool = false
+	var block_quote bool = false
 
 	quotes := strings.Count(s,"\"")
 
@@ -221,8 +349,9 @@ func SplitQuotes(s string) []string {
 	for r := 0; r < len(cmd); r++ {
 
 		switch cmd[r] {
+
 		case ' ':
-			if !blocked {
+			if !block_quote {
 				items = append(items,string(upto))
 				upto = nil
 				continue
@@ -230,11 +359,11 @@ func SplitQuotes(s string) []string {
 			break
 
 		case '"':
-			if blocked {
+			if block_quote {
 				items = append(items,string(upto))
 				upto = nil
 			}
-			blocked = !blocked
+			block_quote = !block_quote
 			continue
 		}
 
@@ -247,9 +376,17 @@ func SplitQuotes(s string) []string {
 
 //******************************************************************
 
-func Search(ctx SST.PoSST, search SST.SearchParameters) {
+func Search(ctx SST.PoSST, search SearchParameters,line string) {
 
-
+	fmt.Println("FROM",line)
+	fmt.Println(" - name:",search.Name)
+	fmt.Println(" - from:",search.From)
+	fmt.Println(" - to:",search.To)
+	fmt.Println(" - chap:",search.Chapter)
+	fmt.Println(" - context:",search.Context)
+	fmt.Println(" - arrows:",search.Arrows)
+	fmt.Println(" - pagenr:",search.PageNr)
+	fmt.Println(" - seq:",search.Sequence)
 }
 
 
