@@ -25,9 +25,9 @@ var TESTS = []string{
 	"head context neuro",
 	"leg in chapter bodyparts",
 	"foot in bodyparts2",
-	"visual for ",	
-	"visual of ",	
-	"notes on",	
+	"visual for prince",	
+	"visual of integral",	
+	"notes on restaurants in chinese",	
 	"notes about",	
 	"(1,1), (1,3), (4,4) (3,3)",
 	"page 2 of notes on brains", 
@@ -36,7 +36,7 @@ var TESTS = []string{
 	"arrows pe,ep, eh",
 	"arrows 1,-1",
 	"forward cone for (bjorvika)",
-	"backward cone for (bjorvika)",
+	"backward sideways cone for (bjorvika)",
 	"sequences about ",	
 	"stories about (bjorvika)",	
 	"context \"not only\"", 
@@ -114,7 +114,10 @@ type SearchParameters struct {
 
 const (
 
-	CMD_NOTE = "note"
+	CMD_ON = "on"
+	CMD_FOR = "for"
+	CMD_ABOUT = "about"
+	CMD_NOTES = "notes"
 	CMD_PAGE = "page"
 	CMD_PATH = "path"
 	CMD_STORY = "story"
@@ -135,15 +138,17 @@ const (
 func DecodeSearchField(cmd string) SearchParameters {
 
 	var keywords = []string{ 
-		CMD_NOTE, CMD_PATH,
+		CMD_NOTES, CMD_PATH,
 		CMD_PATH,CMD_FROM,CMD_TO,CMD_STORY,
 		CMD_SEQ,
 		CMD_CONTEXT,CMD_CTX,CMD_AS,
 		CMD_CHAPTER,CMD_IN,CMD_SECTION,
 		CMD_ARROW,
+		CMD_ON,CMD_ABOUT,CMD_FOR,
+		CMD_PAGE,
         }
 	
-	var ignore = []string{"about", "for", "on", "of", "used" }
+	var ignore = []string{ "of", "used" }
 	
 	// parentheses are reserved for unaccenting
 
@@ -171,10 +176,10 @@ func DecodeSearchField(cmd string) SearchParameters {
 					part = nil
 					part = append(part,subparts[w])
 				}
-
 			} else if !In(subparts[w],ignore) {
 				part = append(part,subparts[w])
 			}
+
 		}
 	}
 
@@ -197,7 +202,7 @@ func FillInParameters(cmd_parts [][]string) SearchParameters {
 
 		lenp := len(cmd_parts[c])
 
-		for p := range cmd_parts[c] {
+		for p := 0; p < lenp; p++ {
 
 			switch cmd_parts[c][p] {
 
@@ -207,20 +212,21 @@ func FillInParameters(cmd_parts [][]string) SearchParameters {
 					break
 				}
 
-			case CMD_NOTE:
+			case CMD_NOTES:
+				if param.PageNr < 1 {
+					param.PageNr = 1
+				}
 				if lenp > p+1 {
 					param.Chapter = cmd_parts[c][p+1]
-					param.PageNr = 1
-					break
 				}
 
 			case CMD_PAGE:
-				// = GetIntParam(cmd_parts[c][p])
 				if lenp > p+1 {
+					p++
 					var no int = 1
-					fmt.Sscanf(cmd_parts[c][p+1],"%d",&no)
+					fmt.Sscanf(cmd_parts[c][p],"%d",&no)
 					param.PageNr = no
-					break
+					continue
 				}
 
 			case CMD_ARROW:
@@ -292,16 +298,11 @@ func FillInParameters(cmd_parts [][]string) SearchParameters {
 			case CMD_PATH,CMD_STORY,CMD_SEQ:
 				param.Sequence = true
 
-			default:
-				//param.Name = append(param.Name,cmd_parts[c][p])
 
+			case CMD_ON,CMD_ABOUT,CMD_FOR:
 				if lenp > p+1 {
 
-					if cmd_parts[c][p+1] == CMD_TO {
-						continue
-					}
-
-					for pp := p; pp < lenp; pp++ {
+					for pp := p+1; pp < lenp; pp++ {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
@@ -310,6 +311,21 @@ func FillInParameters(cmd_parts [][]string) SearchParameters {
 					}
 					break
 				}
+
+			default:
+
+				if lenp > p+1 && cmd_parts[c][p+1] == CMD_TO {
+					continue
+				}
+
+				for pp := p; pp < lenp; pp++ {
+
+					ult := strings.Split(cmd_parts[c][pp],",")
+					for u := range ult {
+						param.Name = append(param.Name,ult[u])
+					}
+				}
+				break
 			}
 			break
 		}
