@@ -5493,9 +5493,318 @@ func SuperNodes(ctx PoSST,solutions [][]Link, maxdepth int) string {
 	return retval
 }
 
+// ******************************************************************
+//
+// Part 4 : SEARCH LANGUAGE
+//
+// ******************************************************************
+
+type SearchParameters struct {
+
+	Name     []string
+	From     []string
+	To       []string
+	Chapter  string
+	Context  []string
+	Arrows   []string
+	PageNr   int
+	Sequence bool
+}
+
+const (
+
+	CMD_ON = "on"
+	CMD_FOR = "for"
+	CMD_ABOUT = "about"
+	CMD_NOTES = "note"
+	CMD_PAGE = "page"
+	CMD_PATH = "path"
+	CMD_STORY = "stor"
+	CMD_SEQ = "seq"
+	CMD_FROM = "from"
+	CMD_TO = "to"
+	CMD_CTX = "ctx"
+	CMD_CONTEXT = "context"
+	CMD_AS = "as"
+	CMD_CHAPTER = "chapter"
+	CMD_SECTION = "section"
+	CMD_IN = "in"
+	CMD_ARROW = "arrows"
+)
+
+//******************************************************************
+
+func DecodeSearchField(cmd string) SearchParameters {
+
+	var keywords = []string{ 
+		CMD_NOTES, CMD_PATH,
+		CMD_PATH,CMD_FROM,CMD_TO,CMD_STORY,
+		CMD_SEQ,
+		CMD_CONTEXT,CMD_CTX,CMD_AS,
+		CMD_CHAPTER,CMD_IN,CMD_SECTION,
+		CMD_ARROW,
+		CMD_ON,CMD_ABOUT,CMD_FOR,
+		CMD_PAGE,
+        }
+	
+	var ignore = []string{ "of", "used" }
+	
+	// parentheses are reserved for unaccenting
+
+	m := regexp.MustCompile("[ \t]+") 
+	cmd = m.ReplaceAllString(cmd," ") 
+
+	cmd = strings.TrimSpace(cmd)
+	pts := SplitPunctuationText(cmd)
+
+	var parts [][]string
+	var part []string
+
+	for p := range pts {
+
+		subparts := SplitQuotes(pts[p])
+
+		for w := range subparts {
+			if w > 0 && InList(subparts[w],keywords) {
+				// special case for TO with implicit FROM, and USED AS
+
+				if strings.HasPrefix(subparts[w],"to") {
+					part = append(part,subparts[w])
+				} else {
+					parts = append(parts,part)
+					part = nil
+					part = append(part,subparts[w])
+				}
+			} else if !InList(subparts[w],ignore) {
+				part = append(part,subparts[w])
+			}
+
+		}
+	}
+
+	parts = append(parts,part)
+
+	// command is now segmented
+
+	param := FillInParameters(parts,keywords)
+
+	return param
+}
+
+//******************************************************************
+
+func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
+
+	var param SearchParameters 
+
+	for c := 0; c < len(cmd_parts); c++ {
+
+		lenp := len(cmd_parts[c])
+
+		for p := 0; p < lenp; p++ {
+
+			switch SomethingLike(cmd_parts[c][p],keywords) {
+
+			case CMD_CHAPTER, CMD_IN:
+				if lenp > p+1 {
+					param.Chapter = cmd_parts[c][p+1]
+					break
+				}
+
+			case CMD_NOTES:
+				if param.PageNr < 1 {
+					param.PageNr = 1
+				}
+				if lenp > p+1 {
+					param.Chapter = cmd_parts[c][p+1]
+				}
+
+			case CMD_PAGE:
+				if lenp > p+1 {
+					p++
+					var no int = 1
+					fmt.Sscanf(cmd_parts[c][p],"%d",&no)
+					param.PageNr = no
+					continue
+				}
+
+			case CMD_ARROW:
+				if lenp > p+1 {
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.Arrows = append(param.Arrows,ult[u])
+						}
+					}
+					break
+				}
+
+			case CMD_CONTEXT, CMD_CTX,CMD_AS:
+				if lenp > p+1 {
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.Context = append(param.Context,ult[u])
+						}
+					}
+					break
+				}
+
+			case CMD_FROM:
+				if lenp > p+1 {
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.From = append(param.From,ult[u])
+						}
+					}
+					break
+				}
+
+			case CMD_TO:
+				if p > 0 && lenp > p+1 {
+
+					if param.From == nil {
+						param.From = append(param.From,cmd_parts[c][p-1])
+					}
+
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.To = append(param.To,ult[u])
+						}
+					}
+					break
+				}
+
+				if lenp > p+1 {
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.To = append(param.To,ult[u])
+						}
+					}
+					break
+				}
+
+
+
+			case CMD_PATH,CMD_STORY,CMD_SEQ:
+				param.Sequence = true
+
+
+			case CMD_ON,CMD_ABOUT,CMD_FOR:
+				if lenp > p+1 {
+
+					for pp := p+1; pp < lenp; pp++ {
+						p++
+						ult := strings.Split(cmd_parts[c][pp],",")
+						for u := range ult {
+							param.Name = append(param.Name,ult[u])
+						}
+					}
+					break
+				}
+
+			default:
+
+				if lenp > p+1 && cmd_parts[c][p+1] == CMD_TO {
+					continue
+				}
+
+				for pp := p; pp < lenp; pp++ {
+
+					ult := strings.Split(cmd_parts[c][pp],",")
+					for u := range ult {
+						param.Name = append(param.Name,ult[u])
+					}
+				}
+				break
+			}
+			break
+		}
+	}
+
+	return param
+}
+
+//******************************************************************
+
+func SomethingLike(s string,keywords []string) string {
+
+	for k := 0; k < len(keywords); k++ {
+		if strings.HasPrefix(s,keywords[k]) {
+			return keywords[k]
+		}
+	}
+
+	return s
+}
+
+//******************************************************************
+
+func InList(s string,list []string) bool {
+
+	for w := range list {
+		if strings.HasPrefix(s,list[w]) {
+			return true
+		}
+	}
+	return false
+}
+
+//******************************************************************
+
+func SplitQuotes(s string) []string {
+
+	var items []string
+	var upto []rune
+	var block_quote bool = false
+
+	quotes := strings.Count(s,"\"")
+
+	if quotes % 2 != 0 {
+		fmt.Println("Unpaired quotes in search",s,quotes)
+	}
+
+	cmd := []rune(s)
+
+	for r := 0; r < len(cmd); r++ {
+
+		switch cmd[r] {
+
+		case ' ':
+			if !block_quote {
+				items = append(items,string(upto))
+				upto = nil
+				continue
+			}
+			break
+
+		case '"':
+			if block_quote {
+				items = append(items,string(upto))
+				upto = nil
+			}
+			block_quote = !block_quote
+			continue
+		}
+
+		upto = append(upto,cmd[r])
+	}
+
+	items = append(items,string(upto))
+	return items
+}
+
 // **************************************************************************
 //
-// Part 4: Context processing
+// Part 5: Context processing
 //
 // **************************************************************************
 
