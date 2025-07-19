@@ -13,6 +13,8 @@ import (
 	"os"
 	"flag"
 	"strconv"
+	"strings"
+
         SST "SSTorytime"
 )
 
@@ -27,7 +29,7 @@ var TESTS = []string{
 	"visual of integral",	
 	"notes on restaurants in chinese",	
 	"notes about",	
-	"(1,1), (1,3), (4,4) (3,3)",
+	"(1,1), (1,3), (4,4) (3,3) other stuff",
 	"page 2 of notes on brains", 
 	"notes page 3 brain", 
 	"integrate in math",	
@@ -191,8 +193,11 @@ func ParseLiteralNodePtrs(names []string) ([]SST.NodePtr,[]string) {
 		for i := 0; i < len(line); i++ {
 			
 			if line[i] == '(' {
-				rest = append(rest,string(current))
-				current = nil
+				rs := strings.TrimSpace(string(current))
+				if len(rs) > 0 {
+					rest = append(rest,string(current))
+					current = nil
+				}
 				continue
 			}
 			
@@ -208,7 +213,10 @@ func ParseLiteralNodePtrs(names []string) ([]SST.NodePtr,[]string) {
 			current = append(current,line[i])
 			
 		}
-		rest = append(rest,string(current))
+		rs := strings.TrimSpace(string(current))
+		if len(rs) > 0 {
+			rest = append(rest,rs)
+		}
 		current = nil
 	}
 
