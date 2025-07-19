@@ -438,7 +438,7 @@ hot sour soup  酸辣汤 Suān là tāng
 dimsum (eh)  点心  (hp) diǎnxīn
 
 ròu jiā mó (ph) 肉夹馍 (he) steamed bread bun with meat filling
-mó (ph) 馍 (he) steamed bread bun like pitta
+mó (ph) 馍 (he) steamed bread bun like pitta / momo
 mántou  (ph) 馒头 (he) steamed bun 
 
 :: shopping, town, city , shopping, buying, selling ::
@@ -1550,9 +1550,8 @@ travel visa  (eh) 签证 (hp) qiānzhèng
 tourist visa  (eh) 旅游签证 (hp) lǚyóu qiānzhèng
 luggage  (eh) 行李 (hp) xínglǐ
 plane  (eh) 飞机 (hp) fēijī
-airport  (eh) 机场 (hp) jī chǎng
+airport  (eh) 机场 (hp) jīchǎng
 take off  (eh) 起飞 (hp) qǐfēi
-
 
 international  (eh) 国际 (hp) guójì
 domestic  (eh) 国内 (hp) guónèi
@@ -1989,6 +1988,8 @@ while / alongside (eh)  一边 (hp) yībiān
 
 在中间  (hp) zài zhōngjiān  (pe) in the middle of
 中  (hp) zhōng  (pe) middle,central,average,moderate
+
+
 
 bēizǐ zài bīngxiāng pángbiān (ph) 杯子在冰箱旁边 (he) the cups are next to the fridge
 yǎnjìng zài guìzǐ lǐ (ph)  眼镜在柜子里  (he) the glasses are in the cupboard
@@ -3316,6 +3317,30 @@ tā liǎng gè xīngqí hòu huì qù rìběn (ph) 他两个星期后会去日�
 # link the lines
  $l1.1 (then) $l2.1 (then) $l3.1 (then) $l4.1 (then) $l5.1
 
+
+
+ :: root words , word connections, compound words ::
+
+@field chǎng (ph) 场 (he) field
+@machine jī (ph) 机 (he) machine, mechanism
+
+kǎoxiāng (ph) 烤箱 (he) oven = baking box
+
+  " (useword) kǎo (ph) 烤 (he) baking
+
+bīngxiāng (ph) 冰箱 (he) fridge = ice box
+
+   " (useword) bīng (ph) 冰 (he) ice
+   " (useword) xiāng (ph) 箱 (he)box
+
+tíngchē chǎng  停车场 parking lot = stop car field
+    " (useword) $field.1
+shāngchǎng   商场 shopping mall = business field
+    " (useword) $field.1
+
+jīchǎng (ph) 机场 (he) airport = machine field
+    " (useword) $field.1
+    " (useword) $machine.1
 
 
 
