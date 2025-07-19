@@ -101,6 +101,7 @@
  + encloses (encl)         - is enclosed by (isencl)
  + swallows (sw)           - is swallowed by (swby)
  + consists of (consists)  - is part of (pt)
+ + uses word (useword)        - is a word used in (wordin)
 
  + has member (memb) - is a member of (ismemb)
  + is the publisher of (published) - was published by (pub by)

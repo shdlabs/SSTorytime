@@ -54,8 +54,8 @@ using 不/bù versus  没有/méiyǒu (rule) 不/bù Negates in the Present and 
 Wǒ jīntiān méiyǒu qù xuéxiào (ph) 我今天没有去学校 (he) I didn't go to school today
      " (e.g.) $meirule.1
 
-Wǒmen de yuángōng bù duō (ph) 我们的员工不多 (he)  We don't have many employees
-Nǐ méi huídá zhège wèntí  (ph) 你没回答这个问题  (he) You didn't answer the question
+wǒmen de yuángōng bù duō (ph) 我们的员工不多 (he)  we don't have many employees
+nǐ méi huídá zhège wèntí  (ph) 你没回答这个问题  (he) you didn't answer the question
 
 @bu I did not meet with him last weekend (eh)  上周末我没有见到他 (hp) Shàng zhōumò wǒ méiyǒu jiàn dào tā 
       " (prop) WRONG: Wǒ shàng gè zhōumò bù gēn tā jiànmiàn (ph) 我 上个 周末 不 跟 他 见面 (see) $bu.2
@@ -108,6 +108,7 @@ according to/depending on/based on  (eh) 根据 (hp) gēnjù
 
 :: idioms, phrases ::
 
+tīng shuō (ph) 听说 (he) I heard that ...
 
 xǐ (ph) 喜 (he) happiness
 xǐ (ph) 喜喜 (he) double happiness! Luck, esp in love
@@ -320,6 +321,12 @@ wǒ shàngbān shàng dé tèbié zǎo (ph)  我上班上得特别早  (he) I go
 
  +:: job , profession ::
 
+earn (eh) 赚 (hp) zhuàn
+
+jìzhě (ph) 记者 (he) reporter/journalist
+  "   (e.g.) jìzhě zhuàn dé hěn shǎo (ph) 记者赚得很少 (he) Journalists earn very little
+
+
 I am a writer     (eh) 我是一个作家 (hp) Wǒ shì yīgè zuòjiā
 I am a writer and music composer  (eh) 我是一名作家和音乐作曲家 (hp) Wǒ shì yī míng zuòjiā hé yīnyuè zuòqǔ jiā
 
@@ -328,6 +335,9 @@ tā měi gè xīngqísì xué gāngqín (ph) 他每个星期四学钢琴 (he) he
 nín shì yīnyuè jiā mǎ  (ph) 您是音乐家马  (he) are you a musician?
 
 composer (eh) 作曲家 (hp) zuòqǔ jiā (see also)  yī míng zuòqǔ jiā (pe) a composer (eh) 一名作曲家
+
+
+
 
 
 :: common chinese words:: 
@@ -764,9 +774,9 @@ cháoshàn  (ph) 潮汕 (he) Chaoshan region (note) North of Fujian province on 
    "      (url) "https://en.wikipedia.org/wiki/Teochew_Min"
    "      (knownfor) Chaoshan beef hotpot
 
-chaoshan region (speaks) %Teochew language also known as Teo-Swa or Chaoshan, or simply "Min". It is a Sino-Tibetan langauge, closely related to Hokkien. Many of the older Chinese texts make more sense in this older tongue, and it remains close to Japanese.
+Chaoshan region (speaks) %Teochew language also known as Teo-Swa or Chaoshan, or simply "Min". It is a Sino-Tibetan langauge, closely related to Hokkien. Many of the older Chinese texts make more sense in this older tongue, and it remains close to Japanese.
 
-teochew (eh)  閩南語 (hp) Mǐnnányǔ
+Teochew (eh)  閩南語 (hp) Mǐnnányǔ
 
 
 #######################################################
@@ -1350,8 +1360,8 @@ sorry  (eh) 对不起 (hp) duìbùqǐ
 
 +:: answer, question, query, ask ::
 
-answer respond  (eh) 回答 (hp)  huídá (contains) huí
-answer (eh) 答 (hp) dá (element) huídá
+answer respond  (eh) 回答 (hp)  huídá (useword) huí
+answer (eh) 答 (hp) dá (wordin) huídá
 
 
 ###########################################################
@@ -1608,13 +1618,18 @@ jīhuì (ph)  机会 (he) chance/opportunity
 
 ###########################################################
 
-:: feelings , emotions , happy, sad ::
+:: feelings , emotions , happy, sad, reactions ::
 
 happy/excited  (ep) gāoxìng (ph) 高兴
 happy/contented  (ep) kāixīn  (ph)开心
 sad  (eh) 难过 (hp) nánguò
 
 happy with/satisfied  (eh) 满意 (hp) mǎnyì
+
+
+surprised (eh) 惊讶 (hp) jīngyà
+    "   (eh) 吃惊 (hp) chījīng
+
 
 yǒuhǎo (ph) 友好  (he) friendly
    "   (e.g.) línjūmen hǎoxiàng bù tài yǒuhǎo (ph)  邻居们好像不太友好  (he) The neighbors don't seem very friendly.
@@ -1764,6 +1779,11 @@ will you come to our party  (eh) 你会来参加我们的聚会吗  (hp) nǐ hu�
 ###########################################################
 
 :: friends | relatives | family ::
+
+
+Wǒmen duàn jiā (ph) 我们段家 (he) our Duan family
+
+ " (confuse) Wǒmen quánjiā (ph) 我们全家 (he) our whole family
 
 朋友  (ep) péngyǒu  (ph) friend
 
@@ -2096,8 +2116,8 @@ diànnǎo (ph) 电脑  (he) computer
 
    " (e.g.) tā dǎkāi diànnǎo (ph) 他打开电脑 (he)  he turns on the computer
 
-dǎkāi (ph) 打开 (he) switch on
-  " (e.g.) tā dǎkāi diànnǎo 
+dǎkāi (ph) 打开 (he) switch on / turn on
+  " (e.g.) tā dǎkāi diànnǎo (ph) 他打开电脑  (he) he turns on the computer
 
 电话  (hp) diànhuà  (pe)telephone
 
@@ -2155,7 +2175,7 @@ tiàowǔ (ph) 跳舞  (he)dance
 
 beginner (eh) 菜鸟 (hp) càiniǎo
 novice / new hand (eh) 新手 (hp) xīnshǒu
-
+jīngyàn (ph) 经验 (he) experience
 
 :: work | occupation | school , study ::
 
@@ -3030,13 +3050,18 @@ will not disturb neighbors  (eh) 不会影响邻居(hp)  bù huì yǐngxiǎng l�
 
 :: habits|behaviours, living, routines, domestic  ::
 
+used to /in the habit of  (eh) 习惯 (hp) xíguàn
+usually  (eh) 平时 (hp) píngshí
+generally (eh) 通常 (hp) tōngcháng
+
++:: activities ::
+
 brush teeth  (eh) 刷牙 (hp) shuāyá
 shower  (eh) 洗澡 (hp) xǐzǎo
 my habit of brushing my teeth is three times a day (eh)  我的刷牙习惯是每天三次(hp)  wǒ de shuāyá xíguàn shì měitiān sāncì
 
 be sure to brush your teeth immediately after eating (eh)  吃饭以后一定要马上刷牙 (hp) chīfàn yǐhòu yīdìng yào mǎshàng 
 
-usually do/in the habit of  (eh) 习惯 (hp) xíguàn
 
 it's not a good habit to eat while watching tv  (eh) 一边看电视一边吃饭不是好习惯 (hp) yībiān kàn diànshì yībiān chīfàn bùshì hǎo xíguàn
 
