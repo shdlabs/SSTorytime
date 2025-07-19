@@ -121,45 +121,59 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	sequence := search.Sequence
 
 	arrowptrs,sttype := ArrowPtrFromArrowsNames(ctx,search.Arrows)
-	nodeptrs,rest := ParseLiteralNodePtrs(search.Name)
+	nodeptrs := SolveNodePtrs(ctx,search.Name,search.Chapter,search.Context,arrowptrs)
+	leftptrs := SolveNodePtrs(ctx,search.From,search.Chapter,search.Context,arrowptrs)
+	rightptrs := SolveNodePtrs(ctx,search.To,search.Chapter,search.Context,arrowptrs)
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
 
-	fmt.Println("NODEPTRS,REST=",nodeptrs,rest,sttypes)
+	// if we have name, (maybe with context, chapter, arrows)
 
+	if name && ! sequence {
 
-//	name = rest
+		fmt.Println(nodeptrs)
+	}
+
+	// RETURN THIS TYPE NOW: []NodePtr for Orbits and Cones, start/end sets
+	// or continue to append nodeptrs
+
+	// Next PATHS, which are merged cones
+	// Sequences are forward cones
 
 	if (name && from) || (name && to) {
 		fmt.Println("Search has conflicting parts <to|from> and match strigns")
 		os.Exit(-1)
 	}
 
-	// if we have name, (maybe with context, chapter, arrows)
+	// Path solving, two sets of nodeptrs
 
-	if name && ! sequence {
-
-		// foreach name
-		//SST.GetDBNodePtrMatchingNCC(ctx,search.Name,search.Chapter,search.Context,arrowptrs)
+	if from && to {
+		fmt.Println(leftptrs,rightptrs)
 	}
 
+	// if we have sequence with arrows, then we are looking for sequence context or stories
+
 	if name && sequence {
+		//notes := SST.GetDBPageMap(CTX,chaptext,context,pagenr)
+
 	}
 
 	if sttypes {
+		//GetEntireCone/Fwd/Bwd
 	}
 
 	// if we only have context then search NodeArrowNode
 
 	if !name && context {
-
+		// GetMatchingContexts(context)
 	}
 
 	// if we only have chapter then we are looking for page notes
 	// if we have page number then we are looking for notes by pagemap
 
 	if chapter && pagenr && !arrows && !context {
+	//	GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
 	}
 
 	// if we have from/to (maybe with chapter/context) then we are looking for paths
@@ -168,14 +182,26 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if sttypes {  // from/to
 	}
 
-	if from && to {
-	}
 
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 	// GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int)
 
 	if sequence && arrows {
 	}
+}
+
+//******************************************************************
+
+func SolveNodePtrs(ctx SST.PoSST,nodenames []string,chap string,cntx []string, arr []SST.ArrowPtr) []SST.NodePtr {
+
+	nodeptrs,rest := ParseLiteralNodePtrs(nodenames)
+
+	for r := range rest {
+		nptrs := SST.GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
+		nodeptrs = append(nodeptrs,nptrs...)
+	}
+
+	return nodeptrs
 }
 
 //******************************************************************
@@ -241,7 +267,7 @@ func ArrowPtrFromArrowsNames(ctx SST.PoSST,arrows []string) ([]SST.ArrowPtr,[]in
 			arrowptr,_ := SST.GetDBArrowsWithArrowName(ctx,arrows[a])
 			if arrowptr != -1 {
 				arrdir := SST.GetDBArrowByPtr(ctx,arrowptr)
-				fmt.Println("lookup 1arrow",arrdir)
+				arr = append(arr,arrdir.Ptr)
 			}
 		} else {
 			if number < -SST.EXPRESS {
@@ -251,7 +277,7 @@ func ArrowPtrFromArrowsNames(ctx SST.PoSST,arrows []string) ([]SST.ArrowPtr,[]in
 			} else {
 				// whatever remains can only be an arrowpointer
 				arrdir := SST.GetDBArrowByPtr(ctx,SST.ArrowPtr(number))
-				fmt.Println("lookup 2arrow",arrdir)
+				arr = append(arr,arrdir.Ptr)
 			}
 		}
 	}
