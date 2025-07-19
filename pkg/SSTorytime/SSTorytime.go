@@ -5703,7 +5703,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 					for pp := p+1; pp < lenp; pp++ {
 						p++
-						ult := strings.Split(cmd_parts[c][pp],",")
+						ult := strings.Split(cmd_parts[c][pp]," ")
 						for u := range ult {
 							param.Name = append(param.Name,ult[u])
 						}
@@ -5719,7 +5719,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 				for pp := p; pp < lenp; pp++ {
 
-					ult := strings.Split(cmd_parts[c][pp],",")
+					ult := strings.Split(cmd_parts[c][pp]," ")
 					for u := range ult {
 						param.Name = append(param.Name,ult[u])
 					}
