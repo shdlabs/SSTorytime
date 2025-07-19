@@ -1514,7 +1514,7 @@ kuài   (ph) 快 (he) quick
 
  " (e.g.) nǐ kuài huíláile ma  (ph) 你快回来了吗 (he) Are you coming back soon?
  " (e.g.) nǐ kuài huílái  (ph) 你快回来 (he) Come back soon
- " (e.g.) nǒ kuài dào tíngchē chǎngle  (ph) 我快到停车场了 (he) I'm almost at the parking lot.
+ " (e.g.) nǒ kuài dào tíngchēchǎng le  (ph) 我快到停车场了 (he) I'm almost at the parking lot.
 
  " (e.g.) jǐnkuài  (ph) 尽快  (he) A.S.A.P. 
 
@@ -1970,7 +1970,7 @@ floor  (eh) 楼 (hp) lóu
 
 first floor/layer  (eh) 一层(hp)  yī céng
 
-tíngchē chǎng zài dìxià èr céng (ph)  停车场在地下二层  (he) Parking lot is on the second underground floor
+tíngchēchǎng zài dìxià èr céng (ph)  停车场在地下二层  (he) the parking lot is on the second underground floor
 
 
  -::examples::
@@ -3333,7 +3333,7 @@ bīngxiāng (ph) 冰箱 (he) fridge = ice box
    " (useword) bīng (ph) 冰 (he) ice
    " (useword) xiāng (ph) 箱 (he)box
 
-tíngchē chǎng  停车场 parking lot = stop car field
+tíngchēchǎng  停车场 parking lot = stop car field
     " (useword) $field.1
 shāngchǎng   商场 shopping mall = business field
     " (useword) $field.1
