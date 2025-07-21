@@ -157,10 +157,12 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		fmt.Println(" -   context:",SL(search.Context))
 		fmt.Println(" -    arrows:",SL(search.Arrows))
 		fmt.Println(" -    pagenr:",search.PageNr)
-		fmt.Println(" - range/depth:",search.Range)
 		fmt.Println(" - sequence/story:",search.Sequence)
+		fmt.Println(" - limit/range/depth:",search.Range)
 		fmt.Println()
 	}
+
+	// OPTIONS *********************************************
 
 	name := search.Name != nil
 	from := search.From != nil
@@ -180,10 +182,14 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	limit := 0
 
 	if search.Range > 0 {
-		limit = 5
-	} else {
 		limit = search.Range
+	} else {
+		limit = 5
 	}
+
+	// SEARCH SELECTION *********************************************
+
+	fmt.Println("------------------------------------------------------------------")
 
 	// if we have name, (maybe with context, chapter, arrows)
 
@@ -191,12 +197,6 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		FindOrbits(ctx, nodeptrs, limit)
 		return
 	}
-
-	// RETURN THIS TYPE NOW: []NodePtr for Orbits and Cones, start/end sets
-	// or continue to append nodeptrs
-
-	// Next PATHS, which are merged cones
-	// Sequences are forward cones
 
 	if (name && from) || (name && to) {
 		fmt.Printf("\nSearch \"%s\" has conflicting parts <to|from> and match strings\n",line)
@@ -220,21 +220,41 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		fmt.Println("PATH BOUNDARY SETS without arrow constraints",leftptrs,rightptrs)
 	}
 
-	if from || to {
-		fmt.Println("Entire cones with arrow constraints",leftptrs,rightptrs)
+	// Causal cones, from one of these three
+
+	if name || from || to {
+
+		if VERBOSE {
+			fmt.Println("SEARCH: name",nodeptrs,"from",leftptrs,"to",rightptrs,"SSTypes",sttype,"arrow names",arrowptrs)
+		}
+
+		if sttypes || arrows {
+			// from or to or name
+			if VERBOSE {
+				fmt.Println("CausalCones(ctx,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)")
+			}
+
+			if nodeptrs != nil {
+				CausalCones(ctx,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+				return
+			}
+			if leftptrs != nil {
+				CausalCones(ctx,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+				return
+			}
+			if rightptrs != nil {
+				CausalCones(ctx,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+				return
+			}
+		}
+		
+
 	}
 
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 
 	if name && pagenr {
 
-	}
-
-	if sttypes {
-		// from or to or name
-		fmt.Println("FWD CONE")
-		fmt.Println("USE GetFwdPathsAsLinks(sttype)")
-		fmt.Println("PATH BOUNDARY SETS",leftptrs,rightptrs,nodeptrs)
 	}
 
 	// if we only have context then search NodeArrowNode
@@ -278,12 +298,25 @@ func SolveNodePtrs(ctx SST.PoSST,nodenames []string,chap string,cntx []string, a
 
 	nodeptrs,rest := ParseLiteralNodePtrs(nodenames)
 
-	for r := range rest {
-		nptrs := SST.GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
-		nodeptrs = append(nodeptrs,nptrs...)
+	var idempotence = make(map[SST.NodePtr]bool)
+	var result []SST.NodePtr
+
+	for n := range nodeptrs {
+		idempotence[nodeptrs[n]] = true
 	}
 
-	return nodeptrs
+	for r := range rest {
+		nptrs := SST.GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
+		for n := range nptrs {
+			idempotence[nptrs[n]] = true
+		}
+	}
+
+	for uniqnptr := range idempotence {
+		result = append(result,uniqnptr)
+	}
+
+	return result
 }
 
 //******************************************************************
@@ -414,6 +447,63 @@ func FindOrbits(ctx SST.PoSST, nptrs []SST.NodePtr, limit int) {
 	}
 }
 
+//******************************************************************
+
+func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []string,arrows []SST.ArrowPtr, sttype []int,limit int) {
+	var total int = 1
+
+	for n := range nptrs {
+		for st := range sttype {
+
+			fcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],sttype[st],limit)
+
+			if fcone != nil {
+				fmt.Printf("%d. ",total)
+				total += ShowCone(ctx,fcone,sttype[st],chap,context,limit)
+			}
+
+			if total > limit {
+				return
+			}
+
+			bcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],-sttype[st],limit)
+
+			if bcone != nil {
+				fmt.Printf("%d. ",total)
+				total += ShowCone(ctx,bcone,sttype[st],chap,context,limit)
+			}
+
+			if total > limit {
+				return
+			}
+		}
+	}
+
+}
+
+//******************************************************************
+// OUTPUT
+//******************************************************************
+
+func ShowCone(ctx SST.PoSST,cone [][]SST.Link,sttype int,chap string,context []string,limit int) int {
+
+	if len(cone) < 1 {
+		return 0
+	}
+
+	if limit <= 0 {
+		return 0
+	}
+
+	count := 0
+
+	for s := 0; s < len(cone) && s < limit; s++ {
+		SST.PrintSomeLinkPath(ctx,cone,s," - ",chap,context,limit)
+		count++
+	}
+
+	return count
+}
 
 
 
