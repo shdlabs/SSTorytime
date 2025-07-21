@@ -4903,6 +4903,15 @@ func PrintLinkOrbit(notes [ST_TOP][]Orbit,sttype int) {
 
 func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string,context []string) {
 
+	PrintSomeLinkPath(ctx,cone, p,prefix,chapter,context,10000)
+}
+
+// **************************************************************************
+
+func PrintSomeLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string,context []string,limit int) {
+
+	count := 0
+
 	if len(cone[p]) > 1 {
 
 		path_start := GetDBNodeByNodePtr(ctx,cone[p][0].Dst)		
@@ -4920,11 +4929,17 @@ func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string
 
 			NewLine(format)
 
+			count++
+
+			if count > limit {
+				return
+			}
+
 			if !start_shown {
 				if len(cone) > 1 {
-					fmt.Print(prefix,p+1," * ",path_start.S)
+					fmt.Printf("%s (%d) %s",prefix,p+1,path_start.S)
 				} else {
-					fmt.Print(prefix," * ",path_start.S)
+					fmt.Printf("%s %s",prefix,path_start.S)
 				}
 				start_shown = true
 			}
@@ -4956,12 +4971,12 @@ func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter string
 			format += 2
 		}
 
-		fmt.Print("\n\n    Linkage process:")
+		fmt.Print("\n     -  [ Link STTypes:")
 
 		for s := range stpath {
 			fmt.Print(" -(",stpath[s],")-> ")
 		}
-		fmt.Println(". \n")
+		fmt.Println(". ]\n")
 	}
 }
 
