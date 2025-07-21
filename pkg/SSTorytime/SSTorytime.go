@@ -5545,7 +5545,7 @@ const (
 	CMD_CHAPTER = "chapter"
 	CMD_SECTION = "section"
 	CMD_IN = "in"
-	CMD_ARROW = "arrows"
+	CMD_ARROW = "arrow"
 	CMD_LIMIT = "limit"
 	CMD_DEPTH = "depth"
 	CMD_RANGE = "range"

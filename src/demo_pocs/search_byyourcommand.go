@@ -209,16 +209,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	if from && to {
 
-		if sttypes {  // from/to
-			fmt.Println("STTYPE -- USE GetFwdPathsAsLinks(sttype)")
-			fmt.Println("SSTYPE PATH BOUNDARY SETS",leftptrs,rightptrs)
-		}
-
-		if arrows {  // from/to
-			fmt.Println("SST.GetEntireNCSuperConePathsAsLinks(ctx,FWD,leftptrs,ldepth,chapter,context) AND FILTER")
-		}
-
-		PathSolve(ctx,leftptrs,rightptrs,search.Chapter,search.Context,limit)
+		PathSolve(ctx,leftptrs,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
 		return
 	}
 
@@ -485,7 +476,7 @@ func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 
 //******************************************************************
 
-func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,context []string,maxdepth int) {
+func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,context []string,arrowptrs []SST.ArrowPtr,sttype []int,maxdepth int) {
 
 	var Lnum,Rnum int
 	var count int
@@ -499,7 +490,6 @@ func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 
 	var solutions [][]SST.Link
 	var ldepth,rdepth int = 1,1
-	var betweenness = make(map[string]int)
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
@@ -519,8 +509,7 @@ func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 
 			for s := 0; s < len(solutions); s++ {
 				prefix := fmt.Sprintf(" - story path: ")
-				SST.PrintLinkPath(ctx,solutions,s,prefix,"",nil)
-				betweenness = TallyPath(ctx,solutions[s],betweenness)
+				PrintConstrainedLinkPath(ctx,solutions,s,prefix,chapter,context,arrowptrs,sttype)
 			}
 			count++
 			break
@@ -560,20 +549,6 @@ func ShowCone(ctx SST.PoSST,cone [][]SST.Link,sttype int,chap string,context []s
 
 // **********************************************************
 
-func TallyPath(ctx SST.PoSST,path []SST.Link,between map[string]int) map[string]int {
-
-	// count how often each node appears in the different path solutions
-
-	for leg := range path {
-		n := SST.GetDBNodeByNodePtr(ctx,path[leg].Dst)
-		between[n.S]++
-	}
-
-	return between
-}
-
-// **********************************************************
-
 func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
 	var ret string
@@ -586,8 +561,59 @@ func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 	return ret
 }
 
+// **********************************************************
 
+func PrintConstrainedLinkPath(ctx SST.PoSST, cone [][]SST.Link, p int, prefix string,chapter string,context []string,arrows []SST.ArrowPtr,sttype []int) {
 
+	for l := 1; l < len(cone[p]); l++ {
+		link := cone[p][l]
+
+		if !ArrowAllowed(ctx,link.Arr,arrows,sttype) {
+			return
+		}
+	}
+
+	SST.PrintLinkPath(ctx,cone,p,prefix,chapter,context)
+}
+
+// **********************************************************
+
+func ArrowAllowed(ctx SST.PoSST,arr SST.ArrowPtr, arrlist []SST.ArrowPtr, stlist []int) bool {
+
+	st_ok := false
+	arr_ok := false
+
+	staidx := SST.GetDBArrowByPtr(ctx,arr).STAindex
+	st := SST.STIndexToSTType(staidx)
+
+	if arrlist != nil {
+		for a := range arrlist {
+			if arr == arrlist[a] {
+				arr_ok = true
+				break
+			}
+		}
+	} else {
+		arr_ok = true
+	}
+
+	if stlist != nil {
+		for i := range stlist {
+			if stlist[i] == st {
+				st_ok = true
+				break
+			}
+		}
+	} else {
+		st_ok = true
+	}
+
+	if st_ok || arr_ok {
+		return true
+	}
+
+	return false
+}
 
 
 
