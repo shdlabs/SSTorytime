@@ -1,8 +1,7 @@
 //******************************************************************
 //
+// Replacement for searchN4L
 // single search string without complex options
-//
-// how shall we split a search query into parts to match against?
 //
 //******************************************************************
 
@@ -19,6 +18,8 @@ import (
 )
 
 //******************************************************************
+
+var VERBOSE bool = false
 
 var TESTS = []string{ 
 	"range rover out of its depth",
@@ -62,14 +63,11 @@ var TESTS = []string{
 	"from dog to cat",
         }
 
-
 //******************************************************************
 
 func main() {
 
 	args := GetArgs()
-
-	fmt.Println(args)
 
 	SST.MemoryInit()
 
@@ -77,20 +75,15 @@ func main() {
 	ctx := SST.Open(load_arrows)
 
 	if len(args) > 0 {
-		fmt.Println("args",args,len(args))
+
 		search_string := ""
 		for a := 0; a < len(args); a++ {
 			search_string += args[a] + " "
 		}
-		fmt.Println(search_string,"......................")
+
 		search := SST.DecodeSearchField(search_string)
+
 		Search(ctx,search,search_string)
-	} else {
-		for test := range TESTS {
-			fmt.Println("......................")
-			search := SST.DecodeSearchField(TESTS[test])
-			Search(ctx,search,TESTS[test])
-		}
 	}
 
 	SST.Close(ctx)
@@ -100,7 +93,37 @@ func main() {
 
 func Usage() {
 	
-	fmt.Printf("usage: ByYourCommand <search request>n")
+	fmt.Printf("usage: ByYourCommand <search request>\n\n")
+	fmt.Println("searchN4L <mytopic> chapter <mychapter>\n\n")
+	fmt.Println("searchN4L range rover out of its depth")
+	fmt.Println("searchN4L \"range rover\" \"out of its depth\"")
+	fmt.Println("searchN4L from rover range 4")
+	fmt.Println("searchN4L head used as \"version control\"")
+	fmt.Println("searchN4L head context neuro)brain)etc")
+	fmt.Println("searchN4L notes on restaurants in chinese")	
+	fmt.Println("searchN4L notes about brains")
+	fmt.Println("searchN4L notes music writing")
+	fmt.Println("searchN4L page 2 of notes on brains") 
+	fmt.Println("searchN4L notes page 3 brain") 
+	fmt.Println("searchN4L (1)1)) (1)3)) (4)4) (3)3) other stuff")
+	fmt.Println("searchN4L arrows pe)ep) eh")
+	fmt.Println("searchN4L arrows 1)-1")
+	fmt.Println("searchN4L forward cone for (bjorvika) range 5")
+	fmt.Println("searchN4L sequences about fox")	
+	fmt.Println("searchN4L context \"not only\"") 
+	fmt.Println("searchN4L \"come on down\"")	
+	fmt.Println("searchN4L chinese kinds of meat") 
+	fmt.Println("searchN4L summary chapter interference")
+	fmt.Println("searchN4L paths from arrows pe)ep) eh")
+	fmt.Println("searchN4L paths from start to target2 limit 5")
+	fmt.Println("searchN4L paths to target3")	
+	fmt.Println("searchN4L a2 to b5 distance 10")
+	fmt.Println("searchN4L to a5")
+	fmt.Println("searchN4L from start")
+	fmt.Println("searchN4L from (1)6)")
+	fmt.Println("searchN4L a1 to b6 arrows then")
+	fmt.Println("searchN4L paths a2 to b5 distance 10")
+
 	flag.PrintDefaults()
 
 	os.Exit(2)
@@ -111,7 +134,13 @@ func Usage() {
 func GetArgs() []string {
 
 	flag.Usage = Usage
+	verbosePtr := flag.Bool("v", false,"verbose")
 	flag.Parse()
+
+	if *verbosePtr {
+		VERBOSE = true
+	}
+
 	return flag.Args()
 }
 
@@ -119,16 +148,19 @@ func GetArgs() []string {
 
 func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
-	fmt.Println("STARTING EXPRESSION: ",line)
-	fmt.Println(" - name:",SL(search.Name))
-	fmt.Println(" - from:",SL(search.From))
-	fmt.Println(" - to:",SL(search.To))
-	fmt.Println(" - chap:",search.Chapter)
-	fmt.Println(" - context:",SL(search.Context))
-	fmt.Println(" - arrows:",SL(search.Arrows))
-	fmt.Println(" - pagenr:",search.PageNr)
-	fmt.Println(" - range/depth:",search.Range)
-	fmt.Println(" - seq:",search.Sequence)
+	if VERBOSE {
+		fmt.Println("Your starting expression generated this set: ",line,"\n")
+		fmt.Println(" - start set:",SL(search.Name))
+		fmt.Println(" -      from:",SL(search.From))
+		fmt.Println(" -        to:",SL(search.To))
+		fmt.Println(" -   chapter:",search.Chapter)
+		fmt.Println(" -   context:",SL(search.Context))
+		fmt.Println(" -    arrows:",SL(search.Arrows))
+		fmt.Println(" -    pagenr:",search.PageNr)
+		fmt.Println(" - range/depth:",search.Range)
+		fmt.Println(" - sequence/story:",search.Sequence)
+		fmt.Println()
+	}
 
 	name := search.Name != nil
 	from := search.From != nil
@@ -145,12 +177,19 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
+	limit := 0
+
+	if search.Range > 0 {
+		limit = 5
+	} else {
+		limit = search.Range
+	}
 
 	// if we have name, (maybe with context, chapter, arrows)
 
 	if name && ! sequence && !pagenr {
-
-		fmt.Println("AD HOC SELECTION ORBITS",nodeptrs)
+		FindOrbits(ctx, nodeptrs, limit)
+		return
 	}
 
 	// RETURN THIS TYPE NOW: []NodePtr for Orbits and Cones, start/end sets
@@ -354,6 +393,26 @@ func SL(list []string) string {
 	return s
 }
 
+//******************************************************************
+// SEARCH
+//******************************************************************
+
+func FindOrbits(ctx SST.PoSST, nptrs []SST.NodePtr, limit int) {
+	
+	var count int
+
+	if VERBOSE {
+		fmt.Println("First",limit,"orbit result(s):\n")
+	}
+	for nptr := range nptrs {
+		count++
+		if count > limit {
+			return
+		}
+		fmt.Print("\n",nptr,": ")
+		SST.PrintNodeOrbit(ctx,nptrs[nptr],100)
+	}
+}
 
 
 
