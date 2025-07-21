@@ -22,9 +22,10 @@ import (
 
 var TESTS = []string{ 
 	"range rover out of its depth",
+	"\"range rover\" \"out of its depth\"",
 	"from rover range 4",
 	"head used as chinese stuff",
-	"head context neuro",
+	"head context neuro,brain,etc",
 	"leg in chapter bodyparts",
 	"foot in bodyparts2",
 	"visual for prince",	
@@ -57,6 +58,7 @@ var TESTS = []string{
 	"from (1,6)",
 	"a1 to b6 arrows then",
 	"paths a2 to b5 distance 10",
+	"from dog to cat",
         }
 
 
@@ -73,10 +75,21 @@ func main() {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	for test := range TESTS {
-		fmt.Println("......................")
-		search := SST.DecodeSearchField(TESTS[test])
-		Search(ctx,search,TESTS[test])
+	if len(args) > 0 {
+		fmt.Println("args",args,len(args))
+		search_string := ""
+		for a := 0; a < len(args); a++ {
+			search_string += args[a] + " "
+		}
+		fmt.Println(search_string,"......................")
+		search := SST.DecodeSearchField(search_string)
+		Search(ctx,search,search_string)
+	} else {
+		for test := range TESTS {
+			fmt.Println("......................")
+			search := SST.DecodeSearchField(TESTS[test])
+			Search(ctx,search,TESTS[test])
+		}
 	}
 
 	SST.Close(ctx)
@@ -319,7 +332,7 @@ func SL(list []string) string {
 
 	s += fmt.Sprint(" [")
 	for i := 0; i < len(list); i++ {
-		s += fmt.Sprint(list[i],",")
+		s += fmt.Sprint(list[i],", ")
 	}
 
 	s += fmt.Sprint(" ]")
