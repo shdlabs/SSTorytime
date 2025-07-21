@@ -5588,7 +5588,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		}
 	}
 
-	parts = append(parts,part)
+	parts = append(parts,part) // add straggler to complete
 
 	// command is now segmented
 
@@ -5621,15 +5621,18 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				continue
 
 			case CMD_NOTES:
-				if lenp > p+1 {
-					if param.PageNr < 1 {
-						param.PageNr = 1
-					}
+				if param.PageNr < 1 {
+					param.PageNr = 1
+				}
+			
+				if lenp > p+1 && lenp == 2 {
 					param.Chapter = cmd_parts[c][p+1]
 				} else {
-					param = AddOrphan(param,cmd_parts[c][p])
+					if lenp > 1 {
+						param = AddOrphan(param,cmd_parts[c][p])
+					}
 				}
-				break
+				continue
 
 			case CMD_PAGE:
 				// if followed by a number, else could be search term
@@ -5646,7 +5649,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
 				}
-				break
+				continue
 
 			case CMD_RANGE,CMD_DEPTH,CMD_LIMIT,CMD_DISTANCE:
 				// if followed by a number, else could be search term
