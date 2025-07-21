@@ -146,16 +146,11 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
 
-	// if we are not looking for paths or cones, depth. range, distance could be actual search terms
-
-	if !from && !to {
-	}
-
 	// if we have name, (maybe with context, chapter, arrows)
 
-	if name && ! sequence {
+	if name && ! sequence && !pagenr {
 
-		fmt.Println("AD HOC SELECTION SETS",nodeptrs)
+		fmt.Println("AD HOC SELECTION ORBITS",nodeptrs)
 	}
 
 	// RETURN THIS TYPE NOW: []NodePtr for Orbits and Cones, start/end sets
@@ -176,39 +171,45 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if from && to {
 
 		if sttypes {  // from/to
+			fmt.Println("USE GetFwdPathsAsLinks(sttype)")
+			fmt.Println("PATH BOUNDARY SETS",leftptrs,rightptrs)
 		}
 
 		if arrows {  // from/to
+			fmt.Println("SST.GetEntireNCSuperConePathsAsLinks(ctx,FWD,leftptrs,ldepth,chapter,context) AND FILTER")
 		}
+		fmt.Println("PATH BOUNDARY SETS without arrow constraints",leftptrs,rightptrs)
+	}
 
-		fmt.Println("PATH BOUNDARY SETS",leftptrs,rightptrs)
+	if from || to {
+		fmt.Println("Entire cones with arrow constraints",leftptrs,rightptrs)
 	}
 
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 
-	if name && sequence {
-
+	if name && pagenr {
 
 	}
 
 	if sttypes {
-		//GetEntireCone/Fwd/Bwd
+		// from or to or name
 		fmt.Println("FWD CONE")
+		fmt.Println("USE GetFwdPathsAsLinks(sttype)")
+		fmt.Println("PATH BOUNDARY SETS",leftptrs,rightptrs,nodeptrs)
 	}
 
 	// if we only have context then search NodeArrowNode
 
 	if !name && context {
 		// GetMatchingContexts(context)
-		//notes := SST.GetDBPageMap(CTX,chaptext,context,pagenr)
+		fmt.Println("GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap ")
 		fmt.Println("NOTES from context")
 	}
 
-	// if we only have chapter then we are looking for page notes
 	// if we have page number then we are looking for notes by pagemap
 
-	if chapter && pagenr && !arrows && !context {
-	//	GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
+	if (name || chapter) && pagenr {
+		fmt.Println("GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap ")
 		fmt.Println("NOTES BROWSING")
 	}
 
@@ -216,7 +217,19 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 	// GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int)
 
+	if arrows {
+		fmt.Println("Single links listed by arrow type")
+		fmt.Println("RETURN NodeArrowNode for arrows or STType, filter context,name,chapter")
+	}
+
+	if name && sequence {
+		fmt.Println("STORIES by starting node")
+		fmt.Println("Start node pointers and select by arrow/sttype")
+	}
+
 	if sequence && arrows {
+		fmt.Println("STORIES by arrow type")
+		fmt.Println(" GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Story")
 	}
 }
 
