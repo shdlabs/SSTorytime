@@ -210,14 +210,15 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if from && to {
 
 		if sttypes {  // from/to
-			fmt.Println("USE GetFwdPathsAsLinks(sttype)")
-			fmt.Println("PATH BOUNDARY SETS",leftptrs,rightptrs)
+			fmt.Println("STTYPE -- USE GetFwdPathsAsLinks(sttype)")
+			fmt.Println("SSTYPE PATH BOUNDARY SETS",leftptrs,rightptrs)
 		}
 
 		if arrows {  // from/to
 			fmt.Println("SST.GetEntireNCSuperConePathsAsLinks(ctx,FWD,leftptrs,ldepth,chapter,context) AND FILTER")
 		}
-		fmt.Println("PATH BOUNDARY SETS without arrow constraints",leftptrs,rightptrs)
+
+		PathSolve(ctx,leftptrs,rightptrs,search.Chapter,search.Context,limit)
 	}
 
 	// Causal cones, from one of these three
@@ -482,6 +483,49 @@ func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 }
 
 //******************************************************************
+
+func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,context []string,maxdepth int) {
+
+	var Lnum,Rnum int
+	var count int
+	var left_paths, right_paths [][]SST.Link
+
+	if leftptrs == nil || rightptrs == nil {
+		return
+	}
+
+	// Find the path matrix
+
+	var solutions [][]SST.Link
+	var ldepth,rdepth int = 1,1
+	var betweenness = make(map[string]int)
+
+	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
+
+		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",leftptrs,ldepth,chapter,context)
+		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",rightptrs,rdepth,chapter,context)
+		solutions,_ = SST.WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+
+		if len(solutions) > 0 {
+
+			for s := 0; s < len(solutions); s++ {
+				prefix := fmt.Sprintf(" - story path: ")
+				SST.PrintLinkPath(ctx,solutions,s,prefix,"",nil)
+				betweenness = TallyPath(ctx,solutions[s],betweenness)
+			}
+			count++
+			break
+		}
+
+		if turn % 2 == 0 {
+			ldepth++
+		} else {
+			rdepth++
+		}
+	}
+}
+
+//******************************************************************
 // OUTPUT
 //******************************************************************
 
@@ -504,6 +548,35 @@ func ShowCone(ctx SST.PoSST,cone [][]SST.Link,sttype int,chap string,context []s
 
 	return count
 }
+
+// **********************************************************
+
+func TallyPath(ctx SST.PoSST,path []SST.Link,between map[string]int) map[string]int {
+
+	// count how often each node appears in the different path solutions
+
+	for leg := range path {
+		n := SST.GetDBNodeByNodePtr(ctx,path[leg].Dst)
+		between[n.S]++
+	}
+
+	return between
+}
+
+// **********************************************************
+
+func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
+
+	var ret string
+
+	for n := range nptr {
+		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
+		ret += fmt.Sprintf("\n    %.30s, ",node.S)
+	}
+
+	return ret
+}
+
 
 
 
