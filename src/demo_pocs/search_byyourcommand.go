@@ -21,6 +21,8 @@ import (
 //******************************************************************
 
 var TESTS = []string{ 
+	"range rover out of its depth",
+	"from rover range 4",
 	"head used as chinese stuff",
 	"head context neuro",
 	"leg in chapter bodyparts",
@@ -35,7 +37,7 @@ var TESTS = []string{
 	"integrate in math",	
 	"arrows pe,ep, eh",
 	"arrows 1,-1",
-	"forward cone for (bjorvika)",
+	"forward cone for (bjorvika) range 5",
 	"backward sideways cone for (bjorvika)",
 	"sequences about fox",	
 	"stories about (bjorvika)",	
@@ -47,13 +49,14 @@ var TESTS = []string{
 	"summary chapter interference",
 	"showme greetings in norwegian",
 	"paths from arrows pe,ep, eh",
-	"paths from start to target",	
+	"paths from start to target limit 5",
 	"paths to target3",	
-	"a2 to b5",
+	"a2 to b5 distance 10",
 	"to a5",
 	"from start",
 	"from (1,6)",
 	"a1 to b6 arrows then",
+	"paths a2 to b5 distance 10",
         }
 
 
@@ -103,13 +106,14 @@ func GetArgs() []string {
 func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	fmt.Println("STARTING EXPRESSION: ",line)
-	fmt.Println(" - name:",search.Name)
-	fmt.Println(" - from:",search.From)
-	fmt.Println(" - to:",search.To)
+	fmt.Println(" - name:",SL(search.Name))
+	fmt.Println(" - from:",SL(search.From))
+	fmt.Println(" - to:",SL(search.To))
 	fmt.Println(" - chap:",search.Chapter)
-	fmt.Println(" - context:",search.Context)
-	fmt.Println(" - arrows:",search.Arrows)
+	fmt.Println(" - context:",SL(search.Context))
+	fmt.Println(" - arrows:",SL(search.Arrows))
 	fmt.Println(" - pagenr:",search.PageNr)
+	fmt.Println(" - range/depth:",search.Range)
 	fmt.Println(" - seq:",search.Sequence)
 
 	name := search.Name != nil
@@ -128,11 +132,16 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
 
+	// if we are not looking for paths or cones, depth. range, distance could be actual search terms
+
+	if !from && !to {
+	}
+
 	// if we have name, (maybe with context, chapter, arrows)
 
 	if name && ! sequence {
 
-		fmt.Println(nodeptrs)
+		fmt.Println("AD HOC SELECTION SETS",nodeptrs)
 	}
 
 	// RETURN THIS TYPE NOW: []NodePtr for Orbits and Cones, start/end sets
@@ -142,31 +151,43 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	// Sequences are forward cones
 
 	if (name && from) || (name && to) {
-		fmt.Println("Search has conflicting parts <to|from> and match strigns")
+		fmt.Printf("\nSearch \"%s\" has conflicting parts <to|from> and match strings\n",line)
 		os.Exit(-1)
 	}
 
 	// Path solving, two sets of nodeptrs
+	// if we have from/to (maybe with chapter/context) then we are looking for paths
+	// If we have arrows and a name|to|from && maybe chapter|context, then looking for things pointing
 
 	if from && to {
-		fmt.Println(leftptrs,rightptrs)
+
+		if sttypes {  // from/to
+		}
+
+		if arrows {  // from/to
+		}
+
+		fmt.Println("PATH BOUNDARY SETS",leftptrs,rightptrs)
 	}
 
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 
 	if name && sequence {
-		//notes := SST.GetDBPageMap(CTX,chaptext,context,pagenr)
+
 
 	}
 
 	if sttypes {
 		//GetEntireCone/Fwd/Bwd
+		fmt.Println("FWD CONE")
 	}
 
 	// if we only have context then search NodeArrowNode
 
 	if !name && context {
 		// GetMatchingContexts(context)
+		//notes := SST.GetDBPageMap(CTX,chaptext,context,pagenr)
+		fmt.Println("NOTES from context")
 	}
 
 	// if we only have chapter then we are looking for page notes
@@ -174,12 +195,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	if chapter && pagenr && !arrows && !context {
 	//	GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
-	}
-
-	// if we have from/to (maybe with chapter/context) then we are looking for paths
-	// If we have arrows and a name|to|from && maybe chapter|context, then looking for things pointing
-
-	if sttypes {  // from/to
+		fmt.Println("NOTES BROWSING")
 	}
 
 
@@ -295,7 +311,21 @@ func DecodeBoundarySet(s string) []SST.NodePtr {
 
 }
 
+//******************************************************************
 
+func SL(list []string) string {
+
+	var s string
+
+	s += fmt.Sprint(" [")
+	for i := 0; i < len(list); i++ {
+		s += fmt.Sprint(list[i],",")
+	}
+
+	s += fmt.Sprint(" ]")
+
+	return s
+}
 
 
 

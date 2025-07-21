@@ -5508,6 +5508,7 @@ type SearchParameters struct {
 	Context  []string
 	Arrows   []string
 	PageNr   int
+	Range    int
 	Sequence bool
 }
 
@@ -5530,6 +5531,10 @@ const (
 	CMD_SECTION = "section"
 	CMD_IN = "in"
 	CMD_ARROW = "arrows"
+	CMD_LIMIT = "limit"
+	CMD_DEPTH = "depth"
+	CMD_RANGE = "range"
+	CMD_DISTANCE = "distance"
 )
 
 //******************************************************************
@@ -5545,6 +5550,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_ARROW,
 		CMD_ON,CMD_ABOUT,CMD_FOR,
 		CMD_PAGE,
+		CMD_LIMIT,CMD_RANGE,CMD_DISTANCE,CMD_DEPTH,
         }
 	
 	var ignore = []string{ "of", "used" }
@@ -5609,23 +5615,52 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				if lenp > p+1 {
 					param.Chapter = cmd_parts[c][p+1]
 					break
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
 				}
 
 			case CMD_NOTES:
-				if param.PageNr < 1 {
-					param.PageNr = 1
-				}
 				if lenp > p+1 {
+					if param.PageNr < 1 {
+						param.PageNr = 1
+					}
 					param.Chapter = cmd_parts[c][p+1]
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
 				}
 
 			case CMD_PAGE:
+				// if followed by a number, else could be search term
 				if lenp > p+1 {
 					p++
-					var no int = 1
+					var no int = -1
 					fmt.Sscanf(cmd_parts[c][p],"%d",&no)
-					param.PageNr = no
+					if no > 0 {
+						param.PageNr = no
+					} else {
+						param = AddOrphan(param,cmd_parts[c][p-1])
+						param = AddOrphan(param,cmd_parts[c][p])
+					}
 					continue
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
+				}
+
+			case CMD_RANGE,CMD_DEPTH,CMD_LIMIT,CMD_DISTANCE:
+				// if followed by a number, else could be search term
+				if lenp > p+1 {
+					p++
+					var no int = -1
+					fmt.Sscanf(cmd_parts[c][p],"%d",&no)
+					if no > 0 {
+						param.Range = no
+					} else {
+						param = AddOrphan(param,cmd_parts[c][p-1])
+						param = AddOrphan(param,cmd_parts[c][p])
+					}
+					continue
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
 				}
 
 			case CMD_ARROW:
@@ -5638,8 +5673,10 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						}
 					}
 					break
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
 				}
-
+				
 			case CMD_CONTEXT, CMD_CTX,CMD_AS:
 				if lenp > p+1 {
 					for pp := p+1; pp < lenp; pp++ {
@@ -5650,6 +5687,8 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						}
 					}
 					break
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
 				}
 
 			case CMD_FROM:
@@ -5662,11 +5701,13 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						}
 					}
 					break
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
 				}
 
 			case CMD_TO:
 				if p > 0 && lenp > p+1 {
-
+					fmt.Println("DETECT")
 					if param.From == nil {
 						param.From = append(param.From,cmd_parts[c][p-1])
 					}
@@ -5678,8 +5719,9 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 							param.To = append(param.To,ult[u])
 						}
 					}
-					break
+					break				
 				}
+				// TO is too short to be an independent search term
 
 				if lenp > p+1 {
 					for pp := p+1; pp < lenp; pp++ {
@@ -5692,11 +5734,9 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					break
 				}
 
-
-
 			case CMD_PATH,CMD_STORY,CMD_SEQ:
 				param.Sequence = true
-
+				continue
 
 			case CMD_ON,CMD_ABOUT,CMD_FOR:
 				if lenp > p+1 {
@@ -5709,6 +5749,8 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						}
 					}
 					break
+				} else {
+					param = AddOrphan(param,cmd_parts[c][p])
 				}
 
 			default:
@@ -5744,6 +5786,28 @@ func SomethingLike(s string,keywords []string) string {
 	}
 
 	return s
+}
+
+//******************************************************************
+
+func AddOrphan(param SearchParameters,orphan string) SearchParameters {
+
+	// if a keyword isn't followed by the right param it was possibly
+	// intended as a search term not a command, so add back
+
+	if param.To != nil {
+		param.To = append(param.To,orphan)
+		return param
+	}
+
+	if param.From != nil {
+		param.From = append(param.From,orphan)
+		return param
+	}
+
+	param.Name = append(param.Name,orphan)
+
+	return param
 }
 
 //******************************************************************
