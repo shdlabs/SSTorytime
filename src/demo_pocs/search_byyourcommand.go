@@ -219,6 +219,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		}
 
 		PathSolve(ctx,leftptrs,rightptrs,search.Chapter,search.Context,limit)
+		return
 	}
 
 	// Causal cones, from one of these three
@@ -504,6 +505,14 @@ func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 
 		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",leftptrs,ldepth,chapter,context)
 		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",rightptrs,rdepth,chapter,context)
+
+		// try the reverse
+
+		if Lnum == 0 || Rnum == 0 {
+			left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",leftptrs,ldepth,chapter,context)
+			right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",rightptrs,rdepth,chapter,context)
+		}
+
 		solutions,_ = SST.WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
