@@ -5561,17 +5561,18 @@ func DecodeSearchField(cmd string) SearchParameters {
 	cmd = m.ReplaceAllString(cmd," ") 
 
 	cmd = strings.TrimSpace(cmd)
-	pts := SplitPunctuationText(cmd)
+	pts := SplitCommandText(cmd)
 
 	var parts [][]string
 	var part []string
 
-	for p := range pts {
+	for p := 0; p < len(pts); p++ {
 
 		subparts := SplitQuotes(pts[p])
 
-		for w := range subparts {
+		for w := 0; w < len(subparts); w++ {
 			if w > 0 && InList(subparts[w],keywords) {
+
 				// special case for TO with implicit FROM, and USED AS
 
 				if strings.HasPrefix(subparts[w],"to") {
@@ -5584,7 +5585,6 @@ func DecodeSearchField(cmd string) SearchParameters {
 			} else if !InList(subparts[w],ignore) {
 				part = append(part,subparts[w])
 			}
-
 		}
 	}
 
@@ -5618,6 +5618,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
 				}
+				continue
 
 			case CMD_NOTES:
 				if lenp > p+1 {
@@ -5628,6 +5629,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
 				}
+				break
 
 			case CMD_PAGE:
 				// if followed by a number, else could be search term
@@ -5641,10 +5643,10 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						param = AddOrphan(param,cmd_parts[c][p-1])
 						param = AddOrphan(param,cmd_parts[c][p])
 					}
-					continue
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
 				}
+				break
 
 			case CMD_RANGE,CMD_DEPTH,CMD_LIMIT,CMD_DISTANCE:
 				// if followed by a number, else could be search term
@@ -5658,80 +5660,79 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						param = AddOrphan(param,cmd_parts[c][p-1])
 						param = AddOrphan(param,cmd_parts[c][p])
 					}
-					continue
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
 				}
+				continue
 
 			case CMD_ARROW:
 				if lenp > p+1 {
-					for pp := p+1; pp < lenp; pp++ {
+					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
 							param.Arrows = append(param.Arrows,ult[u])
 						}
 					}
-					break
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
 				}
+				continue
 				
 			case CMD_CONTEXT, CMD_CTX,CMD_AS:
 				if lenp > p+1 {
-					for pp := p+1; pp < lenp; pp++ {
+					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
 							param.Context = append(param.Context,ult[u])
 						}
 					}
-					break
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
 				}
+				continue
 
 			case CMD_FROM:
 				if lenp > p+1 {
-					for pp := p+1; pp < lenp; pp++ {
+					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
 							param.From = append(param.From,ult[u])
 						}
 					}
-					break
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
 				}
+				continue
 
 			case CMD_TO:
 				if p > 0 && lenp > p+1 {
-					fmt.Println("DETECT")
 					if param.From == nil {
 						param.From = append(param.From,cmd_parts[c][p-1])
 					}
 
-					for pp := p+1; pp < lenp; pp++ {
+					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
 							param.To = append(param.To,ult[u])
 						}
 					}
-					break				
+					continue
 				}
 				// TO is too short to be an independent search term
 
 				if lenp > p+1 {
-					for pp := p+1; pp < lenp; pp++ {
+					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
 							param.To = append(param.To,ult[u])
 						}
 					}
-					break
+					continue
 				}
 
 			case CMD_PATH,CMD_STORY,CMD_SEQ:
@@ -5741,17 +5742,17 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 			case CMD_ON,CMD_ABOUT,CMD_FOR:
 				if lenp > p+1 {
 
-					for pp := p+1; pp < lenp; pp++ {
+					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
 						ult := strings.Split(cmd_parts[c][pp]," ")
 						for u := range ult {
 							param.Name = append(param.Name,ult[u])
 						}
 					}
-					break
 				} else {
 					param = AddOrphan(param,cmd_parts[c][p])
 				}
+				continue
 
 			default:
 
@@ -5759,20 +5760,41 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					continue
 				}
 
-				for pp := p; pp < lenp; pp++ {
-
+				for pp := p; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
+					p++
 					ult := strings.Split(cmd_parts[c][pp]," ")
 					for u := range ult {
 						param.Name = append(param.Name,ult[u])
 					}
 				}
-				break
+				continue
 			}
 			break
 		}
 	}
 
 	return param
+}
+
+//******************************************************************
+
+func IsParam(i,lenp int,keys []string,keywords []string) bool {
+
+	// Make sure the next item is not the start of a new token
+
+	if i >= lenp {
+		return false
+	}
+
+	key := keys[i]
+
+	for k := 0; k < len(keywords); k++ {
+		if strings.HasPrefix(key,keywords[k]) {
+			return false
+		}
+	}
+
+	return true
 }
 
 //******************************************************************
@@ -6161,7 +6183,21 @@ func SplitIntoParaSentences(text string) [][][]string {
 
 //**************************************************************
 
+func SplitCommandText(s string) []string {
+
+	return SplitPunctuationTextWork(s,true)
+}
+
+//**************************************************************
+
 func SplitPunctuationText(s string) []string {
+
+	return SplitPunctuationTextWork(s,false)
+}
+
+//**************************************************************
+
+func SplitPunctuationTextWork(s string,allow_small bool) []string {
 
 	// first split sentence on intentional separators
 
@@ -6189,7 +6225,7 @@ func SplitPunctuationText(s string) []string {
 		for sf := range sfrags {
 			sfrags[sf] = strings.TrimSpace(sfrags[sf])
 			
-			if len(sfrags[sf]) > 1 {
+			if allow_small || len(sfrags[sf]) > 1 {
 				subfrags = append(subfrags,sfrags[sf])
 			}
 		}
