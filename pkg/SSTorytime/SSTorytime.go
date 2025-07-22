@@ -2883,7 +2883,7 @@ func GetDBContextsMatchingName(ctx PoSST,src string) []string {
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY GetDBChaptersMatchingName",err)
+		fmt.Println("QUERY GetDBContextssMatchingName",err)
 	}
 
 	var whole string
@@ -5588,8 +5588,6 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_LIMIT,CMD_RANGE,CMD_DISTANCE,CMD_DEPTH,
         }
 	
-	var ignore = []string{ "of", "used" }
-	
 	// parentheses are reserved for unaccenting
 
 	m := regexp.MustCompile("[ \t]+") 
@@ -5606,19 +5604,22 @@ func DecodeSearchField(cmd string) SearchParameters {
 		subparts := SplitQuotes(pts[p])
 
 		for w := 0; w < len(subparts); w++ {
-			if w > 0 && InList(subparts[w],keywords) {
+			if InList(subparts[w],keywords) {
 
 				// special case for TO with implicit FROM, and USED AS
-
-				if strings.HasPrefix(subparts[w],"to") {
+				if w > 0 && strings.HasPrefix(subparts[w],"to ") {
 					part = append(part,subparts[w])
 				} else {
 					parts = append(parts,part)
 					part = nil
 					part = append(part,subparts[w])
 				}
-			} else if !InList(subparts[w],ignore) {
-				part = append(part,subparts[w])
+			} else {
+				if strings.Contains(subparts[w]," ") {
+					part = append(part,"\""+subparts[w]+"\"")
+				} else {
+					part = append(part,subparts[w])
+				}
 			}
 		}
 	}
@@ -5717,7 +5718,8 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				}
 				continue
 				
-			case CMD_CONTEXT, CMD_CTX,CMD_AS:
+			case CMD_CONTEXT,CMD_CTX,CMD_AS:
+
 				if lenp > p+1 {
 					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
@@ -5800,7 +5802,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 				for pp := p; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 					p++
-					ult := strings.Split(cmd_parts[c][pp]," ")
+					ult := SplitQuotes(cmd_parts[c][pp])
 					for u := range ult {
 						param.Name = append(param.Name,ult[u])
 					}

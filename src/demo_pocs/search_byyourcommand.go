@@ -78,7 +78,11 @@ func main() {
 
 		search_string := ""
 		for a := 0; a < len(args); a++ {
-			search_string += args[a] + " "
+			if strings.Contains(args[a]," ") {
+				search_string += fmt.Sprintf("\"%s\"",args[a]) + " "
+			} else {
+				search_string += args[a] + " "
+			}
 		}
 
 		search := SST.DecodeSearchField(search_string)
@@ -105,7 +109,7 @@ func Usage() {
 	fmt.Println("searchN4L notes music writing")
 	fmt.Println("searchN4L page 2 of notes on brains") 
 	fmt.Println("searchN4L notes page 3 brain") 
-	fmt.Println("searchN4L (1)1)) (1)3)) (4)4) (3)3) other stuff")
+	fmt.Println("searchN4L (1,1)) (1,3)) (4,4) (3,3) other stuff")
 	fmt.Println("searchN4L arrows pe)ep) eh")
 	fmt.Println("searchN4L arrows 1)-1")
 	fmt.Println("searchN4L forward cone for (bjorvika) range 5")
@@ -183,6 +187,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	name := search.Name != nil
 	from := search.From != nil
 	to := search.To != nil
+	context := search.Context != nil
 	chapter := search.Chapter != ""
 	pagenr := search.PageNr > 0
 	sequence := search.Sequence
@@ -279,6 +284,18 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		}
 	}
 
+	// Match existing contexts
+
+	if chapter {
+		ShowMatchingChapter(ctx,search.Chapter)
+		return
+	}
+
+	if context {
+		ShowMatchingContext(ctx,search.Context)
+		return
+	}
+
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 	// GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int)
 
@@ -288,12 +305,13 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	}
 
 	if name && sequence {
-		fmt.Println("STORIES by starting node")
-		fmt.Println("Start node pointers and select by arrow/sttype")
+		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context)
 	}
 
 	if sequence && arrows {
 		fmt.Println("STORIES by arrow type")
+//func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int) {
+
 		fmt.Println(" GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Story")
 	}
 }
@@ -549,6 +567,47 @@ func ShowMatchingArrows(ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
 		adirs := SST.GetDBArrowBySTType(ctx,sttype[st])
 		for adir := range adirs {
 			fmt.Printf("%3d. (%d) %s -> %s\n",adirs[adir].Ptr,SST.STIndexToSTType(adirs[adir].STAindex),adirs[adir].Short,adirs[adir].Long)
+		}
+	}
+}
+
+//******************************************************************
+
+func ShowMatchingContext(ctx SST.PoSST,s []string) {
+
+	for i := range s {
+		res := SST.GetDBContextsMatchingName(ctx,s[i])
+		for c := 0; c < len(res); c++ {
+			fmt.Printf("%3d. \"%s\"\n",c,res[c])
+		}
+	}
+}
+
+//******************************************************************
+
+func ShowMatchingChapter(ctx SST.PoSST,s string) {
+
+	res := SST.GetDBChaptersMatchingName(ctx,s)
+	for c := 0; c < len(res); c++ {
+		fmt.Printf("%3d. \"%s\"\n",c,res[c])
+	}
+}
+
+//******************************************************************
+
+func ShowStories(ctx SST.PoSST,arrows []string,name[]string,chapter string,context []string) {
+
+	if arrows == nil {
+		arrows = []string{"then"}
+	}
+
+	for n := range name {
+		for a := range arrows {
+			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context)
+
+			for s := range stories {
+				fmt.Println(stories[s])
+			}
 		}
 	}
 }
