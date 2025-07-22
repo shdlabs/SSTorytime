@@ -109,7 +109,7 @@ func Usage() {
 	fmt.Println("searchN4L notes music writing")
 	fmt.Println("searchN4L page 2 of notes on brains") 
 	fmt.Println("searchN4L notes page 3 brain") 
-	fmt.Println("searchN4L (1,1)) (1,3)) (4,4) (3,3) other stuff")
+	fmt.Println("searchN4L (1,1) (1,3) (4,4) (3,3) other stuff")
 	fmt.Println("searchN4L arrows pe)ep) eh")
 	fmt.Println("searchN4L arrows 1)-1")
 	fmt.Println("searchN4L forward cone for (bjorvika) range 5")
@@ -284,6 +284,20 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		}
 	}
 
+
+	if name && sequence {
+		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context)
+		return
+	}
+
+	if sequence && arrows {
+		fmt.Println("STORIES by arrow type")
+//func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int) {
+
+		fmt.Println(" GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Story")
+		return
+	}
+
 	// Match existing contexts
 
 	if chapter {
@@ -302,17 +316,6 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if arrows || sttypes {
 		ShowMatchingArrows(ctx,arrowptrs,sttype)
 		return
-	}
-
-	if name && sequence {
-		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context)
-	}
-
-	if sequence && arrows {
-		fmt.Println("STORIES by arrow type")
-//func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int) {
-
-		fmt.Println(" GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Story")
 	}
 }
 
@@ -595,7 +598,7 @@ func ShowMatchingChapter(ctx SST.PoSST,s string) {
 
 //******************************************************************
 
-func ShowStories(ctx SST.PoSST,arrows []string,name[]string,chapter string,context []string) {
+func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,context []string) {
 
 	if arrows == nil {
 		arrows = []string{"then"}
@@ -606,9 +609,19 @@ func ShowStories(ctx SST.PoSST,arrows []string,name[]string,chapter string,conte
 			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context)
 
 			for s := range stories {
-				fmt.Println(stories[s])
+				// if there is no unique match, the data contain a list of alternatives
+				if stories[s].Axis == nil {
+					fmt.Printf("%3d. %s\n",s,stories[s].Text)
+				} else {
+					fmt.Printf("The following story/sequence %s \"%s\"\n\n",stories[s].Arrow,stories[s].Text)
+					for ev := range stories[s].Axis {
+						fmt.Printf("\n%3d. %s\n",ev,stories[s].Axis[ev].Text)
+					}
+				}
 			}
+			break
 		}
+		break
 	}
 }
 

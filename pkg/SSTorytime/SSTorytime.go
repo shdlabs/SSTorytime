@@ -3396,7 +3396,7 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,co
 	
 	qstr := fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s',%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,chp,cntx)
 	row,err := ctx.DB.Query(qstr)
-	
+
 	if err != nil {
 		fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
 		return nil
@@ -4668,8 +4668,9 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 
 	arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrname)
 
+
 	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,chapter,context)
-	
+
 	if len(openings) > 1 {
 
 		for nptr := range openings {
@@ -4677,6 +4678,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			node := GetDBNodeByNodePtr(ctx,openings[nptr])
 			story.Arrow = node.Chap
 			story.Text = node.S
+
 			stories = append(stories,story)
 		}
 		// If Axis is null, then this is just the toc
@@ -4684,7 +4686,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 	}
 
 	// return one story
-	
+
 	for nptr := range openings {
 
 		var story Story
