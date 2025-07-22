@@ -184,7 +184,6 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	from := search.From != nil
 	to := search.To != nil
 	chapter := search.Chapter != ""
-	context := search.Context != nil
 	pagenr := search.PageNr > 0
 	sequence := search.Sequence
 
@@ -207,11 +206,11 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	// SEARCH SELECTION *********************************************
 
-	fmt.Println("------------------------------------------------------------------")
-
 	// if we have name, (maybe with context, chapter, arrows)
 
 	if name && ! sequence && !pagenr {
+
+		fmt.Println("------------------------------------------------------------------")
 		FindOrbits(ctx, nodeptrs, limit)
 		return
 	}
@@ -221,23 +220,19 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		os.Exit(-1)
 	}
 
-	// Path solving, two sets of nodeptrs
-	// if we have from/to (maybe with chapter/context) then we are looking for paths
-	// If we have arrows and a name|to|from && maybe chapter|context, then looking for things pointing
+	// Closed path solving, two sets of nodeptrs
+	// if we have BOTH from/to (maybe with chapter/context) then we are looking for paths
 
 	if from && to {
 
+		fmt.Println("------------------------------------------------------------------")
 		PathSolve(ctx,leftptrs,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
 		return
 	}
 
-	// Causal cones, from one of these three
+	// Open causal cones, from one of these three
 
 	if name || from || to {
-
-		if VERBOSE {
-			fmt.Println("SEARCH: name",nodeptrs,"from",leftptrs,"to",rightptrs,"SSTypes",sttype,"arrow names",arrowptrs)
-		}
 
 		if sttypes || arrows {
 			// from or to or name
@@ -246,14 +241,17 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 			}
 
 			if nodeptrs != nil {
+				fmt.Println("------------------------------------------------------------------")
 				CausalCones(ctx,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
 				return
 			}
 			if leftptrs != nil {
+				fmt.Println("------------------------------------------------------------------")
 				CausalCones(ctx,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
 				return
 			}
 			if rightptrs != nil {
+				fmt.Println("------------------------------------------------------------------")
 				CausalCones(ctx,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
 				return
 			}
@@ -262,34 +260,31 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	}
 
-	// if we have sequence with arrows, then we are looking for sequence context or stories
-
-	if name && pagenr {
-
-	}
-
-	// if we only have context then search NodeArrowNode
-
-	if !name && context {
-		// GetMatchingContexts(context)
-		fmt.Println("GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap ")
-		fmt.Println("NOTES from context")
-	}
-
 	// if we have page number then we are looking for notes by pagemap
 
 	if (name || chapter) && pagenr {
-		fmt.Println("GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap ")
-		fmt.Println("NOTES BROWSING")
-	}
 
+		var notes []SST.PageMap
+
+		if chapter {
+			notes = SST.GetDBPageMap(ctx,search.Chapter,search.Context,search.PageNr)
+			ShowNotes(ctx,notes)
+			return
+		} else {
+			for n := range search.Name {
+				notes = SST.GetDBPageMap(ctx,search.Name[n],search.Context,search.PageNr)
+				ShowNotes(ctx,notes)
+			}
+			return
+		}
+	}
 
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 	// GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int)
 
-	if arrows {
-		fmt.Println("Single links listed by arrow type")
-		fmt.Println("RETURN NodeArrowNode for arrows or STType, filter context,name,chapter")
+	if arrows || sttypes {
+		ShowMatchingArrows(ctx,arrowptrs,sttype)
+		return
 	}
 
 	if name && sequence {
@@ -542,6 +537,23 @@ func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 }
 
 //******************************************************************
+
+func ShowMatchingArrows(ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
+
+	for a := range arrowptrs {
+		adir := SST.GetDBArrowByPtr(ctx,arrowptrs[a])
+		fmt.Printf("%3d. (%d) %s -> %s\n",arrowptrs[a],SST.STIndexToSTType(adir.STAindex),adir.Short,adir.Long)
+	}
+
+	for st := range sttype {
+		adirs := SST.GetDBArrowBySTType(ctx,sttype[st])
+		for adir := range adirs {
+			fmt.Printf("%3d. (%d) %s -> %s\n",adirs[adir].Ptr,SST.STIndexToSTType(adirs[adir].STAindex),adirs[adir].Short,adirs[adir].Long)
+		}
+	}
+}
+
+//******************************************************************
 // OUTPUT
 //******************************************************************
 
@@ -633,6 +645,41 @@ func ArrowAllowed(ctx SST.PoSST,arr SST.ArrowPtr, arrlist []SST.ArrowPtr, stlist
 	return false
 }
 
+// **********************************************************
+
+func ShowNotes(ctx SST.PoSST,notes []SST.PageMap) {
+
+	var last string
+	var lastc string
+
+	for n := 0; n < len(notes); n++ {
+
+		txtctx := SST.ContextString(notes[n].Context)
+		
+		if last != notes[n].Chapter || lastc != txtctx {
+
+			fmt.Println("\n---------------------------------------------")
+			fmt.Println("\nTitle:", notes[n].Chapter)
+			fmt.Println("Context:", txtctx)
+			fmt.Println("---------------------------------------------\n")
+
+			last = notes[n].Chapter
+			lastc = txtctx
+		}
+
+		for lnk := 0; lnk < len(notes[n].Path); lnk++ {
+			
+			text := SST.GetDBNodeByNodePtr(ctx,notes[n].Path[lnk].Dst)
+			
+			if lnk == 0 {
+				fmt.Print("\n",text.S," ")
+			} else {
+				arr := SST.GetDBArrowByPtr(ctx,notes[n].Path[lnk].Arr)
+				fmt.Printf("(%s) %s ",arr.Long,text.S)
+			}
+		}
+	}
+}
 
 
 

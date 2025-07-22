@@ -3506,6 +3506,24 @@ func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 }
 
 // **************************************************************************
+
+func GetDBArrowBySTType(ctx PoSST,sttype int) []ArrowDirectory {
+
+	var retval []ArrowDirectory
+
+	DownloadArrowsFromDB(ctx)
+
+	for a := range ARROW_DIRECTORY {
+		sta := ARROW_DIRECTORY[a].STAindex
+		if STIndexToSTType(sta) == sttype {
+			retval = append(retval,ARROW_DIRECTORY[a])
+		}
+	}
+
+	return retval
+}
+
+// **************************************************************************
 // Page format, preserving N4L intent
 // **************************************************************************
 
@@ -3740,6 +3758,8 @@ func DownloadArrowsFromDB(ctx PoSST) {
 	if err != nil {
 		fmt.Println("QUERY Download Arrows Failed",err)
 	}
+
+	ARROW_DIRECTORY = nil
 
 	var staidx int
 	var long string

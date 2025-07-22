@@ -91,8 +91,10 @@ func Page(ctx SST.PoSST,chapter string,context []string,page int) {
 		txtctx := SST.ContextString(notes[n].Context)
 		
 		if last != notes[n].Chapter || lastc != txtctx {
-			fmt.Println("\n\nTitle:", notes[n].Chapter)
+			fmt.Println("\n---------------------------------------------")
+			fmt.Println("\nTitle:", notes[n].Chapter)
 			fmt.Println("Context:", txtctx)
+			fmt.Println("---------------------------------------------\n")
 			last = notes[n].Chapter
 			lastc = txtctx
 		}
