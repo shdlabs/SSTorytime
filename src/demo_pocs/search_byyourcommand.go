@@ -123,6 +123,7 @@ func Usage() {
 	fmt.Println("searchN4L from (1)6)")
 	fmt.Println("searchN4L a1 to b6 arrows then")
 	fmt.Println("searchN4L paths a2 to b5 distance 10")
+	fmt.Println("searchN4L <b5|a2> distance 10")
 
 	flag.PrintDefaults()
 
@@ -148,6 +149,21 @@ func GetArgs() []string {
 
 func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
+	// Check for Dirac notation
+
+	for arg := range search.Name {
+
+		isdirac,beg,end,cnt := SST.DiracNotation(search.Name[arg])
+		
+		if isdirac {
+			search.Name = nil
+			search.From = []string{beg}
+			search.To = []string{end}
+			search.Context = []string{cnt}
+			break
+		}
+	}
+
 	if VERBOSE {
 		fmt.Println("Your starting expression generated this set: ",line,"\n")
 		fmt.Println(" - start set:",SL(search.Name))
@@ -171,6 +187,8 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	context := search.Context != nil
 	pagenr := search.PageNr > 0
 	sequence := search.Sequence
+
+	// Now convert strings into NodePointers
 
 	arrowptrs,sttype := ArrowPtrFromArrowsNames(ctx,search.Arrows)
 	nodeptrs := SolveNodePtrs(ctx,search.Name,search.Chapter,search.Context,arrowptrs)
