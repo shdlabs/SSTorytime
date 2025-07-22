@@ -26,7 +26,7 @@ func main() {
 
 	fmt.Println("\nLook for nodes starting some thread with a arrow ",arrow,"in the context",context)
 
-        matches1 := SST.GetNCCNodesStartingStoriesForArrow(ctx,arrow,chapter,context)
+        matches1 := SST.GetNCCNodesStartingStoriesForArrow(ctx,arrow,"",chapter,context)
 
         for p := range matches1 {
 

@@ -82,7 +82,7 @@ func main() {
 	chapter := ""
 	context := []string{"poem"}
 
-	matches := SST.GetNCCNodesStartingStoriesForArrow(ctx,arrow,chapter,context)
+	matches := SST.GetNCCNodesStartingStoriesForArrow(ctx,arrow,"",chapter,context)
 
 	for p := range matches {
 

@@ -284,17 +284,10 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		}
 	}
 
+	// Look for axial trails following a particular arrow, like _sequence_ 
 
-	if name && sequence {
+	if name && sequence || sequence && arrows {
 		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context)
-		return
-	}
-
-	if sequence && arrows {
-		fmt.Println("STORIES by arrow type")
-//func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int) {
-
-		fmt.Println(" GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Story")
 		return
 	}
 
@@ -425,16 +418,6 @@ func ArrowPtrFromArrowsNames(ctx SST.PoSST,arrows []string) ([]SST.ArrowPtr,[]in
 	}
 
 	return arr,stt
-}
-
-//******************************************************************
-
-func DecodeBoundarySet(s string) []SST.NodePtr {
-
-	var nptrs []SST.NodePtr
-
-	return nptrs
-
 }
 
 //******************************************************************
@@ -606,6 +589,7 @@ func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,cont
 
 	for n := range name {
 		for a := range arrows {
+			fmt.Println("NAME",name[n])
 			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context)
 
 			for s := range stories {
@@ -613,7 +597,7 @@ func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,cont
 				if stories[s].Axis == nil {
 					fmt.Printf("%3d. %s\n",s,stories[s].Text)
 				} else {
-					fmt.Printf("The following story/sequence %s \"%s\"\n\n",stories[s].Arrow,stories[s].Text)
+					fmt.Printf("The following story/sequence (%s) \"%s\"\n\n",stories[s].Arrow,stories[s].Text)
 					for ev := range stories[s].Axis {
 						fmt.Printf("\n%3d. %s\n",ev,stories[s].Axis[ev].Text)
 					}

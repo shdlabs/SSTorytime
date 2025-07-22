@@ -565,6 +565,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function GetStoryStartNodes")
 		ctx.DB.QueryRow("drop function GetNCCStoryStartNodes")
 		ctx.DB.QueryRow("drop function GetAppointments")
+		ctx.DB.QueryRow("drop function UnCmp")
 
 		ctx.DB.QueryRow("drop table Node")
 		ctx.DB.QueryRow("drop table PageMap")
@@ -2415,21 +2416,44 @@ func DefineStoredFunctions(ctx PoSST) {
 	row.Close()
 
 
+	// HELPER
+	qstr =  "CREATE OR REPLACE FUNCTION UnCmp(value text,unacc boolean)\n"+
+		"RETURNS text AS $fn$\n"+
+		"DECLARE \n"+
+		"   retval nodeptr[] = ARRAY[]::nodeptr[];\n"+
+		"BEGIN\n"+
+		"  IF unacc THEN\n"+
+		"    RETURN lower(unaccent(value)); \n" +
+		"  ELSE\n"+
+		"    RETURN lower(value); \n" +
+		"  END IF;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("FAILED UnCmp definition\n",qstr,err)
+	}
+
+	row.Close()
+
+
 	// Find the node that sit's at the start/top of a causal chain
 
-	qstr =  "CREATE OR REPLACE FUNCTION GetNCCStoryStartNodes(arrow int,inverse int,sttype int,chapter text,context text[])\n"+
+	qstr =  "CREATE OR REPLACE FUNCTION GetNCCStoryStartNodes(arrow int,inverse int,sttype int,name text,chapter text,context text[],rm_nm boolean, rm_ch boolean)\n"+
 		"RETURNS NodePtr[] AS $fn$\n"+
 		"DECLARE \n"+
 		"   retval nodeptr[] = ARRAY[]::nodeptr[];\n"+
 		"BEGIN\n"+
-		"   CASE sttype \n"
+		"     CASE sttype \n"
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"   SELECT array_agg(Nptr) into retval FROM Node WHERE lower(Chap) LIKE lower(chapter) AND ArrowInContextList(arrow,%s,context) AND NOT ArrowInContextList(inverse,%s,context);\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
+			"     SELECT array_agg(Nptr) into retval FROM Node WHERE UnCmp(S,rm_nm) LIKE lower(name) AND UnCmp(Chap,rm_ch) LIKE lower(chapter) AND ArrowInContextList(arrow,%s,context) AND NOT ArrowInContextList(inverse,%s,context);\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
 	}
-	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
-		"END CASE;\n" +
-		"    RETURN retval; \n" +
+	qstr += "        ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
+		"     END CASE;\n" +
+		"  RETURN retval; \n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 
@@ -3381,22 +3405,39 @@ func GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int) {
 
 // **************************************************************************
 
-func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,context []string) []NodePtr {
+func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,name,chapter string,context []string) []NodePtr {
 
 	// Filtered version of function
 	// Find the head / starting node matching an arrow sequence.
 	// It has outgoing (+sttype) but not incoming (-sttype) arrow
 
 	var matches []NodePtr
+	var qstr string
 
 	arrowptr,sttype := GetDBArrowsWithArrowName(ctx,arrow)
 
-	chp := "%"+chapter+"%"
-	cntx := FormatSQLStringArray(context)
-	
-	qstr := fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s',%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,chp,cntx)
-	row,err := ctx.DB.Query(qstr)
+	remove_name_accents,nm_stripped := IsBracketedSearchTerm(name)
+	remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chapter)
 
+	chp := "%"+chap_stripped+"%"
+	nm := "%"+nm_stripped+"%"
+	cntx := FormatSQLStringArray(context)
+
+	rm_nm := "false"
+	rm_ch := "false"
+
+	if remove_name_accents {
+		rm_nm = "true"
+	}
+
+	if remove_chap_accents {
+		rm_ch = "true"
+	}
+
+	qstr = fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s','%s',%s,%s,%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,nm,chp,cntx,rm_nm,rm_ch)
+
+	row,err := ctx.DB.Query(qstr)
+	fmt.Println("QSTR",qstr)
 	if err != nil {
 		fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
 		return nil
@@ -3406,7 +3447,6 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,chapter string,co
 	
 	for row.Next() {		
 		err = row.Scan(&nptrstring)
-		
 		matches = ParseSQLNPtrArray(nptrstring)
 	}
 	
@@ -4668,8 +4708,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 
 	arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrname)
 
-
-	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,chapter,context)
+	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,search,chapter,context)
 
 	if len(openings) > 1 {
 
@@ -4703,8 +4742,8 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 		} else {
 			var none NodePtr
 			story.ContainNPtr = none // generalize..tbd
-			story.Text = "(Story without an external title container)"
-			story.Arrow = "  -- title may be included in the _sequence_, consider moving title (contains) ::_sequence_::"
+			story.Text = "..."
+			story.Arrow = "standalone trail without title anchor"
 		}
 
 		if OrbitMatching(ctx,node,orbit,search) {
@@ -5596,7 +5635,8 @@ func DecodeSearchField(cmd string) SearchParameters {
 	cmd = m.ReplaceAllString(cmd," ") 
 
 	cmd = strings.TrimSpace(cmd)
-	pts := SplitCommandText(cmd)
+	//pts := SplitCommandText(cmd)
+	pts := SplitQuotes(cmd)
 
 	var parts [][]string
 	var part []string
@@ -5607,7 +5647,6 @@ func DecodeSearchField(cmd string) SearchParameters {
 
 		for w := 0; w < len(subparts); w++ {
 			if InList(subparts[w],keywords) {
-
 				// special case for TO with implicit FROM, and USED AS
 				if w > 0 && strings.HasPrefix(subparts[w],"to ") {
 					part = append(part,subparts[w])
@@ -5617,11 +5656,8 @@ func DecodeSearchField(cmd string) SearchParameters {
 					part = append(part,subparts[w])
 				}
 			} else {
-				if strings.Contains(subparts[w]," ") {
-					part = append(part,"\""+subparts[w]+"\"")
-				} else {
-					part = append(part,subparts[w])
-				}
+				// Try to override command line splitting behaviour
+				part = append(part,subparts[w])
 			}
 		}
 	}
@@ -5806,6 +5842,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					p++
 					ult := SplitQuotes(cmd_parts[c][pp])
 					for u := range ult {
+						ult[u] = strings.Trim(ult[u],"\"")
 						param.Name = append(param.Name,ult[u])
 					}
 				}
@@ -5892,41 +5929,52 @@ func SplitQuotes(s string) []string {
 
 	var items []string
 	var upto []rune
-	var block_quote bool = false
-
-	quotes := strings.Count(s,"\"")
-
-	if quotes % 2 != 0 {
-		fmt.Println("Unpaired quotes in search",s,quotes)
-	}
-
 	cmd := []rune(s)
 
 	for r := 0; r < len(cmd); r++ {
 
-		switch cmd[r] {
-
-		case ' ':
-			if !block_quote {
+		if IsQuote(cmd[r]) {
+			if len(upto) > 0 {
 				items = append(items,string(upto))
-				upto = nil
-				continue
 			}
-			break
 
-		case '"':
-			if block_quote {
-				items = append(items,string(upto))
-				upto = nil
+			qstr,offset := ReadToNext(cmd,r,cmd[r])
+
+			if len(qstr) > 0 {
+				items = append(items,qstr)
+				r += offset
 			}
-			block_quote = !block_quote
 			continue
+		}
+
+		switch cmd[r] {
+		case ' ':
+			if len(upto) > 0 {
+				items = append(items,string(upto))
+			}
+			upto = nil
+			continue
+
+		case '(':
+			if len(upto) > 0 {
+				items = append(items,string(upto))
+			}
+
+			qstr,offset := ReadToNext(cmd,r,')')
+
+			if len(qstr) > 0 {
+				items = append(items,qstr)
+				r += offset
+			}
+			continue
+
 		}
 
 		upto = append(upto,cmd[r])
 	}
 
 	items = append(items,string(upto))
+
 	return items
 }
 
@@ -6257,7 +6305,7 @@ func SplitPunctuationTextWork(s string,allow_small bool) []string {
 			// contiguous parenthesis
 			subfrags = append(subfrags,frags[f])
 			// and fractionated contents (recurse)
-			sfrags = SplitPunctuationText(contents)
+			sfrags = SplitPunctuationTextWork(contents,allow_small)
 			sfrags = nil // count but don't repeat
 		} else {
 			re := regexp.MustCompile("([\"—“”!?,:;—]+[ \n])")
@@ -7674,7 +7722,14 @@ func Arrow2Int(arr []ArrowPtr) []int {
 }
 
 //****************************************************************************
-// Unicode
+// Unicod
+//****************************************************************************
+
+const (
+	NON_ASCII_LQUOTE = '“'
+	NON_ASCII_RQUOTE = '”'
+)
+
 //****************************************************************************
 
 func IsBracketedSearchList(list []string) (bool,[]string) {
@@ -7718,6 +7773,38 @@ func IsBracketedSearchTerm(src string) (bool,string) {
 	}
 
 	return retval,stripped
+}
+
+//****************************************************************************
+
+func IsQuote(r rune) bool {
+
+	switch r {
+	case '"','\'',NON_ASCII_LQUOTE,NON_ASCII_RQUOTE:
+		return true
+	}
+
+	return false
+}
+
+//****************************************************************************
+
+func ReadToNext(array []rune,pos int,r rune) (string,int) {
+
+	var buff []rune
+
+	for i := pos; i < len(array); i++ {
+
+		buff = append(buff,array[i])
+
+		if i > pos && array[i] == r {
+			ret := string(buff)
+			return ret,len(ret)
+		}
+	}
+
+	ret := string(buff)
+	return ret,len(ret)
 }
 
 
