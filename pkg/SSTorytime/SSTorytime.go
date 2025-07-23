@@ -2474,7 +2474,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
         // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
 
-	qstr = "CREATE OR REPLACE FUNCTION AllNCPathsAsLinks(start NodePtr,chapter text,context text[],orientation text,maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION AllNCPathsAsLinks(start NodePtr,chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   hop Text;\n" +
@@ -2483,11 +2483,10 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   exclude NodePtr[] = ARRAY[start]::NodePtr[];\n" +
 		"   ret_paths Text;\n" +
 		"   startlnk Link;"+
-		"   chp text = Format('%s%s%s','%',chapter,'%');"+
 		"BEGIN\n" +
 		"startlnk := GetSingletonAsLink(start);\n"+
 		"path := Format('%s',startlnk::Text);"+
-		"ret_paths := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,context,exclude);" +
+		"ret_paths := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,rm_acc,context,exclude);" +
 
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
@@ -2504,8 +2503,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	row.Close()
 
 	// SumAllNCPaths - a filtering version of the SumAllPaths recursive helper function, slower but more powerful
-
-	qstr = "CREATE OR REPLACE FUNCTION SumAllNCPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,chapter text,context text[],exclude NodePtr[])\n"+
+	qstr = "CREATE OR REPLACE FUNCTION SumAllNCPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,chapter text,rm_acc boolean,context text[],exclude NodePtr[])\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE \n" + 
 		"    fwdlinks Link[];\n" +
@@ -2529,37 +2527,37 @@ func DefineStoredFunctions(ctx PoSST) {
 		// Get *All* in/out Links
 		"CASE \n" +
 		"   WHEN orientation = 'bwd' THEN\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-2);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-1);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,0);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   WHEN orientation = 'fwd' THEN\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,0);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,1);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,2);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   ELSE\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-2);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-1);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,0);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,1);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,2);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"END CASE;\n" +
 
@@ -2574,7 +2572,7 @@ func DefineStoredFunctions(ctx PoSST) {
                 "         END IF;\n"+
 
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
-		"         appendix := SumAllNCPaths(lnk,tot_path,orientation,depth+1,maxdepth,chapter,context,exclude);\n" +
+		"         appendix := SumAllNCPaths(lnk,tot_path,orientation,depth+1,maxdepth,chapter,rm_acc,context,exclude);\n" +
 
 		"         IF appendix IS NOT NULL THEN\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
@@ -2605,7 +2603,7 @@ func DefineStoredFunctions(ctx PoSST) {
         // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
         // with a start set of more than one node
 
-	qstr = "CREATE OR REPLACE FUNCTION AllSuperNCPathsAsLinks(start NodePtr[],chapter text,context text[],orientation text,maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION AllSuperNCPathsAsLinks(start NodePtr[],chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   root Text;\n" +
@@ -2615,15 +2613,14 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   exclude NodePtr[] = start;\n" +
 		"   ret_paths Text;\n" +
 		"   startlnk Link;"+
-		"   chp text = Format('%s%s%s','%',chapter,'%');"+
 		"BEGIN\n" +
 
 		// Aggregate array of starting set
 		"FOREACH node IN ARRAY start LOOP\n"+
 		"   startlnk := GetSingletonAsLink(node);\n"+
 		"   path := Format('%s',startlnk::Text);"+
-		"   root := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,context,exclude);" +
-		"ret_paths := Format('%s\n%s',ret_paths,root);\n"+
+		"   root := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,rm_acc,context,exclude);" +
+		"   ret_paths := Format('%s\n%s',ret_paths,root);\n"+
 		"END LOOP;"+
 
 		"RETURN ret_paths; \n" +
@@ -2640,7 +2637,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
         // An NC/C filtering version of the neighbour scan
 
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCFwdLinks(start NodePtr,chapter text,context text[],exclude NodePtr[],sttype int)\n"+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCFwdLinks(start NodePtr,chapter text,rm_acc boolean,context text[],exclude NodePtr[],sttype int)\n"+
 		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    neighbours Link[];\n" +
@@ -2648,7 +2645,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    lnk Link;\n" +
 		"BEGIN\n" +
 
-		"    fwdlinks = GetNCNeighboursByType(start,chapter,sttype);\n"+
+		"    fwdlinks = GetNCNeighboursByType(start,chapter,rm_acc,sttype);\n"+
 
 		"    IF fwdlinks IS NULL THEN\n" +
 		"        RETURN '{}';\n" +
@@ -2682,7 +2679,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
         // This one includes an NCC chapter and context filter so slower! 
 
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCCLinks(start NodePtr,exclude NodePtr[],sttype int,chapter text,context text[])\n"+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCCLinks(start NodePtr,exclude NodePtr[],sttype int,chapter text,rm_acc boolean,context text[])\n"+
 		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    neighbours Link[];\n" +
@@ -2690,7 +2687,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    lnk Link;\n" +
 		"BEGIN\n" +
 
-		"    fwdlinks =GetNCNeighboursByType(start,chapter,sttype);\n"+
+		"    fwdlinks =GetNCNeighboursByType(start,chapter,rm_acc,sttype);\n"+
 
 		"    IF fwdlinks IS NULL THEN\n" +
 		"        RETURN '{}';\n" +
@@ -2712,17 +2709,16 @@ func DefineStoredFunctions(ctx PoSST) {
 	
         // This one includes an NC chapter filter
 	
-	qstr = "CREATE OR REPLACE FUNCTION GetNCNeighboursByType(start NodePtr, chapter text,sttype int)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION GetNCNeighboursByType(start NodePtr, chapter text,rm_acc boolean,sttype int)\n"+
 		"RETURNS Link[] AS $fn$\n"+
 		"DECLARE \n"+
 		"    fwdlinks Link[] := Array[] :: Link[];\n"+
 		"    lnk Link := (0,1.0,Array[]::text[],(0,0));\n"+
-		"    chp text = Format('%s%s%s','%',chapter,'%');"+
 		"BEGIN\n"+
 		"   CASE sttype \n"
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND lower(Chap) LIKE lower(chp);\n",st,STTypeDBChannel(st));
+			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND UnCmp(Chap,rm_acc) LIKE lower(chapter);\n",st,STTypeDBChannel(st));
 	}
 	
 	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
@@ -3741,12 +3737,16 @@ func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,dept
 
 	// orientation should be "fwd" or "bwd" else "both"
 
-	// TBD remove_accents,stripped := IsBracketedSearchTerm(chapter)
+	remove_accents,stripped := IsBracketedSearchTerm(chapter)
+	chapter = "%"+stripped+"%"
+	rm_acc := "false"
 
-	chapter = "%"+chapter+"%"
+	if remove_accents {
+		rm_acc = "true"
+	}
 
-	qstr := fmt.Sprintf("select AllNCPathsAsLinks from AllNCPathsAsLinks('(%d,%d)','%s',%s,'%s',%d);",
-		start.Class,start.CPtr,chapter,FormatSQLStringArray(context),orientation,depth)
+	qstr := fmt.Sprintf("select AllNCPathsAsLinks from AllNCPathsAsLinks('(%d,%d)','%s',%s,%s,'%s',%d);",
+		start.Class,start.CPtr,chapter,rm_acc,FormatSQLStringArray(context),orientation,depth)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -3779,8 +3779,16 @@ func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,dept
 func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodePtr,depth int,chapter string,context []string) ([][]Link,int) {
 	// orientation should be "fwd" or "bwd" else "both"
 
-	qstr := fmt.Sprintf("select AllSuperNCPathsAsLinks(%s,'%s',%s,'%s',%d);",FormatSQLNodePtrArray(start),
-		chapter,FormatSQLStringArray(context),orientation,depth)
+	remove_accents,stripped := IsBracketedSearchTerm(chapter)
+	chapter = "%"+stripped+"%"
+	rm_acc := "false"
+
+	if remove_accents {
+		rm_acc = "true"
+	}
+
+	qstr := fmt.Sprintf("select AllSuperNCPathsAsLinks(%s,'%s',%s,%s,'%s',%d);",FormatSQLNodePtrArray(start),
+		chapter,rm_acc,FormatSQLStringArray(context),orientation,depth)
 
 	row, err := ctx.DB.Query(qstr)
 
