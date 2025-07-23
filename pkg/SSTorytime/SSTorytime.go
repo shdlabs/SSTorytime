@@ -3778,6 +3778,7 @@ func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodeP
 	}
 
 	row.Close()
+
 	return retval,len(retval)
 }
 

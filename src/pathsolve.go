@@ -119,7 +119,7 @@ func Init() []string {
 
 func PathSolve(ctx SST.PoSST, chapter,cntext,begin, end string) {
 
-	const maxdepth = 15
+	const maxdepth = 20
 	var Lnum,Rnum int
 	var count int
 	var left_paths, right_paths [][]SST.Link

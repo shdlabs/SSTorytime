@@ -95,13 +95,14 @@
 
 - contains
 
- + has component (haspt)     - is component of (part)
+ + has component (haspt)   - is component of (part)
  + is a set of (setof)     - is part of set (inset) // designations can be multi-valued
  + subsumes (sub)          - is subsumed by (subby)
  + encloses (encl)         - is enclosed by (isencl)
  + swallows (sw)           - is swallowed by (swby)
  + consists of (consists)  - is part of (pt)
- + uses word (useword)        - is a word used in (wordin)
+ + uses word (useword)     - is a word used in (wordin)
+ + contains (contain)      - belongs to (belong)
 
  + has member (memb) - is a member of (ismemb)
  + is the publisher of (published) - was published by (pub by)

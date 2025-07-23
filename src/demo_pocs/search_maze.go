@@ -91,7 +91,7 @@ func Solve(ctx SST.PoSST) {
 
 	// Contra colliding wavefronts as path integral solver
 
-	const maxdepth = 16
+	const maxdepth = 18
 	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var count int

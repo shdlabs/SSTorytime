@@ -22,13 +22,15 @@ func main() {
 
 	// Contra colliding wavefronts as path integral solver
 
-	const maxdepth = 4
+	const maxdepth = 15
 
 	context := []string{""}
-	chapter := "slit"
+	chapter := ""
 
 	start_bc := []string{"start"}
+//	start_bc := []string{"f7"}
 	end_bc := []string{"target_1","target_2","target_3"}
+//	end_bc := []string{"h7"}
 
 /*	context := []string{""}
 	chapter := "slit"
