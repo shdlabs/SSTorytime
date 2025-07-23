@@ -2415,13 +2415,14 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
-
 	// HELPER
+
 	qstr =  "CREATE OR REPLACE FUNCTION UnCmp(value text,unacc boolean)\n"+
 		"RETURNS text AS $fn$\n"+
 		"DECLARE \n"+
 		"   retval nodeptr[] = ARRAY[]::nodeptr[];\n"+
 		"BEGIN\n"+
+		//"  RAISE NOTICE 'VALUE= %',value;\n"+
 		"  IF unacc THEN\n"+
 		"    RETURN lower(unaccent(value)); \n" +
 		"  ELSE\n"+
@@ -2439,17 +2440,19 @@ func DefineStoredFunctions(ctx PoSST) {
 	row.Close()
 
 
-	// Find the node that sit's at the start/top of a causal chain
+	// Find the node that sits at the start/top of a causal chain
 
 	qstr =  "CREATE OR REPLACE FUNCTION GetNCCStoryStartNodes(arrow int,inverse int,sttype int,name text,chapter text,context text[],rm_nm boolean, rm_ch boolean)\n"+
 		"RETURNS NodePtr[] AS $fn$\n"+
 		"DECLARE \n"+
 		"   retval nodeptr[] = ARRAY[]::nodeptr[];\n"+
+		"   lowname text = lower(name);"+
+		"   lowchap text = lower(chapter);"+
 		"BEGIN\n"+
 		"     CASE sttype \n"
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"     SELECT array_agg(Nptr) into retval FROM Node WHERE UnCmp(S,rm_nm) LIKE lower(name) AND UnCmp(Chap,rm_ch) LIKE lower(chapter) AND ArrowInContextList(arrow,%s,context) AND NOT ArrowInContextList(inverse,%s,context);\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
+			"     SELECT array_agg(Nptr) into retval FROM Node WHERE (UnCmp(S,rm_nm) LIKE lower(name)) AND (UnCmp(Chap,rm_ch) LIKE lower(chapter)) AND ArrowInContextList(arrow,%s,context) AND NOT ArrowInContextList(inverse,%s,context);\n",st,STTypeDBChannel(st),STTypeDBChannel(-st));
 	}
 	qstr += "        ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
 		"     END CASE;\n" +
@@ -2817,7 +2820,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"         END IF;\n" +
 		
 		"         IF count >= min THEN\n" +
-"RAISE NOTICE 'appending....%',app;"+
 		"	    appointed = array_append(appointed,app);\n" +
 		"         END IF;\n" +
 		"      END LOOP;\n" +
@@ -3437,20 +3439,23 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,name,chapter stri
 	qstr = fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s','%s',%s,%s,%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,nm,chp,cntx,rm_nm,rm_ch)
 
 	row,err := ctx.DB.Query(qstr)
-	fmt.Println("QSTR",qstr)
+
 	if err != nil {
 		fmt.Println("GetNodesNCCStartingStoriesForArrow failed\n",qstr,err)
 		return nil
 	}
 	
 	var nptrstring string
-	
+
 	for row.Next() {		
 		err = row.Scan(&nptrstring)
-		matches = ParseSQLNPtrArray(nptrstring)
+
+		match := ParseSQLNPtrArray(nptrstring)
+		matches = append(matches,match...)
 	}
 	
 	row.Close()
+
 	return matches
 }
 
@@ -4854,9 +4859,13 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit 
 
 // **************************************************************************
 
-func OrbitMatching(ctx PoSST,node Node,orbit [ST_TOP][]Orbit,search string) bool {
+func OrbitMatching(ctx PoSST,node Node,orbit [ST_TOP][]Orbit,rawsearch string) bool {
 
 	// Check whether the search string occurs within the near orbit of the node
+
+	_,stripped := IsBracketedSearchTerm(rawsearch)
+
+	search := strings.ToLower(stripped) // because all searching done in lower case
 
 	if strings.Contains(node.S,search) || strings.Contains(search,node.S) {
 		return true
@@ -5596,7 +5605,6 @@ const (
 	CMD_NOTES = "note"
 	CMD_PAGE = "page"
 	CMD_PATH = "path"
-	CMD_STORY = "stor"
 	CMD_SEQ = "seq"
 	CMD_FROM = "from"
 	CMD_TO = "to"
@@ -5619,7 +5627,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 
 	var keywords = []string{ 
 		CMD_NOTES, CMD_PATH,
-		CMD_PATH,CMD_FROM,CMD_TO,CMD_STORY,
+		CMD_PATH,CMD_FROM,CMD_TO,
 		CMD_SEQ,
 		CMD_CONTEXT,CMD_CTX,CMD_AS,
 		CMD_CHAPTER,CMD_IN,CMD_SECTION,
@@ -5813,7 +5821,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					continue
 				}
 
-			case CMD_PATH,CMD_STORY,CMD_SEQ:
+			case CMD_PATH,CMD_SEQ:
 				param.Sequence = true
 				continue
 

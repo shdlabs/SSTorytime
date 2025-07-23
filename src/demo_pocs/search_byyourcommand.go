@@ -589,7 +589,6 @@ func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,cont
 
 	for n := range name {
 		for a := range arrows {
-			fmt.Println("NAME",name[n])
 			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context)
 
 			for s := range stories {
