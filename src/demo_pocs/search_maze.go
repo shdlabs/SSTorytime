@@ -91,7 +91,7 @@ func Solve(ctx SST.PoSST) {
 
 	// Contra colliding wavefronts as path integral solver
 
-	const maxdepth = 18
+	const maxdepth = 16
 	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var count int
@@ -100,21 +100,21 @@ func Solve(ctx SST.PoSST) {
 	start_bc := "a7"
 	end_bc := "i6"
 
-	leftptrs := SST.GetDBNodePtrMatchingName(ctx,start_bc,"maze")
-	rightptrs := SST.GetDBNodePtrMatchingName(ctx,end_bc,"maze")
+	leftptrs := SST.GetDBNodePtrMatchingName(ctx,start_bc,"")
+	rightptrs := SST.GetDBNodePtrMatchingName(ctx,end_bc,"")
 
 	if leftptrs == nil || rightptrs == nil {
 		fmt.Println("No paths available from end points")
 		return
 	}
 
-	cntx := []string{"maze"}
+	cntx := []string{""}
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(ctx,"fwd",leftptrs[0],ldepth,"maze",cntx)		
-		right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth,"maze",cntx)		
-		
+		left_paths,Lnum = SST.GetEntireNCConePathsAsLinks(ctx,"fwd",leftptrs[0],ldepth,"",cntx)
+		right_paths,Rnum = SST.GetEntireNCConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth,"",cntx)		
+
 		solutions,loop_corrections := WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {

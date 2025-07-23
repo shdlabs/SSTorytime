@@ -2529,39 +2529,38 @@ func DefineStoredFunctions(ctx PoSST) {
 		// Get *All* in/out Links
 		"CASE \n" +
 		"   WHEN orientation = 'bwd' THEN\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   WHEN orientation = 'fwd' THEN\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   ELSE\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
+		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-1);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,0);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,2);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,3);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,-3);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,context,exclude,1);\n" +
-		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-
 		"END CASE;\n" +
 
 		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
@@ -2580,7 +2579,8 @@ func DefineStoredFunctions(ctx PoSST) {
 		"         IF appendix IS NOT NULL THEN\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
 		"         ELSE\n"+
-		"            ret_paths := tot_path;\n"+
+//		"            ret_paths := tot_path;\n"+
+		"            ret_paths := Format('%s\n%s',ret_paths,tot_path);"+
 		"         END IF;\n"+
 		"      END IF;\n"+
 		"   END IF;\n"+
@@ -2656,6 +2656,10 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    neighbours := ARRAY[]::Link[];\n" +
 		"    FOREACH lnk IN ARRAY fwdlinks\n" +
 		"    LOOP\n"+
+
+		"      IF lnk.Arr = 0 THEN\n"+
+		"         CONTINUE;"+
+		"      END IF;\n"+
 
                 "      IF context is not NULL AND NOT match_context(lnk.Ctx::text[],context::text[]) THEN\n"+
                 "         CONTINUE;\n"+
@@ -3715,6 +3719,10 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 
 	for row.Next() {		
 		err = row.Scan(&whole)
+		if err != nil {
+			fmt.Println("reading AllPathsAsLinks",err)
+		}
+
 		retval = ParseLinkPath(whole)
 	}
 
@@ -3733,6 +3741,10 @@ func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,dept
 
 	// orientation should be "fwd" or "bwd" else "both"
 
+	// TBD remove_accents,stripped := IsBracketedSearchTerm(chapter)
+
+	chapter = "%"+chapter+"%"
+
 	qstr := fmt.Sprintf("select AllNCPathsAsLinks from AllNCPathsAsLinks('(%d,%d)','%s',%s,'%s',%d);",
 		start.Class,start.CPtr,chapter,FormatSQLStringArray(context),orientation,depth)
 
@@ -3747,8 +3759,16 @@ func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,dept
 
 	for row.Next() {		
 		err = row.Scan(&whole)
+		if err != nil {
+			fmt.Println("reading AllNCPathsAsLinks",err)
+		}
+
 		retval = ParseLinkPath(whole)
 	}
+
+	sort.Slice(retval, func(i,j int) bool {
+		return len(retval[i]) < len(retval[j])
+	})
 
 	row.Close()
 	return retval,len(retval)
@@ -7160,6 +7180,11 @@ func FormatSQLStringArray(array []string) string {
 	var ret string = "'{ "
 	
 	for i := 0; i < len(array); i++ {
+
+		if len(array[i]) == 0 {
+			continue
+		}
+
 		ret += fmt.Sprintf("\"%s\"",SQLEscape(array[i]))
 	    if i < len(array)-1 {
 	    ret += ", "
