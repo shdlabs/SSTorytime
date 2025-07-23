@@ -365,9 +365,17 @@ func ParseLiteralNodePtrs(names []string) ([]SST.NodePtr,[]string) {
 			if line[i] == ')' {
 				np := string(current)
 				var nptr SST.NodePtr
-				fmt.Sscanf(np,"%d,%d",&nptr.Class,&nptr.CPtr)
-				nodeptrs = append(nodeptrs,nptr)
-				current = nil
+				var a,b int = -1,-1
+				fmt.Sscanf(np,"%d,%d",&a,&b)
+				if a >= 0 && b >= 0 {
+					nptr.Class = a
+					nptr.CPtr = SST.ClassedNodePtr(b)
+					nodeptrs = append(nodeptrs,nptr)
+					current = nil
+				} else {
+					rest = append(rest,"("+np+")")
+					current = nil
+				}
 				continue
 			}
 

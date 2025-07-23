@@ -3715,10 +3715,6 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 
 	for row.Next() {		
 		err = row.Scan(&whole)
-		if err != nil {
-			fmt.Println("reading AllPathsAsLinks",err)
-		}
-
 		retval = ParseLinkPath(whole)
 	}
 
@@ -5685,7 +5681,11 @@ func DecodeSearchField(cmd string) SearchParameters {
 		for w := 0; w < len(subparts); w++ {
 			if InList(subparts[w],keywords) {
 				// special case for TO with implicit FROM, and USED AS
-				if w > 0 && strings.HasPrefix(subparts[w],"to ") {
+				if p > 0 && subparts[w] == "to" {
+					part = append(part,subparts[w])
+					continue
+				}
+				if w > 0 && strings.HasPrefix(subparts[w],"to") {
 					part = append(part,subparts[w])
 				} else {
 					parts = append(parts,part)
@@ -5785,7 +5785,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
-							param.Arrows = append(param.Arrows,ult[u])
+							param.Arrows = append(param.Arrows,DeQ(ult[u]))
 						}
 					}
 				} else {
@@ -5800,7 +5800,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
-							param.Context = append(param.Context,ult[u])
+							param.Context = append(param.Context,DeQ(ult[u]))
 						}
 					}
 				} else {
@@ -5814,7 +5814,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
-							param.From = append(param.From,ult[u])
+							param.From = append(param.From,DeQ(ult[u]))
 						}
 					}
 				} else {
@@ -5832,7 +5832,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
-							param.To = append(param.To,ult[u])
+							param.To = append(param.To,DeQ(ult[u]))
 						}
 					}
 					continue
@@ -5844,7 +5844,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						p++
 						ult := strings.Split(cmd_parts[c][pp],",")
 						for u := range ult {
-							param.To = append(param.To,ult[u])
+							param.To = append(param.To,DeQ(ult[u]))
 						}
 					}
 					continue
@@ -5861,7 +5861,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 						p++
 						ult := strings.Split(cmd_parts[c][pp]," ")
 						for u := range ult {
-							param.Name = append(param.Name,ult[u])
+							param.Name = append(param.Name,DeQ(ult[u]))
 						}
 					}
 				} else {
@@ -5879,8 +5879,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					p++
 					ult := SplitQuotes(cmd_parts[c][pp])
 					for u := range ult {
-						ult[u] = strings.Trim(ult[u],"\"")
-						param.Name = append(param.Name,ult[u])
+						param.Name = append(param.Name,DeQ(ult[u]))
 					}
 				}
 				continue
@@ -6013,6 +6012,13 @@ func SplitQuotes(s string) []string {
 	items = append(items,string(upto))
 
 	return items
+}
+
+// **************************************************************************
+
+func DeQ(s string) string {
+
+	return strings.Trim(s,"\"")
 }
 
 // **************************************************************************
