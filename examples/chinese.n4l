@@ -115,6 +115,11 @@ according to/depending on/based on  (eh) 根据 (hp) gēnjù
 
 :: idioms, phrases ::
 
+
+Nǐ zuì hǎo  (ph)  你最好  (he)  You had better ...
+Nǐ zuì hǎo bǎ chē tíng zài xuéxiào fùjìn (ph)  你最好把车停在学校附近  (he) You'd better park your car near the school
+
+
 tīng shuō (ph) 听说 (he) I heard that ...
 
 xǐ (ph) 喜 (he) happiness
@@ -137,7 +142,6 @@ I need to practice (eh) 我需要练习 (hp) Wǒ xūyào liànxí
 
 then/just/at once/suddenly (eh) 就 (hp) Jiù
 
-Hǎo ba (ph) 好吧 (he) All right/okay
 
 Well, maybe (eh) 好吧，也许 (hp) Hǎo ba, yěxǔ
 
@@ -145,6 +149,15 @@ pay attention! achtung! (eh) 注意! (hp) Zhùyì!
 
 Are you serious? (eh) 你是认真的吗 (hp) Nǐ shì rènzhēn de ma
 
+ :: idioms, phrases, commands, ba ::
+
+@drawerex bǎ wàzǐ fàng zài nàgè chōutì lǐ (ph)  把袜子放在那个抽屉里  (he) Put the socks in that drawer
+
+qǐng bǎ zhè zhāng zhàopiàn guà jìngzǐ zuǒbiān (ph)  请把这张照片挂镜子左边  (he) Please hang this photo on the left side of the mirror
+
+hǎo ba (ph) 好吧 (he) All right/okay
+
+zǒu ba (ph) 走吧 (he) Let's go 
 
 
 :: proverb ::
@@ -282,18 +295,15 @@ kěnéng (ph) 可能 (he) might/may/possibly
 
 
 
-+:: bi uses, comparisons , compare, best, biggest ::
++:: bi uses, comparisons , compare, best, biggest, better ::
 
 perfect (eh) 完美 (hp) wánměi 
 
 gèng (ph)  更 (he) better
    " (e.g.) míngtiān huì gèng hǎo(ph)  明天会更好  (he) tomorrow will be better
 
-
-比较 (hp) jǐjiào  comparatively
+jǐjiào  (ph) 比较 (hp) comparatively
 jiào (ph) 较 (he) compare/more
-
-
 
 zhèlǐ de cài bǐjiào hào chī (ph)  这里的菜比较好吃 (he) The food here is better
 
@@ -1075,30 +1085,19 @@ liǎng wèi (ph) 两位 (he) two persons
 wèi (ph) 位 (he) person count
 
 that pair of shoes (eh) 那双鞋 (hp) nà shuāng xié
-
 that pair of trousers  (eh) 那条裤子  (hp) nà tiáo kùzǐ
-
 that dress/skirt  (eh) 那条裙子  (hp) nà tiáo qúnzǐ
-
 zhè zhāng huàzhuāngpǐn (ph) 这张化妆品 (he) this cosmetic
-
 that panda  (eh) 那只熊猫  (hp) nà zhǐ xióngmāo
-
 that horst (eh)  那匹马  (hp) nà pǐ mǎ
-
 that cat  (eh) 那只猫  (hp) nà zhǐ māo
-
 that dog  (eh) 那只狗  (hp) nà zhǐ gǒu
-
 that bird  (eh) 那只鸟  (hp) nà zhǐ niǎo
-
 two birds  (eh) 两只鸟  (hp) liǎng zhī niǎo
-
 that tiger (eh) 那只老虎  (hp) à zhǐ lǎohǔ
-
 those two tigers  (eh) 那两只老虎  (hp) nà liǎng zhī lǎohǔ
 
-
+@dtable yī zhāng cānzhuō (ph)  一张餐桌  (he) a dining table
 
 
 
@@ -1857,13 +1856,21 @@ cèsuǒ  (ph) 厕所  (he) toilet
 
 nǐ kěyǐ bǎ fángjiān dǎsǎo gānjìng ma (ph) 你可以把房间打扫干净吗  (he) can you clean the room
 
-:: furniture, devices ::
+:: furniture, devices, zi ::
 
-table (eh) 桌子 (hp) zhuōzi
+
+zhuōzi (ph) 桌子 (he) table 
+cānzhuō (ph) 餐桌 (he) dining table
+    " (see) $dtable.1
+
 shelf (eh) 架子 (hp) jiàzǐ
 chair  (eh) 椅子 (hp) yǐzi
+@box xiāngzǐ  (ph) 箱子  (he) box
+
 refrigerator (eh) 冰箱 (hp) bīngxiāng
+
 chōutì  (ph) 抽屉  (he) drawer
+   "    (e.g.) $drawerex.1
 
 ###########################################################
 
@@ -1949,6 +1956,8 @@ shìnèi  (ph) 室内  (he) indoor
 inside  (eh) 里面 (hp) lǐ miàn
 outside  (eh) 外面 (hp) wàimiàn
 
++:: up, down::
+
 on top of.. (ep) zài .. shàng (ph) 在 .. 上
 underneath (ep) zài .. xià  (ph) 在 .. 下
 outside of (ep)zài .. wài (ph) 在..外
@@ -1986,7 +1995,22 @@ first floor/layer  (eh) 一层(hp)  yī céng
 tíngchēchǎng zài dìxià èr céng (ph)  停车场在地下二层  (he) the parking lot is on the second underground floor
 
 
- -::examples::
+
+:: home, floors, upstairs, downstairs ::
+
+Wǒ yào shōushí yīxià jiā  (ph) 我要收拾一下家 (he) I need/am going to tidy up the house
+Wǒ xiǎng shàng lóu 我想上楼  (he) I want to go upstairs
+Wǒ xiǎng shàng lóu dǎsǎo xīn gōngyù (ph) 我想上楼打扫新公寓  (he) I want to go upstairs and clean the new apartment
+Wǒ bǎ nǐ sòng dào lóu xià ba 我把你送到楼下吧  (he) Let me take you downstairs
+
+yuànzǐ (ph)  院子  (he) courtyard
+
+Dìxiàshì (ph)  地下室  (he) basement
+
+Dìxià (ph)  地下  (he) underground
+
+
+ :: position, relative position, examples::
 
 contains (ep) lǐ yǒu (ph) 里有
 
@@ -2652,7 +2676,6 @@ shìqíng (sl) shípíng
 
 什么 (hp) shénme (pe) what
 
-let's go (ep) zǒu ba (ph) 走吧
 
 invite/ask/please/treat someone (eh) 请 (hp) qǐng
 
@@ -3363,7 +3386,7 @@ tā liǎng gè xīngqí hòu huì qù rìběn (ph) 他两个星期后会去日�
 @machine jī (ph) 机 (he) machine, mechanism
 
 kǎoxiāng (ph) 烤箱 (he) oven = baking box
-
+    " (useword) $box.1
   " (useword) kǎo (ph) 烤 (he) baking
 
 bīngxiāng (ph) 冰箱 (he) fridge = ice box
@@ -3380,8 +3403,8 @@ jīchǎng (ph) 机场 (he) airport = machine field
     " (useword) $field.1
     " (useword) $machine.1
 
-
-
+xǐyījī (ph) 洗衣机  (he)  washing machhine
+    " (useword) $machine.1
 
 
 
