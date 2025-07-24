@@ -1658,6 +1658,37 @@ func CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool {
 	}
 
 	row.Close()
+
+	// And the reverse arrow
+
+	qstr = fmt.Sprintf("SELECT IdempInsertNodeArrowNode(" +
+		"%d," + //infromptr
+		"%d," + //infromchan
+		"%d," + //isttype
+		"%d," + //iarr
+		"%.2f," + //iwgt
+		"%s," + //ictx
+		"%d," + //intoptr
+		"%d " + //intochan,
+		")",
+		dst.Dst.CPtr,
+		dst.Dst.Class,
+		-sttype,
+		INVERSE_ARROWS[dst.Arr],
+		dst.Wgt,
+		FormatSQLStringArray(dst.Ctx),
+		org.CPtr,
+		org.Class,)
+
+	row,err = ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("Failed to make inverse node-arrow-node",err,qstr)
+	       return false
+	}
+
+	row.Close()
+
 	return true
 }
 
@@ -2992,10 +3023,17 @@ func GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr {
 
 func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr) []NodePtr {
 
-	// Match name, context, chapter
+	// Match name, context, chapter, with arrows
 
+/*	if cn == nil && arrow == nil {
+
+		// in case a lazy user hasn't filled out NodeArrowNode
+		return GetDBNodePtrMatchingName(ctx,nm,chap)
+	}
+*/
 	var chap_col, nm_col string
 	var context string
+	var qstr string
 
 	remove_name_accents,nm_stripped := IsBracketedSearchTerm(nm)
 
@@ -3025,7 +3063,7 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 
 	arrows := FormatSQLIntArray(Arrow2Int(arrow))
 
-	qstr := fmt.Sprintf("WITH matching_nodes AS "+
+	qstr = fmt.Sprintf("WITH matching_nodes AS "+
 		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)"+
 		"     SELECT DISTINCT nfrom FROM matching_nodes "+
 		"      JOIN Node ON nptr=nfrom WHERE match=true AND matcha=true %s %s",
