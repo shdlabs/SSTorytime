@@ -114,7 +114,7 @@ if $DB_TEST_PROG > /dev/null;
    then 
       echo -e "1. ${GREEN} database ok ${END}"
 
-      TESTPROG=../src/demo_pocs/search_maze
+      TESTPROG=../src/API_EXAMPLE_3
 
       if $TESTPROG > /dev/null; 
          then 
@@ -127,8 +127,6 @@ else
 
 fi
 
-
-
 DB_TEST_PROG="../src/API_EXAMPLE_1"
 
 if $DB_TEST_PROG > /dev/null; 
@@ -140,3 +138,20 @@ if $DB_TEST_PROG > /dev/null;
 fi
 
 
+DB_TEST_PROG="../src/demo_pocs/dotest_getnodes"
+
+if $DB_TEST_PROG > /dev/null; 
+   then 
+      echo -e "4. ${GREEN} link mode consistency ok ${END}"
+   else 
+      echo -e "4. ${RED} link model consistency, try rebuilding ${END}"
+fi
+
+DB_TEST_PROG="../src/demo_pocs/dotest_entirecone"
+
+if $DB_TEST_PROG > /dev/null; 
+   then 
+      echo -e "5. ${GREEN} link causal cone consistency ${END}"
+   else 
+      echo -e "5. ${RED} causal cone consistency, try rebuilding ${END}"
+fi

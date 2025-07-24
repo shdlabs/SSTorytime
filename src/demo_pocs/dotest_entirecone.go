@@ -12,7 +12,7 @@ package main
 
 import (
 	"fmt"
-
+	"os"
         SST "SSTorytime"
 )
 
@@ -62,16 +62,20 @@ func Solve(ctx SST.PoSST) {
 		xright_paths,Rnumx := SST.GetEntireConePathsAsLinks(ctx,"bwd",rightptrs[0],rdepth)		
 		if Lnum != Lnumx {
 			fmt.Println("LEFT sizes differ at depth",ldepth,"=",Lnum,Lnumx)
+			os.Exit(-1)
 		}
 		if Diff(left_paths,xleft_paths) {
 			fmt.Println("LEFT SETS differ at depth",ldepth)
+			os.Exit(-1)
 		}
 
 		if Rnum != Rnumx {
 			fmt.Println("RIGHT sizes differ at depth",rdepth,"=",Rnum,Rnumx)
+			os.Exit(-1)
 		}
 		if Diff(right_paths,xright_paths) {
 			fmt.Println("RIGHT SETS differ at depth",rdepth)
+			os.Exit(-1)
 		}
 
 		ldepth++

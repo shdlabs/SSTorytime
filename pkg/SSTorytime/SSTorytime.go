@@ -3068,7 +3068,7 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 		"     SELECT DISTINCT nfrom FROM matching_nodes "+
 		"      JOIN Node ON nptr=nfrom WHERE match=true AND matcha=true %s %s",
 		context,arrows,nm_col,chap_col)
-
+	fmt.Println(qstr)
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {

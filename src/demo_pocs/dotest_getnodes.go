@@ -12,7 +12,7 @@ package main
 
 import (
 	"fmt"
-
+	"os"
         SST "SSTorytime"
 )
 
@@ -45,6 +45,7 @@ func Solve(ctx SST.PoSST) {
 
 	if Diff (p1,p2) {
 		fmt.Println("Failed",p1,p2)
+		os.Exit(-1)
 	}
 }
 
