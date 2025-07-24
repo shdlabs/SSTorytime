@@ -5018,13 +5018,14 @@ func PrintLinkOrbit(notes [ST_TOP][]Orbit,sttype int) {
 
 	for n := range notes[t] {		
 
+		r := notes[t][n].Radius
 		if notes[t][n].Ctx != "" {
 			txt := fmt.Sprintf(" -    (%s) - %s  .. %s\n",notes[t][n].Arrow,notes[t][n].Text,notes[t][n].Ctx)
-			text := Indent(LEFTMARGIN) + txt
+			text := Indent(LEFTMARGIN*r) + txt
 			ShowText(text,SCREENWIDTH)
 		} else {
 			txt := fmt.Sprintf(" -    (%s) - %s\n",notes[t][n].Arrow,notes[t][n].Text)
-			text := Indent(LEFTMARGIN) + txt
+			text := Indent(LEFTMARGIN*r) + txt
 			ShowText(text,SCREENWIDTH)
 		}
 
