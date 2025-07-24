@@ -14,9 +14,9 @@ to protect them.
 - `note` or `page`
 
 - `path` or `seq`
--   `from`
--   `to`
--   `ctx`
+- -  `from`
+- -  `to`
+- -  `ctx`
 
 - `context`
 - `as`
