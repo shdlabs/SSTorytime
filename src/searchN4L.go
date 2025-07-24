@@ -328,9 +328,6 @@ func SolveNodePtrs(ctx SST.PoSST,nodenames []string,chap string,cntx []string, a
 	}
 
 	for r := range rest {
-		if VERBOSE {
-			fmt.Printf("Handling node search: getDBNodePtrMatching(%s,%s,%v,%v)\n",rest[r],chap,cntx,arr)
-		}
 		nptrs := SST.GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
 
 		for n := range nptrs {
@@ -517,7 +514,7 @@ func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 	var Lnum,Rnum int
 	var count int
 	var left_paths, right_paths [][]SST.Link
-	fmt.Println("left",leftptrs,"right",rightptrs)
+
 	if leftptrs == nil || rightptrs == nil {
 		return
 	}
