@@ -42,6 +42,7 @@ func main() {
 		for leg := 1; leg < len(path[p]); leg++ {	
 			var nt,np SST.Node
 			var lnk SST.Link
+			var sttype int
 
 			np.S = path[p][leg-1]
 			np.NPtr = SST.NodePtr{ CPtr : cptr-1, Class: SST.N1GRAM}
@@ -51,13 +52,14 @@ func main() {
 			nt.NPtr = SST.NodePtr{ CPtr : cptr, Class: SST.N1GRAM}
 			nt.Chap = "maze"
 
-			lnk.Arr,_ = SST.GetDBArrowsWithArrowName(ctx,"connects to")
+			lnk.Arr,sttype = SST.GetDBArrowsWithArrowName(ctx,"connects to")
 			lnk.Dst = nt.NPtr
 			lnk.Wgt = 1
 
 			np = SST.IdempDBAddNode(ctx, np)
 			nt = SST.IdempDBAddNode(ctx, nt)
 			SST.IdempDBAddLink(ctx,np,lnk,nt)
+			SST.CreateDBNodeArrowNode(ctx,np.NPtr,lnk,sttype)
 
 			cptr++
 		}
