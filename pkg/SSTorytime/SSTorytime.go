@@ -3068,7 +3068,7 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 		"     SELECT DISTINCT nfrom FROM matching_nodes "+
 		"      JOIN Node ON nptr=nfrom WHERE match=true AND matcha=true %s %s",
 		context,arrows,nm_col,chap_col)
-	fmt.Println(qstr)
+
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
@@ -4930,14 +4930,17 @@ func OrbitMatching(ctx PoSST,node Node,orbit [ST_TOP][]Orbit,rawsearch string) b
 
 	search := strings.ToLower(stripped) // because all searching done in lower case
 
-	if strings.Contains(node.S,search) || strings.Contains(search,node.S) {
+	text := strings.ToLower(node.S)
+
+	if strings.Contains(text,search) || strings.Contains(search,text) {
 		return true
 	}
 
 	for st := 0; st < ST_TOP; st++ {
 		for r := range orbit[st] {
-			if strings.Contains(orbit[st][r].Text,search) || 
-			strings.Contains(search,orbit[st][r].Text) {
+			otext := strings.ToLower(orbit[st][r].Text)
+			if strings.Contains(otext,search) || 
+			strings.Contains(search,otext) {
 				return true
 			}
 		}
@@ -5234,7 +5237,7 @@ func JSON_TableOfContents(ctx PoSST,chap string,cn []string) string {
 		"     SELECT DISTINCT chap,ctx FROM matching_nodes "+
 		"      JOIN Node ON nptr=nfrom WHERE match=true %s",
 		context,chap_col)
-fmt.Println(qstr)
+
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
