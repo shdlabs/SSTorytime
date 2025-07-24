@@ -183,6 +183,22 @@ $ ./searchN4L a7 to i6 depth 16
 
 </pre>
 
+## Searching for story sequences
+
+<pre>
+./searchN4L sequence "Mary had"
+The following story/sequence (standalone trail without title anchor) "..."
+
+
+  0. Mary had a little lamb
+
+  1. Whose fleece was dull and grey
+
+  2. And when it reached a certain age 
+
+  3. She'd serve it on a tray
+
+</pre>
 ## Searching in note form
 
 Sometimes you want to see your full notes, the way you ordered them:
