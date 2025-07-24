@@ -5718,6 +5718,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		subparts := SplitQuotes(pts[p])
 
 		for w := 0; w < len(subparts); w++ {
+
 			if InList(subparts[w],keywords) {
 				// special case for TO with implicit FROM, and USED AS
 				if p > 0 && subparts[w] == "to" {

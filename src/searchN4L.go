@@ -328,6 +328,9 @@ func SolveNodePtrs(ctx SST.PoSST,nodenames []string,chap string,cntx []string, a
 	}
 
 	for r := range rest {
+		if VERBOSE {
+			fmt.Printf("Handling node search: getDBNodePtrMatching(%s,%s,%v,%v)\n",rest[r],chap,cntx,arr)
+		}
 		nptrs := SST.GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
 
 		for n := range nptrs {

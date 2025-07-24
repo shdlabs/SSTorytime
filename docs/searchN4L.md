@@ -1,7 +1,37 @@
 
 # searchN4L
 
-This is a tool for querying the database.
+This is a tool for querying the database. This is redesigned to avoid having to use command line options.
+The only command line option is `-v` for verbose output, which is helpful for debugging.
+
+## Commands
+
+The tool recognizes a number of words:
+
+"on"
+"for"
+"about"
+
+"note"
+"page"
+
+"path"
+"seq"
+"from"
+"to"
+"ctx"
+
+"context"
+"as"
+"chapter"
+"section"
+"in"
+"arrow"
+"limit"
+"depth"
+"range"
+"distance"
+
 
 Using the pre-loaded examples, you can try:
 
@@ -37,30 +67,31 @@ $ ./searchN4L Mark
 If you can only get English characters on your keyboard, you can still search for accented
 words by placing parentheses around them "(...)":
 <pre>
- ./searchN4L "(fangzi)" |more
+% ./searchN4L  "(fangzi)" chapter "chinese" 
 ------------------------------------------------------------------
 
 0: fángzi
       -    (pinyin has hanzi) - 房子
            -    (hanzi has english) - house  .. at home, domestic
 
+
 1: fángzǐ de fùjìn yǒu hěnduō piàoliang de huā
       -    (pinyin has hanzi) - 房子的附近有很多漂亮的花
            -    (hanzi has english) - there are many beautiful flowers near the house  .. area, environment
       neighbourhood, region
 
+
 2: wǒ de chē zài fángzǐ pángbiān
       -    (pinyin has hanzi) - 我的车在房子旁边
            -    (hanzi has english) - my car is next to the house  .. configuration, directions,
      from, layout, position, toward
-
-
 </pre>
 
 ## Searching by direct NodePtr references
 
 If you know about the database internals, you can look up node pointers directly
 as long as you quote the parentheses for the shell.
+Notice how the indentation shows you the distance from the starting node.
 <pre>
 ./searchN4L "(1,1)"
 ------------------------------------------------------------------
@@ -77,6 +108,50 @@ as long as you quote the parentheses for the shell.
            -    (leads to) - target 3  .. connectivity, path example, physics
       -    (comes from / arriving from) - start
            -    (english has hanzi) - 开始  .. common verbs, doing, look, see, using, wanting
+
+</pre>
+
+## Searching for related contexts
+
+Context strings are clustered into groups. If you don't remember, you can search:
+<pre>
+% ./searchN4L context restaurant
+  0. "buildings"
+  1. "come"
+  2. "come in"
+  3. "cooking"
+  4. "eating"
+  5. "enter"
+  6. "restaurant"
+  7. "rooms"
+  8. "transport"
+  9. "vehicles"
+</pre>
+
+
+## Searching for arrows
+
+You can look up arrow definitions too, by name, number, or spacetime type.
+The output format is `arrowptr, sttype, long name`:
+<pre>
+$ ./searchN4L arrow ph,pe
+192. (3) ph -> pinyin has hanzi
+190. (3) pe -> pinyin has english
+
+$ ./searchN4L arrow 125
+125. (-2) during -> happened during
+
+$ ./searchN4L arrow -2
+  9. (-2) in -> is in
+ 11. (-2) is an emphatic proto-concept in -> is emph in
+ 13. (-2) is mentioned in -> ismentin
+ 89. (-2) part -> is component of
+ 91. (-2) inset -> is part of set
+ 93. (-2) subby -> is subsumed by
+ 95. (-2) isencl -> is enclosed by
+ 97. (-2) swby -> is swallowed by
+ 99. (-2) pt -> is part of
+101. (-2) wordin -> is a word used in
 
 </pre>
 
