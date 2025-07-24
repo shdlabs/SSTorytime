@@ -139,6 +139,8 @@ The tool-set consistent of several components, starting with:
 
 * [API_EXAMPLE_1](src/API_EXAMPLE_1.go) - a simple store and retrieve example of the graph database.
 
-* [API_EXAMPLE_2](src/API_EXAMPLE_2.go) - multi/hyperlink example, joining several nodes through a central hub
+* [API_EXAMPLE_2](src/API_EXAMPLE_2.go) - multi/hyperlink example, joining several nodes through a central hub.
+
+* [API_EXAMPLE_3](src/API_EXAMPLE_3.go) - a maze solving example, showing higher functions.
 
 
