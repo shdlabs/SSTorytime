@@ -6,31 +6,26 @@ The only command line option is `-v` for verbose output, which is helpful for de
 
 ## Commands
 
-The tool recognizes a number of words:
+The tool recognizes a number of words. This is a mixed blessing. The interpreter might
+accidentally misunderstand your search words for commands. You can always quote search terms
+to protect them.
 
-"on"
-"for"
-"about"
+- `on` `for` `about`
+- `note` or `page`
 
-"note"
-"page"
+- `path` or `seq`
+-   `from`
+-   `to`
+-   `ctx`
 
-"path"
-"seq"
-"from"
-"to"
-"ctx"
+- `context`
+- `as`
 
-"context"
-"as"
-"chapter"
-"section"
-"in"
-"arrow"
-"limit"
-"depth"
-"range"
-"distance"
+- `chapter` or `section` or `in`
+
+- `arrow`
+
+- `limit` or `depth` or `range` or `distance`
 
 
 Using the pre-loaded examples, you can try:
