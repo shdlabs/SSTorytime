@@ -108,6 +108,10 @@ done
 # Now look at database behaviour
 #########################################################
 
+echo "-----------------------------------------"
+echo " library tests"
+echo "-----------------------------------------"
+
 DB_TEST_PROG="../src/demo_pocs/postgres_testdb"
 
 if $DB_TEST_PROG > /dev/null; 
@@ -144,7 +148,7 @@ if $DB_TEST_PROG > /dev/null;
    then 
       echo -e "4. ${GREEN} link mode consistency ok ${END}"
    else 
-      echo -e "4. ${RED} link model consistency, try rebuilding ${END}"
+      echo -e "4. ${RED} link model consistency, try rebuilding (also (cd examples; make) first)${END}"
 fi
 
 DB_TEST_PROG="../src/demo_pocs/dotest_entirecone"
