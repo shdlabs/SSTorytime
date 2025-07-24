@@ -241,9 +241,6 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 		if sttypes || arrows {
 			// from or to or name
-			if VERBOSE {
-				fmt.Println("CausalCones(ctx,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)")
-			}
 
 			if nodeptrs != nil {
 				fmt.Println("------------------------------------------------------------------")
@@ -310,6 +307,11 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		ShowMatchingArrows(ctx,arrowptrs,sttype)
 		return
 	}
+
+	if VERBOSE {
+		fmt.Println("Didn't find a solver")
+	}
+
 }
 
 //******************************************************************
@@ -326,7 +328,11 @@ func SolveNodePtrs(ctx SST.PoSST,nodenames []string,chap string,cntx []string, a
 	}
 
 	for r := range rest {
+		if VERBOSE {
+			fmt.Printf("Handling node search: getDBNodePtrMatching(%s,%s,%v,%v)\n",rest[r],chap,cntx,arr)
+		}
 		nptrs := SST.GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
+
 		for n := range nptrs {
 			idempotence[nptrs[n]] = true
 		}
@@ -453,8 +459,9 @@ func FindOrbits(ctx SST.PoSST, nptrs []SST.NodePtr, limit int) {
 	var count int
 
 	if VERBOSE {
-		fmt.Println("First",limit,"orbit result(s):\n")
+		fmt.Println("Solver/handler: PrintNodeOrbit()")
 	}
+
 	for nptr := range nptrs {
 		count++
 		if count > limit {
@@ -469,6 +476,10 @@ func FindOrbits(ctx SST.PoSST, nptrs []SST.NodePtr, limit int) {
 
 func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []string,arrows []SST.ArrowPtr, sttype []int,limit int) {
 	var total int = 1
+
+	if VERBOSE {
+		fmt.Println("Solver/handler: GetFwdPathsAsLinks()")
+	}
 
 	for n := range nptrs {
 		for st := range sttype {
@@ -506,12 +517,16 @@ func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 	var Lnum,Rnum int
 	var count int
 	var left_paths, right_paths [][]SST.Link
-
+	fmt.Println("left",leftptrs,"right",rightptrs)
 	if leftptrs == nil || rightptrs == nil {
 		return
 	}
 
 	// Find the path matrix
+
+	if VERBOSE {
+		fmt.Println("Solver/handler: GetEntireNCSuperConeAsLinks()")
+	}
 
 	var solutions [][]SST.Link
 	var ldepth,rdepth int = 1,1
@@ -552,6 +567,10 @@ func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 
 func ShowMatchingArrows(ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
 
+	if VERBOSE {
+		fmt.Println("Solver/handler: GetDBArrowByPtr()/GetDBArrowBySTType")
+	}
+
 	for a := range arrowptrs {
 		adir := SST.GetDBArrowByPtr(ctx,arrowptrs[a])
 		fmt.Printf("%3d. (%d) %s -> %s\n",arrowptrs[a],SST.STIndexToSTType(adir.STAindex),adir.Short,adir.Long)
@@ -569,6 +588,10 @@ func ShowMatchingArrows(ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
 
 func ShowMatchingContext(ctx SST.PoSST,s []string) {
 
+	if VERBOSE {
+		fmt.Println("Solver/handler: GetDBContextMatchingName()")
+	}
+
 	for i := range s {
 		res := SST.GetDBContextsMatchingName(ctx,s[i])
 		for c := 0; c < len(res); c++ {
@@ -580,6 +603,10 @@ func ShowMatchingContext(ctx SST.PoSST,s []string) {
 //******************************************************************
 
 func ShowMatchingChapter(ctx SST.PoSST,s string) {
+
+	if VERBOSE {
+		fmt.Println("Solver/handler: GetDBChaptersMatchingName()")
+	}
 
 	res := SST.GetDBChaptersMatchingName(ctx,s)
 	for c := 0; c < len(res); c++ {
@@ -593,6 +620,10 @@ func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,cont
 
 	if arrows == nil {
 		arrows = []string{"then"}
+	}
+
+	if VERBOSE {
+		fmt.Println("Solver/handler: GetSequenceContainers()")
 	}
 
 	for n := range name {
