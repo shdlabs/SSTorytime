@@ -16,9 +16,8 @@ to protect them.
 - `path` or `seq`
 - -  `from`
 - -  `to`
-- -  `ctx`
 
-- `context`
+- `context` or `ctx`
 - `as`
 
 - `chapter` or `section` or `in`
