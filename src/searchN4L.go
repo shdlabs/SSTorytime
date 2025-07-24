@@ -1,10 +1,7 @@
 //******************************************************************
 //
-// SearchN4L - a simple command line search tool
-//
-// Prepare, e.g.:
-// cd examples
-// ../src/N4L-db -u chinese*n4l Mary.n4l doors.n4l cluedo.n4l brains.n4l 
+// Replacement for searchN4L
+// single search string without complex options
 //
 //******************************************************************
 
@@ -13,51 +10,125 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 	"flag"
+	"strconv"
+	"strings"
 
         SST "SSTorytime"
 )
 
 //******************************************************************
 
-var (
-	ARROWS []string
-	CHAPTER string
-	SUBJECT string
-	CONTEXT []string
-	VERBOSE bool
-	BROWSE bool
-	EXPLORE bool
-	LIMIT int
-)
+var VERBOSE bool = false
+
+var TESTS = []string{ 
+	"range rover out of its depth",
+	"\"range rover\" \"out of its depth\"",
+	"from rover range 4",
+	"head used as chinese stuff",
+	"head context neuro,brain,etc",
+	"leg in chapter bodyparts",
+	"foot in bodyparts2",
+	"visual for prince",	
+	"visual of integral",	
+	"notes on restaurants in chinese",	
+	"notes about brains",
+	"notes music writing",
+	"page 2 of notes on brains", 
+	"notes page 3 brain", 
+	"(1,1), (1,3), (4,4) (3,3) other stuff",
+	"integrate in math",	
+	"arrows pe,ep, eh",
+	"arrows 1,-1",
+	"forward cone for (bjorvika) range 5",
+	"backward sideways cone for (bjorvika)",
+	"sequences about fox",	
+	"stories about (bjorvika)",	
+	"context \"not only\"", 
+	"\"come in\"",	
+	"containing / matching \"blub blub\"", 
+	"chinese kinds of meat", 
+	"images prince", 
+	"summary chapter interference",
+	"showme greetings in norwegian",
+	"paths from arrows pe,ep, eh",
+	"paths from start to target limit 5",
+	"paths to target3",	
+	"a2 to b5 distance 10",
+	"to a5",
+	"from start",
+	"from (1,6)",
+	"a1 to b6 arrows then",
+	"paths a2 to b5 distance 10",
+	"from dog to cat",
+        }
 
 //******************************************************************
 
 func main() {
 
-	Init()
+	args := GetArgs()
 
-	load_arrows := true
+	SST.MemoryInit()
+
+	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	if SUBJECT == "" {
-		fmt.Println("\nTo browse everything use: --browse everything..\n")
-		Usage()
-		os.Exit(1);
-	}
+	if len(args) > 0 {
 
-	Search(ctx,ARROWS,CHAPTER,CONTEXT,SUBJECT,LIMIT)
+		search_string := ""
+		for a := 0; a < len(args); a++ {
+			if strings.Contains(args[a]," ") {
+				search_string += fmt.Sprintf("\"%s\"",args[a]) + " "
+			} else {
+				search_string += args[a] + " "
+			}
+		}
+
+		search := SST.DecodeSearchField(search_string)
+
+		Search(ctx,search,search_string)
+	}
 
 	SST.Close(ctx)
 }
-
 
 //**************************************************************
 
 func Usage() {
 	
-	fmt.Printf("usage: searchN4L [-v] [-arrows=] [-chapter string] subject [context]\n")
+	fmt.Printf("usage: ByYourCommand <search request>\n\n")
+	fmt.Println("searchN4L <mytopic> chapter <mychapter>\n\n")
+	fmt.Println("searchN4L range rover out of its depth")
+	fmt.Println("searchN4L \"range rover\" \"out of its depth\"")
+	fmt.Println("searchN4L from rover range 4")
+	fmt.Println("searchN4L head used as \"version control\"")
+	fmt.Println("searchN4L head context neuro)brain)etc")
+	fmt.Println("searchN4L notes on restaurants in chinese")	
+	fmt.Println("searchN4L notes about brains")
+	fmt.Println("searchN4L notes music writing")
+	fmt.Println("searchN4L page 2 of notes on brains") 
+	fmt.Println("searchN4L notes page 3 brain") 
+	fmt.Println("searchN4L (1,1) (1,3) (4,4) (3,3) other stuff")
+	fmt.Println("searchN4L arrows pe)ep) eh")
+	fmt.Println("searchN4L arrows 1)-1")
+	fmt.Println("searchN4L forward cone for (bjorvika) range 5")
+	fmt.Println("searchN4L sequences about fox")	
+	fmt.Println("searchN4L context \"not only\"") 
+	fmt.Println("searchN4L \"come on down\"")	
+	fmt.Println("searchN4L chinese kinds of meat") 
+	fmt.Println("searchN4L summary chapter interference")
+	fmt.Println("searchN4L paths from arrows pe)ep) eh")
+	fmt.Println("searchN4L paths from start to target2 limit 5")
+	fmt.Println("searchN4L paths to target3")	
+	fmt.Println("searchN4L a2 to b5 distance 10")
+	fmt.Println("searchN4L to a5")
+	fmt.Println("searchN4L from start")
+	fmt.Println("searchN4L from (1)6)")
+	fmt.Println("searchN4L a1 to b6 arrows then")
+	fmt.Println("searchN4L paths a2 to b5 distance 10")
+	fmt.Println("searchN4L <b5|a2> distance 10")
+
 	flag.PrintDefaults()
 
 	os.Exit(2)
@@ -65,115 +136,325 @@ func Usage() {
 
 //**************************************************************
 
-func Init() []string {
+func GetArgs() []string {
 
 	flag.Usage = Usage
-
 	verbosePtr := flag.Bool("v", false,"verbose")
-	chapterPtr := flag.String("chapter", "any", "a optional string to limit to a chapter/section")
-	arrowsPtr := flag.String("arrows", "", "a list of forward/outward arrows to start with")
-	limitPtr := flag.Int("limit", 20, "an approximate limit on the number of items returned, where applicable")
-	browsePtr := flag.Bool("browse", false,"browse through all items")
-	explorePtr := flag.Bool("explore", false,"explore items")
-
 	flag.Parse()
-	args := flag.Args()
 
 	if *verbosePtr {
 		VERBOSE = true
 	}
 
-	if *browsePtr {
-		BROWSE = true
-	} 
+	return flag.Args()
+}
 
-	if *explorePtr {
-		EXPLORE = true
-	}
+//******************************************************************
 
+func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
-	if *arrowsPtr != "" {
-		ARROWS = strings.Split(*arrowsPtr,",")
-	}
+	// Check for Dirac notation
 
-	LIMIT = *limitPtr
+	for arg := range search.Name {
 
-	if *chapterPtr != "" {
-		CHAPTER = *chapterPtr
-	}
-
-	if len(args) > 0 {
-		SUBJECT = args[0]
+		isdirac,beg,end,cnt := SST.DiracNotation(search.Name[arg])
 		
-		for c := 1; c < len(args); c++ {
-			CONTEXT = append(CONTEXT,args[c])
+		if isdirac {
+			search.Name = nil
+			search.From = []string{beg}
+			search.To = []string{end}
+			search.Context = []string{cnt}
+			break
 		}
+	}
 
-		if len(ARROWS) == 0 && len(args) < 1 {
-			Usage()
-			os.Exit(1);
+	if VERBOSE {
+		fmt.Println("Your starting expression generated this set: ",line,"\n")
+		fmt.Println(" - start set:",SL(search.Name))
+		fmt.Println(" -      from:",SL(search.From))
+		fmt.Println(" -        to:",SL(search.To))
+		fmt.Println(" -   chapter:",search.Chapter)
+		fmt.Println(" -   context:",SL(search.Context))
+		fmt.Println(" -    arrows:",SL(search.Arrows))
+		fmt.Println(" -    pagenr:",search.PageNr)
+		fmt.Println(" - sequence/story:",search.Sequence)
+		fmt.Println(" - limit/range/depth:",search.Range)
+		fmt.Println()
+	}
+
+	// OPTIONS *********************************************
+
+	name := search.Name != nil
+	from := search.From != nil
+	to := search.To != nil
+	context := search.Context != nil
+	chapter := search.Chapter != ""
+	pagenr := search.PageNr > 0
+	sequence := search.Sequence
+
+	// Now convert strings into NodePointers
+
+	arrowptrs,sttype := ArrowPtrFromArrowsNames(ctx,search.Arrows)
+	nodeptrs := SolveNodePtrs(ctx,search.Name,search.Chapter,search.Context,arrowptrs)
+	leftptrs := SolveNodePtrs(ctx,search.From,search.Chapter,search.Context,arrowptrs)
+	rightptrs := SolveNodePtrs(ctx,search.To,search.Chapter,search.Context,arrowptrs)
+
+	arrows := arrowptrs != nil
+	sttypes := sttype != nil
+	limit := 0
+
+	if search.Range > 0 {
+		limit = search.Range
+	} else {
+		limit = 5
+	}
+
+	// SEARCH SELECTION *********************************************
+
+	// if we have name, (maybe with context, chapter, arrows)
+
+	if name && ! sequence && !pagenr {
+
+		fmt.Println("------------------------------------------------------------------")
+		FindOrbits(ctx, nodeptrs, limit)
+		return
+	}
+
+	if (name && from) || (name && to) {
+		fmt.Printf("\nSearch \"%s\" has conflicting parts <to|from> and match strings\n",line)
+		os.Exit(-1)
+	}
+
+	// Closed path solving, two sets of nodeptrs
+	// if we have BOTH from/to (maybe with chapter/context) then we are looking for paths
+
+	if from && to {
+
+		fmt.Println("------------------------------------------------------------------")
+		PathSolve(ctx,leftptrs,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+		return
+	}
+
+	// Open causal cones, from one of these three
+
+	if name || from || to {
+
+		if sttypes || arrows {
+			// from or to or name
+			if VERBOSE {
+				fmt.Println("CausalCones(ctx,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)")
+			}
+
+			if nodeptrs != nil {
+				fmt.Println("------------------------------------------------------------------")
+				CausalCones(ctx,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+				return
+			}
+			if leftptrs != nil {
+				fmt.Println("------------------------------------------------------------------")
+				CausalCones(ctx,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+				return
+			}
+			if rightptrs != nil {
+				fmt.Println("------------------------------------------------------------------")
+				CausalCones(ctx,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+				return
+			}
 		}
-	} 
+		
 
-	if CONTEXT == nil {
-		CONTEXT = append(CONTEXT,"")
 	}
 
-	if ARROWS == nil {
-		ARROWS = append(ARROWS,"")
+	// if we have page number then we are looking for notes by pagemap
+
+	if (name || chapter) && pagenr {
+
+		var notes []SST.PageMap
+
+		if chapter {
+			notes = SST.GetDBPageMap(ctx,search.Chapter,search.Context,search.PageNr)
+			ShowNotes(ctx,notes)
+			return
+		} else {
+			for n := range search.Name {
+				notes = SST.GetDBPageMap(ctx,search.Name[n],search.Context,search.PageNr)
+				ShowNotes(ctx,notes)
+			}
+			return
+		}
 	}
 
-	if len(ARROWS) == 0 {
-		Usage()
-		os.Exit(1);
-	}
-	
-	SST.MemoryInit()
+	// Look for axial trails following a particular arrow, like _sequence_ 
 
-	return args
+	if name && sequence || sequence && arrows {
+		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context)
+		return
+	}
+
+	// Match existing contexts
+
+	if chapter {
+		ShowMatchingChapter(ctx,search.Chapter)
+		return
+	}
+
+	if context {
+		ShowMatchingContext(ctx,search.Context)
+		return
+	}
+
+	// if we have sequence with arrows, then we are looking for sequence context or stories
+	// GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int)
+
+	if arrows || sttypes {
+		ShowMatchingArrows(ctx,arrowptrs,sttype)
+		return
+	}
 }
 
 //******************************************************************
 
-func Search(ctx SST.PoSST,arrows []string,chapter string,context []string,searchtext string, limit int) {
+func SolveNodePtrs(ctx SST.PoSST,nodenames []string,chap string,cntx []string, arr []SST.ArrowPtr) []SST.NodePtr {
 
-	fmt.Println()
-	fmt.Println("** PROVISIONAL SEARCH TOOL *************************************\n")
-	fmt.Println("   Searching in chapter",chapter)
-	fmt.Println("   With context",context)
-	fmt.Println("   Selected arrows",arrows)
-	fmt.Println("   Node filter",searchtext)
-	fmt.Println("\n")
+	nodeptrs,rest := ParseLiteralNodePtrs(nodenames)
 
-	if BROWSE && searchtext == "everything" {
-		searchtext = ""
+	var idempotence = make(map[SST.NodePtr]bool)
+	var result []SST.NodePtr
+
+	for n := range nodeptrs {
+		idempotence[nodeptrs[n]] = true
 	}
 
-	EventSearch(ctx,chapter,context,searchtext,limit)
-
-	if EXPLORE {
-		BroadByName(ctx,chapter,context,searchtext,arrows,limit)
+	for r := range rest {
+		nptrs := SST.GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
+		for n := range nptrs {
+			idempotence[nptrs[n]] = true
+		}
 	}
 
-	if BROWSE {
-		Systematic(ctx,chapter,context,searchtext,arrows,limit)
+	for uniqnptr := range idempotence {
+		result = append(result,uniqnptr)
 	}
 
-	chaps := SST.GetDBChaptersMatchingName(ctx,"")
-	ctxts := SST.GetDBContextsMatchingName(ctx,"")
-
-	TOC(chaps,ctxts)
+	return result
 }
-
 
 //******************************************************************
 
-func EventSearch(ctx SST.PoSST, chaptext string,context []string,searchtext string,limit int) {
+func ParseLiteralNodePtrs(names []string) ([]SST.NodePtr,[]string) {
+
+	var current []rune
+	var rest []string
+	var nodeptrs []SST.NodePtr
+
+	for n := range names {
+
+		line := []rune(names[n])
+		
+		for i := 0; i < len(line); i++ {
+			
+			if line[i] == '(' {
+				rs := strings.TrimSpace(string(current))
+				if len(rs) > 0 {
+					rest = append(rest,string(current))
+					current = nil
+				}
+				continue
+			}
+			
+			if line[i] == ')' {
+				np := string(current)
+				var nptr SST.NodePtr
+				var a,b int = -1,-1
+				fmt.Sscanf(np,"%d,%d",&a,&b)
+				if a >= 0 && b >= 0 {
+					nptr.Class = a
+					nptr.CPtr = SST.ClassedNodePtr(b)
+					nodeptrs = append(nodeptrs,nptr)
+					current = nil
+				} else {
+					rest = append(rest,"("+np+")")
+					current = nil
+				}
+				continue
+			}
+
+			current = append(current,line[i])
+			
+		}
+		rs := strings.TrimSpace(string(current))
+		if len(rs) > 0 {
+			rest = append(rest,rs)
+		}
+		current = nil
+	}
+
+	return nodeptrs,rest
+}
+
+//******************************************************************
+
+func ArrowPtrFromArrowsNames(ctx SST.PoSST,arrows []string) ([]SST.ArrowPtr,[]int) {
+
+	var arr []SST.ArrowPtr
+	var stt []int
+
+	for a := range arrows {
+
+		// is the entry a number? sttype?
+
+		number, err := strconv.Atoi(arrows[a])
+		notnumber := err != nil
+
+		if notnumber {
+			arrowptr,_ := SST.GetDBArrowsWithArrowName(ctx,arrows[a])
+			if arrowptr != -1 {
+				arrdir := SST.GetDBArrowByPtr(ctx,arrowptr)
+				arr = append(arr,arrdir.Ptr)
+			}
+		} else {
+			if number < -SST.EXPRESS {
+				fmt.Println("Negative arrow value doesn't make sense",number)
+			} else if number >= -SST.EXPRESS && number <= SST.EXPRESS {
+				stt = append(stt,number)
+			} else {
+				// whatever remains can only be an arrowpointer
+				arrdir := SST.GetDBArrowByPtr(ctx,SST.ArrowPtr(number))
+				arr = append(arr,arrdir.Ptr)
+			}
+		}
+	}
+
+	return arr,stt
+}
+
+//******************************************************************
+
+func SL(list []string) string {
+
+	var s string
+
+	s += fmt.Sprint(" [")
+	for i := 0; i < len(list); i++ {
+		s += fmt.Sprint(list[i],", ")
+	}
+
+	s += fmt.Sprint(" ]")
+
+	return s
+}
+
+//******************************************************************
+// SEARCH
+//******************************************************************
+
+func FindOrbits(ctx SST.PoSST, nptrs []SST.NodePtr, limit int) {
 	
 	var count int
 
-	nptrs := SST.GetDBNodePtrMatchingName(ctx,searchtext,chaptext)
-
+	if VERBOSE {
+		fmt.Println("First",limit,"orbit result(s):\n")
+	}
 	for nptr := range nptrs {
 		count++
 		if count > limit {
@@ -186,203 +467,282 @@ func EventSearch(ctx SST.PoSST, chaptext string,context []string,searchtext stri
 
 //******************************************************************
 
-func BroadByName(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string,limit int) {
+func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []string,arrows []SST.ArrowPtr, sttype []int,limit int) {
+	var total int = 1
 
-	const maxdepth = 5
-	
-	var start_set []SST.NodePtr
+	for n := range nptrs {
+		for st := range sttype {
 
-	search_items := strings.Split(searchtext," ")
-	
-	for w := range search_items {
-		start_set = append(start_set,SST.GetDBNodePtrMatchingName(ctx,search_items[w],chaptext)...)
+			fcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],sttype[st],limit)
+
+			if fcone != nil {
+				fmt.Printf("%d. ",total)
+				total += ShowCone(ctx,fcone,sttype[st],chap,context,limit)
+			}
+
+			if total > limit {
+				return
+			}
+
+			bcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],-sttype[st],limit)
+
+			if bcone != nil {
+				fmt.Printf("%d. ",total)
+				total += ShowCone(ctx,bcone,sttype[st],chap,context,limit)
+			}
+
+			if total > limit {
+				return
+			}
+		}
 	}
 
-	for start := range start_set {
+}
 
-		if start+1 > limit {
-			return
+//******************************************************************
+
+func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,context []string,arrowptrs []SST.ArrowPtr,sttype []int,maxdepth int) {
+
+	var Lnum,Rnum int
+	var count int
+	var left_paths, right_paths [][]SST.Link
+
+	if leftptrs == nil || rightptrs == nil {
+		return
+	}
+
+	// Find the path matrix
+
+	var solutions [][]SST.Link
+	var ldepth,rdepth int = 1,1
+
+	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
+
+		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",leftptrs,ldepth,chapter,context)
+		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",rightptrs,rdepth,chapter,context)
+
+		// try the reverse
+
+		if Lnum == 0 || Rnum == 0 {
+			left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",leftptrs,ldepth,chapter,context)
+			right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",rightptrs,rdepth,chapter,context)
 		}
 
-		for sttype := SST.NEAR; sttype <= SST.EXPRESS; sttype++ {
+		solutions,_ = SST.WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
-			name :=  SST.GetDBNodeByNodePtr(ctx,start_set[start])
+		if len(solutions) > 0 {
 
-			allnodes := SST.GetFwdConeAsNodes(ctx,start_set[start],sttype,maxdepth)
-			
-			if len(allnodes) > 1 {
-				fmt.Println()
-				fmt.Println("    -------------------------------------------")
-				fmt.Printf("     #%d via %s connection\n",start+1,SST.STTypeName(sttype))
-				fmt.Printf("     (search %s => hit %s)\n",searchtext,name.S)
-				fmt.Println("    -------------------------------------------")
-
-				for l := range allnodes {
-					fullnode := SST.GetDBNodeByNodePtr(ctx,allnodes[l])
-
-					if !strings.Contains(fullnode.Chap,chaptext) {
-						continue
-					}
-
-					//fmt.Println("     - SSType",SST.STTypeName(sttype)," cone item: ",fullnode.S,", found in",fullnode.Chap)
-					SST.PrintNodeOrbit(ctx,allnodes[l],SST.SCREENWIDTH)
-				}
-			
-				alt_paths,path_depth := SST.GetFwdPathsAsLinks(ctx,start_set[start],sttype,maxdepth)
-				
-				if alt_paths != nil {
-					
-					fmt.Println("\n  ",SST.STTypeName(sttype),"stories in the forward cone ----------------------------------")
-					
-					for p := 0; p < path_depth; p++ {
-						SST.PrintLinkPath(ctx,alt_paths,p,"\n   found","",context)
-					}
-				}
-				fmt.Printf("     (END %d)\n",start+1)
+			for s := 0; s < len(solutions); s++ {
+				prefix := fmt.Sprintf(" - story path: ")
+				PrintConstrainedLinkPath(ctx,solutions,s,prefix,chapter,context,arrowptrs,sttype)
 			}
+			count++
+			break
+		}
+
+		if turn % 2 == 0 {
+			ldepth++
+		} else {
+			rdepth++
 		}
 	}
 }
 
 //******************************************************************
 
-func Systematic(ctx SST.PoSST, chaptext string,context []string,searchtext string,arrnames []string,limit int) {
+func ShowMatchingArrows(ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
 
-	chaptext = strings.TrimSpace(chaptext)
-	searchtext = strings.TrimSpace(searchtext)
-
-	var arrows []SST.ArrowPtr
-
-	if arrnames[0] == "" {
-		fmt.Println("\nTo browse, you need to specify some arrows with -arrows=")
-		os.Exit(-1)
-	} else {
-		fmt.Println("\nSystematic browsing of nodes anchoring arrows...")
+	for a := range arrowptrs {
+		adir := SST.GetDBArrowByPtr(ctx,arrowptrs[a])
+		fmt.Printf("%3d. (%d) %s -> %s\n",arrowptrs[a],SST.STIndexToSTType(adir.STAindex),adir.Short,adir.Long)
 	}
 
-	for a := range arrnames {
-		arr := SST.GetDBArrowByName(ctx,arrnames[a])
-		arrows = append(arrows,arr)
+	for st := range sttype {
+		adirs := SST.GetDBArrowBySTType(ctx,sttype[st])
+		for adir := range adirs {
+			fmt.Printf("%3d. (%d) %s -> %s\n",adirs[adir].Ptr,SST.STIndexToSTType(adirs[adir].STAindex),adirs[adir].Short,adirs[adir].Long)
+		}
+	}
+}
+
+//******************************************************************
+
+func ShowMatchingContext(ctx SST.PoSST,s []string) {
+
+	for i := range s {
+		res := SST.GetDBContextsMatchingName(ctx,s[i])
+		for c := 0; c < len(res); c++ {
+			fmt.Printf("%3d. \"%s\"\n",c,res[c])
+		}
+	}
+}
+
+//******************************************************************
+
+func ShowMatchingChapter(ctx SST.PoSST,s string) {
+
+	res := SST.GetDBChaptersMatchingName(ctx,s)
+	for c := 0; c < len(res); c++ {
+		fmt.Printf("%3d. \"%s\"\n",c,res[c])
+	}
+}
+
+//******************************************************************
+
+func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,context []string) {
+
+	if arrows == nil {
+		arrows = []string{"then"}
 	}
 
-	// Just print section 1
-	qnodes := SST.GetDBNodeContextsMatchingArrow(ctx,searchtext,chaptext,context,arrows,1)
+	for n := range name {
+		for a := range arrows {
+			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context)
 
-	var prev string
-	var header []string
-	var count int
-
-	for q := range qnodes {
-
-		count++
-
-		if count > limit {
+			for s := range stories {
+				// if there is no unique match, the data contain a list of alternatives
+				if stories[s].Axis == nil {
+					fmt.Printf("%3d. %s\n",s,stories[s].Text)
+				} else {
+					fmt.Printf("The following story/sequence (%s) \"%s\"\n\n",stories[s].Arrow,stories[s].Text)
+					for ev := range stories[s].Axis {
+						fmt.Printf("\n%3d. %s\n",ev,stories[s].Axis[ev].Text)
+					}
+				}
+			}
 			break
 		}
-
-		if qnodes[q].Context != prev {
-			prev = qnodes[q].Context
-			header = SST.ParseSQLArrayString(qnodes[q].Context)
-			Header(header,qnodes[q].Chapter)
-		}
-		
-		result := SST.GetDBNodeByNodePtr(ctx,qnodes[q].NPtr)
-		SearchStoryPaths(ctx,result.S,result.NPtr,arrows,result.Chap,context)
+		break
 	}
-
 }
 
-//**************************************************************
+//******************************************************************
+// OUTPUT
+//******************************************************************
 
-func SearchStoryPaths(ctx SST.PoSST,name string,start SST.NodePtr, arrows []SST.ArrowPtr,chap string,context []string) {
-
-	const maxdepth = 8
-
-	fmt.Println("....................................................................................")
-
-	cone,_ := SST.GetFwdPathsAsLinks(ctx,start,1,maxdepth)
-	ShowCone(ctx,cone,1,chap,context)
-
-	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,-1,maxdepth)
-	ShowCone(ctx,cone,1,chap,context)
-
-	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,2,maxdepth)
-	ShowCone(ctx,cone,1,chap,context)
-
-	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,-2,maxdepth)
-	ShowCone(ctx,cone,1,chap,context)
-
-	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,3,maxdepth)
-	ShowCone(ctx,cone,1,chap,context)
-
-	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,-3,maxdepth)
-	ShowCone(ctx,cone,1,chap,context)
-
-	cone,_ = SST.GetFwdPathsAsLinks(ctx,start,0,maxdepth)
-	ShowCone(ctx,cone,1,chap,context)
-}
-
-//**************************************************************
-
-func ShowCone(ctx SST.PoSST,cone [][]SST.Link,sttype int,chap string,context []string) {
+func ShowCone(ctx SST.PoSST,cone [][]SST.Link,sttype int,chap string,context []string,limit int) int {
 
 	if len(cone) < 1 {
-		return
+		return 0
 	}
 
-	for s := 0; s < len(cone); s++ {
-
-		SST.PrintLinkPath(ctx,cone,s," - ",chap,context)
+	if limit <= 0 {
+		return 0
 	}
 
+	count := 0
+
+	for s := 0; s < len(cone) && s < limit; s++ {
+		SST.PrintSomeLinkPath(ctx,cone,s," - ",chap,context,limit)
+		count++
+	}
+
+	return count
 }
 
-//**************************************************************
+// **********************************************************
 
-func Header(h []string,chap string) {
+func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
-	if len(h) == 0 {
-		return
+	var ret string
+
+	for n := range nptr {
+		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
+		ret += fmt.Sprintf("\n    %.30s, ",node.S)
 	}
 
-	fmt.Println("\n\n============================================================")
-	fmt.Println("   In chapter: \"",chap,"\"\n")
-
-	for s := range h {
-		fmt.Println("   ::",h[s],"::")
-	}
-
-	fmt.Println("\n============================================================")
+	return ret
 }
 
-//**************************************************************
+// **********************************************************
 
-func TOC(chap,cont []string) {
+func PrintConstrainedLinkPath(ctx SST.PoSST, cone [][]SST.Link, p int, prefix string,chapter string,context []string,arrows []SST.ArrowPtr,sttype []int) {
 
-	if len(chap) == 0 && len(cont) == 0 {
-		return
+	for l := 1; l < len(cone[p]); l++ {
+		link := cone[p][l]
+
+		if !ArrowAllowed(ctx,link.Arr,arrows,sttype) {
+			return
+		}
 	}
 
-	fmt.Println("\n\n============================================================")
-	fmt.Println("\n   Chapters: \n")
-
-	for s := range chap {
-		fmt.Println("   - ",chap[s])
-	}
-
-	fmt.Println("\n   Contexts: \n")
-
-	for s := range cont {
-		SST.NewLine(s)
-		fmt.Printf(" %-19.20s ",cont[s])
-	}
-
-	fmt.Println("\n============================================================")
+	SST.PrintLinkPath(ctx,cone,p,prefix,chapter,context)
 }
 
+// **********************************************************
 
+func ArrowAllowed(ctx SST.PoSST,arr SST.ArrowPtr, arrlist []SST.ArrowPtr, stlist []int) bool {
 
+	st_ok := false
+	arr_ok := false
 
+	staidx := SST.GetDBArrowByPtr(ctx,arr).STAindex
+	st := SST.STIndexToSTType(staidx)
+
+	if arrlist != nil {
+		for a := range arrlist {
+			if arr == arrlist[a] {
+				arr_ok = true
+				break
+			}
+		}
+	} else {
+		arr_ok = true
+	}
+
+	if stlist != nil {
+		for i := range stlist {
+			if stlist[i] == st {
+				st_ok = true
+				break
+			}
+		}
+	} else {
+		st_ok = true
+	}
+
+	if st_ok || arr_ok {
+		return true
+	}
+
+	return false
+}
+
+// **********************************************************
+
+func ShowNotes(ctx SST.PoSST,notes []SST.PageMap) {
+
+	var last string
+	var lastc string
+
+	for n := 0; n < len(notes); n++ {
+
+		txtctx := SST.ContextString(notes[n].Context)
+		
+		if last != notes[n].Chapter || lastc != txtctx {
+
+			fmt.Println("\n---------------------------------------------")
+			fmt.Println("\nTitle:", notes[n].Chapter)
+			fmt.Println("Context:", txtctx)
+			fmt.Println("---------------------------------------------\n")
+
+			last = notes[n].Chapter
+			lastc = txtctx
+		}
+
+		for lnk := 0; lnk < len(notes[n].Path); lnk++ {
+			
+			text := SST.GetDBNodeByNodePtr(ctx,notes[n].Path[lnk].Dst)
+			
+			if lnk == 0 {
+				fmt.Print("\n",text.S," ")
+			} else {
+				arr := SST.GetDBArrowByPtr(ctx,notes[n].Path[lnk].Arr)
+				fmt.Printf("(%s) %s ",arr.Long,text.S)
+			}
+		}
+	}
+}
 
 
 
