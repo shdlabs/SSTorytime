@@ -13,6 +13,7 @@ import (
 	"os"
 	"io/ioutil"
 	"strings"
+	"strconv"
 	"unicode"
 	"sort"
 	"encoding/json"
@@ -3609,6 +3610,128 @@ func GetDBArrowBySTType(ctx PoSST,sttype int) []ArrowDirectory {
 	return retval
 }
 
+//******************************************************************
+// Parsing and handling of search strings
+//******************************************************************
+
+func ArrowPtrFromArrowsNames(ctx PoSST,arrows []string) ([]ArrowPtr,[]int) {
+
+	// Parse input and discern arrow types, best guess
+
+	var arr []ArrowPtr
+	var stt []int
+
+	for a := range arrows {
+
+		// is the entry a number? sttype?
+
+		number, err := strconv.Atoi(arrows[a])
+		notnumber := err != nil
+
+		if notnumber {
+			arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrows[a])
+			if arrowptr != -1 {
+				arrdir := GetDBArrowByPtr(ctx,arrowptr)
+				arr = append(arr,arrdir.Ptr)
+			}
+		} else {
+			if number < -EXPRESS {
+				fmt.Println("Negative arrow value doesn't make sense",number)
+			} else if number >= -EXPRESS && number <= EXPRESS {
+				stt = append(stt,number)
+			} else {
+				// whatever remains can only be an arrowpointer
+				arrdir := GetDBArrowByPtr(ctx,ArrowPtr(number))
+				arr = append(arr,arrdir.Ptr)
+			}
+		}
+	}
+
+	return arr,stt
+}
+
+//******************************************************************
+
+func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr []ArrowPtr) []NodePtr {
+
+	nodeptrs,rest := ParseLiteralNodePtrs(nodenames)
+
+	var idempotence = make(map[NodePtr]bool)
+	var result []NodePtr
+
+	for n := range nodeptrs {
+		idempotence[nodeptrs[n]] = true
+	}
+
+	for r := range rest {
+
+		nptrs := GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
+
+		for n := range nptrs {
+			idempotence[nptrs[n]] = true
+		}
+	}
+
+	for uniqnptr := range idempotence {
+		result = append(result,uniqnptr)
+	}
+
+	return result
+}
+
+//******************************************************************
+
+func ParseLiteralNodePtrs(names []string) ([]NodePtr,[]string) {
+
+	var current []rune
+	var rest []string
+	var nodeptrs []NodePtr
+
+	for n := range names {
+
+		line := []rune(names[n])
+		
+		for i := 0; i < len(line); i++ {
+			
+			if line[i] == '(' {
+				rs := strings.TrimSpace(string(current))
+				if len(rs) > 0 {
+					rest = append(rest,string(current))
+					current = nil
+				}
+				continue
+			}
+			
+			if line[i] == ')' {
+				np := string(current)
+				var nptr NodePtr
+				var a,b int = -1,-1
+				fmt.Sscanf(np,"%d,%d",&a,&b)
+				if a >= 0 && b >= 0 {
+					nptr.Class = a
+					nptr.CPtr = ClassedNodePtr(b)
+					nodeptrs = append(nodeptrs,nptr)
+					current = nil
+				} else {
+					rest = append(rest,"("+np+")")
+					current = nil
+				}
+				continue
+			}
+
+			current = append(current,line[i])
+		}
+		rs := strings.TrimSpace(string(current))
+
+		if len(rs) > 0 {
+			rest = append(rest,rs)
+		}
+		current = nil
+	}
+
+	return nodeptrs,rest
+}
+
 // **************************************************************************
 // Page format, preserving N4L intent
 // **************************************************************************
@@ -5082,13 +5205,13 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr) string {
 
 // **************************************************************************
 
-func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string,n,total int) string {
-
-	var jstr string = "["
+func LinkWebPaths(ctx PoSST,cone [][]Link,nth int,chapter string,context []string,nptrdim,limit int) [][]WebPath {
 
 	// The cone is a flattened array, we can assign spatial coordinates for visualization
 
-	directory := AssignConeCoordinates(cone,n,total)
+	var conepaths [][]WebPath
+
+	directory := AssignConeCoordinates(cone,nth,nptrdim)
 
 	// JSONify the cone structure, converting []Link into []WebPath
 
@@ -5103,7 +5226,7 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string,n,total i
 		for l := 1; l < len(cone[p]); l++ {
 
 			if !MatchContexts(context,cone[p][l].Ctx) {
-				return "[]"
+				break
 			}
 
 			nextnode := GetDBNodeByNodePtr(ctx,cone[p][l].Dst)
@@ -5139,18 +5262,10 @@ func JSONCone(ctx PoSST, cone [][]Link,chapter string,context []string,n,total i
 			path = append(path,wn)
 
 		}
-
-		encoded, _ := json.Marshal(path)
-		jstr += fmt.Sprintf("%s",string(encoded))
-
-		if p < len(cone)-1 {
-			jstr += ",\n"
-		}
+		conepaths = append(conepaths,path)
 	}
 
-	jstr += "]"
-
-	return jstr
+	return conepaths
 }
 
 // **************************************************************************

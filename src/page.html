@@ -265,22 +265,10 @@ MathJax.Hub.Config({
 
 <form id="search">
     <label for="subject">?</label>
-    <input type="text" id="name" name="name" value="" />
-
-    <label for="chapter">Chapter</label>
-    <input type="text" id="chapter" name="chapter" />
-
-    <label for="chapter">Ctx:</label>
-    <input type="text" id="context" name="context" />
-    <label for="chapter">Arr:</label>
-    <input type="text" id="arrnames" name="arrnames" />
-    <input type="submit" id="orbitsubmit"  value="Orbits" />
-    <input type="submit" id="pathsubmit"   value="Geom." />
-    <input type="submit" id="seqsubmit"    value="Tales" />
+    <input size="100" type="text" id="name" name="name" value="" />
     <input type="submit" id="dec"          value="Prev" />
-    <input type="submit" id="browsesubmit" value="Browse" />
+    <input type="submit" id="gosubmit" value="Go!" />
     <input type="submit" id="inc"          value="Next" />
-    <input type="submit" id="toc-submit"   value="TOC" />
 </form>
 
 
@@ -352,7 +340,7 @@ window.addEventListener('keydown',function(event)
 
 async function DoPage() 
 {
-let requestURL = API_SERVER+"/Orbit";
+let requestURL = API_SERVER+"/searchN4L";
 let request = new Request(requestURL);
 let response = await fetch(request);
 let mynote = await response.json();
@@ -900,17 +888,22 @@ section.appendChild(panel);
 CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
 
-for (let nptr of obj.Content) 
+// Iterate over the cones from different starting nodes
+
+console.log("XXXX",obj)
+
+for (let head_nptr of obj.Content) 
    {
-   let nclass = nptr.NClass;
-   let ncptr = nptr.NCPtr;
+   let nclass = head_nptr.NClass;
+   let ncptr = head_nptr.NCPtr;
    let item = document.createElement('p');
    let link = document.createElement('a');
-   link.textContent = nptr.Title;
+   link.textContent = head_nptr.Title;
    link.onclick = function() { sendlinkData(nclass,ncptr); };
    item.appendChild(link);
    let parent = document.createElement('content');
-   parent = PrintPath(parent,nptr.Entire);
+
+   parent = PrintPath(parent,head_nptr.Paths);
    panel.appendChild(parent);
 
    let tab = document.createElement('table');
@@ -923,9 +916,9 @@ for (let nptr of obj.Content)
 
    // For paths solve <a|b>
 
-   if (nptr.BTWC != null) 
+   if (head_nptr.BTWC != null) 
       {
-      for (let centrality of nptr.BTWC)
+      for (let centrality of head_nptr.BTWC)
          {
          let li = document.createElement('li');
          li.textContent = centrality;
@@ -939,7 +932,7 @@ for (let nptr of obj.Content)
       col2.appendChild(hd2)
       let lst2 = document.createElement('ol');
 
-      for (let snode of nptr.Supernodes)
+      for (let snode of head_nptr.Supernodes)
          {
          let li = document.createElement('li');
          li.textContent = snode;
@@ -1111,15 +1104,15 @@ for (let chp of obj.TOC)
 // handlers
 /***********************************************************/
 
-function OrbitHandler()
+function SearchHandler()
 {
 let form = document.querySelector("#search");
 
-async function sendorbitData() {
+async function sendsearchData() {
 
   let formData = new FormData(form);
 
-  fetch(API_SERVER+"/Orbit", { method: "POST", body: formData })
+  fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData })
    .then(response => {
 
     if (!response.ok) {
@@ -1146,7 +1139,20 @@ async function sendorbitData() {
          }
 
       DoHeader(resp);
-      DoOrbitPanel(resp);
+
+      switch (resp.Response)
+         {
+         case "Orbits":
+            DoOrbitPanel(resp);
+            break;
+         case "ConePaths":
+            DoEntireConePanel(resp);
+            break;
+         case "Sequence":
+            DoSeqPanel(resp);
+            break;
+         }
+
       MathJax.typeset();
 
     })
@@ -1164,173 +1170,8 @@ async function sendorbitData() {
 }
 
 // Take over form submission
-button = document.getElementById('orbitsubmit'),
-button.addEventListener("click", (event) => { event.preventDefault();  sendorbitData(); });
-}
-
-/***********************************************************/
-
-function ConeHandler()
-{
-let form = document.querySelector("#search");
-
-async function sendconeData() {
-
-  let formData = new FormData(form);
-
-  fetch(API_SERVER+"/Cone", { method: "POST", body: formData })
-   .then(response => {
-
-    if (!response.ok) {
-      throw new Error('network returns error');
-    }
-
-    return response.json();
-
-  })
-    .then((resp) => {
-
-      let prevh = document.getElementById("header_root");
-
-      if (prevh != null)
-         {
-         prevh.remove();
-         }
-
-      let prevm = document.getElementById("article");
-
-      if (prevm != null) 
-         {
-         prevm.remove();
-         }
-
-      DoHeader(resp);
-      DoEntireConePanel(resp);
-      MathJax.typeset();
-
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-     let section = document.querySelector('article');
-     let text = document.createElement('h2');
-     section.textContent = "No results in Geometry (perhaps no connection)";
-     section.id = "errormesg"
-     section.appendChild(text);
-
-    });
-}
-
-// Take over form submission
-button = document.getElementById('pathsubmit'),
-button.addEventListener("click", (event) => { event.preventDefault();  sendconeData(); });
-}
-
-/***********************************************************/
-
-function SeqHandler()
-{
-let form = document.querySelector("#search");
-
-async function sendseqData() {
-
-  let formData = new FormData(form);
-
-  fetch(API_SERVER+"/Sequence", { method: "POST", body: formData })
-   .then(response => {
-
-    if (!response.ok) {
-      throw new Error('network returns error');
-    }
-
-    return response.json();
-
-  })
-    .then((resp) => {
-
-      let prevh = document.getElementById("header_root");
-
-      if (prevh != null)
-         {
-         prevh.remove();
-         }
-
-      let prevm = document.getElementById("article");
-
-      if (prevm != null) 
-         {
-         prevm.remove();
-         }
-
-      DoHeader(resp);
-      DoSeqPanel(resp);
-      MathJax.typeset();
-
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-     let section = document.querySelector('article');
-     let text = document.createElement('h2');
-     section.textContent = "No results in Tales (perhaps no connection)";
-     section.id = "errormesg"
-     section.appendChild(text);
-
-    });
-}
-
-// Take over form submission
-button = document.getElementById('seqsubmit'),
-button.addEventListener("click", (event) => { event.preventDefault();  sendseqData(); });
-}
-
-/***********************************************************/
-
-function BrowseHandler()
-{
-const form = document.querySelector("#search");
-
-   async function sendbrowseData() {
-
-   let formData = new FormData(form);
-   document.getElementById('counter').innerHTML = 1;
-
-   fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
-   .then(response => {
-
-    if (!response.ok) {
-      throw new Error('network returns error');
-    }
-
-    return response.json();
-
-   })
-    .then((resp) => {
-
-      DoHeader(resp);
-      DoBrowsePanel(resp);
-      MathJax.typeset();
-
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-
-     let section = document.querySelector('article');
-     let text = document.createElement('h2');
-     section.textContent = "No results in browsing";
-     section.id = "errormesg"
-     section.appendChild(text);
-
-   });
-}
-
-// Take over form submission
-button = document.getElementById('browsesubmit'),
-button.addEventListener("click", (event) => { event.preventDefault();  sendbrowseData(); });
+button = document.getElementById('gosubmit'),
+button.addEventListener("click", (event) => { event.preventDefault();  sendsearchData(); });
 }
 
 /***********************************************************/
@@ -1349,7 +1190,7 @@ function IncHandler()
 
    formData.set("pagenr",pagenr)
 
-   fetch(API_SERVER+"/Browse", { method: "POST", body: formData }).then(response => {
+   fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData }).then(response => {
 
     if (!response.ok) {
       throw new Error('network returns error');
@@ -1409,7 +1250,7 @@ function DecHandler()
    document.getElementById('counter').innerHTML = pagenr;
    formData.set("pagenr",pagenr)
 
-   fetch(API_SERVER+"/Browse", { method: "POST", body: formData }).then(response => {
+   fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData }).then(response => {
 
     if (!response.ok) {
       throw new Error('network returns error');
@@ -1457,7 +1298,7 @@ async function sendlinkData(nclass,ncptr)
   formData.set("nclass",nclass);
   formData.set("ncptr",ncptr);
 
-  fetch(API_SERVER+"/Orbit", { method: "POST", body: formData })
+  fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData })
    .then(response => {
 
     if (!response.ok) {
@@ -1504,7 +1345,7 @@ async function sendTOCLinkData(chap,ctx)
   formData.set("chapter",chap);
   formData.set("contexts",ctx);
 
-  fetch(API_SERVER+"/Browse", { method: "POST", body: formData })
+  fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData })
    .then(response => {
 
     if (!response.ok) {
@@ -1548,63 +1389,6 @@ async function sendTOCLinkData(chap,ctx)
       // Handle error
       console.log("error ", error);
     });
-}
-
-/***********************************************************/
-
-function TOCHandler()
-{
-let form = document.querySelector("#search");
-
-async function sendTOCData() {
-
-  let formData = new FormData(form);
-
-  fetch(API_SERVER+"/TOC", { method: "POST", body: formData })
-   .then(response => {
-
-    if (!response.ok) {
-      throw new Error('network returns error');
-    }
-
-    return response.json();
-
-  })
-    .then((resp) => {
-
-      let prevh = document.getElementById("header_root");
-
-      if (prevh != null) 
-         {
-         prevh.remove();
-         }
-
-      let prevm = document.getElementById("article");
-
-      if (prevm != null) 
-         {
-         prevm.remove();
-         }
-
-      DoHeader(resp);
-      DoTOCPanel(resp);
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-     let section = document.querySelector('article');
-     let text = document.createElement('h2');
-     section.textContent = "No result in TOC";
-     section.id = "errormesg"
-     section.appendChild(text);
-
-   });
-}
-
-// Take over form submission
-button = document.getElementById('toc-submit'),
-button.addEventListener("click", (event) => { event.preventDefault();  sendTOCData(); });
 }
 
 /***********************************************************/
@@ -1894,13 +1678,9 @@ CTX.restore();
 /***********************************************************/
 
 DoPage();
-OrbitHandler();
-ConeHandler();
-SeqHandler();
-BrowseHandler();
+SearchHandler();
 IncHandler();
 DecHandler();
-TOCHandler();
 
 </script>
 

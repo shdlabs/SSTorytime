@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"os"
 	"flag"
-	"strconv"
 	"strings"
 
         SST "SSTorytime"
@@ -194,10 +193,10 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	// Now convert strings into NodePointers
 
-	arrowptrs,sttype := ArrowPtrFromArrowsNames(ctx,search.Arrows)
-	nodeptrs := SolveNodePtrs(ctx,search.Name,search.Chapter,search.Context,arrowptrs)
-	leftptrs := SolveNodePtrs(ctx,search.From,search.Chapter,search.Context,arrowptrs)
-	rightptrs := SolveNodePtrs(ctx,search.To,search.Chapter,search.Context,arrowptrs)
+	arrowptrs,sttype := SST.ArrowPtrFromArrowsNames(ctx,search.Arrows)
+	nodeptrs := SST.SolveNodePtrs(ctx,search.Name,search.Chapter,search.Context,arrowptrs)
+	leftptrs := SST.SolveNodePtrs(ctx,search.From,search.Chapter,search.Context,arrowptrs)
+	rightptrs := SST.SolveNodePtrs(ctx,search.To,search.Chapter,search.Context,arrowptrs)
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
@@ -206,10 +205,13 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if search.Range > 0 {
 		limit = search.Range
 	} else {
-		limit = 5
+		limit = 10
 	}
 
 	// SEARCH SELECTION *********************************************
+
+	fmt.Println("------------------------------------------------------------------")
+	fmt.Println(" Limiting to maximum of",limit,"results")
 
 	// if we have name, (maybe with context, chapter, arrows)
 
@@ -239,29 +241,25 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	if name || from || to {
 
-		if sttypes || arrows {
-			// from or to or name
-
-			if nodeptrs != nil {
-				fmt.Println("------------------------------------------------------------------")
-				CausalCones(ctx,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
-				return
-			}
-			if leftptrs != nil {
-				fmt.Println("------------------------------------------------------------------")
-				CausalCones(ctx,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
-				return
-			}
-			if rightptrs != nil {
-				fmt.Println("------------------------------------------------------------------")
-				CausalCones(ctx,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
-				return
-			}
-		}
+		// from or to or name
 		
-
+		if nodeptrs != nil {
+			fmt.Println("------------------------------------------------------------------")
+			CausalCones(ctx,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			return
+		}
+		if leftptrs != nil {
+			fmt.Println("------------------------------------------------------------------")
+			CausalCones(ctx,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			return
+		}
+		if rightptrs != nil {
+			fmt.Println("------------------------------------------------------------------")
+			CausalCones(ctx,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			return
+		}
 	}
-
+	
 	// if we have page number then we are looking for notes by pagemap
 
 	if (name || chapter) && pagenr {
@@ -316,126 +314,6 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 //******************************************************************
 
-func SolveNodePtrs(ctx SST.PoSST,nodenames []string,chap string,cntx []string, arr []SST.ArrowPtr) []SST.NodePtr {
-
-	nodeptrs,rest := ParseLiteralNodePtrs(nodenames)
-
-	var idempotence = make(map[SST.NodePtr]bool)
-	var result []SST.NodePtr
-
-	for n := range nodeptrs {
-		idempotence[nodeptrs[n]] = true
-	}
-
-	for r := range rest {
-		if VERBOSE {
-			fmt.Printf("Handling node search: getDBNodePtrMatching(%s,%s,%v,%v)\n",rest[r],chap,cntx,arr)
-		}
-		nptrs := SST.GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
-
-		for n := range nptrs {
-			idempotence[nptrs[n]] = true
-		}
-	}
-
-	for uniqnptr := range idempotence {
-		result = append(result,uniqnptr)
-	}
-
-	return result
-}
-
-//******************************************************************
-
-func ParseLiteralNodePtrs(names []string) ([]SST.NodePtr,[]string) {
-
-	var current []rune
-	var rest []string
-	var nodeptrs []SST.NodePtr
-
-	for n := range names {
-
-		line := []rune(names[n])
-		
-		for i := 0; i < len(line); i++ {
-			
-			if line[i] == '(' {
-				rs := strings.TrimSpace(string(current))
-				if len(rs) > 0 {
-					rest = append(rest,string(current))
-					current = nil
-				}
-				continue
-			}
-			
-			if line[i] == ')' {
-				np := string(current)
-				var nptr SST.NodePtr
-				var a,b int = -1,-1
-				fmt.Sscanf(np,"%d,%d",&a,&b)
-				if a >= 0 && b >= 0 {
-					nptr.Class = a
-					nptr.CPtr = SST.ClassedNodePtr(b)
-					nodeptrs = append(nodeptrs,nptr)
-					current = nil
-				} else {
-					rest = append(rest,"("+np+")")
-					current = nil
-				}
-				continue
-			}
-
-			current = append(current,line[i])
-			
-		}
-		rs := strings.TrimSpace(string(current))
-		if len(rs) > 0 {
-			rest = append(rest,rs)
-		}
-		current = nil
-	}
-
-	return nodeptrs,rest
-}
-
-//******************************************************************
-
-func ArrowPtrFromArrowsNames(ctx SST.PoSST,arrows []string) ([]SST.ArrowPtr,[]int) {
-
-	var arr []SST.ArrowPtr
-	var stt []int
-
-	for a := range arrows {
-
-		// is the entry a number? sttype?
-
-		number, err := strconv.Atoi(arrows[a])
-		notnumber := err != nil
-
-		if notnumber {
-			arrowptr,_ := SST.GetDBArrowsWithArrowName(ctx,arrows[a])
-			if arrowptr != -1 {
-				arrdir := SST.GetDBArrowByPtr(ctx,arrowptr)
-				arr = append(arr,arrdir.Ptr)
-			}
-		} else {
-			if number < -SST.EXPRESS {
-				fmt.Println("Negative arrow value doesn't make sense",number)
-			} else if number >= -SST.EXPRESS && number <= SST.EXPRESS {
-				stt = append(stt,number)
-			} else {
-				// whatever remains can only be an arrowpointer
-				arrdir := SST.GetDBArrowByPtr(ctx,SST.ArrowPtr(number))
-				arr = append(arr,arrdir.Ptr)
-			}
-		}
-	}
-
-	return arr,stt
-}
-
-//******************************************************************
-
 func SL(list []string) string {
 
 	var s string
@@ -475,7 +353,12 @@ func FindOrbits(ctx SST.PoSST, nptrs []SST.NodePtr, limit int) {
 //******************************************************************
 
 func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []string,arrows []SST.ArrowPtr, sttype []int,limit int) {
+
 	var total int = 1
+
+	if len(sttype) == 0 {
+		sttype = []int{0,1,2,3}
+	}
 
 	if VERBOSE {
 		fmt.Println("Solver/handler: GetFwdPathsAsLinks()")
@@ -488,7 +371,7 @@ func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 
 			if fcone != nil {
 				fmt.Printf("%d. ",total)
-				total += ShowCone(ctx,fcone,sttype[st],chap,context,limit)
+				total += ShowCone(ctx,fcone,chap,context,limit)
 			}
 
 			if total > limit {
@@ -499,7 +382,7 @@ func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 
 			if bcone != nil {
 				fmt.Printf("%d. ",total)
-				total += ShowCone(ctx,bcone,sttype[st],chap,context,limit)
+				total += ShowCone(ctx,bcone,chap,context,limit)
 			}
 
 			if total > limit {
@@ -654,7 +537,7 @@ func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,cont
 // OUTPUT
 //******************************************************************
 
-func ShowCone(ctx SST.PoSST,cone [][]SST.Link,sttype int,chap string,context []string,limit int) int {
+func ShowCone(ctx SST.PoSST,cone [][]SST.Link,chap string,context []string,limit int) int {
 
 	if len(cone) < 1 {
 		return 0

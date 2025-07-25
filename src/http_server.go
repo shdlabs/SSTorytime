@@ -19,17 +19,11 @@ var CTX SST.PoSST
 // *********************************************************************
 
 func main() {
-
+	
 	CTX = SST.Open(true)	
-
+	
 	http.HandleFunc("/",PageHandler)
-	http.HandleFunc("/Orbit", OrbitHandler)
-	http.HandleFunc("/NPtrOrbit", OrbitHandler)
-	http.HandleFunc("/Cone", ConeHandler)
-	http.HandleFunc("/Browse", SystematicHandler)
-	http.HandleFunc("/TOC", TableOfContents)
-	http.HandleFunc("/Sequence", SequenceHandler)
-
+	http.HandleFunc("/searchN4L",SearchN4LHandler)
 	fmt.Println("Listening at http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
 }
@@ -54,7 +48,6 @@ func PageHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("Can't find ./page.html")
 			os.Exit(-1)
 		}
-
 		w.Write(page)
 
 	default:
@@ -63,50 +56,23 @@ func PageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // *********************************************************************
+// SEARCH
+// *********************************************************************
 
-func OrbitHandler(w http.ResponseWriter, r *http.Request) {
-
+func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
+	
 	GenHeader(w,r)
-
-	fmt.Println("NCC Orbit response handler")
 	
 	switch r.Method {
 	case "POST","GET":
-		nclass := r.FormValue("nclass")
-		ncptr := r.FormValue("ncptr")
-		chapter := r.FormValue("chapter")
-		context := r.FormValue("context")
 		name := r.FormValue("name")
 
-		isdirac,begin,end,cnt := SST.DiracNotation(name)
-
-		if isdirac {
-			fmt.Println("Detected dirac transit",begin,cnt,end)
-			if cnt == "" {
-				HandlePathSolve(w,r,begin,end,chapter,context)
-			} else {
-				HandlePathSolve(w,r,begin,end,chapter,cnt)
-			}
-			return
+		if len(name) == 0 {
+			name = "semantic spacetime"
 		}
-
-		if nclass == "" || ncptr == "" {
-			if name == "" {
-				name = "semantic"
-			}
-			fmt.Println("Matching Orbit by name(",name,chapter,context,")")
-			nptrs := SST.GetDBNodePtrMatchingName(CTX,name,chapter)
-			HandleOrbit(w,r,nptrs,chapter,context)
-		} else {
-			fmt.Println("Matching Orbit by NPtr(",nclass,ncptr,chapter,context,")")
-			var nptrs []SST.NodePtr
-			var nptr SST.NodePtr
-			fmt.Sscanf(nclass,"%d",&nptr.Class)
-			fmt.Sscanf(ncptr,"%d",&nptr.CPtr)
-			nptrs = append(nptrs,nptr)
-			HandleOrbit(w,r,nptrs,chapter,context)
-		}
-
+		search := SST.DecodeSearchField(name)
+		HandleSearch(search,name,w,r)
+		
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
@@ -114,16 +80,170 @@ func OrbitHandler(w http.ResponseWriter, r *http.Request) {
 
 // *********************************************************************
 
-func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,chapter,context string) {
+func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter, r *http.Request) {
 
-	chapter = strings.TrimSpace(chapter)
+	// This is analogous to searchN4L
+
+	for arg := range search.Name {
+
+		isdirac,beg,end,cnt := SST.DiracNotation(search.Name[arg])
+		
+		if isdirac {
+			search.Name = nil
+			search.From = []string{beg}
+			search.To = []string{end}
+			search.Context = []string{cnt}
+			break
+		}
+	}
+
+	fmt.Println("Your starting expression generated this set: ",line,"\n")
+	fmt.Println(" - start set:",SL(search.Name))
+	fmt.Println(" -      from:",SL(search.From))
+	fmt.Println(" -        to:",SL(search.To))
+	fmt.Println(" -   chapter:",search.Chapter)
+	fmt.Println(" -   context:",SL(search.Context))
+	fmt.Println(" -    arrows:",SL(search.Arrows))
+	fmt.Println(" -    pagenr:",search.PageNr)
+	fmt.Println(" - sequence/story:",search.Sequence)
+	fmt.Println(" - limit/range/depth:",search.Range)
+	fmt.Println()
+
+	// OPTIONS *********************************************
+
+	name := search.Name != nil
+	from := search.From != nil
+	to := search.To != nil
+	context := search.Context != nil
+	chapter := search.Chapter != ""
+	pagenr := search.PageNr > 0
+	sequence := search.Sequence
+
+	// Now convert strings into NodePointers
+
+	arrowptrs,sttype := SST.ArrowPtrFromArrowsNames(CTX,search.Arrows)
+	nodeptrs := SST.SolveNodePtrs(CTX,search.Name,search.Chapter,search.Context,arrowptrs)
+	leftptrs := SST.SolveNodePtrs(CTX,search.From,search.Chapter,search.Context,arrowptrs)
+	rightptrs := SST.SolveNodePtrs(CTX,search.To,search.Chapter,search.Context,arrowptrs)
+
+	arrows := arrowptrs != nil
+	sttypes := sttype != nil
+	limit := 0
+
+	if search.Range > 0 {
+		limit = search.Range
+	} else {
+		limit = 10
+	}
+
+	// SEARCH SELECTION *********************************************
+
+	// if we have name, (maybe with context, chapter, arrows)
+
+	if name && ! sequence && !pagenr {
+		fmt.Println("HandleOrbits()")
+		HandleOrbit(w,r,nodeptrs,limit)
+		return
+	}
+
+	if (name && from) || (name && to) {
+		fmt.Printf("\nSearch \"%s\" has conflicting parts <to|from> and match strings\n",line)
+		os.Exit(-1)
+	}
+
+	// Closed path solving, two sets of nodeptrs
+	// if we have BOTH from/to (maybe with chapter/context) then we are looking for paths
+
+	if from && to {
+		HandlePathSolve(w,r,leftptrs,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+		return
+	}
+
+	// Open causal cones, from one of these three
+
+	if name || from || to {
+
+		if nodeptrs != nil {
+			HandleCausalCones(w,r,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			return
+		}
+		if leftptrs != nil {
+			HandleCausalCones(w,r,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			return
+		}
+		if rightptrs != nil {
+			HandleCausalCones(w,r,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			return
+		}
+	}
+
+	// if we have page number then we are looking for notes by pagemap
+
+	if (name || chapter) && pagenr {
+
+		//var notes []SST.PageMap
+
+		if chapter {
+			//notes = SST.GetDBPageMap(ctx,search.Chapter,search.Context,search.PageNr)
+			//ShowNotes(ctx,notes)
+			return
+		} else {
+			//for n := range search.Name {
+				//notes = SST.GetDBPageMap(ctx,search.Name[n],search.Context,search.PageNr)
+				//ShowNotes(ctx,notes)
+			//}
+			return
+		}
+	}
+
+	// Look for axial trails following a particular arrow, like _sequence_ 
+
+	if name && sequence || sequence && arrows {
+		//ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context)
+		return
+	}
+
+	// Match existing contexts
+
+	if chapter {
+		//ShowMatchingChapter(ctx,search.Chapter)
+		return
+	}
+
+	if context {
+		//ShowMatchingContext(ctx,search.Context)
+		return
+	}
+
+	// if we have sequence with arrows, then we are looking for sequence context or stories
+	// GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int)
+
+	if arrows || sttypes {
+		//ShowMatchingArrows(ctx,arrowptrs,sttype)
+		return
+	}
+
+	fmt.Println("Didn't find a solver")
+}
+
+// *********************************************************************
+
+func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limit int) {
 
 	w.Header().Set("Content-Type", "application/json")
 
+	fmt.Println("HandleOrbit()")
+	var count int
 	var array string
-	
+
 	for n := 0; n < len(nptrs); n++ {
-		array += SST.JSONNodeEvent(CTX, nptrs[n])
+		count++
+		if count > limit {
+			return
+		}
+
+		array += SST.JSONNodeEvent(CTX,nptrs[n])
+
 		if n < len(nptrs)-1 {
 			array += ",\n"
 		}
@@ -140,181 +260,91 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,chap
 
 // *********************************************************************
 
-func ConeHandler(w http.ResponseWriter, r *http.Request) {
+func HandleCausalCones(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr, chap string, context []string,arrows []SST.ArrowPtr, sttype []int,limit int) {
 
-	GenHeader(w,r)
+	fmt.Println("HandleCausalCones()")
+	var total int = 1
+	var data string
 
-	fmt.Println("NCC Cone response handler")
-	
-	switch r.Method {
+	if len(sttype) == 0 {
+		sttype = []int{0,1,2,3}
+	}
 
-	case "POST","GET":
-		name := r.FormValue("name")
-		chapter := r.FormValue("chapter")
-		context := r.FormValue("context")
-		arrnames := r.FormValue("arrnames")
+	for n := range nptrs {
+		for st := range sttype {
 
-		isdirac,begin,end,cnt := SST.DiracNotation(name)
+			fmt.Println("Cones from",nptrs[n],"sttype",sttype[st])
 
-		if isdirac {
-			fmt.Println("Detected dirac transit",begin,cnt,end)
-			if cnt == "" {
-				HandlePathSolve(w,r,begin,end,chapter,context)
-			} else {
-				HandlePathSolve(w,r,begin,end,chapter,cnt)
+			jstr,count := PackageConeFromOrigin(nptrs[n],n,sttype[st],chap,context,len(nptrs),limit)
+
+			if count > 0 {
+				total += count
+				data += jstr
+				data += ","
 			}
-			return
+
+			if total > limit {
+				break
+			}
 		}
 
-		HandleEntireCone(w,r,name,chapter,context,arrnames)
-	default:
-		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
-	}
-}
-
-// *********************************************************************
-
-func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr,arrstr string) {
-
-	chapter = strings.TrimSpace(chapter)
-	name = strings.TrimSpace(name)
-
-	if len(name) == 0  {
-		name = "x7jsnfoqn.asnfbkg"
-	}
-
-	arrnames,_ := SST.Str2Array(arrstr)
-	cntxt,_ := SST.Str2Array(cntstr)
-
-	var arrows []SST.ArrowPtr
-
-	for a := range arrnames {
-		if len(arrnames[a]) > 1 {
-			arr := SST.GetDBArrowByName(CTX,arrnames[a])
-			arrows = append(arrows,arr)
+		if total > limit {
+			break
 		}
 	}
+
+	data = strings.Trim(data,",")
+	array := fmt.Sprintf("[%s]",data)
+
+	response := PackageResponse("ConePaths",array)
+	fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
-
-	fmt.Println("Matching...EntireCone(",name,chapter,cntxt,arrows,")")
-
-	nptrs := SST.GetDBNodePtrMatchingNCC(CTX,name,chapter,cntxt,arrows)
-
-	maxdepth := 20
-	var count int
-
-	conepaths  := "[\n"
-
-	// Encode forward cone first
-
-	for n := 0; n < len(nptrs); n++ {
-
-		cone,span := SST.GetEntireConePathsAsLinks(CTX,"fwd",nptrs[n],maxdepth)
-
-		if span == 0 {
-			continue
-		}
-
-		thiscone := fmt.Sprintf(" { \"NClass\" : %d,\n",nptrs[n].Class)
-		thiscone += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptrs[n].CPtr)
-		thiscone += fmt.Sprintf("   \"Title\" : \"%s\",\n",name)
-		empty := true
-
-		json := SST.JSONCone(CTX,cone,chapter,cntxt,count,len(nptrs))
-		
-		if span > 0 {
-			empty = false
-		}
-		
-		thiscone += fmt.Sprintf("\"Entire\" : %s ",json)		
-		thiscone += "\n}"
-
-		if !empty {
-			if count > 0 {
-				thiscone = "\n,"+thiscone
-			}
-			conepaths += thiscone
-			count++
-		}
-	}
-
-	// Encode backward cone
-
-	for n := 0; n < len(nptrs); n++ {
-
-		thiscone := fmt.Sprintf(" { \"NClass\" : %d,\n",nptrs[n].Class)
-		thiscone += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptrs[n].CPtr)
-		thiscone += fmt.Sprintf("   \"Title\" : \"%s\",\n",name)
-		empty := true
-
-		cone,span := SST.GetEntireConePathsAsLinks(CTX,"bwd",nptrs[n],maxdepth)
-		
-		json := SST.JSONCone(CTX,cone,chapter,cntxt,n,len(nptrs))
-		
-		if span > 0 {
-			empty = false
-		}
-		
-		thiscone += fmt.Sprintf("\"Entire\" : %s ",json)		
-		thiscone += "\n}"
-
-		if !empty {
-			if count > 0 {
-				thiscone = "\n,"+thiscone
-			}
-			conepaths += thiscone
-			count++
-		}
-	}
-
-	conepaths += "]"
-
-	response := PackageResponse("FBCone",conepaths)
-
-	fmt.Println("CONE",string(response))
-
 	w.Write(response)
-	fmt.Println("Reply Cone sent")
+
 }
 
 //******************************************************************
 
-func HandlePathSolve(w http.ResponseWriter, r *http.Request,begin,end,chapter,cntext string) {
+func PackageConeFromOrigin(nptr SST.NodePtr,nth int,sttype int,chap string,context []string,dimnptr,limit int) (string,int) {
+	// Package a JSON object for nptr's causal cone 
 
-	const maxdepth = 15
+	var wpaths [][]SST.WebPath
+
+	fcone,countf := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit)
+	wpaths = append(wpaths,SST.LinkWebPaths(CTX,fcone,nth,chap,context,dimnptr,limit)...)
+
+	bcone,countb := SST.GetFwdPathsAsLinks(CTX,nptr,-sttype,limit)
+	wpaths = append(wpaths,SST.LinkWebPaths(CTX,bcone,nth,chap,context,dimnptr,limit)...)
+	
+	wstr,err := json.Marshal(wpaths)
+
+	if wpaths == nil {
+		return "",0
+	}
+
+	if err != nil {
+		fmt.Println("Error in PackageConeFromOrigin",err)
+		os.Exit(-1)
+	}
+
+	jstr := fmt.Sprintf(" { \"NClass\" : %d,\n",nptr.Class)
+	jstr += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptr.CPtr)
+	jstr += fmt.Sprintf("   \"Title\" : \"%v\",\n",nptr)  // tbd
+	jstr += fmt.Sprintf("   \"Paths\" : %s\n}",string(wstr))	
+
+	return jstr,countf + countb
+}
+
+//******************************************************************
+
+func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs []SST.NodePtr,chapter string,context []string,arrowptrs []SST.ArrowPtr,sttype []int,maxdepth int) {
+
+	fmt.Println("HandlePathSolve()")
+
 	var Lnum,Rnum int
 	var count int
 	var left_paths, right_paths [][]SST.Link
-
-	start_bc := []string{begin}
-	end_bc := []string{end}
-	context := strings.Split(cntext,",")
-
-	var leftptrs,rightptrs []SST.NodePtr
-
-	for n := range start_bc {
-		leftptrs = append(leftptrs,SST.GetDBNodePtrMatchingName(CTX,start_bc[n],chapter)...)
-	}
-
-	for n := range end_bc {
-		rightptrs = append(rightptrs,SST.GetDBNodePtrMatchingName(CTX,end_bc[n],chapter)...)
-	}
-
-	if leftptrs == nil || rightptrs == nil {
-		fmt.Println("No paths available from end points",begin,"TO",end,"in chapter",chapter)
-		return
-	}
-
-	var dirac_form string
-
-	if len(context) > 0 {
-		dirac_form = fmt.Sprintf("<%s | %v | %s>",ShowNode(CTX,rightptrs),context,ShowNode(CTX,leftptrs))
-	} else {
-		dirac_form = fmt.Sprintf("<%s | %s>",ShowNode(CTX,rightptrs),ShowNode(CTX,leftptrs))
-	}
-
-	fmt.Printf("\n\n Paths %s\n\n",dirac_form)
 
 	// Find the path matrix
 
@@ -335,11 +365,11 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,begin,end,chapter,cn
 			json += fmt.Sprintf("{ \"paths\" : [\n")
 			json += fmt.Sprintf(" { \"NClass\" : %d,\n",solutions[0][0].Dst.Class)
 			json += fmt.Sprintf("   \"NCPtr\" : %d,\n",solutions[0][0].Dst.CPtr)
-			json += fmt.Sprintf("   \"Title\" : \"%s\",\n",dirac_form)
+			json += fmt.Sprintf("   \"Title\" : \"%s\",\n","path solutions")
 			json += fmt.Sprintf("   \"BTWC\" : [ %s ],\n",SST.BetweenNessCentrality(CTX,solutions))
 			json += fmt.Sprintf("   \"Supernodes\" : [ %s ],\n",SST.SuperNodes(CTX,solutions,maxdepth))
 
-			json += fmt.Sprintf("\"Entire\" : %s ",SST.JSONCone(CTX,solutions,chapter,context,1,1))
+	//		json += fmt.Sprintf("\"Entire\" : %s ",SST.JSONCone(CTX,solutions,chapter,context,1,1))
 			json += "\n}\n]\n}"
 
 			count++
@@ -353,10 +383,8 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,begin,end,chapter,cn
 		}
 	}
 
-	if len(solutions) == 0 {
-		fmt.Println("No paths satisfy constraints",context," between end points",begin,"TO",end,"in chapter",chapter)
-		os.Exit(-1)
-	}
+	
+	fmt.Println("No paths satisfy constraints")
 
 	w.Write([]byte(json))
 	fmt.Println("Reply PathSolve sent")
@@ -366,8 +394,6 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,begin,end,chapter,cn
 //******************************************************************
 
 func SystematicHandler(w http.ResponseWriter, r *http.Request) {
-
-	GenHeader(w,r)
 
 	fmt.Println("Browse response handler")
 	var secnr int = 1
@@ -432,7 +458,7 @@ func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptex
 //**************************************************************
 
 func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr,arrows []SST.ArrowPtr,section int,chapter string,context []string) {
-
+/*
 	// Policy for ordering and search depth along each vector
 
 	order    := []int{0,1,-1,2,-2,3,-3}
@@ -481,14 +507,12 @@ func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr
 		multicone += "]\n}\n"
 	}
 	w.Write([]byte(multicone))
-	fmt.Println("here....muticone",multicone)
+	fmt.Println("here....muticone",multicone)*/
 }
 
 // *********************************************************************
 
 func TableOfContents(w http.ResponseWriter, r *http.Request) {
-
-	GenHeader(w,r)
 
 	fmt.Println("TableOfContents handler")
 
@@ -512,8 +536,6 @@ func SequenceHandler(w http.ResponseWriter, r *http.Request) {
 
         // Find a sequence of arrows matching arrname/default "then" for which
         // something in the orbit matches the search strings
-
-	GenHeader(w,r)
 
 	fmt.Println("Sequence search response handler")
 
@@ -599,6 +621,22 @@ func PackageResponse(kind string, jstr string) []byte {
 	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s }",kind,jstr)
 
 	return []byte(response)
+}
+
+//******************************************************************
+
+func SL(list []string) string {
+
+	var s string
+
+	s += fmt.Sprint(" [")
+	for i := 0; i < len(list); i++ {
+		s += fmt.Sprint(list[i],", ")
+	}
+
+	s += fmt.Sprint(" ]")
+
+	return s
 }
 
 
