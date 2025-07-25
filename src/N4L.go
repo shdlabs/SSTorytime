@@ -2050,7 +2050,7 @@ func ExtractContextExpression(token string) string {
 			break
 		}
 	}
-	
+
 	return expression
 }
 
@@ -2424,26 +2424,28 @@ func CleanExpression(s string) string {
 
 // ***********************************************************************
 
-func SplitWithParensIntact(expr string,split_ch byte) []string {
+func SplitWithParensIntact(expr string,split_ch rune) []string {
 
 	var token string = ""
 	var set []string
 
-	for c := 0; c < len(expr); c++ {
+	unicode := []rune(expr)
 
-		switch expr[c] {
+	for c := 0; c < len(unicode); c++ {
+
+		switch unicode[c] {
 
 		case split_ch:
 			set = append(set,token)
 			token = ""
 
 		case '(':
-			subtoken,offset := Paren(expr,c)
+			subtoken,offset := Paren(unicode,c)
 			token += subtoken
 			c = offset-1
 
 		default:
-			token += string(expr[c])
+			token += string(unicode[c])
 		}
 	}
 
@@ -2456,7 +2458,7 @@ func SplitWithParensIntact(expr string,split_ch byte) []string {
 
 // ***********************************************************************
 
-func Paren(s string, offset int) (string,int) {
+func Paren(s []rune, offset int) (string,int) {
 
 	var level int = 0
 
@@ -2471,14 +2473,13 @@ func Paren(s string, offset int) (string,int) {
 			level--
 			if level == 0 {
 				token := s[offset:c+1]
-				return token, c+1
+				return string(token), c+1
 			}
 		}
 	}
 
 	return "bad expression", -1
 }
-
 
 // ***********************************************************************
 
