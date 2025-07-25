@@ -143,7 +143,7 @@
  + used for (for)            - is a use of (useof)
  + might be used for (perhaps used) - is a possible use of (perhaps useof)
  + has example (e.g.)        - is an example of (ex)
- + has name (name)           - is the name of (nameof)
+ + has name/title (name)           - is the name/title of (nameof)
  + has abbreviation (abbrev) - is short for (short for)
 
  + discusses (disc) - is discussed in (isdisc)

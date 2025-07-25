@@ -1,7 +1,6 @@
 
 - notes about SSTorytime in N4L
 
-
   :: setup, get started ::
 
   SSTorytime  (depends on) postgres
@@ -36,7 +35,7 @@
 
   noise level (def) n-grams that occur less than 
 
-  THEME_LIM  (def) a constant scale approximately the size of a long paragraph set to 100 sentences
+  "THEME_LIM"  (def) a constant scale approximately the size of a long paragraph set to 100 sentences
 
   a %paragraph is defined as either a text measure separated by two newlines or if we exceed the the maximum threshold %THEME_LIM
 
@@ -115,7 +114,7 @@ host    all             all             ::1/128                 password"
 
  stored procedures/functions in postgres
 
-    "   (note)  uses a language that looks a lot like SQL but is markedly different - beware! (has name) PLpgSQL
+    "   (note)  uses a language that looks a lot like SQL but is markedly different - beware! (name) PLpgSQL
     "   (e.g.)  "FUNCTION SumFwdPaths(start link, path text, orientation text, depth integer, maxdepth integer, exclude nodeptr[])
  DECLARE
      fwdlinks Link[];

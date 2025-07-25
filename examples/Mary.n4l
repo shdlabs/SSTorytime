@@ -1,9 +1,7 @@
 
 -high brow poetry about Mary
 
- :: cutting edge, high brow ::
-
- +:: _sequence_ , poem ::   // starting sequence mode
+ +:: _sequence_ , _title_ Mary had a little lamb, poem ::   // starting sequence mode
 
 @title Mary had a little lamb  (note) Had means possessed not gave birth to
               "                (written by) Mary's mum
