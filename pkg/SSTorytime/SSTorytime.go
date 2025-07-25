@@ -353,8 +353,10 @@ type PoSST struct {
 
 type Story struct {
 
-	ContainNPtr NodePtr
-	Text     string
+	// The title of a story is a property of the sequence
+        // not a container for it. It belongs to the sequence context.
+
+	Chapter   string  // chapter it belongs to
         Arrow     string  // arrow connecting the story to its container
 	Axis      []NodeEvent
 }
@@ -3474,6 +3476,8 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,name,chapter stri
 		rm_ch = "true"
 	}
 
+	// look for _title_ in context
+
 	qstr = fmt.Sprintf("select GetNCCStoryStartNodes(%d,%d,%d,'%s','%s',%s,%s,%s)",arrowptr,INVERSE_ARROWS[arrowptr],sttype,nm,chp,cntx,rm_nm,rm_ch)
 
 	row,err := ctx.DB.Query(qstr)
@@ -3487,7 +3491,6 @@ func GetNCCNodesStartingStoriesForArrow(ctx PoSST,arrow string,name,chapter stri
 
 	for row.Next() {		
 		err = row.Scan(&nptrstring)
-
 		match := ParseSQLNPtrArray(nptrstring)
 		matches = append(matches,match...)
 	}
@@ -4775,61 +4778,30 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 	}
 
 	arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrname)
-
 	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,search,chapter,context)
-
-	if len(openings) > 1 {
-
-		for nptr := range openings {
-			var story Story
-			node := GetDBNodeByNodePtr(ctx,openings[nptr])
-			story.Arrow = node.Chap
-			story.Text = node.S
-
-			stories = append(stories,story)
-		}
-		// If Axis is null, then this is just the toc
-		return stories
-	}
-
-	// return one story
 
 	for nptr := range openings {
 
 		var story Story
-		
+
 		node := GetDBNodeByNodePtr(ctx,openings[nptr])
-		orbit := GetNodeOrbit(ctx,openings[nptr],arrname)
 
-		container := orbit[ST_ZERO-CONTAINS] // Does the sequence have a container?
-		
-		if container != nil {
-			story.ContainNPtr = container[0].Dst // generalize..tbd
-			story.Text = container[0].Text
-			story.Arrow = container[0].Arrow
-		} else {
-			var none NodePtr
-			story.ContainNPtr = none // generalize..tbd
-			story.Text = "..."
-			story.Arrow = "standalone trail without title anchor"
-		}
+		story.Chapter = node.Chap
+		story.Arrow = arrname
 
-		if OrbitMatching(ctx,node,orbit,search) {
+		axis := GetLongestAxialPath(ctx,openings[nptr],arrowptr)
 
-			axis := GetLongestAxialPath(ctx,openings[nptr],arrowptr)
-
-			for lnk := 0; lnk < len(axis); lnk++ {
-
-				// Now add the orbit at this node, not including the axis
-				var ne NodeEvent
-				nd := GetDBNodeByNodePtr(ctx,axis[lnk].Dst)
-				ne.Text = nd.S
-				ne.L = nd.L
-				ne.NPtr = axis[lnk].Dst
-				ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname)
-
-				story.Axis = append(story.Axis,ne)
-			}
+		for lnk := 0; lnk < len(axis); lnk++ {
+			
+			// Now add the orbit at this node, not including the axis
+			var ne NodeEvent
+			nd := GetDBNodeByNodePtr(ctx,axis[lnk].Dst)
+			ne.Text = nd.S
+			ne.L = nd.L
+			ne.NPtr = axis[lnk].Dst
+			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname)
+			
+			story.Axis = append(story.Axis,ne)
 		}
 
 		if story.Axis != nil {
@@ -4918,35 +4890,6 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit 
 		}
 	}
 	return notes
-}
-
-// **************************************************************************
-
-func OrbitMatching(ctx PoSST,node Node,orbit [ST_TOP][]Orbit,rawsearch string) bool {
-
-	// Check whether the search string occurs within the near orbit of the node
-
-	_,stripped := IsBracketedSearchTerm(rawsearch)
-
-	search := strings.ToLower(stripped) // because all searching done in lower case
-
-	text := strings.ToLower(node.S)
-
-	if strings.Contains(text,search) || strings.Contains(search,text) {
-		return true
-	}
-
-	for st := 0; st < ST_TOP; st++ {
-		for r := range orbit[st] {
-			otext := strings.ToLower(orbit[st][r].Text)
-			if strings.Contains(otext,search) || 
-			strings.Contains(search,otext) {
-				return true
-			}
-		}
-	}
-
-	return false
 }
 
 // **************************************************************************

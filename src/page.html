@@ -669,40 +669,21 @@ titlebar.textContent="SSToryGraph"
 titlebar.id = "header_root";
 header.appendChild(titlebar);
 
-
 let title = "app";
 
-console.log(obj);
+switch (obj.Response)
+   {
+   case "Orbits":
+      title = obj.Content[0].Text
 
-if (obj.events != null)
-   {
-   if (obj.events[0] != null)
-      {
-      if (obj.events[0].Title != null)
-         {
-         title = obj.events[0].Title
-         }
-      if (obj.events[0].Text != null)
-         {
-         title = obj.events[0].Text;
-         }
-      }
+   case "ConePaths":
+      title = "Entire cone ... "
+
+   case "Sequence":
+      title = "Story sequence ... "
    }
-else if (obj.paths != null)
-   {
-   if (obj.paths[0] != null)
-      {
-      title = obj.paths[0].Title
-      }
-   }
-else if (obj.Title != null)
-   {
-   title =  obj.Title + " :: " + obj.Context + " :: "
-   }
-else
-   {
-   title =  obj.chapter + " :: " + obj.context + " :: "
-   }
+
+console.log(obj.Content);
 
 if (title.length < 60 || IsMath(title))
    {
@@ -738,9 +719,15 @@ if (obj == null)
 
 const separates = 0
 
-for (let event of obj.events) 
+if (obj.Response != "Orbits")
    {
-   ShowEvent(panel,event,separates,"all","","h1")
+   console.log("BAD PROTO")
+   return
+   }
+
+for (let node_event of obj.Content) 
+   {
+   ShowNodeEvent(panel,node_event,separates,"all","","h1")
    let hr = document.createElement('hr');
    panel.appendChild(hr);
    }
@@ -748,7 +735,7 @@ for (let event of obj.events)
 
 /***********************************************************/
 
-function ShowEvent(panel,event,counter,direction,skiparrow,anchortag)
+function ShowNodeEvent(panel,event,counter,direction,skiparrow,anchortag)
 {
 let child = document.createElement('content');
 
@@ -808,6 +795,7 @@ let chapter = document.createElement('div');
 chapter.textContent = event.Chap;
 chapter.id = "chapter";
 child.appendChild(chapter);
+panel.appendChild(child);
 
 // The order is important. Start with coming from
 
@@ -912,7 +900,7 @@ section.appendChild(panel);
 CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
 
-for (let nptr of obj.paths) 
+for (let nptr of obj.Content) 
    {
    let nclass = nptr.NClass;
    let ncptr = nptr.NCPtr;
@@ -982,15 +970,17 @@ section.appendChild(panel);
 
 // If more than one possible match, then list titles only
 
-if (obj != null && obj.events != null && obj.events.length > 1)
+if (obj != null && obj.Content != null && obj.Content.length > 1)
    {
    let counter = 1
 
-   for (let story of obj.events)
+   // Table of Contents
+
+   for (let story of obj.Content)
       {
       let link = document.createElement('a');
       let item = document.createElement('h1');
-      item.textContent = counter + ". " + story.Text;
+      item.textContent = counter + ". " + story.Chapter;
       link.onclick = function() { sendlinkData(story.ContainNPtr.Class,story.ContainNPtr.CPtr); };
       link.appendChild(item);
       panel.appendChild(link);
@@ -1004,14 +994,14 @@ if (obj != null && obj.events != null && obj.events.length > 1)
       counter++;
       }
    }
-else if (obj != null && obj.events != null)
+else if (obj != null && obj.Content != null)
    {
    // show one full story
 
-   let story = obj.events[0];
+   let story = obj.Content[0];
 
    let item = document.createElement('h1');
-   item.textContent = story.Text;
+   item.textContent = story.Chapter;
    panel.appendChild(item);
 
    let cntx = document.createElement('i');
@@ -1022,9 +1012,10 @@ else if (obj != null && obj.events != null)
    if (story.Axis != null)
       {
       let counter = 1
+
       for (let event of story.Axis)
          {
-         ShowEvent(panel,event,counter,"fwd","then","p")
+         ShowNodeEvent(panel,event,counter,"fwd","then","p")
          counter++;
          }
       }

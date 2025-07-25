@@ -120,18 +120,21 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,chap
 
 	w.Header().Set("Content-Type", "application/json")
 
-	events := fmt.Sprintf("{ \"events\" : [")
+	var array string
 	
 	for n := 0; n < len(nptrs); n++ {
-		events += SST.JSONNodeEvent(CTX, nptrs[n])
-		if n != len(nptrs)-1 {
-			events += ",\n"
+		array += SST.JSONNodeEvent(CTX, nptrs[n])
+		if n < len(nptrs)-1 {
+			array += ",\n"
 		}
 	}
+
+	content := fmt.Sprintf("[ %s ]",array)
+	response := PackageResponse("Orbits",content)
 	
-	events += "] }"
-	
-	w.Write([]byte(events))
+	fmt.Println("REPLY:\n",string(response))
+
+	w.Write(response)
 	fmt.Println("Reply Orbit sent")
 }
 
@@ -201,7 +204,7 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 	maxdepth := 20
 	var count int
 
-	multicone  := "{ \"paths\" : [\n"
+	conepaths  := "[\n"
 
 	// Encode forward cone first
 
@@ -231,7 +234,7 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 			if count > 0 {
 				thiscone = "\n,"+thiscone
 			}
-			multicone += thiscone
+			conepaths += thiscone
 			count++
 		}
 	}
@@ -260,15 +263,18 @@ func HandleEntireCone(w http.ResponseWriter, r *http.Request,name,chapter,cntstr
 			if count > 0 {
 				thiscone = "\n,"+thiscone
 			}
-			multicone += thiscone
+			conepaths += thiscone
 			count++
 		}
 	}
 
-	multicone += "]\n}\n"
+	conepaths += "]"
 
-	//fmt.Println("CONE",multicone)
-	w.Write([]byte(multicone))
+	response := PackageResponse("FBCone",conepaths)
+
+	fmt.Println("CONE",string(response))
+
+	w.Write(response)
 	fmt.Println("Reply Cone sent")
 }
 
@@ -536,9 +542,16 @@ func HandleSequence(w http.ResponseWriter, r *http.Request,searchtext,chaptext s
 
         // returns story in events.Axis, with any container/title first in Story type
 
-	story := fmt.Sprintf("{ \"events\" : %s }",orbits)
+	array := string(orbits)
 
-	w.Write([]byte(story))
+	if orbits == nil {
+		array = "[]"
+	}
+
+	response := PackageResponse("Sequence",array)
+
+	fmt.Println("SEQUENCE",string(response))
+	w.Write(response)
 }
 
 // *********************************************************************
@@ -579,6 +592,14 @@ func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 	return ret
 }
 
+// **********************************************************
+
+func PackageResponse(kind string, jstr string) []byte {
+
+	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s }",kind,jstr)
+
+	return []byte(response)
+}
 
 
 

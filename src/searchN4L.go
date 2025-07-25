@@ -573,13 +573,15 @@ func ShowMatchingArrows(ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
 
 	for a := range arrowptrs {
 		adir := SST.GetDBArrowByPtr(ctx,arrowptrs[a])
-		fmt.Printf("%3d. (%d) %s -> %s\n",arrowptrs[a],SST.STIndexToSTType(adir.STAindex),adir.Short,adir.Long)
+		inv := SST.GetDBArrowByPtr(ctx,SST.INVERSE_ARROWS[arrowptrs[a]])
+		fmt.Printf("%3d. (st %d) %s -> %s,  with inverse = %3d. (st %d) %s -> %s\n",arrowptrs[a],SST.STIndexToSTType(adir.STAindex),adir.Short,adir.Long,inv.Ptr,SST.STIndexToSTType(inv.STAindex),inv.Short,inv.Long)
 	}
 
 	for st := range sttype {
 		adirs := SST.GetDBArrowBySTType(ctx,sttype[st])
 		for adir := range adirs {
-			fmt.Printf("%3d. (%d) %s -> %s\n",adirs[adir].Ptr,SST.STIndexToSTType(adirs[adir].STAindex),adirs[adir].Short,adirs[adir].Long)
+			inv := SST.GetDBArrowByPtr(ctx,SST.INVERSE_ARROWS[adirs[adir].Ptr])
+			fmt.Printf("%3d. (st %d) %s -> %s,  with inverse = %3d. (st %d) %s -> %s\n",adirs[adir].Ptr,SST.STIndexToSTType(adirs[adir].STAindex),adirs[adir].Short,adirs[adir].Long,inv.Ptr,SST.STIndexToSTType(inv.STAindex),inv.Short,inv.Long)
 		}
 	}
 }
@@ -628,14 +630,15 @@ func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,cont
 
 	for n := range name {
 		for a := range arrows {
+
 			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context)
 
 			for s := range stories {
 				// if there is no unique match, the data contain a list of alternatives
 				if stories[s].Axis == nil {
-					fmt.Printf("%3d. %s\n",s,stories[s].Text)
+					fmt.Printf("%3d. %s\n",s,stories[s].Chapter)
 				} else {
-					fmt.Printf("The following story/sequence (%s) \"%s\"\n\n",stories[s].Arrow,stories[s].Text)
+					fmt.Printf("The following story/sequence (%s) \"%s\"\n\n",stories[s].Arrow,stories[s].Chapter)
 					for ev := range stories[s].Axis {
 						fmt.Printf("\n%3d. %s\n",ev,stories[s].Axis[ev].Text)
 					}
