@@ -282,7 +282,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	// Look for axial trails following a particular arrow, like _sequence_ 
 
 	if name && sequence || sequence && arrows {
-		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context)
+		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context,limit)
 		return
 	}
 
@@ -299,7 +299,6 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	}
 
 	// if we have sequence with arrows, then we are looking for sequence context or stories
-	// GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int)
 
 	if arrows || sttypes {
 		ShowMatchingArrows(ctx,arrowptrs,sttype)
@@ -501,7 +500,7 @@ func ShowMatchingChapter(ctx SST.PoSST,s string) {
 
 //******************************************************************
 
-func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,context []string) {
+func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,context []string,limit int) {
 
 	if arrows == nil {
 		arrows = []string{"then"}
@@ -514,7 +513,7 @@ func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,cont
 	for n := range name {
 		for a := range arrows {
 
-			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context)
+			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context,limit)
 
 			for s := range stories {
 				// if there is no unique match, the data contain a list of alternatives

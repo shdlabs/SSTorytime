@@ -210,7 +210,7 @@ a:hover {
 }
 
 #chapter {
- margin-left: 5px;
+ margin-left: 60px;
  margin-bottom: 20px;
 }
 
@@ -668,8 +668,6 @@ switch (obj.Response)
       break;
    }
 
-console.log(obj);
-
 if (title.length < 60 || IsMath(title))
    {
    titlebar.textContent = title;
@@ -720,10 +718,167 @@ for (let node_event of obj.Content)
 
 /***********************************************************/
 
+function DoEntireConePanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+CANVAS = CreateCanvas();
+DrawGrid(0,0,1);
+
+// Iterate over the cones from different starting nodes
+
+for (let head_nptr of obj.Content) 
+   {
+   let nclass = head_nptr.NClass;
+   let ncptr = head_nptr.NCPtr;
+   let item = document.createElement('p');
+   let link = document.createElement('a');
+   link.textContent = head_nptr.Title;
+   link.onclick = function() { sendlinkData(nclass,ncptr); };
+   item.appendChild(link);
+   let parent = document.createElement('content');
+
+   parent = PrintPath(parent,head_nptr.Paths);
+   panel.appendChild(parent);
+
+   let tab = document.createElement('table');
+   let row = document.createElement('tr');
+   let col1 = document.createElement('td');
+   let hd1 = document.createElement('h4');
+   hd1.textContent = "Between-ness Centrality Rank";
+   col1.appendChild(hd1)
+   let lst1 = document.createElement('ol');
+
+   // For paths solve <a|b>
+
+   if (head_nptr.BTWC != null) 
+      {
+      for (let centrality of head_nptr.BTWC)
+         {
+         let li = document.createElement('li');
+         li.textContent = centrality;
+         lst1.appendChild(li);
+         }
+      col1.appendChild(lst1)
+
+      let col2 = document.createElement('td');
+      let hd2 = document.createElement('h4');
+      hd2.textContent = "Supernode summary";
+      col2.appendChild(hd2)
+      let lst2 = document.createElement('ol');
+
+      for (let snode of head_nptr.Supernodes)
+         {
+         let li = document.createElement('li');
+         li.textContent = snode;
+         lst2.appendChild(li);
+         }
+      col2.appendChild(lst2)
+
+      row.appendChild(col1)
+      row.appendChild(col2)
+
+      tab.appendChild(row);
+      panel.appendChild(tab);
+
+      let hr = document.createElement('hr');
+      panel.appendChild(hr);
+      }
+   }
+}
+
+/***********************************************************/
+
+function DoSeqPanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+let counter = 0;
+
+for (let story of obj.Content) 
+   {
+   let item = document.createElement('h1');
+   item.textContent = story.Chapter;
+   panel.appendChild(item);
+   let cntx = document.createElement('i');
+   cntx.id = "cntxt";
+   panel.appendChild(cntx);
+   ShowNodeEvent(panel,story,counter,"fwd","then","span");
+   counter++;
+   }
+}
+
+/***********************************************************/
+
+function DoPageMapPanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+let reply = obj.Content;
+
+if (reply.Title != null)  // PageView
+   {
+   let item = document.createElement('p');
+   item = PrintPath(item,reply.Notes);
+   panel.appendChild(item);
+   }
+}
+
+/***********************************************************/
+
+function DoTOCPanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+for (let chp of obj.TOC) 
+   {
+   let link = document.createElement('a');
+   let item = document.createElement('h1');
+   link.onclick = function() { sendTOCLinkData(chp.Chapter,""); };
+   item.textContent = chp.Chapter;
+   link.appendChild(item);
+   panel.appendChild(link);
+
+   let chap = document.createElement('p');
+   chap.id = "toc-panel";
+
+   for (let ctx of chp.Contexts)
+      {
+      let link = document.createElement('a');
+      let sitem = document.createElement('div');
+      sitem.textContent = ctx;
+      sitem.id = "toc-elem";
+      link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
+      link.appendChild(sitem)
+      chap.appendChild(link);
+      }
+
+   panel.appendChild(chap)
+   let spacer = document.createElement('hr');
+   panel.appendChild(spacer);
+   }
+}
+
+/***********************************************************/
+//  Presentation
+/***********************************************************/
+
 function ShowNodeEvent(panel,event,counter,direction,skiparrow,anchortag)
 {
 let child = document.createElement('content');
-
+console.log("dddd",event);
 if (event == null)
    {
    return;
@@ -733,10 +888,10 @@ let text = counter + ". " + event.Text;
 
 if (counter == 0)
    {
-   text = "* " + event.Text;
+   text = "--> " + event.Text;
    }
 
-if (event.Text.includes("\n"))
+if (text.includes("\n"))
    {
    let from_link = document.createElement('a');
    from_link.onclick = function() { sendlinkData(event.NPtr.Class,event.NPtr.CPtr); };
@@ -751,22 +906,22 @@ if (event.Text.includes("\n"))
 else
    {
    let from_link = document.createElement('a');
-   from_link.onclick = function() { sendlinkData(event.NClass,event.NCPtr); };
+   from_link.onclick = function() { sendlinkData(event.NPtr.Class,event.NPtr.CPtr); };
    let from_text = document.createElement(anchortag);
    from_link.appendChild(from_text);
    from_link.nameClass = "text";
    child.appendChild(from_link);
 
-   if (event.Text.length > 90)
+   if (text.length > 90)
       {
       from_text.style.fontSize = "100%";
       }
 
-   if (event.Text.length > 90 && !IsMath(event.Text))
+   if (text.length > 90 && !IsMath(event.Text))
       {
       from_text.textContent = event.Text.slice(0,70) + "...";
       let small_tot_text = document.createElement('div');
-      small_tot_text.textContent = text; // event.Text;
+      small_tot_text.textContent = text;
       small_tot_text.id = "full-text";
       child.appendChild(small_tot_text);
       }
@@ -776,8 +931,8 @@ else
       }
    }
 
-let chapter = document.createElement('div');
-chapter.textContent = event.Chap;
+let chapter = document.createElement('i');
+chapter.textContent = "                 in chapter ...\"" + event.Chap +"\"";
 chapter.id = "chapter";
 child.appendChild(chapter);
 panel.appendChild(child);
@@ -870,202 +1025,6 @@ if (event.Orbits[Il1] != null)
          panel.appendChild(child);
          }
       }
-   }
-}
-
-/***********************************************************/
-
-function DoEntireConePanel(obj) 
-{
-let section = document.querySelector('article');
-let panel = document.createElement('div');
-panel.id = "main_root";
-section.appendChild(panel);
-
-CANVAS = CreateCanvas();
-DrawGrid(0,0,1);
-
-// Iterate over the cones from different starting nodes
-
-console.log("XXXX",obj)
-
-for (let head_nptr of obj.Content) 
-   {
-   let nclass = head_nptr.NClass;
-   let ncptr = head_nptr.NCPtr;
-   let item = document.createElement('p');
-   let link = document.createElement('a');
-   link.textContent = head_nptr.Title;
-   link.onclick = function() { sendlinkData(nclass,ncptr); };
-   item.appendChild(link);
-   let parent = document.createElement('content');
-
-   parent = PrintPath(parent,head_nptr.Paths);
-   panel.appendChild(parent);
-
-   let tab = document.createElement('table');
-   let row = document.createElement('tr');
-   let col1 = document.createElement('td');
-   let hd1 = document.createElement('h4');
-   hd1.textContent = "Between-ness Centrality Rank";
-   col1.appendChild(hd1)
-   let lst1 = document.createElement('ol');
-
-   // For paths solve <a|b>
-
-   if (head_nptr.BTWC != null) 
-      {
-      for (let centrality of head_nptr.BTWC)
-         {
-         let li = document.createElement('li');
-         li.textContent = centrality;
-         lst1.appendChild(li);
-         }
-      col1.appendChild(lst1)
-
-      let col2 = document.createElement('td');
-      let hd2 = document.createElement('h4');
-      hd2.textContent = "Supernode summary";
-      col2.appendChild(hd2)
-      let lst2 = document.createElement('ol');
-
-      for (let snode of head_nptr.Supernodes)
-         {
-         let li = document.createElement('li');
-         li.textContent = snode;
-         lst2.appendChild(li);
-         }
-      col2.appendChild(lst2)
-
-      row.appendChild(col1)
-      row.appendChild(col2)
-
-      tab.appendChild(row);
-      panel.appendChild(tab);
-
-      let hr = document.createElement('hr');
-      panel.appendChild(hr);
-      }
-   }
-}
-
-/***********************************************************/
-
-function DoSeqPanel(obj) 
-{
-let section = document.querySelector('article');
-let panel = document.createElement('div');
-panel.id = "main_root";
-section.appendChild(panel);
-
-// If more than one possible match, then list titles only
-
-if (obj != null && obj.Content != null && obj.Content.length > 1)
-   {
-   let counter = 1
-
-   // Table of Contents
-
-   for (let story of obj.Content)
-      {
-      let link = document.createElement('a');
-      let item = document.createElement('h1');
-      item.textContent = counter + ". " + story.Chapter;
-      link.onclick = function() { sendlinkData(story.ContainNPtr.Class,story.ContainNPtr.CPtr); };
-      link.appendChild(item);
-      panel.appendChild(link);
-
-      let cntx = document.createElement('i');
-      cntx.id = "cntxt";
-      cntx.textContent = " in " + story.Arrow;
-      panel.appendChild(cntx);
-      let hr = document.createElement('hr');
-      panel.appendChild(hr);
-      counter++;
-      }
-   }
-else if (obj != null && obj.Content != null)
-   {
-   // show one full story
-
-   let story = obj.Content[0];
-
-   let item = document.createElement('h1');
-   item.textContent = story.Chapter;
-   panel.appendChild(item);
-
-   let cntx = document.createElement('i');
-   cntx.id = "cntxt";
-   cntx.textContent = story.Arrow;
-   panel.appendChild(cntx);
-
-   if (story.Axis != null)
-      {
-      let counter = 1
-
-      for (let event of story.Axis)
-         {
-         ShowNodeEvent(panel,event,counter,"fwd","then","p")
-         counter++;
-         }
-      }
-   }
-}
-
-/***********************************************************/
-
-function DoPageMapPanel(obj) 
-{
-let section = document.querySelector('article');
-let panel = document.createElement('div');
-panel.id = "main_root";
-section.appendChild(panel);
-
-let reply = obj.Content;
-
-if (reply.Title != null)  // PageView
-   {
-   let item = document.createElement('p');
-   item = PrintPath(item,reply.Notes);
-   panel.appendChild(item);
-   }
-}
-
-/***********************************************************/
-
-function DoTOCPanel(obj) 
-{
-let section = document.querySelector('article');
-let panel = document.createElement('div');
-panel.id = "main_root";
-section.appendChild(panel);
-
-for (let chp of obj.TOC) 
-   {
-   let link = document.createElement('a');
-   let item = document.createElement('h1');
-   link.onclick = function() { sendTOCLinkData(chp.Chapter,""); };
-   item.textContent = chp.Chapter;
-   link.appendChild(item);
-   panel.appendChild(link);
-
-   let chap = document.createElement('p');
-   chap.id = "toc-panel";
-
-   for (let ctx of chp.Contexts)
-      {
-      let link = document.createElement('a');
-      let sitem = document.createElement('div');
-      sitem.textContent = ctx;
-      sitem.id = "toc-elem";
-      link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
-      link.appendChild(sitem)
-      chap.appendChild(link);
-      }
-
-   panel.appendChild(chap)
-   let spacer = document.createElement('hr');
-   panel.appendChild(spacer);
    }
 }
 
@@ -1538,8 +1497,6 @@ CTX.restore();
 
 DoPage();
 SearchHandler();
-IncHandler();
-DecHandler();
 
 </script>
 

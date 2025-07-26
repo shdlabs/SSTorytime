@@ -43,7 +43,7 @@ const (
 	ERR_MEMORY_DB_ARROW_MISMATCH = "Arrows in database are not in synch (shouldn't happen)"
 	WARN_DIFFERENT_CAPITALS = "WARNING: Another capitalization exists"
 
-	SCREENWIDTH = 100
+	SCREENWIDTH = 120
 	RIGHTMARGIN = 5
 	LEFTMARGIN = 5
 
@@ -4939,13 +4939,15 @@ func IdempAddNote(list []Orbit, item Orbit) []Orbit {
 //
 // **************************************************************************
 
-func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string) []Story {
+func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,context []string, limit int) []Story {
 
 	var stories []Story
 
 	if arrname == "" {
 		arrname = "then"
 	}
+
+	var count int
 
 	arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrname)
 	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,search,chapter,context)
@@ -4967,14 +4969,26 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			nd := GetDBNodeByNodePtr(ctx,axis[lnk].Dst)
 			ne.Text = nd.S
 			ne.L = nd.L
+			ne.Chap = nd.Chap
 			ne.NPtr = axis[lnk].Dst
 			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname)
-			
+		
+			if lnk > limit {
+				break
+			}
+
 			story.Axis = append(story.Axis,ne)
 		}
 
 		if story.Axis != nil {
 			stories = append(stories,story)
+			count ++
+		}
+
+		count++
+
+		if count > limit {
+			return stories
 		}
 		
 	}
@@ -5002,7 +5016,7 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit 
 
 		// Sweep different radial paths
 
-		for angle := range sweep {
+		for angle := 0; angle < len(sweep); angle++ {
 
 			// len(sweep[angle]) is the length of the probe path at angle
 
@@ -5015,7 +5029,9 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit 
 
 				if arrow.STAindex == stindex {
 					txt := GetDBNodeByNodePtr(ctx,start.Dst)
+
 					var nt Orbit
+
 					nt.Arrow = arrow.Long
                                         nt.STindex = arrow.STAindex
 					nt.Dst = start.Dst
@@ -5058,6 +5074,7 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit 
 			}
 		}
 	}
+
 	return notes
 }
 
@@ -5234,7 +5251,7 @@ func PrintSomeLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter st
 // Presentation in JSON
 // **************************************************************************
 
-func JSONNodeEvent(ctx PoSST, nptr NodePtr) string {
+func JSONNodeEvent(ctx PoSST, nptr NodePtr,orbits [ST_TOP][]Orbit) string {
 
 	node := GetDBNodeByNodePtr(ctx,nptr)
 
@@ -5243,7 +5260,7 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr) string {
 	event.L = node.L
 	event.Chap = node.Chap
 	event.NPtr = nptr
-	event.Orbits = GetNodeOrbit(ctx,nptr,"")
+	event.Orbits = orbits
 
 	jstr,_ := json.Marshal(event)
 

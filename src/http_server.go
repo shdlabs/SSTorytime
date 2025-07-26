@@ -208,7 +208,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	// Look for axial trails following a particular arrow, like _sequence_ 
 
 	if name && sequence || sequence && arrows {
-		//ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context)
+		HandleStories(w,r,CTX,search.Arrows,search.Name,search.Chapter,search.Context,limit)
 		return
 	}
 
@@ -225,7 +225,6 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	}
 
 	// if we have sequence with arrows, then we are looking for sequence context or stories
-	// GetNodesStartingStoriesForArrow(ctx PoSST,arrow string) ([]NodePtr,int)
 
 	if arrows || sttypes {
 		//ShowMatchingArrows(ctx,arrowptrs,sttype)
@@ -251,7 +250,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 			return
 		}
 
-		array += SST.JSONNodeEvent(CTX,nptrs[n])
+		array += SST.JSONNodeEvent(CTX,nptrs[n],SST.GetNodeOrbit(CTX,nptrs[n],""))
 
 		if n < len(nptrs)-1 {
 			array += ",\n"
@@ -427,6 +426,76 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request,notes []SST.PageMap) {
 	w.Write(response)
 }
 
+//******************************************************************
+
+func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows []string,name []string,chapter string,context []string, limit int) {
+
+	if arrows == nil {
+		arrows = []string{"then"}
+	}
+
+	fmt.Println("Solver/handler: HandleStories()")
+
+	var jarray string
+
+	for n := range name {
+		for a := range arrows {
+			stories := SST.GetSequenceContainers(ctx,arrows[a],name[n],chapter,context,limit)
+
+			for s := range stories {
+				var jstory string
+
+				for a := 0; a < len(stories[s].Axis); a++ {
+					jstr := JSONStoryNodeEvent(stories[s].Axis[a])
+					jstory += fmt.Sprintf("%s,",jstr)
+				}
+				jstory = strings.Trim(jstory,",")
+				jarray += fmt.Sprintf("[%s],",jstory)
+			}
+		}
+	}
+
+	data := strings.Trim(jarray,",")
+	response := PackageResponse("Sequence",data)
+
+	fmt.Println("STORY",string(response))
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+
+}
+
+// *********************************************************************
+
+func JSONStoryNodeEvent(en SST.NodeEvent) string {
+
+	var jstr string
+
+	if len(en.Text) == 0 {
+		return ""
+	}
+
+	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n",en.Text)
+	jstr += fmt.Sprintf("\"L\": \"%d\",\n",en.L)
+	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n",en.Chap)
+	jstr += fmt.Sprintf("\"NPtr\": { \"Class\": \"%d\", \"CPtr\" : \"%d\"},\n",en.NPtr.Class,en.NPtr.CPtr)
+
+	var arrays string
+
+	for sti := 0; sti < SST.ST_TOP; sti++ {
+		var arr string
+		if en.Orbits[sti] != nil {
+			js,_ := json.Marshal(en.Orbits[sti])
+			arr = fmt.Sprintf("%s,",string(js))
+		} else {
+			arr = "[],"
+		}
+		arrays += arr
+	}
+	arrays = strings.Trim(arrays,",")
+	jstr += fmt.Sprintf("\"Orbits\": [%s] }",arrays)
+	return jstr
+}
+
 // *********************************************************************
 
 func TableOfContents(w http.ResponseWriter, r *http.Request) {
@@ -445,52 +514,6 @@ func TableOfContents(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
-}
-
-// *********************************************************************
-
-func SequenceHandler(w http.ResponseWriter, r *http.Request) {
-
-        // Find a sequence of arrows matching arrname/default "then" for which
-        // something in the orbit matches the search strings
-
-	fmt.Println("Sequence search response handler")
-
-	switch r.Method {
-	case "POST","GET":
-		name := r.FormValue("name")
-		chapter := r.FormValue("chapter")
-		context := r.FormValue("context")
-		arrnames := r.FormValue("arrnames")
-		HandleSequence(w,r,name,chapter,context,arrnames)
-	default:
-		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
-	}
-}
-
-// *********************************************************************
-
-func HandleSequence(w http.ResponseWriter, r *http.Request,searchtext,chaptext string,cntstr,arrow string) {
-
-	chapter := strings.TrimSpace(chaptext)
-	context,_ := SST.Str2Array(cntstr)
-	searchtext = strings.TrimSpace(searchtext)
-
-	stories := SST.GetSequenceContainers(CTX,arrow,searchtext,chapter,context)
-	orbits,_ := json.Marshal(stories)
-
-        // returns story in events.Axis, with any container/title first in Story type
-
-	array := string(orbits)
-
-	if orbits == nil {
-		array = "[]"
-	}
-
-	response := PackageResponse("Sequence",array)
-
-	fmt.Println("SEQUENCE",string(response))
-	w.Write(response)
 }
 
 // *********************************************************************
