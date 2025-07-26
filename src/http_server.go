@@ -138,8 +138,6 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// SEARCH SELECTION *********************************************
 
-	// if we have name, (maybe with context, chapter, arrows)
-
 	if name && ! sequence && !pagenr {
 		fmt.Println("HandleOrbits()")
 		HandleOrbit(w,r,nodeptrs,limit)
@@ -343,37 +341,55 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 	fmt.Println("HandlePathSolve()")
 
 	var Lnum,Rnum int
-	var count int
 	var left_paths, right_paths [][]SST.Link
 
 	// Find the path matrix
 
 	var solutions [][]SST.Link
 	var ldepth,rdepth int = 1,1
-	var json string
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
 		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"fwd",leftptrs,ldepth,chapter,context)
 		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"bwd",rightptrs,rdepth,chapter,context)
+
+		if Lnum == 0 || Rnum == 0 {
+			fmt.Println("Nothing, trying reverse")
+			left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"bwd",leftptrs,ldepth,chapter,context)
+			right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"fwd",rightptrs,rdepth,chapter,context)
+		}
+
 		solutions,_ = SST.WaveFrontsOverlap(CTX,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
 
 			// format paths
+			var jstr string
 
-			json += fmt.Sprintf("{ \"paths\" : [\n")
-			json += fmt.Sprintf(" { \"NClass\" : %d,\n",solutions[0][0].Dst.Class)
-			json += fmt.Sprintf("   \"NCPtr\" : %d,\n",solutions[0][0].Dst.CPtr)
-			json += fmt.Sprintf("   \"Title\" : \"%s\",\n","path solutions")
-			json += fmt.Sprintf("   \"BTWC\" : [ %s ],\n",SST.BetweenNessCentrality(CTX,solutions))
-			json += fmt.Sprintf("   \"Supernodes\" : [ %s ],\n",SST.SuperNodes(CTX,solutions,maxdepth))
+			jstr += fmt.Sprintf(" { \"NClass\" : %d,\n",solutions[0][0].Dst.Class)
+			jstr += fmt.Sprintf("   \"NCPtr\" : %d,\n",solutions[0][0].Dst.CPtr)
+			jstr += fmt.Sprintf("   \"Title\" : \"%s\",\n","path solutions")
+			jstr += fmt.Sprintf("   \"BTWC\" : [ %s ],\n",SST.BetweenNessCentrality(CTX,solutions))
+			jstr += fmt.Sprintf("   \"Supernodes\" : [ %s ],\n",SST.SuperNodes(CTX,solutions,maxdepth))
 
-	//		json += fmt.Sprintf("\"Entire\" : %s ",SST.JSONCone(CTX,solutions,chapter,context,1,1))
-			json += "\n}\n]\n}"
+			var wpaths [][]SST.WebPath
+			nth := 1
+			dimnptr := 1
 
-			count++
-			break
+			wpaths = append(wpaths,SST.LinkWebPaths(CTX,solutions,nth,chapter,context,dimnptr,maxdepth)...)
+
+			if wpaths == nil {
+				break
+			}
+
+			wstr,_ := json.Marshal(wpaths)
+			jstr += fmt.Sprintf("   \"Paths\" : %s }",string(wstr))
+
+			array_pack := fmt.Sprintf("[%s]",jstr)
+			response := PackageResponse("PathSolve",array_pack)
+			fmt.Println("PATH SOLVE:",string(response))
+			w.Write(response)
+			return
 		}
 
 		if turn % 2 == 0 {
@@ -382,13 +398,10 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 			rdepth++
 		}
 	}
-
 	
 	fmt.Println("No paths satisfy constraints")
-
-	w.Write([]byte(json))
-	fmt.Println("Reply PathSolve sent")
-
+	response := PackageResponse("PathSolve","")
+	w.Write(response)
 }
 
 //******************************************************************

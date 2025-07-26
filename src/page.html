@@ -662,13 +662,17 @@ let title = "app";
 switch (obj.Response)
    {
    case "Orbits":
-      title = obj.Content[0].Text
-
+      title = obj.Content[0].Text;
+      break;
    case "ConePaths":
-      title = "Entire cone ... "
-
+      title = "bla";//obj.Content[0].Paths.Title;
+      break;
+   case "PathSolve":
+      title = "blablab"; obj.Content[0].Paths.Title;
+      break;
    case "Sequence":
-      title = "Story sequence ... "
+      title = "Story sequence ... ";
+      break;
    }
 
 console.log(obj.Content);
@@ -1146,6 +1150,9 @@ async function sendsearchData() {
             DoOrbitPanel(resp);
             break;
          case "ConePaths":
+            DoEntireConePanel(resp);
+            break;
+         case "PathSolve":
             DoEntireConePanel(resp);
             break;
          case "Sequence":

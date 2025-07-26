@@ -4050,12 +4050,16 @@ func DownloadArrowsFromDB(ctx PoSST) {
 // Transition/path integral matrix
 // **************************************************************************
 
-func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
+func AssignConeCoordinates(cone [][]Link,nth,total int) map[NodePtr]Coords {
 
 	var directory = make(map[NodePtr]Coords)
 	var unique = make([][]NodePtr,0)
 
-	// This is segment this of total, which has range (width=1.0)/total * [this-this+1]
+	// Nth is segment nth of total, which has range (width=1.0)/total * [nth-nth+1]
+
+	if total == 0 {
+		total = 1
+	}
 
 	maxlen := 0
 
@@ -4067,7 +4071,7 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 
 	// Count the expanding wavefront sections for unique node entries
 
-	N := make([]float32,maxlen)
+	N := make([]float32,maxlen)        // node widths along the path
 	already := make(map[NodePtr]bool)
 
 	for cs := 0; cs < maxlen; cs++ {
@@ -4089,9 +4093,11 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 
 	// This is the depth dimenion of the paths -1 to +1
 
+	const scale = 2.0 
+
 	average_node_tz_spacing := 2.0 / float32(maxlen) 
 
-	x_range := 2.0 / (1+float32(total))
+	x_width := 2.0 / (float32(total))
 
 	z_0 := -float32(1.0)
 
@@ -4100,12 +4106,13 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 		// Now we want the coordinates for each unique node per section
 		// there are N[cs] nodes to place at this path depth
 
-		average_section_space := x_range / (N[cs]+1)
-		x_begin := 1 - float32(this) * x_range - average_section_space/2.0
+		average_x_space := x_width / (N[cs]+1)
+
+		x_begin := (N[cs] - float32(nth)) * average_x_space/2.0
 
 		var xyz Coords
 
-		xyz.X = x_begin
+		xyz.X = x_begin * scale
 		xyz.Y = 0.3
 		xyz.Z = z_0 + average_node_tz_spacing * float32(cs)
 
@@ -4118,8 +4125,8 @@ func AssignConeCoordinates(cone [][]Link,this,total int) map[NodePtr]Coords {
 			if !ledgexists {
 				directory[unique[cs][uniqptr]] = xyz
 			}
-			xyz.X -= average_section_space
-			fmt.Printf("%d,%d = %d ....%d of (%.2f,%.2f,%.2f)\n",this,total,maxlen,cs,xyz.X,xyz.Y,xyz.Z)
+
+			xyz.X -= average_x_space
 		}
 	}
 
