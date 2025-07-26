@@ -159,7 +159,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// Open causal cones, from one of these three
 
-	if name || from || to {
+	if (name || from || to) && !pagenr {
 
 		if nodeptrs != nil {
 			HandleCausalCones(w,r,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
@@ -179,17 +179,17 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	if (name || chapter) && pagenr {
 
-		//var notes []SST.PageMap
+		var notes []SST.PageMap
 
 		if chapter {
-			//notes = SST.GetDBPageMap(ctx,search.Chapter,search.Context,search.PageNr)
-			//ShowNotes(ctx,notes)
+			notes = SST.GetDBPageMap(CTX,search.Chapter,search.Context,search.PageNr)
+			HandlePageMap(w,r,notes)
 			return
 		} else {
-			//for n := range search.Name {
-				//notes = SST.GetDBPageMap(ctx,search.Name[n],search.Context,search.PageNr)
-				//ShowNotes(ctx,notes)
-			//}
+			for n := range search.Name {
+				notes = SST.GetDBPageMap(CTX,search.Name[n],search.Context,search.PageNr)
+				HandlePageMap(w,r,notes)
+			}
 			return
 		}
 	}
@@ -406,121 +406,14 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 
 //******************************************************************
 
-func SystematicHandler(w http.ResponseWriter, r *http.Request) {
+func HandlePageMap(w http.ResponseWriter, r *http.Request,notes []SST.PageMap) {
 
-	fmt.Println("Browse response handler")
-	var secnr int = 1
+	jstr := SST.JSONPage(CTX,notes)
+	response := PackageResponse("PageMap",jstr)
+	fmt.Println("PAGEMAP NOTES",string(response))
 
-	switch r.Method {
-	case "POST","GET":
-		arrnames := r.FormValue("arrnames")
-		chapter := r.FormValue("chapter")
-		context := r.FormValue("context")
-		pg := r.FormValue("pagenr")
-		fmt.Sscanf(pg,"%d",&secnr)
-		HandleSystematic(w,r,secnr,chapter,context,arrnames)
-	default:
-		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
-	}
-}
-
-//******************************************************************
-
-func HandleSystematic(w http.ResponseWriter, r *http.Request,section int,chaptext string,cntstr,arrstr string) {
-
-	if arrstr == "" {
-
-		w.Header().Set("Content-Type", "application/json")
-		context,_ := SST.Str2Array(cntstr)
-		notes := SST.GetDBPageMap(CTX,chaptext,context,section)
-		jstr := SST.JSONPage(CTX,notes)
-		w.Write([]byte(jstr))
-
-	} else {
-
-		chaptext = strings.TrimSpace(chaptext)
-
-		arrnames,_ := SST.Str2Array(arrstr)
-		context,_ := SST.Str2Array(cntstr)
-		
-		if section <= 0 {
-			section = 1
-		}
-		
-		fmt.Println("Matching...Browse(",section,chaptext,context,arrnames,")",len(arrnames))
-
-		var arrows []SST.ArrowPtr
-		
-		for a := range arrnames {
-			arr := SST.GetDBArrowByName(CTX,arrnames[a])
-			if arr != 0 {
-				arrows = append(arrows,arr)
-			}
-		}
-		
-		qnodes := SST.GetDBNodeContextsMatchingArrow(CTX,"",chaptext,context,arrows,section)
-		
-		w.Header().Set("Content-Type", "application/json")
-		
-		EncodeBrowsing(w,r,qnodes,arrows,section,chaptext,context)
-	}
-
-	fmt.Printf("Reply Systematic Browser page %d sent\n",section)
-}
-
-//**************************************************************
-
-func EncodeBrowsing(w http.ResponseWriter, r *http.Request,qnodes []SST.QNodePtr,arrows []SST.ArrowPtr,section int,chapter string,context []string) {
-/*
-	// Policy for ordering and search depth along each vector
-
-	order    := []int{0,1,-1,2,-2,3,-3}
-	maxdepth := []int{2,8, 3,2, 2,3, 2}
-	headerdone := false
-	var multicone string
-	var comma string
-
-	// Encode
-
-	fmt.Println("Looking for section",section,"in",chapter)
-
-	for q := range qnodes {
-
-		if !headerdone {
-			multicone += fmt.Sprintf("  \"chapter\" : \"%s\",\n",qnodes[q].Chapter)
-			multicone += fmt.Sprintf("  \"context\" : \"%v\",\n",CleanText(qnodes[q].Context))
-			multicone += fmt.Sprintf("  \"NPtrs\" : [ ")
-			headerdone = true
-		}
-		
-		s := SST.GetDBNodeByNodePtr(CTX,qnodes[q].NPtr).S
-		thiscone := fmt.Sprintf("%s\n { \"NClass\" : %d,\n",comma,qnodes[q].NPtr.Class)
-		thiscone += fmt.Sprintf(" \"NCPtr\" :%d,\n",qnodes[q].NPtr.CPtr)
-		title,_ := json.Marshal(s)
-		thiscone += fmt.Sprintf(" \"Title\" : %s,\n",string(title))
-		comma = ","
-		
-		for i := 0; i < len(order); i++ {
-			sttype := order[i]
-			cone,_ := SST.GetFwdPathsAsLinks(CTX,qnodes[q].NPtr,sttype,maxdepth[i])
-			json := SST.JSONCone(CTX,cone,chapter,context,i,len(order))
-			thiscone += fmt.Sprintf("\"%s\" : %s ",SST.STTypeDBChannel(sttype),json)
-			
-			if i < len(order)-1 {
-				thiscone += ",\n"
-			} else {
-				thiscone += "}"
-			}
-		}
-		
-		multicone += thiscone
-	}
-
-	if len(multicone) > 0 {
-		multicone += "]\n}\n"
-	}
-	w.Write([]byte(multicone))
-	fmt.Println("here....muticone",multicone)*/
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
 }
 
 // *********************************************************************

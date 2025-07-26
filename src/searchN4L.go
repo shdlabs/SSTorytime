@@ -239,7 +239,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	// Open causal cones, from one of these three
 
-	if name || from || to {
+	if (name || from || to) && !pagenr {
 
 		// from or to or name
 		

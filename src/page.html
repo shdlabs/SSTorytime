@@ -673,9 +673,11 @@ switch (obj.Response)
    case "Sequence":
       title = "Story sequence ... ";
       break;
+   case "PageMap":
+      break;
    }
 
-console.log(obj.Content);
+console.log(obj);
 
 if (title.length < 60 || IsMath(title))
    {
@@ -1021,48 +1023,20 @@ else if (obj != null && obj.Content != null)
 
 /***********************************************************/
 
-function DoBrowsePanel(obj) 
+function DoPageMapPanel(obj) 
 {
 let section = document.querySelector('article');
 let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
-if (obj.Title != null)  // PageView
+let reply = obj.Content;
+
+if (reply.Title != null)  // PageView
    {
    let item = document.createElement('p');
-   item = PrintPath(item,obj.Notes);
+   item = PrintPath(item,reply.Notes);
    panel.appendChild(item);
-   }
-else // Conic Arrow search
-   {
-   for (let nptr of obj.NPtrs) 
-      {
-      let nclass = nptr.NClass;
-      let ncptr = nptr.NCPtr;
-      let item = document.createElement('p');
-      let link = document.createElement('a');
-      link.onclick = function() { sendlinkData(nclass,ncptr); };
-      link.textContent = nptr.Title;
-      item.appendChild(link);
-
-      item = PrintPath(item,nptr.Il1);
-      panel.appendChild(item);
-      item = PrintPath(item,nptr.Im1);
-      panel.appendChild(item);
-      item = PrintPath(item,nptr.Im2);
-      panel.appendChild(item);
-      item = PrintPath(item,nptr.Ic2);
-      panel.appendChild(item);
-      item = PrintPath(item,nptr.Ie3);
-      panel.appendChild(item);
-      item = PrintPath(item,nptr.Im3);
-      panel.appendChild(item);
-      item = PrintPath(item,nptr.In0);
-      panel.appendChild(item);
-      }
-   let spacer = document.createElement('hr');
-   panel.appendChild(spacer);
    }
 }
 
@@ -1158,6 +1132,9 @@ async function sendsearchData() {
          case "Sequence":
             DoSeqPanel(resp);
             break;
+	 case "PageMap":
+	    DoPageMapPanel(resp);
+            break;
          }
 
       MathJax.typeset();
@@ -1224,7 +1201,7 @@ function IncHandler()
          }
 
       DoHeader(resp);
-      DoBrowsePanel(resp);
+      DoPageMapPanel(resp);
     })
 
     .catch((error) => {
@@ -1284,7 +1261,7 @@ function DecHandler()
          }
 
       DoHeader(resp);
-      DoBrowsePanel(resp);
+      DoPageMapPanel(resp);
     })
 
     .catch((error) => {
@@ -1388,7 +1365,7 @@ async function sendTOCLinkData(chap,ctx)
          }
 
       DoHeader(resp);
-      DoBrowsePanel(resp);
+      DoPageMapPanel(resp);
       MathJax.typeset();
     })
 

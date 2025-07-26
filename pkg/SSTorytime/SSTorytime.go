@@ -4052,7 +4052,6 @@ func DownloadArrowsFromDB(ctx PoSST) {
 
 func AssignConeCoordinates(cone [][]Link,nth,total int) map[NodePtr]Coords {
 
-	var directory = make(map[NodePtr]Coords)
 	var unique = make([][]NodePtr,0)
 
 	// Nth is segment nth of total, which has range (width=1.0)/total * [nth-nth+1]
@@ -4070,6 +4069,9 @@ func AssignConeCoordinates(cone [][]Link,nth,total int) map[NodePtr]Coords {
 	}
 
 	// Count the expanding wavefront sections for unique node entries
+
+
+	var directory = make(map[NodePtr]Coords)
 
 	N := make([]float32,maxlen)        // node widths along the path
 	already := make(map[NodePtr]bool)
@@ -4102,6 +4104,87 @@ func AssignConeCoordinates(cone [][]Link,nth,total int) map[NodePtr]Coords {
 	z_0 := -float32(1.0)
 
 	for cs := 0; cs < maxlen; cs++ {
+
+		// Now we want the coordinates for each unique node per section
+		// there are N[cs] nodes to place at this path depth
+
+		average_x_space := x_width / (N[cs]+1)
+
+		x_begin := (N[cs] - float32(nth)) * average_x_space/2.0
+
+		var xyz Coords
+
+		xyz.X = x_begin * scale
+		xyz.Y = 0.3
+		xyz.Z = z_0 + average_node_tz_spacing * float32(cs)
+
+		for uniqptr := 0; uniqptr < len(unique[cs]); uniqptr++ {
+
+			_,ledgexists := directory[unique[cs][uniqptr]]
+			
+			// Assign each unique NPtr an x,y,z coordinate once
+			
+			if !ledgexists {
+				directory[unique[cs][uniqptr]] = xyz
+			}
+
+			xyz.X -= average_x_space
+		}
+	}
+
+	return directory
+}
+
+// **************************************************************************
+
+func AssignPageCoordinates(maplines []PageMap,nth int) map[NodePtr]Coords {
+
+	var unique = make([][]NodePtr,0)
+
+	// Nth is segment nth of total, which has range (width=1.0)/total * [nth-nth+1]
+
+	total := len(maplines)
+
+	N := make([]float32,total)        // node widths along the path
+	already := make(map[NodePtr]bool)
+
+	for cs := 0; cs < total; cs++ {
+
+		var unique_section = make([]NodePtr,0)
+
+		for l := range maplines[cs].Path {
+
+			nptr := maplines[cs].Path[l].Dst
+
+			if !already[nptr] {
+				unique_section = append(unique_section,nptr)
+				already[nptr] = true
+				N[cs]++
+			}
+		}
+		unique = append(unique,unique_section)
+	}
+
+	return MakeCoordinateDirectory(N,unique,nth,total)
+}
+
+// **************************************************************************
+
+func MakeCoordinateDirectory(N []float32, unique [][]NodePtr,nth,total int) map[NodePtr]Coords {
+
+	var directory = make(map[NodePtr]Coords)
+
+	// This is the depth dimenion of the paths -1 to +1
+
+	const scale = 2.0 
+
+	average_node_tz_spacing := 2.0 / float32(total) 
+
+	x_width := 2.0 / (float32(total))
+
+	z_0 := -float32(1.0)
+
+	for cs := 0; cs < total; cs++ {
 
 		// Now we want the coordinates for each unique node per section
 		// there are N[cs] nodes to place at this path depth
@@ -5378,6 +5461,8 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 
 		var path []WebPath
 
+		directory := AssignPageCoordinates(maplines,n)
+
 		txtctx := ContextString(maplines[n].Context)
 
 		if last != maplines[n].Chapter || lastc != txtctx {
@@ -5408,6 +5493,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				var ws WebPath
 				ws.Name = text.S
 				ws.NPtr = maplines[n].Path[lnk].Dst
+				ws.XYZ = directory[ws.NPtr]
 				path = append(path,ws)
 				
 			}
