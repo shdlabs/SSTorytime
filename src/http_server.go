@@ -66,6 +66,17 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST","GET":
 		name := r.FormValue("name")
+		nclass := r.FormValue("nclass")
+		ncptr := r.FormValue("ncptr")
+
+		if len(nclass) > 0 && len(ncptr) > 0 {
+			// direct click on an item
+			var a,b int
+			fmt.Sscanf(nclass,"%d",&a)
+			fmt.Sscanf(ncptr,"%d",&b)
+			nstr := fmt.Sprintf("(%d,%d)",a,b)
+			name = name + nstr
+		}
 
 		if len(name) == 0 {
 			name = "semantic spacetime"

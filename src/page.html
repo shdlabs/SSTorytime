@@ -266,9 +266,7 @@ MathJax.Hub.Config({
 <form id="search">
     <label for="subject">?</label>
     <input size="100" type="text" id="name" name="name" value="" />
-    <input type="submit" id="dec"          value="Prev" />
     <input type="submit" id="gosubmit" value="Go!" />
-    <input type="submit" id="inc"          value="Next" />
 </form>
 
 
@@ -347,13 +345,6 @@ let mynote = await response.json();
 
 DoHeader(mynote);
 DoOrbitPanel(mynote) // Start in orbit
-
-let nav = document.getElementById("search");
-
-let counter = document.createElement('span');
-counter.innerHTML=1
-counter.id="counter"
-nav.appendChild(counter);
 }
 
 /***********************************************************/
@@ -1156,122 +1147,6 @@ async function sendsearchData() {
 // Take over form submission
 button = document.getElementById('gosubmit'),
 button.addEventListener("click", (event) => { event.preventDefault();  sendsearchData(); });
-}
-
-/***********************************************************/
-
-function IncHandler() 
-{
-   async function sendincData() 
-   {
-   let form = document.getElementById("search")
-   let formData = new FormData(form);
-
-   // Update *****
-   let pagenr = document.getElementById('counter').innerHTML;
-   pagenr++;  
-   document.getElementById('counter').innerHTML = pagenr;
-
-   formData.set("pagenr",pagenr)
-
-   fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData }).then(response => {
-
-    if (!response.ok) {
-      throw new Error('network returns error');
-    }
-
-    return response.json();
-
-   }).then((resp) => {
-
-      console.log("CHECK INC",JSON.stringify(resp, null, 2))
-
-      let prevh = document.getElementById("header_root");
-
-      if (prevh != null)
-         {
-         prevh.remove();
-         }
-
-      let prevm = document.getElementById("article");
-
-      if (prevm != null) 
-         {
-         prevm.remove();
-         }
-
-      DoHeader(resp);
-      DoPageMapPanel(resp);
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-    });
-}
-
-button = document.getElementById("inc"),
-button.addEventListener("click", (event) => { event.preventDefault();  sendincData(); });
-}
-
-/***********************************************************/
-
-function DecHandler() 
-{  
-   async function senddecData() 
-   {
-   let form = document.getElementById("search")
-   let formData = new FormData(form);
-
-   // Update *****
-   let pagenr = document.getElementById('counter').innerHTML;
-
-   if (pagenr != 1) 
-      {
-      pagenr--;  
-      }
-
-   document.getElementById('counter').innerHTML = pagenr;
-   formData.set("pagenr",pagenr)
-
-   fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData }).then(response => {
-
-    if (!response.ok) {
-      throw new Error('network returns error');
-    }
-
-    return response.json();
-
-   }).then((resp) => {
-
-      console.log("CHECK DEC",JSON.stringify(resp, null, 2))
-
-      let prevh = document.getElementById("header_root");
-
-      if (prevh != null)
-         {
-         prevh.remove();
-         }
-
-      let prevm = document.getElementById("article");
-
-      if (prevm != null) 
-         {
-         prevm.remove();
-         }
-
-      DoHeader(resp);
-      DoPageMapPanel(resp);
-    })
-
-    .catch((error) => {
-      // Handle error
-      console.log("error ", error);
-    });
-}
-
-button = document.getElementById("dec"),
-button.addEventListener("click", (event) => { event.preventDefault();  senddecData(); });
 }
 
 /***********************************************************/
