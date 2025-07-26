@@ -7775,7 +7775,19 @@ func RunErr(message string) {
 
 func EscapeString(s string) string {
 
-	// Don't do this here, move to SQLEscape()
+	run := []rune(s)
+	var res []rune
+
+	for r := range run {
+		if run[r] == '"' {
+			res = append(res,'\\')
+			res = append(res,'"')
+		} else {
+			res = append(res,run[r])
+		}
+	}
+
+	s = string(res)
 	return s
 }
 

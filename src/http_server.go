@@ -452,13 +452,14 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 				jstory = strings.Trim(jstory,",")
 				jarray += fmt.Sprintf("[%s],",jstory)
 			}
+			break
 		}
+		break
 	}
 
 	data := strings.Trim(jarray,",")
 	response := PackageResponse("Sequence",data)
-
-	fmt.Println("STORY",string(response))
+	fmt.Println("Sequence...",string(response))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 
@@ -474,9 +475,9 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 		return ""
 	}
 
-	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n",en.Text)
+	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n",SST.EscapeString(en.Text))
 	jstr += fmt.Sprintf("\"L\": \"%d\",\n",en.L)
-	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n",en.Chap)
+	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n",SST.EscapeString(en.Chap))
 	jstr += fmt.Sprintf("\"NPtr\": { \"Class\": \"%d\", \"CPtr\" : \"%d\"},\n",en.NPtr.Class,en.NPtr.CPtr)
 
 	var arrays string

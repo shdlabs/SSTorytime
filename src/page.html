@@ -878,7 +878,7 @@ for (let chp of obj.TOC)
 function ShowNodeEvent(panel,event,counter,direction,skiparrow,anchortag)
 {
 let child = document.createElement('content');
-console.log("dddd",event);
+
 if (event == null)
    {
    return;
@@ -931,15 +931,17 @@ else
       }
    }
 
-let chapter = document.createElement('i');
-chapter.textContent = "                 in chapter ...\"" + event.Chap +"\"";
-chapter.id = "chapter";
-child.appendChild(chapter);
+if (counter == 0)
+   {
+   let chapter = document.createElement('i');
+   chapter.textContent = "in chapter ...\"" + event.Chap +"\"";
+   chapter.id = "chapter";
+   child.appendChild(chapter);
+   }
+
 panel.appendChild(child);
 
-// The order is important. Start with coming from
-
-if (direction != "fwd" && event.Orbits[Im1] != null)
+if (event.Orbits[Im1] != null)
    {
    for (let ngh of event.Orbits[Im1]) 
       {
@@ -960,7 +962,7 @@ if (event.Orbits[In0] != null)
       }
    }
 
-if (direction != "fwd" && event.Orbits[Im3] != null)
+if (event.Orbits[Im3] != null)
    {
    for (let ngh of event.Orbits[Im3]) 
       {
