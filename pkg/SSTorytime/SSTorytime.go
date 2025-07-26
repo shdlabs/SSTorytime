@@ -5115,32 +5115,33 @@ func PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int) {
 
 	notes := GetNodeOrbit(ctx,nptr,"")
 
-	PrintLinkOrbit(notes,EXPRESS)
-	PrintLinkOrbit(notes,-EXPRESS)
-	PrintLinkOrbit(notes,-CONTAINS)
-	PrintLinkOrbit(notes,LEADSTO)
-	PrintLinkOrbit(notes,-LEADSTO)
-	PrintLinkOrbit(notes,NEAR)
+	PrintLinkOrbit(notes,EXPRESS,0)
+	PrintLinkOrbit(notes,-EXPRESS,0)
+	PrintLinkOrbit(notes,-CONTAINS,0)
+	PrintLinkOrbit(notes,LEADSTO,0)
+	PrintLinkOrbit(notes,-LEADSTO,0)
+	PrintLinkOrbit(notes,NEAR,0)
 
 	fmt.Println()
 }
 
 // **************************************************************************
 
-func PrintLinkOrbit(notes [ST_TOP][]Orbit,sttype int) {
+func PrintLinkOrbit(notes [ST_TOP][]Orbit,sttype int,indent_level int) {
 
 	t := STTypeToSTIndex(sttype)
 
 	for n := range notes[t] {		
 
-		r := notes[t][n].Radius
+		r := notes[t][n].Radius + indent_level
+
 		if notes[t][n].Ctx != "" {
 			txt := fmt.Sprintf(" -    (%s) - %s  .. %s\n",notes[t][n].Arrow,notes[t][n].Text,notes[t][n].Ctx)
-			text := Indent(LEFTMARGIN*r) + txt
+			text := Indent(LEFTMARGIN * r) + txt
 			ShowText(text,SCREENWIDTH)
 		} else {
 			txt := fmt.Sprintf(" -    (%s) - %s\n",notes[t][n].Arrow,notes[t][n].Text)
-			text := Indent(LEFTMARGIN*r) + txt
+			text := Indent(LEFTMARGIN * r) + txt
 			ShowText(text,SCREENWIDTH)
 		}
 

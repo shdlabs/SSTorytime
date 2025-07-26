@@ -239,7 +239,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	// Open causal cones, from one of these three
 
-	if (name || from || to) && !pagenr {
+	if (name || from || to) && !pagenr && !sequence {
 
 		// from or to or name
 		
@@ -524,6 +524,13 @@ func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,cont
 					fmt.Printf("The following story/sequence \"%s\"\n\n",stories[s].Chapter)
 					for ev := range stories[s].Axis {
 						fmt.Printf("\n%3d. %s\n",ev,stories[s].Axis[ev].Text)
+
+						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.EXPRESS,1)
+						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.EXPRESS,1)
+						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.CONTAINS,1)
+						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.LEADSTO,1)
+						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,-SST.LEADSTO,1)
+						SST.PrintLinkOrbit(stories[s].Axis[ev].Orbits,SST.NEAR,1)
 					}
 				}
 			}

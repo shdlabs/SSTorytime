@@ -170,7 +170,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// Open causal cones, from one of these three
 
-	if (name || from || to) && !pagenr {
+	if (name || from || to) && !pagenr && !sequence {
 
 		if nodeptrs != nil {
 			HandleCausalCones(w,r,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
