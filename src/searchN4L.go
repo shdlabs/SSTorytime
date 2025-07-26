@@ -521,7 +521,7 @@ func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,cont
 				if stories[s].Axis == nil {
 					fmt.Printf("%3d. %s\n",s,stories[s].Chapter)
 				} else {
-					fmt.Printf("The following story/sequence (%s) \"%s\"\n\n",stories[s].Arrow,stories[s].Chapter)
+					fmt.Printf("The following story/sequence \"%s\"\n\n",stories[s].Chapter)
 					for ev := range stories[s].Axis {
 						fmt.Printf("\n%3d. %s\n",ev,stories[s].Axis[ev].Text)
 					}

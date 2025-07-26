@@ -358,7 +358,6 @@ type Story struct {
         // not a container for it. It belongs to the sequence context.
 
 	Chapter   string  // chapter it belongs to
-        Arrow     string  // arrow connecting the story to its container
 	Axis      []NodeEvent
 }
 
@@ -4958,7 +4957,6 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 		node := GetDBNodeByNodePtr(ctx,openings[nptr])
 
 		story.Chapter = node.Chap
-		story.Arrow = arrname
 
 		axis := GetLongestAxialPath(ctx,openings[nptr],arrowptr)
 
