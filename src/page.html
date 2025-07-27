@@ -708,9 +708,15 @@ if (obj.Response != "Orbits")
    return
    }
 
+let last_node_event = obj.Content[0];
+
 for (let node_event of obj.Content) 
    {
    ShowNodeEvent(panel,node_event,separates,"all","","h1")
+
+   last_node_event = node_event; // don't link up
+   PlotGraphics(node_event,last_node_event);
+
    let hr = document.createElement('hr');
    panel.appendChild(hr);
    }
@@ -799,7 +805,11 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
+CANVAS = CreateCanvas();
+DrawGrid(0,0,1);
+
 let counter = 0;
+let laststory = obj.Content[0]; // arbitrary init
 
 for (let story of obj.Content) 
    {
@@ -809,7 +819,12 @@ for (let story of obj.Content)
    let cntx = document.createElement('i');
    cntx.id = "cntxt";
    panel.appendChild(cntx);
+
    ShowNodeEvent(panel,story,counter,"fwd","then","span");
+
+   PlotGraphics(story,laststory);
+   laststory = story;  // link up
+
    counter++;
    }
 }
@@ -1028,6 +1043,21 @@ if (event.Orbits[Il1] != null)
          }
       }
    }
+}
+
+/***********************************************************/
+
+function PlotGraphics(event,lastevent)
+{
+let xyz = event.XYZ;
+
+thisx = xyz.X;
+thisy = xyz.Y;
+thisz = xyz.Z;
+
+Event(thisx,thisy,thisz);
+Label(thisx,thisy,thisz,event.Text.slice(0,25),12,"black");
+
 }
 
 /***********************************************************/

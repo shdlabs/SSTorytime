@@ -369,6 +369,7 @@ type NodeEvent struct {
 	L       int
 	Chap    string
         NPtr    NodePtr
+	XYZ     Coords
 	Orbits  [ST_TOP][]Orbit
 }
 
@@ -4094,6 +4095,41 @@ func AssignConeCoordinates(cone [][]Link,nth,nr_cones int) map[NodePtr]Coords {
 
 // **************************************************************************
 
+func AssignStoryCoordinates(axis []Link,nth,nr_axial int) map[NodePtr]Coords {
+
+	var unique = make([][]NodePtr,0)
+
+	// Nth is segment nth of nr_axial, which has range (width=1.0)/nr_axial * [nth-nth+1]
+
+	if nr_axial == 0 {
+		nr_axial = 1
+	}
+
+	maxlen := len(axis)
+
+	N := make([]float32,maxlen)        // node widths along the path
+	already := make(map[NodePtr]bool)
+
+	for cs := 0; cs < maxlen; cs++ {
+
+		var unique_section = make([]NodePtr,0)
+
+		if cs < len(axis) {
+			if !already[axis[cs].Dst] {
+				unique_section = append(unique_section,axis[cs].Dst)
+				already[axis[cs].Dst] = true
+				N[cs]++
+			}
+		}
+
+		unique = append(unique,unique_section)
+	}
+
+	return MakeCoordinateDirectory(N,unique,maxlen,nth,nr_axial)
+}
+
+// **************************************************************************
+
 func AssignPageCoordinates(maplines []PageMap,nth int) map[NodePtr]Coords {
 
 	var unique = make([][]NodePtr,0)
@@ -4952,15 +4988,17 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 	arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrname)
 	openings := GetNCCNodesStartingStoriesForArrow(ctx,arrname,search,chapter,context)
 
-	for nptr := range openings {
+	for nth := range openings {
 
 		var story Story
 
-		node := GetDBNodeByNodePtr(ctx,openings[nptr])
+		node := GetDBNodeByNodePtr(ctx,openings[nth])
 
 		story.Chapter = node.Chap
 
-		axis := GetLongestAxialPath(ctx,openings[nptr],arrowptr)
+		axis := GetLongestAxialPath(ctx,openings[nth],arrowptr)
+
+		directory := AssignStoryCoordinates(axis,nth,len(openings))
 
 		for lnk := 0; lnk < len(axis); lnk++ {
 			
@@ -4971,8 +5009,11 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			ne.L = nd.L
 			ne.Chap = nd.Chap
 			ne.NPtr = axis[lnk].Dst
+			ne.XYZ = directory[ne.NPtr]		
 			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname)
-		
+
+			// SetOrbitCoords(ne.XYZ,axis,nth,len(openings))
+
 			if lnk > limit {
 				break
 			}

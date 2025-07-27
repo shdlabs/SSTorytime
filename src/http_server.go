@@ -250,7 +250,12 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 			return
 		}
 
-		array += SST.JSONNodeEvent(CTX,nptrs[n],SST.GetNodeOrbit(CTX,nptrs[n],""))
+		orb := SST.GetNodeOrbit(CTX,nptrs[n],"")
+
+		// create a set of coords for len(nptrs) disconnected nodes
+		// SetOrbitCoords(ne.XYZ,axis,nth,len(openings)) .. for DISconnected matches
+
+		array += SST.JSONNodeEvent(CTX,nptrs[n],orb)
 
 		if n < len(nptrs)-1 {
 			array += ",\n"
