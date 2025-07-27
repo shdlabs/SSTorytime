@@ -292,7 +292,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePt
 	for n := range nptrs {
 		for st := range sttype {
 
-			fmt.Println("Cones from",nptrs[n],"sttype",sttype[st])
+			fmt.Println("Cones from",nptrs[n],"sttype",sttype[st],"swimlanes",len(nptrs),"this",n)
 
 			jstr,count := PackageConeFromOrigin(nptrs[n],n,sttype[st],chap,context,len(nptrs),limit)
 
@@ -326,7 +326,8 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePt
 //******************************************************************
 
 func PackageConeFromOrigin(nptr SST.NodePtr,nth int,sttype int,chap string,context []string,dimnptr,limit int) (string,int) {
-	// Package a JSON object for nptr's causal cone 
+
+	// Package a JSON object for the nth/dimnptr causal cone , assigning each nth the same width
 
 	var wpaths [][]SST.WebPath
 
@@ -394,10 +395,10 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 			jstr += fmt.Sprintf("   \"Supernodes\" : [ %s ],\n",SST.SuperNodes(CTX,solutions,maxdepth))
 
 			var wpaths [][]SST.WebPath
-			nth := 1
-			dimnptr := 1
+			nth := 0
+			swimlanes := 1
 
-			wpaths = append(wpaths,SST.LinkWebPaths(CTX,solutions,nth,chapter,context,dimnptr,maxdepth)...)
+			wpaths = append(wpaths,SST.LinkWebPaths(CTX,solutions,nth,chapter,context,swimlanes,maxdepth)...)
 
 			if wpaths == nil {
 				break

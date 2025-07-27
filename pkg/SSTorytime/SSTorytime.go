@@ -4127,82 +4127,82 @@ func SetOrbitCoords(xyz Coords,orb [ST_TOP][]Orbit) [ST_TOP][]Orbit {
 
 // **************************************************************************
 
-func AssignConeCoordinates(cone [][]Link,nth,nr_cones int) map[NodePtr]Coords {
+func AssignConeCoordinates(cone [][]Link,nth,swimlanes int) map[NodePtr]Coords {
 
 	var unique = make([][]NodePtr,0)
+	var already = make(map[NodePtr]bool)
+	var maxlen_tz int
 
-	// Nth is segment nth of nr_cones, which has range (width=1.0)/nr_cones * [nth-nth+1]
+	// If we have multiple cones, each needs a separate name/graph space in X
 
-	if nr_cones == 0 {
-		nr_cones = 1
+	if swimlanes == 0 {
+		swimlanes = 1
 	}
 
-	maxlen := 0
+	// Find the longest path length
 
-	for p := range cone {
-		if len(cone[p]) > maxlen {
-			maxlen = len(cone[p])
+	for x := 0; x < len(cone); x++ {
+		if len(cone[x]) > maxlen_tz {
+			maxlen_tz = len(cone[x])
 		}
 	}
 
 	// Count the expanding wavefront sections for unique node entries
 
-	N := make([]float32,maxlen)        // node widths along the path
-	already := make(map[NodePtr]bool)
+	XChannels := make([]float32,maxlen_tz) // node widths along each path step
 
-	for cs := 0; cs < maxlen; cs++ {
+	// Find the total number of parallel swimlanes
 
+	for tz := 0; tz < maxlen_tz; tz++ {
 		var unique_section = make([]NodePtr,0)
-
-		for p := range cone {
-
-			if cs < len(cone[p]) {
-				if !already[cone[p][cs].Dst] {
-					unique_section = append(unique_section,cone[p][cs].Dst)
-					already[cone[p][cs].Dst] = true
-					N[cs]++
+		for x := 0; x < len(cone); x++ {
+			if tz < len(cone[x]) {
+				if !already[cone[x][tz].Dst] {
+					unique_section = append(unique_section,cone[x][tz].Dst)
+					already[cone[x][tz].Dst] = true
+					XChannels[tz]++
 				}
 			}
 		}
 		unique = append(unique,unique_section)
 	}
 
-	return MakeCoordinateDirectory(N,unique,maxlen,nth,nr_cones)
+	return MakeCoordinateDirectory(XChannels,unique,maxlen_tz,nth,swimlanes)
 }
 
 // **************************************************************************
 
-func AssignStoryCoordinates(axis []Link,nth,nr_axial int) map[NodePtr]Coords {
+func AssignStoryCoordinates(axis []Link,nth,swimlanes int) map[NodePtr]Coords {
 
 	var unique = make([][]NodePtr,0)
 
-	// Nth is segment nth of nr_axial, which has range (width=1.0)/nr_axial * [nth-nth+1]
+	// Nth is segment nth of swimlanes, which has range (width=1.0)/swimlanes * [nth-nth+1]
 
-	if nr_axial == 0 {
-		nr_axial = 1
+	if swimlanes == 0 {
+		swimlanes = 1
 	}
 
-	maxlen := len(axis)
+	maxlen_tz := len(axis)
 
-	N := make([]float32,maxlen)        // node widths along the path
+	XChannels := make([]float32,maxlen_tz)        // node widths along the path
 	already := make(map[NodePtr]bool)
 
-	for cs := 0; cs < maxlen; cs++ {
+	for tz := 0; tz < maxlen_tz; tz++ {
 
 		var unique_section = make([]NodePtr,0)
 
-		if cs < len(axis) {
-			if !already[axis[cs].Dst] {
-				unique_section = append(unique_section,axis[cs].Dst)
-				already[axis[cs].Dst] = true
-				N[cs]++
+		if tz < len(axis) {
+			if !already[axis[tz].Dst] {
+				unique_section = append(unique_section,axis[tz].Dst)
+				already[axis[tz].Dst] = true
+				XChannels[tz]++
 			}
 		}
 
 		unique = append(unique,unique_section)
 	}
 
-	return MakeCoordinateDirectory(N,unique,maxlen,nth,nr_axial)
+	return MakeCoordinateDirectory(XChannels,unique,maxlen_tz,nth,swimlanes)
 }
 
 // **************************************************************************
@@ -4215,71 +4215,62 @@ func AssignPageCoordinates(maplines []PageMap,nth int) map[NodePtr]Coords {
 
 	total := len(maplines)
 
-	N := make([]float32,total)        // node widths along the path
+	XChannels := make([]float32,total)        // node widths along the path
 	already := make(map[NodePtr]bool)
 
-	for cs := 0; cs < total; cs++ {
+	for tz := 0; tz < total; tz++ {
 
 		var unique_section = make([]NodePtr,0)
 
-		for l := range maplines[cs].Path {
+		for l := 0; l < len(maplines[tz].Path); l++ {
 
-			nptr := maplines[cs].Path[l].Dst
+			nptr := maplines[tz].Path[l].Dst
 
 			if !already[nptr] {
 				unique_section = append(unique_section,nptr)
 				already[nptr] = true
-				N[cs]++
+				XChannels[tz]++
 			}
 		}
 		unique = append(unique,unique_section)
 	}
 
-	return MakeCoordinateDirectory(N,unique,1,nth,total)
+	return MakeCoordinateDirectory(XChannels,unique,1,nth,total)
 }
 
 // **************************************************************************
 
-func MakeCoordinateDirectory(N []float32, unique [][]NodePtr,maxzlen,nth,total int) map[NodePtr]Coords {
+func MakeCoordinateDirectory(XChannels []float32, unique [][]NodePtr,maxzlen,nth,swimlanes int) map[NodePtr]Coords {
 
 	var directory = make(map[NodePtr]Coords)
 
-	// This is the depth dimenion of the paths -1 to +1
+	const totwidth = 2.0 // This is the depth dimenion of the paths -1 to +1
+	const arbitrary_elevation = 0.0
 
-	const scale = 2.0 
+	x_lanewidth := totwidth / (float32(swimlanes))
+	tz_steplength := totwidth / float32(maxzlen) 
 
-	average_node_tz_spacing := 2.0 / float32(maxzlen) 
+	x_lane_start := float32(nth) * x_lanewidth - totwidth/2.0
 
-	x_width := 2.0 / (float32(total))
+	// Start allocating swimlane into XChannels parallel spaces
+	// x now runs from (x_lane_start to += x_lanewidth)
 
-	z_0 := -float32(1.0)
+	for tz := 0; tz < maxzlen; tz++ {
 
-	for cs := 0; cs < maxzlen; cs++ {
+		x_increment := x_lanewidth / (XChannels[tz]+1)
 
-		// Now we want the coordinates for each unique node per section
-		// there are N[cs] nodes to place at this path depth
-
-		average_x_space := x_width / (N[cs]+1)
-
-		x_begin := (N[cs] - float32(nth+1)) * average_x_space/2.0
+		z_left := -float32(totwidth/2)
+		x_left := float32(x_lane_start) + x_increment 
 
 		var xyz Coords
 
-		xyz.X = x_begin * scale
-		xyz.Y = 0.3
-		xyz.Z = z_0 + average_node_tz_spacing * float32(cs)
+		xyz.X = x_left
+		xyz.Y = arbitrary_elevation
+		xyz.Z = z_left + tz_steplength * float32(tz)
 
-		for uniqptr := 0; uniqptr < len(unique[cs]); uniqptr++ {
-
-			_,ledgexists := directory[unique[cs][uniqptr]]
-			
-			// Assign each unique NPtr an x,y,z coordinate once
-			
-			if !ledgexists {
-				directory[unique[cs][uniqptr]] = xyz
-			}
-
-			xyz.X -= average_x_space
+		for uniqptr := 0; uniqptr < len(unique[tz]); uniqptr++ {
+			directory[unique[tz][uniqptr]] = xyz
+			xyz.X += x_increment
 		}
 	}
 
@@ -5391,13 +5382,14 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) st
 
 // **************************************************************************
 
-func LinkWebPaths(ctx PoSST,cone [][]Link,nth int,chapter string,context []string,nptrdim,limit int) [][]WebPath {
+func LinkWebPaths(ctx PoSST,cone [][]Link,nth int,chapter string,context []string,swimlanes,limit int) [][]WebPath {
 
+	// This is dealing in good faith with one of swimlanes cones, assigning equal width to all
 	// The cone is a flattened array, we can assign spatial coordinates for visualization
 
 	var conepaths [][]WebPath
 
-	directory := AssignConeCoordinates(cone,nth,nptrdim)
+	directory := AssignConeCoordinates(cone,nth,swimlanes)
 
 	// JSONify the cone structure, converting []Link into []WebPath
 
