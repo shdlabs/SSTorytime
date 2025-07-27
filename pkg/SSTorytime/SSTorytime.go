@@ -383,6 +383,8 @@ type Orbit struct {  // union, JSON transformer
 	Dst     NodePtr
 	Ctx     string
 	Text    string
+	XYZ     Coords  // coords
+	OOO     Coords  // origin
 }
 
 //******************************************************************
@@ -4047,7 +4049,82 @@ func DownloadArrowsFromDB(ctx PoSST) {
 }
 
 // **************************************************************************
-// Transition/path integral matrix
+// Graphical view, axial geometry
+// **************************************************************************
+
+const R0 = 0.4    // radii should not overlap
+const R1 = 0.3
+const R2 = 0.1
+
+// **************************************************************************
+
+func RelativeOrbit(origin Coords,radius float64,n int,max int) Coords {
+
+	var xyz Coords
+	var offset float64
+
+	// splay the vector positions so links not collinear
+	switch radius {
+	case R1:
+		offset = -math.Pi/6.0
+	case R2:
+		offset = +math.Pi/6.0
+	}
+
+	angle := offset + 2 * math.Pi * float64(n)/float64(max)
+
+	xyz.X = origin.X + float32(radius * math.Cos(angle))
+	xyz.Y = origin.Y + float32(radius * math.Sin(angle))
+	xyz.Z = origin.Z
+
+	return xyz
+}
+
+// **************************************************************************
+
+func SetOrbitCoords(xyz Coords,orb [ST_TOP][]Orbit) [ST_TOP][]Orbit {
+	
+	var r1max,r2max int
+	
+	// Count all the orbital nodes at this location to calc space
+	
+	for sti := 0; sti < ST_TOP; sti++ {
+		
+		for o := range orb[sti] {
+			switch orb[sti][o].Radius {
+			case 1:
+				r1max++
+			case 2:
+				r2max++
+			}
+		}
+	}
+	
+	// Place + and - cones on opposite sides, by ordering of sti
+	
+	var r1,r2 int
+	
+	for sti := 0; sti < ST_TOP; sti++ {
+		
+		for o := 0; o < len(orb[sti]); o++ {
+			if orb[sti][o].Radius == 1 {
+				anchor := RelativeOrbit(xyz,R1,r1,r1max)
+				orb[sti][o].OOO = xyz
+				orb[sti][o].XYZ = anchor
+				r1++
+				for op := o+1; op < len(orb[sti]) && orb[sti][op].Radius == 2; op++ {
+					orb[sti][op].OOO = anchor
+					orb[sti][op].XYZ = RelativeOrbit(anchor,R2,r2,r2max)
+					r2++
+					o = op-1
+				}
+			}
+		}
+	}
+
+	return orb
+}
+
 // **************************************************************************
 
 func AssignConeCoordinates(cone [][]Link,nth,nr_cones int) map[NodePtr]Coords {
@@ -4184,7 +4261,7 @@ func MakeCoordinateDirectory(N []float32, unique [][]NodePtr,maxzlen,nth,total i
 
 		average_x_space := x_width / (N[cs]+1)
 
-		x_begin := (N[cs] - float32(nth)) * average_x_space/2.0
+		x_begin := (N[cs] - float32(nth+1)) * average_x_space/2.0
 
 		var xyz Coords
 
@@ -4209,6 +4286,8 @@ func MakeCoordinateDirectory(N []float32, unique [][]NodePtr,maxzlen,nth,total i
 	return directory
 }
 
+// **************************************************************************
+// Path integral matrix and coarse graining
 // **************************************************************************
 
 func GetPathsAndSymmetries(ctx PoSST,start_set,end_set []NodePtr,chapter string,context []string,maxdepth int) [][]Link {
@@ -5009,10 +5088,11 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			ne.L = nd.L
 			ne.Chap = nd.Chap
 			ne.NPtr = axis[lnk].Dst
-			ne.XYZ = directory[ne.NPtr]		
+			ne.XYZ = directory[ne.NPtr]
 			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname)
+			ne.Orbits = SetOrbitCoords(ne.XYZ,ne.Orbits)
 
-			// SetOrbitCoords(ne.XYZ,axis,nth,len(openings))
+			// SetOrbitCoords(ne.XYZ,axis,nth,len(openings)) .. for connected matches
 
 			if lnk > limit {
 				break
@@ -5292,7 +5372,7 @@ func PrintSomeLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter st
 // Presentation in JSON
 // **************************************************************************
 
-func JSONNodeEvent(ctx PoSST, nptr NodePtr,orbits [ST_TOP][]Orbit) string {
+func JSONNodeEvent(ctx PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) string {
 
 	node := GetDBNodeByNodePtr(ctx,nptr)
 
@@ -5301,11 +5381,12 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr,orbits [ST_TOP][]Orbit) string {
 	event.L = node.L
 	event.Chap = node.Chap
 	event.NPtr = nptr
+	event.XYZ = xyz
 	event.Orbits = orbits
 
 	jstr,_ := json.Marshal(event)
 
-	return string(jstr)
+	return strings.ReplaceAll(string(jstr),"null","[]")
 }
 
 // **************************************************************************

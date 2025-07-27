@@ -244,8 +244,12 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 	var count int
 	var array string
 
+	origin := SST.Coords{X : 0.0, Y : 0.0, Z : 0.0}
+
 	for n := 0; n < len(nptrs); n++ {
+
 		count++
+
 		if count > limit {
 			return
 		}
@@ -253,9 +257,11 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 		orb := SST.GetNodeOrbit(CTX,nptrs[n],"")
 
 		// create a set of coords for len(nptrs) disconnected nodes
-		// SetOrbitCoords(ne.XYZ,axis,nth,len(openings)) .. for DISconnected matches
 
-		array += SST.JSONNodeEvent(CTX,nptrs[n],orb)
+		xyz := SST.RelativeOrbit(origin,SST.R0,n,len(nptrs))
+		orb = SST.SetOrbitCoords(xyz,orb)
+
+		array += SST.JSONNodeEvent(CTX,nptrs[n],xyz,orb)
 
 		if n < len(nptrs)-1 {
 			array += ",\n"
@@ -484,6 +490,8 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 	jstr += fmt.Sprintf("\"L\": \"%d\",\n",en.L)
 	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n",SST.EscapeString(en.Chap))
 	jstr += fmt.Sprintf("\"NPtr\": { \"Class\": \"%d\", \"CPtr\" : \"%d\"},\n",en.NPtr.Class,en.NPtr.CPtr)
+	jxyz,_ := json.Marshal(en.XYZ)
+	jstr += fmt.Sprintf("\"XYZ\": %s,\n",jxyz)
 
 	var arrays string
 

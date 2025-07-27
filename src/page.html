@@ -300,7 +300,7 @@ const ST_ZERO = 3;
 const STINDICES = ["is a property expressed by","is contained by","comes from","is near/smimilar to","leads to","contains","expresses property"];
 
 /***********************************************************/
-// Graphics vaiewport
+// Graphics viewport
 /***********************************************************/
 
 var CANVAS = CreateCanvas(); 
@@ -679,9 +679,6 @@ else
 
 titlebar.style.fontSize = "70%"
 
-// Graphic
-
-DrawWelcomeImage();
 }
 
 /***********************************************************/
@@ -699,6 +696,9 @@ if (obj == null)
    {
    return;
    }
+
+CANVAS = CreateCanvas();
+DrawGrid(0,0,1);
 
 const separates = 0
 
@@ -821,7 +821,6 @@ for (let story of obj.Content)
    panel.appendChild(cntx);
 
    ShowNodeEvent(panel,story,counter,"fwd","then","span");
-
    PlotGraphics(story,laststory);
    laststory = story;  // link up
 
@@ -1049,15 +1048,59 @@ if (event.Orbits[Il1] != null)
 
 function PlotGraphics(event,lastevent)
 {
-let xyz = event.XYZ;
+let tx = event.XYZ.X;
+let ty = event.XYZ.Y;
+let tz = event.XYZ.Z;
 
-thisx = xyz.X;
-thisy = xyz.Y;
-thisz = xyz.Z;
+Event(tx,ty,tz);
+Label(tx,ty,tz,event.Text.slice(0,25),12,"black");
 
-Event(thisx,thisy,thisz);
-Label(thisx,thisy,thisz,event.Text.slice(0,25),12,"black");
+if (lastevent != event)
+   {
+   let lx = lastevent.XYZ.X;
+   let ly = lastevent.XYZ.Y;
+   let lz = lastevent.XYZ.Z;
 
+   LeadsTo(lx,ly,lz,tx,ty,tz)
+   }
+
+// Now look at orbits
+
+for (let ngh of event.Orbits[Il1])
+   {
+   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   LeadsTo(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   }
+for (let ngh of event.Orbits[Im1])
+   {
+   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   LeadsTo(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+   }
+for (let ngh of event.Orbits[Ic2])
+   {
+   Thing(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Contains(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   }
+for (let ngh of event.Orbits[Im2])
+   {
+   Thing(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Contains(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+   }
+for (let ngh of event.Orbits[Ie3])
+   {
+   Concept(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Expresses(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   }
+for (let ngh of event.Orbits[Im3])
+   {
+   Concept(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Expresses(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+   }
+for (let ngh of event.Orbits[In0])
+   {
+   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Near(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   }
 }
 
 /***********************************************************/
