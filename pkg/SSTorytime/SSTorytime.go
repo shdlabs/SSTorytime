@@ -4172,7 +4172,7 @@ func AssignConeCoordinates(cone [][]Link,nth,swimlanes int) map[NodePtr]Coords {
 
 // **************************************************************************
 
-func AssignStoryCoordinates(axis []Link,nth,swimlanes int) map[NodePtr]Coords {
+func AssignStoryCoordinates(axis []Link,nth,swimlanes int,limit int) map[NodePtr]Coords {
 
 	var unique = make([][]NodePtr,0)
 
@@ -4184,19 +4184,21 @@ func AssignStoryCoordinates(axis []Link,nth,swimlanes int) map[NodePtr]Coords {
 
 	maxlen_tz := len(axis)
 
+	if limit < maxlen_tz {
+		maxlen_tz = limit
+	}
+
 	XChannels := make([]float32,maxlen_tz)        // node widths along the path
 	already := make(map[NodePtr]bool)
 
 	for tz := 0; tz < maxlen_tz; tz++ {
 
 		var unique_section = make([]NodePtr,0)
-
-		if tz < len(axis) {
-			if !already[axis[tz].Dst] {
-				unique_section = append(unique_section,axis[tz].Dst)
-				already[axis[tz].Dst] = true
-				XChannels[tz]++
-			}
+		
+		if !already[axis[tz].Dst] {
+			unique_section = append(unique_section,axis[tz].Dst)
+			already[axis[tz].Dst] = true
+			XChannels[tz]++
 		}
 
 		unique = append(unique,unique_section)
@@ -5068,7 +5070,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 
 		axis := GetLongestAxialPath(ctx,openings[nth],arrowptr)
 
-		directory := AssignStoryCoordinates(axis,nth,len(openings))
+		directory := AssignStoryCoordinates(axis,nth,len(openings),limit)
 
 		for lnk := 0; lnk < len(axis); lnk++ {
 			
@@ -5082,8 +5084,6 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			ne.XYZ = directory[ne.NPtr]
 			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname)
 			ne.Orbits = SetOrbitCoords(ne.XYZ,ne.Orbits)
-
-			// SetOrbitCoords(ne.XYZ,axis,nth,len(openings)) .. for connected matches
 
 			if lnk > limit {
 				break

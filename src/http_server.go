@@ -247,11 +247,11 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 	origin := SST.Coords{X : 0.0, Y : 0.0, Z : 0.0}
 
 	for n := 0; n < len(nptrs); n++ {
-
+		fmt.Println(nptrs[n],n)
 		count++
 
 		if count > limit {
-			return
+			break
 		}
 
 		orb := SST.GetNodeOrbit(CTX,nptrs[n],"")
@@ -262,12 +262,10 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 		orb = SST.SetOrbitCoords(xyz,orb)
 
 		array += SST.JSONNodeEvent(CTX,nptrs[n],xyz,orb)
-
-		if n < len(nptrs)-1 {
-			array += ",\n"
-		}
+		array += ","
 	}
 
+	array = strings.Trim(array,",")
 	content := fmt.Sprintf("[ %s ]",array)
 	response := PackageResponse("Orbits",content)
 	
@@ -469,6 +467,10 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 		break
 	}
 
+	if jarray == "" {
+		jarray = "[]"
+	}
+
 	data := strings.Trim(jarray,",")
 	response := PackageResponse("Sequence",data)
 	fmt.Println("Sequence...",string(response))
@@ -487,9 +489,13 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 		return ""
 	}
 
-	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n",SST.EscapeString(en.Text))
+	t,_ := json.Marshal(en.Text)
+	text := SST.EscapeString(string(t))
+	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n",text)
 	jstr += fmt.Sprintf("\"L\": \"%d\",\n",en.L)
-	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n",SST.EscapeString(en.Chap))
+	c,_ := json.Marshal(en.Chap)
+	chap := SST.EscapeString(string(c))
+	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n",chap)
 	jstr += fmt.Sprintf("\"NPtr\": { \"Class\": \"%d\", \"CPtr\" : \"%d\"},\n",en.NPtr.Class,en.NPtr.CPtr)
 	jxyz,_ := json.Marshal(en.XYZ)
 	jstr += fmt.Sprintf("\"XYZ\": %s,\n",jxyz)
