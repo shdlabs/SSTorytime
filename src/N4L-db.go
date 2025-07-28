@@ -136,7 +136,6 @@ func main() {
 
 	args := Init()
 
-
 	if UPLOAD {
 		load_arrows := true
 
@@ -347,11 +346,13 @@ func ClassifyConfigRole(token string) {
 			if LINE_ITEM_STATE == HAVE_MINUS {
 				CheckArrow(reln,BWD_ARROW)
 				BWD_INDEX = SST.InsertArrowDirectory(SECTION_STATE,reln,BWD_ARROW,"-")
+				ArrowCollision(BWD_INDEX,reln,BWD_ARROW)
 				SST.InsertInverseArrowDirectory(FWD_INDEX,BWD_INDEX)
 				PVerbose("In",SECTION_STATE,"short name",reln,"for",BWD_ARROW,", direction","-")
 			} else if LINE_ITEM_STATE == HAVE_PLUS {
 				CheckArrow(reln,FWD_ARROW)
 				FWD_INDEX = SST.InsertArrowDirectory(SECTION_STATE,reln,FWD_ARROW,"+")
+				ArrowCollision(FWD_INDEX,reln,FWD_ARROW)
 				PVerbose("In",SECTION_STATE,"short name",reln,"for",FWD_ARROW,", direction","+")
 			} else {
 				ParseError(ERR_BAD_ABBRV)
@@ -439,16 +440,26 @@ func CheckArrow(alias,name string) {
 
 	prev,ok := SST.ARROW_SHORT_DIR[alias]
 
-	if ok && SST.WIPE_DB {
+	if ok {
 		ParseError(ERR_ARR_REDEFINITION+"\""+alias+"\" previous short name: "+SST.ARROW_DIRECTORY[prev].Short)
-		os.Exit(-1)
+		//os.Exit(-1)
 	}
 	
 	prev,ok = SST.ARROW_LONG_DIR[name]
 
-	if ok && SST.WIPE_DB {
+	if ok {
 		ParseError(ERR_ARR_REDEFINITION+"\""+name+"\" previous long name: "+SST.ARROW_DIRECTORY[prev].Long)
-		os.Exit(-1)
+		//os.Exit(-1)
+	}
+}
+
+//**************************************************************
+
+func ArrowCollision(arr SST.ArrowPtr,short,long string) {
+
+	if arr < 0 {
+		ParseError(ERR_ARR_REDEFINITION+"\""+long+" or "+"\""+short+"\" seems to be previously used somewhere")
+		//os.Exit(-1)
 	}
 }
 

@@ -77,9 +77,9 @@ const (
 	GT1024 = 6
 
 	// semantics, resverved names
-
-
 )
+
+var BASE_DB_CHANNEL_STATE[7] ClassedNodePtr
 
 var CLASS_CHANNEL_DESCRIPTION = []string{"","single word ngram","two word ngram","three word ngram",
 	"string less than 128 chars","string less than 1024 chars","string greater than 1024 chars"}
@@ -337,8 +337,6 @@ var (
         SILLINESS_COUNTER int
         SILLINESS_POS int
 	SILLINESS bool
-
-	DB_NODE_OFFSETS [7]ClassedNodePtr
 )
 
 //******************************************************************
@@ -582,11 +580,6 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop table ArrowDirectory")
 		ctx.DB.QueryRow("drop table ArrowInverses")
 
-	} else {
-
-		// Get the data top CPtr values
-		GetDBNPtrHighWaterMarks(ctx)
-
 	}
 
 	// Ignore error
@@ -632,10 +625,9 @@ func Configure(ctx PoSST,load_arrows bool) {
 	}
 
 	DefineStoredFunctions(ctx)
+	DownloadArrowsFromDB(ctx)
+	SynchronizeNPtrs(ctx)
 
-	if load_arrows {
-		DownloadArrowsFromDB(ctx)
-	}
 }
 
 // **************************************************************************
@@ -1056,6 +1048,12 @@ func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
 
 	var newarrow ArrowDirectory
 
+	for a := range ARROW_DIRECTORY {
+		if ARROW_DIRECTORY[a].Long == name || ARROW_DIRECTORY[a].Short == alias {
+			return ArrowPtr(-1)
+		}
+	}
+
 	newarrow.STAindex = GetSTIndexByName(stname,pm)
 	newarrow.Long = name
 	newarrow.Short = alias
@@ -1073,6 +1071,10 @@ func InsertArrowDirectory(stname,alias,name,pm string) ArrowPtr {
 
 func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
 
+	if fwd == ArrowPtr(-1) || bwd == ArrowPtr(-1) {
+		return
+	}
+
 	// Lookup inverse by long name, only need this in search presentation
 
 	INVERSE_ARROWS[fwd] = bwd
@@ -1083,71 +1085,48 @@ func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
 // Write to database
 //**************************************************************
 
-func GetDBNPtrHighWaterMarks(ctx PoSST) {
-
-	for class := 1; class <= 6; class++ {
-
-		qstr := fmt.Sprintf("SELECT max((NPtr).CPtr) FROM Node WHERE (NPtr).Chan = %d",class)
-
-		row,err := ctx.DB.Query(qstr)
-		
-		if err != nil {
-			return
-		}
-		
-		var top int
-		
-		for row.Next() {		
-			err = row.Scan(&top)
-		}
-		
-		DB_NODE_OFFSETS[class] = ClassedNodePtr(top + 1)
-		row.Close()
-	}
-}
-
-//**************************************************************
-
 func GraphToDB(ctx PoSST,wait_counter bool) {
 
 	for class := N1GRAM; class <= GT1024; class++ {
 
+		offset := int(BASE_DB_CHANNEL_STATE[class])
+
 		switch class {
 		case N1GRAM:
-			for n := range NODE_DIRECTORY.N1directory {
+			for n := offset; n < len(NODE_DIRECTORY.N1directory); n++ {
 				org := NODE_DIRECTORY.N1directory[n]
-				UploadNodeToDB(ctx,org)
+				UploadNodeToDB(ctx,org,class)
 				Waiting(wait_counter)
 			}
 		case N2GRAM:
-			for n := range NODE_DIRECTORY.N2directory {
+			for n := offset; n < len(NODE_DIRECTORY.N2directory); n++ {
 				org := NODE_DIRECTORY.N2directory[n]
-				UploadNodeToDB(ctx,org)
+				UploadNodeToDB(ctx,org,class)
 				Waiting(wait_counter)
 			}
 		case N3GRAM:
-			for n := range NODE_DIRECTORY.N3directory {
+			for n := offset; n < len(NODE_DIRECTORY.N3directory); n++ {
 				org := NODE_DIRECTORY.N3directory[n]
-				UploadNodeToDB(ctx,org)
+				UploadNodeToDB(ctx,org,class)
 				Waiting(wait_counter)
 			}
 		case LT128:
-			for n := range NODE_DIRECTORY.LT128 {
+			for n := offset; n < len(NODE_DIRECTORY.LT128); n++ {
 				org := NODE_DIRECTORY.LT128[n]
-				UploadNodeToDB(ctx,org)
+				UploadNodeToDB(ctx,org,class)
 				Waiting(wait_counter)
 			}
 		case LT1024:
-			for n := range NODE_DIRECTORY.LT1024 {
+			for n := offset; n < len(NODE_DIRECTORY.LT1024); n++ {
 				org := NODE_DIRECTORY.LT1024[n]
-				UploadNodeToDB(ctx,org)
+				UploadNodeToDB(ctx,org,class)
 				Waiting(wait_counter)
 			}
 
 		case GT1024:
-			for n := range NODE_DIRECTORY.GT1024 {
+			for n := offset; n < len(NODE_DIRECTORY.GT1024); n++ {
 				org := NODE_DIRECTORY.GT1024[n]
-				UploadNodeToDB(ctx,org)
+				UploadNodeToDB(ctx,org,class)
 				Waiting(wait_counter)
 			}
 		}
@@ -1432,22 +1411,17 @@ func IdempDBAddNode(ctx PoSST,n Node) Node {
 
 // **************************************************************************
 
-func UploadNodeToDB(ctx PoSST, org Node) {
-
-	// add OFFSETS from current DB high water marks
-
-	org.NPtr.CPtr += DB_NODE_OFFSETS[org.NPtr.Class]
+func UploadNodeToDB(ctx PoSST, org Node,channel int) {
 
 	CreateDBNode(ctx,org)
 
 	const nolink = 999
 	var empty Link
 
-	for stindex := range org.I {
+	for stindex := 0; stindex < len(org.I); stindex++ {
 
 		for lnk := range org.I[stindex] {
 
-			org.I[stindex][lnk].Dst.CPtr += DB_NODE_OFFSETS[org.NPtr.Class]
 			dstlnk := org.I[stindex][lnk]
 			sttype := STIndexToSTType(stindex)
 
@@ -1530,10 +1504,6 @@ func UploadPageMapEvent(ctx PoSST, line PageMap) {
 	row.Close()
 
 	for lnk := 0; lnk < len(line.Path); lnk++ {
-
-		if !WIPE_DB {
-			line.Path[lnk].Dst.CPtr += DB_NODE_OFFSETS[line.Path[lnk].Dst.Class]
-		}
 
 		linkval := fmt.Sprintf("(%d, %f, %s, (%d,%d)::NodePtr)",line.Path[lnk].Arr,line.Path[lnk].Wgt,FormatSQLStringArray(line.Path[lnk].Ctx),line.Path[lnk].Dst.Class,line.Path[lnk].Dst.CPtr)
 
@@ -3578,18 +3548,18 @@ func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 
 func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 
-	if ARROW_DIRECTORY_TOP > 0 {
+	if int(arrowptr) > len(ARROW_DIRECTORY) {
+		DownloadArrowsFromDB(ctx)
+	}
+	
+	if int(arrowptr) < len(ARROW_DIRECTORY) {
 		a := ARROW_DIRECTORY[arrowptr]
 		return a
-	}
-
-	DownloadArrowsFromDB(ctx)
-
-	if len(ARROW_DIRECTORY) < int(arrowptr) {
+	} else {
 		fmt.Println(ERR_NO_SUCH_ARROW,"(",arrowptr,")")
 		os.Exit(-1)
 	}
-
+		
 	return ARROW_DIRECTORY[arrowptr]
 
 }
@@ -3996,6 +3966,7 @@ func DownloadArrowsFromDB(ctx PoSST) {
 	}
 
 	ARROW_DIRECTORY = nil
+	ARROW_DIRECTORY_TOP = 0
 
 	var staidx int
 	var long string
@@ -4046,6 +4017,67 @@ func DownloadArrowsFromDB(ctx PoSST) {
 
 		INVERSE_ARROWS[plus] = minus
 	}
+}
+
+// **************************************************************************
+
+func SynchronizeNPtrs(ctx PoSST) {
+
+	// If we're merging (not recommended) N4L into an existing db, we need to synch
+
+	for channel := N1GRAM; channel <= GT1024; channel++ {
+		
+		qstr := fmt.Sprintf("SELECT max((Nptr).CPtr) FROM Node WHERE (Nptr).Chan=%d",channel)
+
+		row, err := ctx.DB.Query(qstr)
+		
+		if err != nil {
+			fmt.Println("QUERY Synchronizing nptrs",err)
+		}
+
+		var cptr int
+
+		for row.Next() {			
+			err = row.Scan(&cptr)
+			
+			if err != nil {
+				continue // maybe not defined yet
+			}
+
+			if cptr > 0 {
+
+				var empty Node
+
+				// Remember this for uploading later ..
+				BASE_DB_CHANNEL_STATE[channel] = ClassedNodePtr(cptr)
+
+				for n := 0; n <= cptr; n++ {
+					fmt.Println("Syncing (%d,%d)",channel,n)
+					switch channel {
+					case N1GRAM:
+						NODE_DIRECTORY.N1_top++
+						NODE_DIRECTORY.N1directory = append(NODE_DIRECTORY.N1directory,empty)
+					case N2GRAM:
+						NODE_DIRECTORY.N2directory = append(NODE_DIRECTORY.N2directory,empty)
+						NODE_DIRECTORY.N2_top++
+					case N3GRAM:
+						NODE_DIRECTORY.N3directory = append(NODE_DIRECTORY.N3directory,empty)
+						NODE_DIRECTORY.N3_top++
+					case LT128:
+						NODE_DIRECTORY.LT128 = append(NODE_DIRECTORY.LT128,empty)
+						NODE_DIRECTORY.LT128_top++
+					case LT1024:
+						NODE_DIRECTORY.LT1024 = append(NODE_DIRECTORY.LT1024,empty)
+						NODE_DIRECTORY.LT1024_top++
+					case GT1024:
+						NODE_DIRECTORY.GT1024 = append(NODE_DIRECTORY.GT1024,empty)
+						NODE_DIRECTORY.GT1024_top++
+					}
+				}
+			}
+		}
+	}
+
 }
 
 // **************************************************************************
