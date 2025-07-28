@@ -98,6 +98,9 @@ combining those lessons to make a version that builds on standard Postgres.
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp4.png 'Testing a web interface')
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/Alice.png 'Testing a web interface')
 
+While the actual graphs in knowledge might not turn out to be anything like the beautiful
+fabrications one sees in fancy online graph engines, the information is still important.
+Most knowledge is patchy and disconnected.
 Knowledge capture requires tools for collecting factual notes, data
 relationships, and structures for representing and organizing them, so
 that they can be found easily. Many mistakes have been made around
