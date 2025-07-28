@@ -96,6 +96,7 @@ combining those lessons to make a version that builds on standard Postgres.
 
 
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp4.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/alice.png 'Testing a web interface')
 
 Knowledge capture requires tools for collecting factual notes, data
 relationships, and structures for representing and organizing them, so
