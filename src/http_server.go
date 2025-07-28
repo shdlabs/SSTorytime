@@ -79,8 +79,9 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(name) == 0 {
-			name = "semantic spacetime"
+			name = "sstorytime \"semantic spacetime\""
 		}
+
 		search := SST.DecodeSearchField(name)
 		HandleSearch(search,name,w,r)
 		
@@ -247,7 +248,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 	origin := SST.Coords{X : 0.0, Y : 0.0, Z : 0.0}
 
 	for n := 0; n < len(nptrs); n++ {
-		fmt.Println(nptrs[n],n)
+
 		count++
 
 		if count > limit {
@@ -269,7 +270,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 	content := fmt.Sprintf("[ %s ]",array)
 	response := PackageResponse("Orbits",content)
 	
-	fmt.Println("REPLY:\n",string(response))
+	//fmt.Println("REPLY:\n",string(response))
 
 	w.Write(response)
 	fmt.Println("Reply Orbit sent")
@@ -314,7 +315,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePt
 	array := fmt.Sprintf("[%s]",data)
 
 	response := PackageResponse("ConePaths",array)
-	fmt.Println("CasualConePath reponse",string(response))
+	//fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -407,7 +408,10 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 
 			array_pack := fmt.Sprintf("[%s]",jstr)
 			response := PackageResponse("PathSolve",array_pack)
-			fmt.Println("PATH SOLVE:",string(response))
+
+			//fmt.Println("PATH SOLVE:",string(response))
+
+			w.Header().Set("Content-Type", "application/json")
 			w.Write(response)
 			return
 		}
@@ -421,6 +425,8 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 	
 	fmt.Println("No paths satisfy constraints")
 	response := PackageResponse("PathSolve","")
+
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 }
 
@@ -430,7 +436,8 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request,notes []SST.PageMap) {
 
 	jstr := SST.JSONPage(CTX,notes)
 	response := PackageResponse("PageMap",jstr)
-	fmt.Println("PAGEMAP NOTES",string(response))
+
+	//fmt.Println("PAGEMAP NOTES",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -473,7 +480,9 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 
 	data := strings.Trim(jarray,",")
 	response := PackageResponse("Sequence",data)
-	fmt.Println("Sequence...",string(response))
+
+	//fmt.Println("Sequence...",string(response))
+
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 
