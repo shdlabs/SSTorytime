@@ -4052,7 +4052,7 @@ func SynchronizeNPtrs(ctx PoSST) {
 				BASE_DB_CHANNEL_STATE[channel] = ClassedNodePtr(cptr)
 
 				for n := 0; n <= cptr; n++ {
-					fmt.Println("Syncing (%d,%d)",channel,n)
+
 					switch channel {
 					case N1GRAM:
 						NODE_DIRECTORY.N1_top++
