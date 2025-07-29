@@ -15,6 +15,8 @@ SSTorytime takes information that you enter in the form of
 
 It turns these data into a graph, which you can then browse and query with the ready-made tools here, or by writing your own programs using the API. 
 
+## The tools
+
 Once you've got a bunch of notes, you can upload them into a
 searchable format and analyze them for patterns and hidden
 connections. Alternatively, you can upload structured data from some
