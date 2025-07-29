@@ -57,8 +57,8 @@ will want to separate your notes. e.g. you might have chapters on learning Frenc
 
 When you search for a topic you will match a node in the graph. Relating to that starting point, there are different views:
 
-* The **orbit** of a node is all the nodes connected to it, to some number of hops or radius.
-Wjen you search, you typically get to see matching nodes and their orbits up to radius 2 hops.
+* The **orbit** of a node is all the nodes connected to it, to some depth or radius (number of link hops).
+When you search, you typically get to see matching nodes and their orbits up to **radius** 2 hops.
 
 * A set of **path**s is set of connected links starting from a set of FROM nodes and ending with a set of TO nodes.
 
