@@ -171,6 +171,52 @@ $ make
 $ ../src/N4L-db -u LoopyLoo.n4l
 </pre>
 
+## Searching
+
+You can search the SSTorytime knowledge graph with (hopefully intuitive) phrases like these:
+<pre>
+from a1
+notes about chinese context restaurant
+notes chapter brain
+please in chinese
+paths from a1 to s1
+</pre>
+You can either use the `searchN4L` tool, or the web browser by running the web server `http_server` and connecting to `localhost:8080` or an address, e.g.`192.168.0.5:8080`.
+
+On the command line:
+<pre>
+
+$ ./searchN4L please in chinese
+$ ./searchN4L "(zai chengshi)"
+$ ./searchN4L from a1
+$ ./searchN4L notes about chinese context restaurant
+$ ./searchN4L notes about brain context waves
+$ ./searchN4L chapter brain
+$ ./searchN4L from a1
+$ ./searchN4L from a1 to b5
+$ ./searchN4L to "target 3"
+</pre>
+Notice that, if you want to match accented characters using unaccented substitutes (like 'o' for 'ø'), then you write the word in parentheses).
+
+You can also types these directly into the web browser:
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp11.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp12.png 'Testing a web interface')
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp13.png 'Testing a web interface')
+
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp2.png 'Testing a web interface')
+
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp3.png 'Testing a web interface')
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp4.png 'Testing a web interface')
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp5.png 'Testing a web interface')
+
+![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp6.png 'Testing a web interface')
+
+
 
 ## Browsing the results
 
@@ -205,79 +251,6 @@ This take only a page number as an argument for controlling long note sets:
 $ src/notes -page 2 brain
 
 </pre>
-A more flexible command interface is provided by `searchN4L`:
-<pre>
-$ src/searchN4L notes 
-
-</pre>
-
-![Silly search](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/zerosearch.png 'blind search')
-
-<pre>
-$ searchN4L -chapter notes 
-
-$ cd examples; make  # add a set of examples
-
-$ searchN4L -chapter chinese -explore meat food
-
-$ searchN4L -chapter chinese browse, arrows=pe,ph
-
-$ searchN4L -chapter brain -browse arrows=occurs,freq,role
-</pre>
-
-![Silly search](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/search.png 'more careful search')
-
-## A prototype web interface
-
-You can play around with a prototype web interface, running a webserver and brower on localhost. 
-Install your data, then go to the `src`
-directory and run `go run http_server.go`. Then you can connect by loading `page.html` or connecting to the
-address: `http://localhost:8080` in a browser.
-
-<pre>
-mark% go run http_server.go
-Listening at http://localhost:8080
-
-</pre>
-If you load the test `page.html` into a browser, you should see a webpage, something like this:
-
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp1.png 'Testing a web interface')
-
-There are several text areas and several buttons. Not all of text areas are used with all buttons.
-* **Orbits** yields a description of a "thought" and its cloud of nearest relationships. This is the easiest
-way to find a particular starting item and its immediate satellite links.
-* **Geometry** yields a snippets of trails starting from a certain place.
-* **Tales** yields a `_sequence_` trail starting from a "thought"
-* **Browse**,**Previous**, and **Next**, are used when reading through chapter notes from start to finish in a systematic order, page by page. Enter chapter name and perhaps context without a search string.
-
-*NB: if you want to run the web server and client on different hosts, you can change the 
-text `var API_SERVER = 'http://localhost:8080';` at the start of `page.html` to point to the IP address
-of the server. Note, however, that there is no security in the web server prototype, so it should not
-be exposed to a public internet.*
-
-**Finding the start of the right text by typing in the fields is still a challenge to be solved,
-and this should be considered experimental for now.**
-
-To search for anything matching a substring, enter a search string into Thought.
-If you want to limit the search to a particular section of notes and any specific context terms, you can
-add those to reduce the number of hits. For Orbits and Paths, the largest number of hits
-will come from leaving Chapter and Context blank.
-
-To read systematically, enter chapter and a set of arrows by which to select the kind of item you're
-searching for. For example, if you want to read notes, then enter "notes" into the arrows.
-If you are searching Chinese language with an emphasis on pinyin, then enter "ph,pe" or "ph pe"
-into the arrow ties text field and hit Browse. Use Next and Previous to walk through the different contexts within that chapter. If there is only one context, then 
-
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp2.png 'Testing a web interface')
-
-
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp3.png 'Testing a web interface')
-
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp4.png 'Testing a web interface')
-
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp5.png 'Testing a web interface')
-
-![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/webapp6.png 'Testing a web interface')
 
 
 
@@ -299,12 +272,17 @@ For example, suppose you are learning French.
 * Notice that you can make intuitive short names for arrows like (e.g.). You can define what these mean in the configuration. More on that later.
 * Notice you can define many different kind of arrows with different meanings, e.g. (e.g.), (note).
 
-You start to see a pattern in the notes: usually, if you're trying to remember something, you want to see the raw
-thing, like the word for breakfast. You also want to remember how to use it, so you naturally add a couple of examples
-just after the item. N4L will connect these dots to show you related things later. But, more importantly, you don't
-event have to do anything with N4L except write stuff down. These notes are already your potential knowledge in the
-making--and this simple structure helps you to be systematic in writing things down. You will spend a lot of time
-just curating these notes, altering, editing, improving, and most of the value is actually there.
+You start to see a pattern in the notes: usually, if you're trying to
+remember something, you want to see the raw thing, like the word for
+breakfast. You also want to remember how to use it, so you naturally
+add a couple of examples just after the item. N4L will connect these
+dots to show you related things later. But, more importantly, you
+don't event have to do anything with N4L except write stuff
+down. These notes are already your potential knowledge in the
+making--and this simple structure helps you to be systematic in
+writing things down. You will spend a lot of time just curating these
+notes, altering, editing, improving, and most of the value is actually
+there.
 
 You don't learn French by putting it in a database. You learn by revisiting it, and by remembering
 relevance and context. Just writing the notes is 80 percent of the job.
@@ -333,6 +311,8 @@ more languages:
     "  (中文意思是) 我想订早餐 
 
 </pre>
+
+
 
 ## It's not rocket science, unless ...
 
