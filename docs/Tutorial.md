@@ -38,7 +38,7 @@ most important part of the model.
 
 There are also tools for helping you to get started making notes about a text document.
 
-* text2N4L reads a text file and allows you to select parts and produce an editable file in N4L that you can use as a starting point for your own notes.
+* Use `text2N4L` to read a text file and select parts to produce an editable file in N4L that you can use as a starting point for your own notes.
 
 ## The data model
 
