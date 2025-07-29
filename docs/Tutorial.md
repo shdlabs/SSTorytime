@@ -44,9 +44,9 @@ There are also tools for helping you to get started making notes about a text do
 
 The knowledge database is divided into
 
-* Chapters: each file starting or section with a ` - ` mark is a chapter section.
-* Contexts: inside each chapter, you can tag subsections with ` :: context, tags, words...` that may be used to limit or enable search criteria.
-* Nodes and links: each item is a node, and each connection between items is a link. Links have types that you define for yourself, but they must all belong to one of the four meta-types: `leads to`, `contains`, `expresses property`, or `is near or similar to`.
+* **Chapter**s: each file starting or section with a ` - ` mark is a chapter section.
+* **Context**s: inside each chapter, you can tag subsections with ` :: context, tags, words...` that may be used to limit or enable search criteria.
+* **Nodes** and **Links**: each item is a node, and each connection between items is a link. Links have types that you define for yourself, but they must all belong to one of the four meta-types: `leads to`, `contains`, `expresses property`, or `is near or similar to`.
 
 The purpose of chapters and contexts is to enable a separation of
 concerns. You could throw everything into one giant chapter with no contexts, e.g. if
@@ -57,12 +57,12 @@ will want to separate your notes. e.g. you might have chapters on learning Frenc
 
 When you search for a topic you will match a node in the graph. Relating to that starting point, there are different views:
 
-* The orbit of a node is all the nodes connected to it, to some number of hops or radius.
+* The **orbit** of a node is all the nodes connected to it, to some number of hops or radius.
 Wjen you search, you typically get to see matching nodes and their orbits up to radius 2 hops.
 
-* A set of paths is set of connected links starting from a set of FROM nodes and ending with a set of TO nodes.
+* A set of **path**s is set of connected links starting from a set of FROM nodes and ending with a set of TO nodes.
 
-* A pagemap is a rendering of a page of notes that you typed as N4L, in the same order.
+* A **pagemap** is a rendering of a page of notes that you typed as N4L, in the same order.
 
 ## What use is this?
 
