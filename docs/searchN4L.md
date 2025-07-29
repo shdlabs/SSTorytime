@@ -27,6 +27,17 @@ to protect them.
 - `limit` or `depth` or `range` or `distance`
 
 
+## Examples
+
+<pre>
+topic
+from mytopic
+notes about chinese context restaurant
+notes chapter brain
+please in chinese
+paths from a1 to s1
+</pre>
+
 Using the pre-loaded examples, you can try:
 
 ## Search for nodes and their close neighbour orbits matching a name
