@@ -332,7 +332,7 @@ The SST principles help us to do that.
 
 ### Common structures in a graph
 
-The most important structure in any directed graph is a [*matroid*](https://arxiv.org/abs/1702.04638) or *hub*.
+The most important structure in any directed graph is a [*hub*](https://arxiv.org/abs/1702.04638).
 In Promise Theory, these imply so-called appointed roles to the nodes. If several arrows of the same
 type point to a node, then the node absorbs the property and it 
 becomes a "target" or shared property of the links. Conversely, if a node emits many arrows of the same

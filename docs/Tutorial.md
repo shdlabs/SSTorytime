@@ -1,28 +1,52 @@
 
 # Tutorial on N4L and SSTorytime
 
-*(This is a provisional tutorial to help get you started using the language)*
+This is a project in the age of so-called Artificial Intelligence. But
+it's not about machines.  It's a project about knowledge--*your*
+knowledge, human knowledge, but not the abstract knowledge of Mankind
+that people talk about for AI. Learning is difficult, and remembering
+is difficult, but we can make tools that help. That's what this is
+about.
 
-This is a project in the age of so-called Artificial Intelligence. But it's not about machines.
-It's a project about knowledge--*your* knowledge, not the abstract knowledge of Mankind that
-people talk about for AI. Learning is difficult, and remembering is difficult,
-but we can make tools that help. That's what this is about.
+SSTorytime takes information that you enter in the form of
 
-* You can use the note taking language for write reports (incident reports, forensic details, patient plans,
-or just notes about your favourite movies.)
+* Personal notes (written in a simple format called N4L).
+* Data entered by a computer program (using the API for creating Nodes and Links).
 
-* Once you've got a bunch of notes, you can upload them into a searchable format and analyze them for patterns
-and hidden connections.
+It turns these data into a graph, which you can then browse and query with the ready-made tools here, or by writing your own programs using the API. 
 
-* Alternatively, you can upload structured data from some source to form a graph, using the API. This
-requires programming knowledge, and a clear idea about how to use a graph in the first place.
-Many articles and books about graph data give bad modelling advice, so read on first!
+Once you've got a bunch of notes, you can upload them into a
+searchable format and analyze them for patterns and hidden
+connections. Alternatively, you can upload structured data from some
+source to form a graph, using the API. This requires programming
+knowledge, and a clear idea about how to use a graph in the first
+place.  Many articles and books about graph data give bad modelling
+advice, so read on first!
 
-Note that: when you write notes, they are usually strongly intended, full of rich semantics, but
-when you upload large amounts of data they are usually from sources that are unintended by you
-and have weak semantics. What they lose in intentional semantics, they try to make up in statistical
-measure. You can use tools like `graph_report` to study large data. For small data, *you* are the
+You can use the note taking language for writing reports (incident reports, forensic details, patient plans, or just notes about your favourite movies.)
+
+* You can use tools like `graph_report` to study large data. For small data, *you* are the
 most important part of the model.
+
+* You can use `searchN4L` to query the graph database.
+
+* Use `pathsolve` to find possible paths between certain items.
+
+* Use `notes` to read back the notes in the page order in which you wrote them.
+
+There are also tools for helping you to get started making notes about a text document.
+
+* text2N4L reads a text file and allows you to select parts and produce an editable file in N4L that you can use as a starting point for your own notes.
+
+## The data model
+
+The knowledge database is divided into
+
+* Chapters: each file starting or section with a ` - ` mark is a chapter section.
+* Contexts: inside each chapter, you can tag subsections with ` :: context, tags, words...` that may be used to limit or enable search criteria.
+* Nodes and links: each item is a node, and each connection between items is a link. Links have types that you define for yourself, but they must all belong to one of the four meta-types: `leads to`, `contains`, `expresses property`, or `is near or similar to`.
+
+## What use is this?
 
 How how can you compete with AI and with other people in the information age?
 It's a bit like going to the gym to get fit. No one can do it for you, but there
