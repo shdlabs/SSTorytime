@@ -2,14 +2,51 @@
 
 # An API for interacting with the SST graph
 
-You will find many examples of using Go(lang) code to write custom scripts
+The simplest way to manage graphs is to use the N4L language to create
+and manage them, then rebuild the whole database consistently as a
+cache of the information. This makes editing very intuitive and simple.
+However, sometimes you want to work directly with a programming interface.
+
+The most flexible way to deal with graphs is to program using the
+API. There are two API approaches you can use (in principle):
+
+- Adding nodes and links without caring about assigning node pointers. This uses the `SST.Vertex(ctx,str,chap)` and `SST.Edge(ctx,nfrom,"fwd",nto,context,w)` functions.
+- Adding nodes and links in bulk and managing node pointers yourself. This uses the `SST.IdempDBAddNode(ctx, np)`, `SST.IdempDBAddLink(ctx,np,lnk,nt)`, and `SST.CreateDBNodeArrowNode(ctx,np,lnk,sttype)`.
+
+Most will use only the first of these.  Both interfaces behave
+idempotently and work in the same way. The only difference is whether
+you allocate `NodePtr` values yourself (which is efficient for large
+numbers of entrites).
+
+Because the database behaves like a cache, optimized for quite different use-cases,
+we have to maintain several tables.
+
+<pre>
+sstoryline=# \dt
+              List of relations
+ Schema |      Name      | Type  |   Owner    
+--------+----------------+-------+------------
+ public | arrowdirectory | table | sstoryline
+ public | arrowinverses  | table | sstoryline
+ public | node           | table | sstoryline
+ public | nodearrownode  | table | sstoryline
+ public | pagemap        | table | sstoryline
+
+</pre>
+
+Another thing we need to do is register arrow definitions used in links/edges.
+For this we use two functions: `SST.InsertArrowDirectory(stname,alias,name,pm string)` and
+`SST.InsertInverseArrowDirectory(fwd,bwd ArrowPtr)`. We need to register arrows before using them
+in links.
+
+## Examples
+
+The API examples is the `src` directory are stripped down to the minimum, and the special
+tools llike the pathsolver and notes tool show how to make simple wrappers for the API functions too.
+You will also find many examples of using Go(lang) code to write custom scripts
 that interact with the database through the Go API
 [here](https://github.com/markburgess/SSTorytime/tree/main/src/demo_pocs).
 
-Notable examples:
-* [Maze solver 1](../src/demo_pocs/search_maze.go) and * [Maze solver 2](../src/demo_pocs/search_maze2.go)
-* [Path solver](../src/pathsolve.go)
-* [Graph reporter](../src/graph_report.go)
 
 ## Creating an SST graph from data
 
