@@ -54,7 +54,7 @@ See the [example](../src/API_EXAMPLE_1.go). To make node registration as easy as
 `Vertex()` and `Edge()` to create nodes and links respectively. These names are chosen to distance themselves
 from the underlying `Node` and `Link`naming, by using the more mathematical names for these objects.
 
-### Structure
+### Open/Close the connection to SST
 
 Assuming the arrow names have been defined (e.g. by uploading them using N4L),
 then to open the context channel for the database, we bracket the meat of a program with
@@ -74,7 +74,7 @@ func main() {
 
 </pre>
 
-### Add nodes and simple links from data
+### Add nodes and links from data
 
 For the meat of an AddStory function, we can use the Vertex and Edge functions to avoid low level details.
 Adding nodes to a database, without using the N4L language is straightforward:
@@ -106,7 +106,7 @@ Adding nodes to a database, without using the N4L language is straightforward:
 
 </pre>
 
-### Adding hub-joins or hyperlinks from data
+### Adding hub-joins (hyperlinks) from data
 
 See `API_EXAMPLE_2.go`. In a `HubJoin()` we provide a list of node pointers
 to be linked together via  a common hub. This respects the Semantic Spacetime
