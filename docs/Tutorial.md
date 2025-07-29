@@ -48,6 +48,11 @@ The knowledge database is divided into
 * Contexts: inside each chapter, you can tag subsections with ` :: context, tags, words...` that may be used to limit or enable search criteria.
 * Nodes and links: each item is a node, and each connection between items is a link. Links have types that you define for yourself, but they must all belong to one of the four meta-types: `leads to`, `contains`, `expresses property`, or `is near or similar to`.
 
+The purpose of chapters and contexts is to enable a separation of
+concerns. You could throw everything into one giant chapter with no contexts, e.g. if
+you have a single homogeneous graph like a social network, but for most semantic graphs you
+will want to separate your notes. e.g. you might have chapters on learning French or Chinese, and you could have contexts like "at the bank" or "ordering at the restaurant".
+
 ## What use is this?
 
 How how can you compete with AI and with other people in the information age?
