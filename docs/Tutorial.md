@@ -53,6 +53,17 @@ concerns. You could throw everything into one giant chapter with no contexts, e.
 you have a single homogeneous graph like a social network, but for most semantic graphs you
 will want to separate your notes. e.g. you might have chapters on learning French or Chinese, and you could have contexts like "at the bank" or "ordering at the restaurant".
 
+## Some terminology
+
+When you search for a topic you will match a node in the graph. Relating to that starting point, there are different views:
+
+* The orbit of a node is all the nodes connected to it, to some number of hops or radius.
+Wjen you search, you typically get to see matching nodes and their orbits up to radius 2 hops.
+
+* A set of paths is set of connected links starting from a set of FROM nodes and ending with a set of TO nodes.
+
+* A pagemap is a rendering of a page of notes that you typed as N4L, in the same order.
+
 ## What use is this?
 
 How how can you compete with AI and with other people in the information age?
