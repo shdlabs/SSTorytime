@@ -4241,11 +4241,9 @@ func AssignStoryCoordinates(axis []Link,nth,swimlanes int,limit int) map[NodePtr
 
 // **************************************************************************
 
-func AssignPageCoordinates(maplines []PageMap,nth int) map[NodePtr]Coords {
+func AssignPageCoordinates(maplines []PageMap) map[NodePtr]Coords {
 
 	var unique = make([][]NodePtr,0)
-
-	// Nth is segment nth of total, which has range (width=1.0)/total * [nth-nth+1]
 
 	total := len(maplines)
 
@@ -4269,7 +4267,10 @@ func AssignPageCoordinates(maplines []PageMap,nth int) map[NodePtr]Coords {
 		unique = append(unique,unique_section)
 	}
 
-	return MakeCoordinateDirectory(XChannels,unique,1,nth,total)
+	const nth = 0 // for page view, only ever one path
+	const swimlanes = 1
+
+	return MakeCoordinateDirectory(XChannels,unique,total,nth,swimlanes)
 }
 
 // **************************************************************************
@@ -5581,7 +5582,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 
 		var path []WebPath
 
-		directory := AssignPageCoordinates(maplines,n)
+		directory := AssignPageCoordinates(maplines)
 
 		txtctx := ContextString(maplines[n].Context)
 

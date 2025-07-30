@@ -837,6 +837,10 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
+
+CANVAS = CreateCanvas();
+DrawGrid(0,0,1);
+
 let reply = obj.Content;
 
 if (reply.Title != null)  // PageView
