@@ -4241,36 +4241,21 @@ func AssignStoryCoordinates(axis []Link,nth,swimlanes int,limit int) map[NodePtr
 
 // **************************************************************************
 
-func AssignPageCoordinates(maplines []PageMap) map[NodePtr]Coords {
+func AssignPageCoordinates(mapline []Link,nth,swimlanes int) map[NodePtr]Coords {
 
-	var unique = make([][]NodePtr,0)
+	XChannels := make([]float32,len(mapline))        // node widths along the path
 
-	total := len(maplines)
+	var unique = make([][]NodePtr,len(mapline))
+	var unique_section = make([]NodePtr,1)
 
-	XChannels := make([]float32,total)        // node widths along the path
-	already := make(map[NodePtr]bool)
-
-	for tz := 0; tz < total; tz++ {
-
-		var unique_section = make([]NodePtr,0)
-
-		for l := 0; l < len(maplines[tz].Path); l++ {
-
-			nptr := maplines[tz].Path[l].Dst
-
-			if !already[nptr] {
-				unique_section = append(unique_section,nptr)
-				already[nptr] = true
-				XChannels[tz]++
-			}
-		}
-		unique = append(unique,unique_section)
+	for tz := 0; tz < len(mapline); tz++ {
+		nptr := mapline[tz].Dst
+		XChannels[tz] = 1
+		unique_section[0] = nptr
+		unique[tz] = unique_section
 	}
 
-	const nth = 0 // for page view, only ever one path
-	const swimlanes = 1
-
-	return MakeCoordinateDirectory(XChannels,unique,total,nth,swimlanes)
+	return MakeCoordinateDirectory(XChannels,unique,len(mapline),nth,swimlanes)
 }
 
 // **************************************************************************
@@ -4290,7 +4275,7 @@ func MakeCoordinateDirectory(XChannels []float32, unique [][]NodePtr,maxzlen,nth
 	// Start allocating swimlane into XChannels parallel spaces
 	// x now runs from (x_lane_start to += x_lanewidth)
 
-	for tz := 0; tz < maxzlen; tz++ {
+	for tz := 0; tz < maxzlen && tz < len(unique); tz++ {
 
 		x_increment := x_lanewidth / (XChannels[tz]+1)
 
@@ -5582,8 +5567,6 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 
 		var path []WebPath
 
-		directory := AssignPageCoordinates(maplines)
-
 		txtctx := ContextString(maplines[n].Context)
 
 		if last != maplines[n].Chapter || lastc != txtctx {
@@ -5592,7 +5575,11 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 			last = maplines[n].Chapter
 			lastc = txtctx
 		}
-		
+
+		directory := AssignPageCoordinates(maplines[n].Path,n,len(maplines))
+
+		// Next line item
+
 		for lnk := 0; lnk < len(maplines[n].Path); lnk++ {
 			
 			text := GetDBNodeByNodePtr(ctx,maplines[n].Path[lnk].Dst)
@@ -5601,16 +5588,17 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				var ws WebPath
 				ws.Name = text.S
 				ws.NPtr = maplines[n].Path[lnk].Dst
+				ws.XYZ = directory[ws.NPtr]
 				path = append(path,ws)
 				
-			} else {
+			} else {// ARROW
 				arr := GetDBArrowByPtr(ctx,maplines[n].Path[lnk].Arr)
 				var wl WebPath
 				wl.Name = arr.Long
 				wl.Arr = maplines[n].Path[lnk].Arr
 				wl.STindex = arr.STAindex
 				path = append(path,wl)
-				
+				// NODE
 				var ws WebPath
 				ws.Name = text.S
 				ws.NPtr = maplines[n].Path[lnk].Dst
@@ -5619,6 +5607,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				
 			}
 		}
+		// Next line
 		webnotes.Notes = append(webnotes.Notes,path)
 	}
 	

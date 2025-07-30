@@ -508,8 +508,8 @@ for (let path = 0; path < array.length; path++)
       if (i % 2 == 0) // node
          {
          let str = array[path][i].Name;
-         let ncptr = array[path][i].NCPtr;
-         let nclass = array[path][i].NClass;
+         let ncptr = array[path][i].NPtr.CPtr;
+         let nclass = array[path][i].NPtr.NClass;
 
          let xyz = array[path][i].XYZ;
 
@@ -604,6 +604,157 @@ for (let path = 0; path < array.length; path++)
          let arrow = array[path][i].Name
          let arrptr = array[path][i].Arr
          let stindex = array[path][i].STindex
+
+         lastarrow = stindex - ST_ZERO;
+
+         if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
+            {
+            let hr = document.createElement('p');
+            parent.appendChild(hr);
+            }
+
+         let arrow_link = document.createElement('a');
+         arrow_link.textContent = `( ${arrow} )  `;
+         arrow_link.id = `arrow-`+stindex;
+         arrow_link.class = "tooltip";
+         arrow_link.title = STINDICES[stindex];
+         arrow_link.style.fontFamily = 'Verdana';
+
+         parent.appendChild(arrow_link);
+         }
+      }
+
+   let spacer = document.createElement('hr');
+   parent.appendChild(spacer);
+   }
+
+return parent
+}
+
+/***********************************************************/
+
+function PrintNotes(parent,array)
+{
+if (array.length < 1)
+   {
+   return parent;
+   }
+
+let lastx = 0;
+let lasty = 0;
+let lastz = 0;
+let lastarrow = 0;
+
+for (let line = 0; line < array.length; line++)
+   {
+   if (array[line] == null)
+      {
+      continue;
+      }
+
+   // The WebPath protocol alternates node-arrow...
+
+   for (let i = 0; i < array[line].length; i++)
+      {
+      if (i % 2 == 0) // node
+         {
+         let str = array[line][i].Name;
+         let ncptr = array[line][i].NPtr.CPtr;
+         let nclass = array[line][i].NPtr.NClass;
+
+         let xyz = array[line][i].XYZ;
+
+         thisx = xyz.X;
+         thisy = xyz.Y;
+         thisz = xyz.Z;
+
+         if (lastx != 0 || lasty != 0 || lastz != 0)
+            {
+            switch (lastarrow)
+               {
+               case -3:
+                  Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case -2:
+                  Contains(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case -1:
+                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case 0:
+                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case 1:
+                  LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
+                  break;
+               case 2:
+                  Contains(lastx,lasty,lastz,thisx,thisy,thisz);
+                  break;
+               case 3:
+                  Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
+                  break;
+               default:
+                  console.log("Bad value",lastarrow);
+               }
+            }
+
+      if (i < array[line].length-1)
+         {
+         lastx = thisx;
+         lasty = thisy;
+         lastz = thisz;
+         }
+      else
+         {
+         lastx = 0;
+         lasty = 0;
+         lastz = 0;
+         }
+
+         Event(thisx,thisy,thisz);
+         Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
+
+         if (array[line][i].NPtr != null)
+            {
+            ncptr = array[line][i].NPtr.CPtr;
+            nclass = array[line][i].NPtr.Class;
+            }
+
+         if (str.includes("\n"))
+            {
+            let text_link = document.createElement('a');
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+            let pre = document.createElement('pre');
+            pre.textContent = str;
+            text_link.appendChild(pre);
+            parent.appendChild(text_link);
+            }
+         else
+            {
+            let text_link = document.createElement('a');
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+            let text = document.createElement('i');
+            text.textContent = str;
+            text.style.fontFamily = 'Times New Roman';
+
+            if (str.length < 20)
+               {
+               text.style.fontSize = '150%';
+               text.style.padding = '10px';
+               }
+
+            text_link.appendChild(text);
+            parent.appendChild(text_link);
+            }
+         }
+      else // arrow 
+         {
+         const then = 2 // reserved vectors
+         const prev = 3
+
+         let arrow = array[line][i].Name
+         let arrptr = array[line][i].Arr
+         let stindex = array[line][i].STindex
 
          lastarrow = stindex - ST_ZERO;
 
@@ -750,6 +901,8 @@ for (let head_nptr of obj.Content)
    parent = PrintPath(parent,head_nptr.Paths);
    panel.appendChild(parent);
 
+   // Add the centrality box at bottom of page
+
    let tab = document.createElement('table');
    let row = document.createElement('tr');
    let col1 = document.createElement('td');
@@ -837,18 +990,20 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
-
 CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
 
-let reply = obj.Content;
-
-if (reply.Title != null)  // PageView
-   {
-   let item = document.createElement('p');
-   item = PrintPath(item,reply.Notes);
-   panel.appendChild(item);
-   }
+let parent = document.createElement('content');
+let chapter = obj.Content.Title;
+let ctx = document.createElement('i');
+let context = obj.Content.Context;
+ctx.textContent = context;
+parent.textContent = "in chapter " + chapter + " in context:   ";
+parent.appendChild(ctx);
+let thepage = document.createElement('p');
+thepage = PrintNotes(thepage,obj.Content.Notes);
+parent.appendChild(thepage);
+panel.appendChild(parent);
 }
 
 /***********************************************************/

@@ -291,8 +291,6 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePt
 	for n := range nptrs {
 		for st := range sttype {
 
-			fmt.Println("Cones from",nptrs[n],"sttype",sttype[st],"swimlanes",len(nptrs),"this",n)
-
 			jstr,count := PackageConeFromOrigin(nptrs[n],n,sttype[st],chap,context,len(nptrs),limit)
 
 			if count > 0 {
@@ -435,10 +433,9 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 func HandlePageMap(w http.ResponseWriter, r *http.Request,notes []SST.PageMap) {
 
 	jstr := SST.JSONPage(CTX,notes)
+
 	response := PackageResponse("PageMap",jstr)
-
 	//fmt.Println("PAGEMAP NOTES",string(response))
-
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 }
