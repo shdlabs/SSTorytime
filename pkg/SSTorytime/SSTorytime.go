@@ -5258,6 +5258,7 @@ func PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int) {
 	node := GetDBNodeByNodePtr(ctx,nptr)		
 
 	ShowText(node.S,width)
+	fmt.Println("\tin chapter:",node.Chap)
 	fmt.Println()
 
 	notes := GetNodeOrbit(ctx,nptr,"")
@@ -5283,7 +5284,7 @@ func PrintLinkOrbit(notes [ST_TOP][]Orbit,sttype int,indent_level int) {
 		r := notes[t][n].Radius + indent_level
 
 		if notes[t][n].Ctx != "" {
-			txt := fmt.Sprintf(" -    (%s) - %s  .. %s\n",notes[t][n].Arrow,notes[t][n].Text,notes[t][n].Ctx)
+			txt := fmt.Sprintf(" -    (%s) - %s  \t.. in the context of %s\n",notes[t][n].Arrow,notes[t][n].Text,notes[t][n].Ctx)
 			text := Indent(LEFTMARGIN * r) + txt
 			ShowText(text,SCREENWIDTH)
 		} else {
@@ -5466,8 +5467,9 @@ func LinkWebPaths(ctx PoSST,cone [][]Link,nth int,chapter string,context []strin
 
 // **************************************************************************
 
-func JSON_TableOfContents(ctx PoSST,chap string,cn []string) string {
+func GetChaptersByChapContext(ctx PoSST,chap string,cn []string,limit int) map[string][]string {
 
+	qstr := ""
 	chap_col := ""
 
 	if chap != "any" && chap != "" {
@@ -5483,19 +5485,23 @@ func JSON_TableOfContents(ctx PoSST,chap string,cn []string) string {
 		}
 	}
 
+	if chap == "TableOfContents" {
+		chap_col = ""
+	}
+
 	_,cn_stripped := IsBracketedSearchList(cn)
 	context := FormatSQLStringArray(cn_stripped)
 
-	qstr := fmt.Sprintf("WITH matching_nodes AS "+
+	qstr = fmt.Sprintf("WITH matching_nodes AS "+
 		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
 		"     SELECT DISTINCT chap,ctx FROM matching_nodes "+
-		"      JOIN Node ON nptr=nfrom WHERE match=true %s",
+		"      JOIN Node ON nptr=nfrom WHERE match=true %s ORDER BY Chap",
 		context,chap_col)
 
 	row, err := ctx.DB.Query(qstr)
 	
 	if err != nil {
-		fmt.Println("QUERY TableOfContents Failed",err,qstr)
+		fmt.Println("QUERY GetChaptersByChapContext Failed",err,qstr)
 	}
 
 	var rchap,rcontext string
@@ -5504,56 +5510,37 @@ func JSON_TableOfContents(ctx PoSST,chap string,cn []string) string {
 	for row.Next() {		
 		err = row.Scan(&rchap,&rcontext)
 
-		chps := strings.Split(rchap,",")
-		for c := range chps {
+		// Each chapter can be a comma separated list
+
+		chps := SplitChapters(rchap)
+
+		for c := 0; c < len(chps); c++ {
+
+			if len(toc) == limit {
+				row.Close()
+				return toc
+			}
+
 			rc := chps[c]
+
 			cn := ParseSQLArrayString(rcontext)
+			ctx_grp := ""
+
 			for s := 0; s < len(cn); s++ {
-				//cn[s] = strings.Replace(cn[s]," ","-",-1)
-				toc[rc] = append(toc[rc],cn[s])
+				ctx_grp += cn[s]
+				if s < len(cn)-1 {
+					ctx_grp += ", "
+				}
+			}
+
+			if len(ctx_grp) > 0 {
+				toc[rc] = append(toc[rc],ctx_grp)
 			}
 		}
 	}
 
-	// JSON
-
-	json_toc := "{ \"TOC\": ["
-	var order []string
-
-	for keys := range toc {
-		order = append(order,keys)
-	}
-
-	sort.Strings(order)
-
-	for key := 0; key < len(order); key++ {
-		json_toc += fmt.Sprintf("{\n\"Chapter\": \"%s\",\n",order[key])
-
-		var idemp = make(map[string]bool)
-		var list []string
-
-		for s := range toc[order[key]] {
-			idemp[toc[order[key]][s]] = true
-		}
-		
-		for vals := range idemp {
-			list = append(list,vals)
-		}
-
-		sort.Strings(list)
-		arr,_ := json.Marshal(list)
-
-		json_toc += fmt.Sprintf("\"Contexts\": %s\n",string(arr))
-		json_toc += "}"
-		if key != len(order)-1 {
-			json_toc += ",\n"
-		}
-	}
-
-	json_toc += " ]}"
-	
 	row.Close()
-	return json_toc
+	return toc
 }
 
 // **************************************************************************
@@ -5971,7 +5958,6 @@ func DecodeSearchField(cmd string) SearchParameters {
 	cmd = m.ReplaceAllString(cmd," ") 
 
 	cmd = strings.TrimSpace(cmd)
-	//pts := SplitCommandText(cmd)
 	pts := SplitQuotes(cmd)
 
 	var parts [][]string
@@ -6031,7 +6017,8 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					param.Chapter = cmd_parts[c][p+1]
 					break
 				} else {
-					param = AddOrphan(param,cmd_parts[c][p])
+					param.Chapter = "TableOfContents"
+					break					
 				}
 				continue
 
@@ -7351,6 +7338,73 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 //
 // Toolkits: generic helper functions
 //
+// **************************************************************************
+
+func SplitChapters(str string) []string {
+
+	run := []rune(str)
+
+	var part []rune
+	var retval []string
+
+	for r := 0; r < len(run); r++ {
+		if run[r] == ',' && (r+1 < len(run) && run[r+1] != ' ') {
+			retval = append(retval,string(part))
+			part = nil
+		} else {
+			part = append(part,run[r])
+		}
+	}
+
+	retval = append(retval,string(part))
+	return retval
+}
+
+// **************************************************************************
+
+func List2Map(l []string) map[string]int {
+
+	var retvar = make(map[string]int)
+
+	for s := range l {
+		retvar[strings.TrimSpace(l[s])]++
+	}
+
+	return retvar
+}
+
+// **************************************************************************
+
+func Map2List(m map[string]int) []string {
+
+	var retvar []string
+
+	for s := range m {
+		retvar = append(retvar,strings.TrimSpace(s))
+	}
+
+	sort.Strings(retvar)
+	return retvar
+}
+
+// **************************************************************************
+
+func List2String(list []string) string {
+
+	var s string
+
+	sort.Strings(list)
+
+	for i := 0; i < len(list); i++ {
+		s += list[i]
+		if i < len(list)-1 {
+			s+= ", "
+		}
+	}
+
+	return s
+}
+
 // **************************************************************************
 
 func SQLEscape(s string) string {

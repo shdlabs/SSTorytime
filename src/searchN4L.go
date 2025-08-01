@@ -10,6 +10,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"flag"
 	"strings"
 
@@ -213,6 +214,19 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	fmt.Println("------------------------------------------------------------------")
 	fmt.Println(" Limiting to maximum of",limit,"results")
 
+	// Table of contents
+
+	if chapter && !name && !sequence && !pagenr {
+
+		ShowMatchingChapter(ctx,search.Chapter,search.Context,limit)
+		return
+	}
+
+	if context && !chapter && !name && !sequence && !pagenr {
+		//ShowMatchingContext(ctx,search.Context)
+		return
+	}
+
 	// if we have name, (maybe with context, chapter, arrows)
 
 	if name && ! sequence && !pagenr {
@@ -283,18 +297,6 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	if name && sequence || sequence && arrows {
 		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context,limit)
-		return
-	}
-
-	// Match existing contexts
-
-	if chapter {
-		ShowMatchingChapter(ctx,search.Chapter)
-		return
-	}
-
-	if context {
-		ShowMatchingContext(ctx,search.Context)
 		return
 	}
 
@@ -486,15 +488,143 @@ func ShowMatchingContext(ctx SST.PoSST,s []string) {
 
 //******************************************************************
 
-func ShowMatchingChapter(ctx SST.PoSST,s string) {
+func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string,limit int) {
 
 	if VERBOSE {
-		fmt.Println("Solver/handler: GetDBChaptersMatchingName()")
+		fmt.Println("Solver/handler: ShowMatchingChapter()")
 	}
 
-	res := SST.GetDBChaptersMatchingName(ctx,s)
-	for c := 0; c < len(res); c++ {
-		fmt.Printf("%3d. \"%s\"\n",c,res[c])
+	toc := SST.GetChaptersByChapContext(ctx,chap,context,limit)
+
+	var chap_list []string
+
+	for chaps := range toc {
+		chap_list = append(chap_list,chaps)
+	}
+
+	sort.Strings(chap_list)
+
+	for c := 0; c < len(chap_list); c++ {
+
+		fmt.Printf("\n%d. Chapter: %s\n",c,chap_list[c])
+
+		dim,clist,adj := FractionateContextParts(toc[chap_list[c]])
+
+		ShowContextFractions(dim,clist,adj)
+	}
+}
+
+//******************************************************************
+
+func FractionateContextParts(context_clusters []string) (int,[]string,[][]int)  {
+
+	var idemp = make(map[string]int)
+	var cluster_list []string
+
+	// This should not be cached in the database, but remain dynamic
+	
+	for s := range context_clusters {
+		idemp[context_clusters[s]]++
+	}
+
+	for each_unique_cluster := range idemp {
+		cluster_list = append(cluster_list,each_unique_cluster)
+	}
+
+	sort.Strings(cluster_list)
+
+	var adj [][]int
+
+	for ci := 0; ci < len(cluster_list); ci++ {
+
+		var row []int
+
+		for cj := ci+1; cj < len(cluster_list); cj++ {			
+			s,_ := DiffClusters(cluster_list[ci],cluster_list[cj])
+			row = append(row,len(s))
+		}
+
+		adj = append(adj,row)
+	}
+
+	return len(cluster_list),cluster_list,adj
+}
+
+//******************************************************************
+
+func DiffClusters(l1,l2 string) (string,string) {
+
+	// BE CAREFUL! This is a difficult algorithm
+
+	// The fragments arrive as comma separated strings that are
+        // already composed or ordered n-grams
+
+	sequence1 := strings.Split(l1,",")
+	sequence2 := strings.Split(l2,",")
+
+	// Get orderless idempotent directory of all 1-grams
+
+	m1 := SST.List2Map(sequence1)
+	m2 := SST.List2Map(sequence2)
+
+	// split the lists into words into directories for common and individual ngrams
+
+	return OverlapMatrix(m1,m2)
+}
+
+//******************************************************************
+
+func OverlapMatrix(m1,m2 map[string]int) (string,string) {
+
+	var common = make(map[string]int)
+	var separate = make(map[string]int)
+
+	// sieve shared / individual parts
+
+	for ng := range m1 {
+		if m2[ng] > 0 {
+			common[ng]++
+		} else {
+			separate[ng]++
+		}
+	}
+
+	for ng := range m2 {
+		if m1[ng] > 0 {
+			delete(separate,ng)
+			common[ng]++
+		} else {
+			_,exists := common[ng]
+			if  !exists {
+				separate[ng]++
+			}
+		}
+	}
+
+	return SST.List2String(SST.Map2List(common)),SST.List2String(SST.Map2List(separate))
+}
+
+//******************************************************************
+
+func ShowContextFractions(dim int,clist []string,adj [][]int) {
+	
+	for c := 0; c < len(adj); c++ {
+
+		fmt.Printf("\n     %d.",c)
+
+		for cp := 0; cp < len(adj[c]); cp++ {
+			if adj[c][cp] > 0 {
+				fmt.Printf(" relto ")
+				break
+			}
+		}
+		for cp := 0; cp < len(adj[c]); cp++ {
+			if adj[c][cp] > 0 {
+				fmt.Printf("%d,",cp)
+			}
+		}
+
+		fmt.Printf(") %s\n",clist[c])
 	}
 }
 

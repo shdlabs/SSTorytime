@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"os"
+	"sort"
 	"encoding/json"
 
         SST "SSTorytime"
@@ -150,6 +151,18 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// SEARCH SELECTION *********************************************
 
+	if chapter && !name && !sequence && !pagenr {
+		fmt.Println("ShowMatchingChapter()")
+		//ShowMatchingChapter(CTX,search.Chapter,search.Context)
+		return
+	}
+
+	if context && !chapter && !name && !sequence && !pagenr {
+		//ShowMatchingContext(ctx,search.Context)
+		return
+	}
+
+
 	if name && ! sequence && !pagenr {
 		fmt.Println("HandleOrbits()")
 		HandleOrbit(w,r,nodeptrs,limit)
@@ -210,18 +223,6 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	if name && sequence || sequence && arrows {
 		HandleStories(w,r,CTX,search.Arrows,search.Name,search.Chapter,search.Context,limit)
-		return
-	}
-
-	// Match existing contexts
-
-	if chapter {
-		//ShowMatchingChapter(ctx,search.Chapter)
-		return
-	}
-
-	if context {
-		//ShowMatchingContext(ctx,search.Context)
 		return
 	}
 
@@ -487,6 +488,47 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 
 // *********************************************************************
 
+func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string) {
+
+	toc := SST.GetChaptersByChapContext(ctx,chap,context)
+
+	// map[string][]string 
+
+	var order []string
+
+	for keys := range toc {
+		order = append(order,keys)
+	}
+
+	sort.Strings(order)
+
+	for key := 0; key < len(order); key++ {
+
+		fmt.Println("CHAP",order[key])
+
+		var idemp = make(map[string]bool)
+		var list []string
+
+		for s := range toc[order[key]] {
+			idemp[toc[order[key]][s]] = true
+		}
+		
+		for vals := range idemp {
+			list = append(list,vals)
+		}
+
+		sort.Strings(list)
+
+		for c := 0; c < len(list); c++ {
+			fmt.Println("      - ",list[c])
+		}
+	}
+}
+
+// *********************************************************************
+// Misc
+// *********************************************************************
+
 func JSONStoryNodeEvent(en SST.NodeEvent) string {
 
 	var jstr string
@@ -521,26 +563,6 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 	arrays = strings.Trim(arrays,",")
 	jstr += fmt.Sprintf("\"Orbits\": [%s] }",arrays)
 	return jstr
-}
-
-// *********************************************************************
-
-func TableOfContents(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Println("TableOfContents handler")
-
-	switch r.Method {
-	case "POST","GET":
-		chapter := r.FormValue("chapter")
-		cntstr := r.FormValue("context")
-		context,_ := SST.Str2Array(cntstr)
-
-		toc := SST.JSON_TableOfContents(CTX,chapter,context)
-		w.Write([]byte(toc))
-		fmt.Println(toc)
-	default:
-		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
-	}
 }
 
 // *********************************************************************
