@@ -153,7 +153,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	if chapter && !name && !sequence && !pagenr {
 		fmt.Println("ShowMatchingChapter()")
-		//ShowMatchingChapter(CTX,search.Chapter,search.Context)
+		//ShowMatchingChapter(CTX,search.Chapter,search.Context,limit)
 		return
 	}
 
@@ -488,9 +488,9 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 
 // *********************************************************************
 
-func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string) {
+func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string,limit int) {
 
-	toc := SST.GetChaptersByChapContext(ctx,chap,context)
+	toc := SST.GetChaptersByChapContext(ctx,chap,context,limit)
 
 	// map[string][]string 
 

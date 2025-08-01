@@ -92,6 +92,35 @@ words by placing parentheses around them "(...)":
      from, layout, position, toward
 </pre>
 
+## Searching for anything in a given context
+
+<pre>
+$ ./searchN4L %% context smalltalk brain wave limit 3
+------------------------------------------------------------------
+ Limiting to maximum of 3 results
+------------------------------------------------------------------
+
+0: what's up?   in chapter: notes on chinese
+
+      -    (english has hanzi) - 什么事
+           -    (hanzi has pinyin) - shénme shì         .. in the context of knowing, questions, smalltalk, talking, understanding
+
+1: 明白 in chapter: notes on chinese
+
+      -    (hanzi has english) - understand
+      -    (hanzi has pinyin) - míngbái
+
+
+2: type 2       in chapter: neuroscience brain
+
+      -    (is part of) - theta waves
+           -    (is discussed in) - Left–right-alternating theta sweeps in entorhinal–hippocampal maps of space         ..
+     in the context of references
+           -    (has frequency) - 4-8 Hz        .. in the context of oscillations, waves
+
+
+</pre>
+
 ## Searching by direct NodePtr references
 
 If you know about the database internals, you can look up node pointers directly
@@ -234,5 +263,46 @@ gamma waves (occurs in) premotor cortex
 gamma waves (occurs in) parietal cortex 
 gamma waves (occurs in) temporal cortex 
 gamma waves (occurs in) frontal cortex 
+
+</pre>
+
+## Searching for chapters
+
+To get a table of contents, with embedded contexts:
+
+<pre>
+./searchN4L chapter any limit 4
+------------------------------------------------------------------
+ Limiting to maximum of 4 results
+
+0. Chapter: - branching test
+
+     0.) nothing special
+
+1. Chapter: Directions in chinese
+
+     0.) compass, directions
+
+2. Chapter: building construction
+
+     0.) 2024-06-12 delivery
+
+     1.) entrepreneurs
+
+     2.) ettårsbefaring
+
+     3.) materials . recycling
+
+     4.) meeting 1
+
+     5.) people
+
+     6.) roles, terminology, terms
+
+3. Chapter: chinese story about fox and crow
+
+     0.) _title_ Wūyā Hé Húli
+
+     1.) vocab
 
 </pre>
