@@ -8031,7 +8031,7 @@ func ShowText(s string, width int) {
 	linecounter = 0
 
 	for r := 0; r < len(runes); r++ {
-		
+
 		if unicode.IsSpace(runes[r]) && linecounter > width-RIGHTMARGIN {
 			if runes[r] != '\n' {
 				fmt.Print("\n",indent)
@@ -8042,6 +8042,8 @@ func ShowText(s string, width int) {
 			}
 		}
 		if unicode.IsPunct(runes[r]) && linecounter > width-RIGHTMARGIN {
+			fmt.Print(string(runes[r]))
+			r++
 			if runes[r] != '\n' {
 				fmt.Print("\n",indent)
 				linecounter = 0

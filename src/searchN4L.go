@@ -223,7 +223,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	}
 
 	if context && !chapter && !name && !sequence && !pagenr {
-		//ShowMatchingContext(ctx,search.Context)
+		ShowChapterContexts(ctx,search.Chapter,search.Context,limit)
 		return
 	}
 
@@ -472,22 +472,6 @@ func ShowMatchingArrows(ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
 
 //******************************************************************
 
-func ShowMatchingContext(ctx SST.PoSST,s []string) {
-
-	if VERBOSE {
-		fmt.Println("Solver/handler: GetDBContextMatchingName()")
-	}
-
-	for i := range s {
-		res := SST.GetDBContextsMatchingName(ctx,s[i])
-		for c := 0; c < len(res); c++ {
-			fmt.Printf("%3d. \"%s\"\n",c,res[c])
-		}
-	}
-}
-
-//******************************************************************
-
 func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string,limit int) {
 
 	if VERBOSE {
@@ -508,7 +492,7 @@ func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string,limit int) {
 
 		fmt.Printf("\n%d. Chapter: %s\n",c,chap_list[c])
 
-		dim,clist,adj := FractionateContextParts(toc[chap_list[c]])
+		dim,clist,adj := IntersectContextParts(toc[chap_list[c]])
 
 		ShowContextFractions(dim,clist,adj)
 	}
@@ -516,13 +500,11 @@ func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string,limit int) {
 
 //******************************************************************
 
-func FractionateContextParts(context_clusters []string) (int,[]string,[][]int)  {
+func IntersectContextParts(context_clusters []string) (int,[]string,[][]int)  {
 
 	var idemp = make(map[string]int)
 	var cluster_list []string
 
-	// This should not be cached in the database, but remain dynamic
-	
 	for s := range context_clusters {
 		idemp[context_clusters[s]]++
 	}
@@ -559,13 +541,13 @@ func DiffClusters(l1,l2 string) (string,string) {
 	// The fragments arrive as comma separated strings that are
         // already composed or ordered n-grams
 
-	sequence1 := strings.Split(l1,",")
-	sequence2 := strings.Split(l2,",")
+	spectrum1 := strings.Split(l1,", ")
+	spectrum2 := strings.Split(l2,", ")
 
 	// Get orderless idempotent directory of all 1-grams
 
-	m1 := SST.List2Map(sequence1)
-	m2 := SST.List2Map(sequence2)
+	m1 := SST.List2Map(spectrum1)
+	m2 := SST.List2Map(spectrum2)
 
 	// split the lists into words into directories for common and individual ngrams
 
@@ -630,8 +612,127 @@ func ShowContextFractions(dim int,clist []string,adj [][]int) {
 
 //******************************************************************
 
-func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,context []string,limit int) {
+func ShowChapterContexts(ctx SST.PoSST,chap string,context []string,limit int) {
 
+	if VERBOSE {
+		fmt.Println("Solver/handler: ShowChapterContexts()")
+	}
+
+	toc := SST.GetChaptersByChapContext(ctx,chap,context,limit)
+
+	// toc is a map by chapter with a list of list of context strings
+
+	for c := range toc {
+
+		fmt.Println("------------------------------------------------------------------")
+		fmt.Printf("\n   Chapter context: %s\n",c)
+
+		spectrum := GetContextTokenFrequencies(toc[c])
+		intent,ambient := ContextIntentAnalysis(spectrum,toc[c])
+
+		var intended string
+		var common string
+
+		for f := 0; f < len(intent); f++ {
+			intended += fmt.Sprintf("\"%s\"",strings.TrimSpace(intent[f]))
+			if f < len(intent)-1 {
+				intended += ", "
+			}
+		}
+		fmt.Print("\n   Exceptional context terms: ")
+		SST.ShowText(intended,SST.SCREENWIDTH/2)
+		fmt.Println()
+
+		for f := 0; f < len(ambient); f++ {
+			common += fmt.Sprintf("\"%s\"",ambient[f])
+			if f < len(ambient)-1 {
+				common += ", "
+			}
+		}
+		fmt.Print("\n   Common context terms: ")
+		SST.ShowText(common,SST.SCREENWIDTH/2)
+		fmt.Println()
+	}
+	fmt.Println("\n")
+	
+}
+
+//******************************************************************
+
+func GetContextTokenFrequencies(fraglist []string) map[string]int {
+
+	var spectrum = make(map[string]int)
+
+	for l := range fraglist {
+		fragments := strings.Split(fraglist[l],", ")
+		partial := SST.List2Map(fragments)
+
+		// Merge all strands
+
+		for f := range partial {
+			spectrum[f] += partial[f]
+		}
+	}
+
+	return spectrum
+}
+
+//******************************************************************
+
+func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,[]string) {
+
+	var intentional []string
+	const intent_limit = 3  // policy from research
+
+	for f := range spectrum {
+		if spectrum[f] < intent_limit {
+			intentional = append(intentional,f)
+			delete(spectrum,f)
+		}
+	}
+
+	for cl := range clusters {
+		for deletions := range intentional {
+			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions]+", ","",-1)
+			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions],"",-1)
+		}
+	}
+
+	spectrum = make(map[string]int)
+
+	for cl := range clusters {
+		if strings.TrimSpace(clusters[cl]) != "" {
+			pruned := strings.Trim(clusters[cl],", ")
+			spectrum[pruned]++
+		}
+	}
+
+	// Now we have a small set of largely separated major strings.
+	// One more round of diffs for a final separation
+
+	var ambient = make(map[string]int)
+
+	context := SST.Map2List(spectrum)
+
+	for ci := 0; ci < len(context); ci++ {
+		for cj := ci+1; cj < len(context); cj++ {
+
+			s,i := DiffClusters(context[ci],context[cj])
+
+			if len(s) > 0 && len(i) > 0 && len(i) <= len(context[ci])+len(context[ci]) {
+				ambient[strings.TrimSpace(s)]++
+				ambient[strings.TrimSpace(i)]++
+			}
+		}
+	}
+	
+	return intentional,SST.Map2List(ambient)
+}
+
+//******************************************************************
+
+func ShowStories(ctx SST.PoSST,arrows []string,name []string,chapter string,context []string,limit int) {
+	
 	if arrows == nil {
 		arrows = []string{"then"}
 	}

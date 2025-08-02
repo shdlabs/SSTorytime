@@ -306,3 +306,56 @@ To get a table of contents, with embedded contexts:
      1.) vocab
 
 </pre>
+
+## Searching for context descriptors
+
+To get a list of phrases you've used to label contexts:
+
+<pre>
+$ ./searchN4L  context any
+
+------------------------------------------------------------------
+ Limiting to maximum of 10 results
+------------------------------------------------------------------
+
+   Chapter context: building construction
+
+   Exceptional context terms: "entrepreneurs", "ettårsbefaring", "materials . recycling"
+      "roles", "terminology", "2024-06-12 delivery", "meeting
+     1", "people", "terms"
+
+   Common context terms: 
+------------------------------------------------------------------
+
+   Chapter context: chinese story about fox and crow
+
+   Exceptional context terms: "_title_ Wūyā Hé Húli", "vocab"
+
+   Common context terms: 
+...
+</pre>
+To find tokens related to a particular match:
+<pre>
+$ ./searchN4L.go  context direct keyi |more
+
+------------------------------------------------------------------
+ Limiting to maximum of 10 results
+------------------------------------------------------------------
+
+   Chapter context: Directions in chinese
+
+   Exceptional context terms: "compare", "comparisons", "best", "see", "bi uses", "phonetics"
+      "similar sounds", "directions", "interest", "common verbs"
+      "look", "biggest", "better", "compass", "caring"
+
+   Common context terms: 
+------------------------------------------------------------------
+
+   Chapter context: notes on chinese
+
+   Exceptional context terms: "toward", "phonetics", "nature", "look", "see", "from", "
+     reposition", "interest", "opinion", "similar sounds", "attention"
+      "relative position", "work", "think", "caring", "common
+     verbs", "where", "layout", "compass"
+
+</pre>
