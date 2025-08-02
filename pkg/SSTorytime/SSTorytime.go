@@ -5336,10 +5336,12 @@ func IntersectContextParts(context_clusters []string) (int,[]string,[][]int)  {
 }
 
 // **************************************************************************
+// These functions are about text fractionation of the context strings
+// which is similar to text2N4L scanning but applied to lists of phrases
+// on a much smaller scale. Still looking for "mass spectrum" of fragments ..
+// **************************************************************************
 
 func DiffClusters(l1,l2 string) (string,string) {
-
-	// BE CAREFUL! This is a difficult algorithm
 
 	// The fragments arrive as comma separated strings that are
         // already composed or ordered n-grams
