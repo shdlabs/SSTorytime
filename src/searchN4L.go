@@ -474,6 +474,9 @@ func ShowMatchingArrows(ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
 
 func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string,limit int) {
 
+	// This displays chapters and the unbroken context clusters within
+        // them, with overlaps noted.
+
 	if VERBOSE {
 		fmt.Println("Solver/handler: ShowMatchingChapter()")
 	}
@@ -525,6 +528,10 @@ func ShowContextFractions(dim int,clist []string,adj [][]int) {
 //******************************************************************
 
 func ShowChapterContexts(ctx SST.PoSST,chap string,context []string,limit int) {
+
+	// This displays chapters and the fractionated context clusters within
+        // them, emphasizing the atomic decomposition of context. Repeated/shared
+	// context refers to the overlaps in the chapter search.
 
 	if VERBOSE {
 		fmt.Println("Solver/handler: ShowChapterContexts()")
