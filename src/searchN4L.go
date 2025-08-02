@@ -492,98 +492,10 @@ func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string,limit int) {
 
 		fmt.Printf("\n%d. Chapter: %s\n",c,chap_list[c])
 
-		dim,clist,adj := IntersectContextParts(toc[chap_list[c]])
+		dim,clist,adj := SST.IntersectContextParts(toc[chap_list[c]])
 
 		ShowContextFractions(dim,clist,adj)
 	}
-}
-
-//******************************************************************
-
-func IntersectContextParts(context_clusters []string) (int,[]string,[][]int)  {
-
-	var idemp = make(map[string]int)
-	var cluster_list []string
-
-	for s := range context_clusters {
-		idemp[context_clusters[s]]++
-	}
-
-	for each_unique_cluster := range idemp {
-		cluster_list = append(cluster_list,each_unique_cluster)
-	}
-
-	sort.Strings(cluster_list)
-
-	var adj [][]int
-
-	for ci := 0; ci < len(cluster_list); ci++ {
-
-		var row []int
-
-		for cj := ci+1; cj < len(cluster_list); cj++ {			
-			s,_ := DiffClusters(cluster_list[ci],cluster_list[cj])
-			row = append(row,len(s))
-		}
-
-		adj = append(adj,row)
-	}
-
-	return len(cluster_list),cluster_list,adj
-}
-
-//******************************************************************
-
-func DiffClusters(l1,l2 string) (string,string) {
-
-	// BE CAREFUL! This is a difficult algorithm
-
-	// The fragments arrive as comma separated strings that are
-        // already composed or ordered n-grams
-
-	spectrum1 := strings.Split(l1,", ")
-	spectrum2 := strings.Split(l2,", ")
-
-	// Get orderless idempotent directory of all 1-grams
-
-	m1 := SST.List2Map(spectrum1)
-	m2 := SST.List2Map(spectrum2)
-
-	// split the lists into words into directories for common and individual ngrams
-
-	return OverlapMatrix(m1,m2)
-}
-
-//******************************************************************
-
-func OverlapMatrix(m1,m2 map[string]int) (string,string) {
-
-	var common = make(map[string]int)
-	var separate = make(map[string]int)
-
-	// sieve shared / individual parts
-
-	for ng := range m1 {
-		if m2[ng] > 0 {
-			common[ng]++
-		} else {
-			separate[ng]++
-		}
-	}
-
-	for ng := range m2 {
-		if m1[ng] > 0 {
-			delete(separate,ng)
-			common[ng]++
-		} else {
-			_,exists := common[ng]
-			if  !exists {
-				separate[ng]++
-			}
-		}
-	}
-
-	return SST.List2String(SST.Map2List(common)),SST.List2String(SST.Map2List(separate))
 }
 
 //******************************************************************
@@ -627,8 +539,8 @@ func ShowChapterContexts(ctx SST.PoSST,chap string,context []string,limit int) {
 		fmt.Println("------------------------------------------------------------------")
 		fmt.Printf("\n   Chapter context: %s\n",c)
 
-		spectrum := GetContextTokenFrequencies(toc[c])
-		intent,ambient := ContextIntentAnalysis(spectrum,toc[c])
+		spectrum := SST.GetContextTokenFrequencies(toc[c])
+		intent,ambient := SST.ContextIntentAnalysis(spectrum,toc[c])
 
 		var intended string
 		var common string
@@ -655,78 +567,6 @@ func ShowChapterContexts(ctx SST.PoSST,chap string,context []string,limit int) {
 	}
 	fmt.Println("\n")
 	
-}
-
-//******************************************************************
-
-func GetContextTokenFrequencies(fraglist []string) map[string]int {
-
-	var spectrum = make(map[string]int)
-
-	for l := range fraglist {
-		fragments := strings.Split(fraglist[l],", ")
-		partial := SST.List2Map(fragments)
-
-		// Merge all strands
-
-		for f := range partial {
-			spectrum[f] += partial[f]
-		}
-	}
-
-	return spectrum
-}
-
-//******************************************************************
-
-func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,[]string) {
-
-	var intentional []string
-	const intent_limit = 3  // policy from research
-
-	for f := range spectrum {
-		if spectrum[f] < intent_limit {
-			intentional = append(intentional,f)
-			delete(spectrum,f)
-		}
-	}
-
-	for cl := range clusters {
-		for deletions := range intentional {
-			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions]+", ","",-1)
-			clusters[cl] = strings.Replace(clusters[cl],intentional[deletions],"",-1)
-		}
-	}
-
-	spectrum = make(map[string]int)
-
-	for cl := range clusters {
-		if strings.TrimSpace(clusters[cl]) != "" {
-			pruned := strings.Trim(clusters[cl],", ")
-			spectrum[pruned]++
-		}
-	}
-
-	// Now we have a small set of largely separated major strings.
-	// One more round of diffs for a final separation
-
-	var ambient = make(map[string]int)
-
-	context := SST.Map2List(spectrum)
-
-	for ci := 0; ci < len(context); ci++ {
-		for cj := ci+1; cj < len(context); cj++ {
-
-			s,i := DiffClusters(context[ci],context[cj])
-
-			if len(s) > 0 && len(i) > 0 && len(i) <= len(context[ci])+len(context[ci]) {
-				ambient[strings.TrimSpace(s)]++
-				ambient[strings.TrimSpace(i)]++
-			}
-		}
-	}
-	
-	return intentional,SST.Map2List(ambient)
 }
 
 //******************************************************************
