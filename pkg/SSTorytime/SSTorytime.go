@@ -6152,7 +6152,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 
 		for w := 0; w < len(subparts); w++ {
 
-			if InList(subparts[w],keywords) {
+			if IsCommand(subparts[w],keywords) {
 				// special case for TO with implicit FROM, and USED AS
 				if p > 0 && subparts[w] == "to" {
 					part = append(part,subparts[w])
@@ -6378,11 +6378,8 @@ func IsParam(i,lenp int,keys []string,keywords []string) bool {
 
 	key := keys[i]
 
-	for k := 0; k < len(keywords); k++ {
-
-		if key == keywords[k] {
-			return false
-		}
+	if IsCommand(key,keywords) {
+		return false
 	}
 
 	return true
@@ -6406,8 +6403,27 @@ func SomethingLike(s string,keywords []string) string {
 			}
 		}
 	}
-
 	return s
+}
+
+//******************************************************************
+
+func IsCommand(s string,list []string) bool {
+
+	const min_sense = 4
+
+	for w := range list {
+		if list[w] == s {
+			return true
+		}
+
+		// Allow likely abbreviations ?
+
+		if len(list[w]) > min_sense && strings.HasPrefix(s,list[w]) {
+			return true
+		}
+	}
+	return false
 }
 
 //******************************************************************
@@ -6430,26 +6446,6 @@ func AddOrphan(param SearchParameters,orphan string) SearchParameters {
 	param.Name = append(param.Name,orphan)
 
 	return param
-}
-
-//******************************************************************
-
-func InList(s string,list []string) bool {
-
-	const min_sense = 4
-
-	for w := range list {
-		if list[w] == s {
-			return true
-		}
-
-		// Allow likely abbreviations ?
-
-		if len(list[w]) > min_sense && strings.HasPrefix(s,list[w]) {
-			return true
-		}
-	}
-	return false
 }
 
 //******************************************************************
