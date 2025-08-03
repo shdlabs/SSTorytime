@@ -6268,7 +6268,6 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				continue
 				
 			case CMD_CONTEXT,CMD_CTX,CMD_AS:
-
 				if lenp > p+1 {
 					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
@@ -6371,6 +6370,8 @@ func IsParam(i,lenp int,keys []string,keywords []string) bool {
 
 	// Make sure the next item is not the start of a new token
 
+	const min_sense = 4
+
 	if i >= lenp {
 		return false
 	}
@@ -6378,7 +6379,8 @@ func IsParam(i,lenp int,keys []string,keywords []string) bool {
 	key := keys[i]
 
 	for k := 0; k < len(keywords); k++ {
-		if strings.HasPrefix(key,keywords[k]) {
+
+		if key == keywords[k] {
 			return false
 		}
 	}
@@ -6390,9 +6392,18 @@ func IsParam(i,lenp int,keys []string,keywords []string) bool {
 
 func SomethingLike(s string,keywords []string) string {
 
+	const min_sense = 4
+
 	for k := 0; k < len(keywords); k++ {
-		if strings.HasPrefix(s,keywords[k]) {
+
+		if s == keywords[k] {
 			return keywords[k]
+		}
+
+		if len(s) > min_sense && len(keywords[k]) > min_sense {
+			if strings.HasPrefix(s,keywords[k]) {
+				return keywords[k]
+			}
 		}
 	}
 
@@ -6425,8 +6436,16 @@ func AddOrphan(param SearchParameters,orphan string) SearchParameters {
 
 func InList(s string,list []string) bool {
 
+	const min_sense = 4
+
 	for w := range list {
-		if strings.HasPrefix(s,list[w]) {
+		if list[w] == s {
+			return true
+		}
+
+		// Allow likely abbreviations ?
+
+		if len(list[w]) > min_sense && strings.HasPrefix(s,list[w]) {
 			return true
 		}
 	}
