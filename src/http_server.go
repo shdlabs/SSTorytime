@@ -151,14 +151,9 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// SEARCH SELECTION *********************************************
 
-	if chapter && !name && !sequence && !pagenr {
-		fmt.Println("ShowMatchingChapter()")
-		//ShowMatchingChapter(CTX,search.Chapter,search.Context,limit)
-		return
-	}
+	if (context || chapter) && !name && !sequence && !pagenr {
 
-	if context && !chapter && !name && !sequence && !pagenr {
-		//ShowMatchingContext(ctx,search.Context)
+		ShowChapterContexts(w,r,CTX,search.Chapter,search.Context,limit)
 		return
 	}
 
@@ -488,41 +483,87 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 
 // *********************************************************************
 
-func ShowMatchingChapter(ctx SST.PoSST,chap string,context []string,limit int) {
+func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,chap string,context []string,limit int) {
+
+	fmt.Println("Solver/handler: ShowChapterContexts()")
+
+	var chapters []SST.ChCtx
+	var chap_list []string
 
 	toc := SST.GetChaptersByChapContext(ctx,chap,context,limit)
 
-	// map[string][]string 
-
-	var order []string
-
-	for keys := range toc {
-		order = append(order,keys)
+	for chaps := range toc {
+		chap_list = append(chap_list,chaps)
 	}
 
-	sort.Strings(order)
+	sort.Strings(chap_list)
 
-	for key := 0; key < len(order); key++ {
+	for c := 0; c < len(chap_list); c++ {
 
-		fmt.Println("CHAP",order[key])
-
-		var idemp = make(map[string]bool)
-		var list []string
-
-		for s := range toc[order[key]] {
-			idemp[toc[order[key]][s]] = true
-		}
+		var item SST.ChCtx
 		
-		for vals := range idemp {
-			list = append(list,vals)
-		}
+		item.Chapter = chap_list[c]
 
-		sort.Strings(list)
+		dim,clist,adj := SST.IntersectContextParts(toc[chap_list[c]])
+		item.Context = GetContextFractions(dim,clist,adj)
 
-		for c := 0; c < len(list); c++ {
-			fmt.Println("      - ",list[c])
-		}
+
+		spectrum := SST.GetContextTokenFrequencies(toc[chap_list[c]])
+		intent,ambient := SST.ContextIntentAnalysis(spectrum,toc[chap_list[c]])		
+		item.Single = GetContextFragments(intent)
+		item.Common = GetContextFragments(ambient)
+
+		chapters = append(chapters,item)
 	}
+
+	data,_ := json.Marshal(chapters)
+	response := PackageResponse("TOC",string(data))
+
+	fmt.Println("Chap/context...",string(response))
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+
+}
+
+//******************************************************************
+
+func GetContextFractions(dim int,clist []string,adj [][]int) []SST.Loc {
+
+	var retvar []SST.Loc
+
+	for c := 0; c < len(adj); c++ {
+
+		var contextgroup SST.Loc
+
+		contextgroup.Text = clist[c]
+
+		for cp := 0; cp < len(adj[c]); cp++ {
+			if adj[c][cp] > 0 {
+				contextgroup.Reln = append(contextgroup.Reln,cp)
+			}
+		}
+
+		retvar = append(retvar,contextgroup)
+	}
+	return retvar
+}
+
+//******************************************************************
+
+func GetContextFragments(clist []string) []SST.Loc {
+
+	var retvar []SST.Loc
+
+	for c := 0; c < len(clist); c++ {
+
+		var contextgroup SST.Loc
+
+		contextgroup.Text = clist[c]
+
+		retvar = append(retvar,contextgroup)
+	}
+	return retvar
 }
 
 // *********************************************************************

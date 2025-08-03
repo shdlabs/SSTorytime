@@ -46,10 +46,19 @@ a[title]:hover::after {
 }
 
 h1 {
+  font-size: 35px;
+  color: #4488bb;
+  padding: 10px;
+  margin_bottom : 10px;
+  line-height: 10px;
+}
+
+h2 {
   font-size: 30px;
   color: #5599cc;
-  padding: 20px;
+  padding: 10px;
   margin: 0px;
+  margin_bottom : 10px;
   line-height: 10px;
 }
 
@@ -67,16 +76,28 @@ nav {
    margin_top: 0px;
 }
 
-#toc-panel {
-
+#toc-frag {
+  padding: 15px;
+ color: navy;
 }
 
 #toc-elem {
-  padding: 20px;
-  background: #99bbff;
-  color: darkblue;
+  padding: 15px;
+  color: purple;
   font-size: 90%;
-  margin: 10px;
+
+}
+
+#toc-single{
+  padding: 15px;
+  color: darkorange;
+  font-size: 150%;
+}
+
+#toc-common {
+  padding: 15px;
+  color: mediumslateblue;
+  font-size: 150%;
 }
 
 article {
@@ -94,7 +115,7 @@ article p {
 }
 
 article div {
- padding: 20px;
+ padding: 15px;
  margin-bottom: 10px;
 }
 
@@ -1015,27 +1036,81 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
-for (let chp of obj.TOC) 
+let item = document.createElement('h1');
+item.textContent = "Table of contents and contexts";
+panel.appendChild(item);
+
+CANVAS = CreateCanvas();
+DrawGrid(0,0,1);
+let counter = 0;
+
+for (let chp of obj.Content) 
    {
-   let link = document.createElement('a');
-   let item = document.createElement('h1');
+   counter++;
+
+   let link = document.createElement('p');
+   let item = document.createElement('h2');
    link.onclick = function() { sendTOCLinkData(chp.Chapter,""); };
-   item.textContent = chp.Chapter;
+   item.textContent = counter + ". "+chp.Chapter;
    link.appendChild(item);
    panel.appendChild(link);
 
    let chap = document.createElement('p');
    chap.id = "toc-panel";
 
-   for (let ctx of chp.Contexts)
+   if (chp.Context != null)
       {
-      let link = document.createElement('a');
-      let sitem = document.createElement('div');
-      sitem.textContent = ctx;
-      sitem.id = "toc-elem";
-      link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
-      link.appendChild(sitem)
-      chap.appendChild(link);
+      for (let ctx of chp.Context)
+         {
+         let link = document.createElement('span');
+         let sitem = document.createElement('span');
+         sitem.textContent = ctx.Text;
+         sitem.id = "toc-elem";
+         link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
+         link.id = "toc-frag";
+ 	 link.textContent = "Context Set/Grouping:: ";
+         link.appendChild(sitem)
+         chap.appendChild(link);
+         }
+      }
+
+   let br = document.createElement('br');
+   chap.appendChild(br);
+   chap.appendChild(br);
+
+   if (chp.Single != null)
+      {
+      for (let ctx of chp.Single)
+         {
+         let link = document.createElement('csets');
+         let sitem = document.createElement('span');
+         sitem.textContent = ctx.Text;
+         sitem.id = "toc-single";
+         link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
+ 	 link.textContent = "Intentionally emph:: ";
+         link.appendChild(sitem)
+         chap.appendChild(link);
+         }
+      }
+
+   br = document.createElement('br');
+   chap.appendChild(br);
+   chap.appendChild(br);
+
+   if (chp.Common != null)
+      {
+      for (let ctx of chp.Common)
+         {
+         let link = document.createElement('i');
+         let sitem = document.createElement('span');
+         sitem.textContent = ctx.Text;
+         sitem.id = "toc-common";
+         link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
+	 link.textContent = "Ambient context:: ";
+         link.appendChild(sitem)
+         link.id = "toc-frag";
+         chap.appendChild(link);
+         }
       }
 
    panel.appendChild(chap)
@@ -1318,6 +1393,9 @@ async function sendsearchData() {
             break;
 	 case "PageMap":
 	    DoPageMapPanel(resp);
+            break;
+	 case "TOC":
+	    DoTOCPanel(resp);
             break;
          }
 

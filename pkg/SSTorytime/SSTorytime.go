@@ -387,6 +387,27 @@ type Orbit struct {  // union, JSON transformer
 
 //******************************************************************
 
+type Loc struct {
+
+	Text string
+	Reln []int
+	XYZ  Coords
+}
+
+//******************************************************************
+
+type ChCtx struct {
+	Chapter  string
+	XYZ      Coords
+	Context  []Loc
+	Single   []Loc
+	Common   []Loc
+}
+
+//******************************************************************
+// Open Library Context
+//******************************************************************
+
 func Open(load_arrows bool) PoSST {
 
 	var ctx PoSST
