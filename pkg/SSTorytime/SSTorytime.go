@@ -2315,7 +2315,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"      END IF;"+
 		"      unicode := replace(item,'|','');\n" +
 		"     FOREACH try IN ARRAY db_ref LOOP\n"+
-		"        IF length(substring(try from lower(unicode))) > 3 THEN \n" + // unaccented unicode match
+		"        IF length(substring(try from lower(unicode))) = length(try) THEN \n" + // unaccented unicode match
 	        "           RETURN true;\n" +
 		"        END IF;\n" +
 		"     END LOOP;"+
