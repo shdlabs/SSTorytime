@@ -507,7 +507,6 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,ch
 		dim,clist,adj := SST.IntersectContextParts(toc[chap_list[c]])
 		item.Context = GetContextFractions(dim,clist,adj)
 
-
 		spectrum := SST.GetContextTokenFrequencies(toc[chap_list[c]])
 		intent,ambient := SST.ContextIntentAnalysis(spectrum,toc[chap_list[c]])		
 		item.Single = GetContextFragments(intent)
