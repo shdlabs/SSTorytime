@@ -83,6 +83,7 @@ job summary by an LLM text tool in which you get an answer `take it or leave it'
 * [A quick tutorial](docs/Tutorial.md)
 * [The Mission and Approach](docs/approach.md)
 * [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
+* [How does context work?](docs/howdoescontextwork.md)
 * [SSTorytelling](docs/Storytelling.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
 * [searchN4L - preliminary search/testing tool](docs/searchN4L.md)
