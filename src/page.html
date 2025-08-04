@@ -1055,6 +1055,10 @@ for (let chp of obj.Content)
    link.appendChild(item);
    panel.appendChild(link);
 
+   Concept(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z);
+   Contains(0,0,0,chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z);
+   Label(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z,chp.Chapter,12,"gray");
+
    let chap = document.createElement('p');
    chap.id = "toc-panel";
 

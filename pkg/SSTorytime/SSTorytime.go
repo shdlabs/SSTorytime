@@ -4283,13 +4283,39 @@ func AssignPageCoordinates(mapline []Link,nth,swimlanes int) map[NodePtr]Coords 
 
 func AssignChapterCoordinates(nth,swimlanes int) Coords {
 
+	// Place chapters uniformly over the surface of a sphere, using
+	// the Fibonacci lattice
+
+	N := float64(swimlanes)
+	n := float64(nth)
+	const fibratio = 1.618
+	const rho = 0.7
+
+	latitude := math.Asin(2 * n / (2 * N + 1))
+	longitude := 2 * math.Pi * n/fibratio
+
+	if longitude < -math.Pi {
+		longitude += 2 * math.Pi
+	}
+
+	if longitude > math.Pi {
+		longitude -= 2 * math.Pi
+	}
+
 	var fxyz Coords
+
+	fxyz.X = float32(-rho * math.Sin(longitude))
+	fxyz.Y = float32(rho * math.Sin(latitude))
+	fxyz.Z = float32(rho * math.Cos(longitude) * math.Cos(latitude))
+
 	return fxyz
 }
 
 // **************************************************************************
 
-func AssignFractionCoordinates(xyz Coords) Coords {
+func AssignContextSetCoordinates(xyz Coords) Coords {
+
+	// Assign orbital
 
 	var fxyz Coords
 	return fxyz

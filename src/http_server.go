@@ -543,7 +543,7 @@ func GetContextSets(dim int,clist []string,adj [][]int, xyz SST.Coords) []SST.Lo
 		for cp := 0; cp < len(adj[c]); cp++ {
 			if adj[c][cp] > 0 {
 				contextgroup.Reln = append(contextgroup.Reln,cp)
-				contextgroup.XYZ = SST.AssignFractionCoordinates(xyz)
+				contextgroup.XYZ = SST.AssignContextSetCoordinates(xyz)
 			}
 		}
 
