@@ -9,7 +9,8 @@
 
  scarlett (id) Miss Scarlett, The Woman in Red, New York socialite.
  plumb    (id) Professor Plumb, University of Oxford, Lincoln College.
- diddy    (id) Florist working at the Summertown flower shop
+ dibbly   (id) Florist working at the Summertown flower shop
+          (also called) dibbly womble
  martin   (id) possible boyfriend, unknown
 
  doorman (id) Fabian Merryweather, former Army officer, 24 Summertown Road
@@ -68,7 +69,7 @@ jamie arrives >20:30
 
  :: alibis ::
 
-  diddy (saw) $scarlettarrives.1
+  dibbly womble (saw) $scarlettarrives.1
   anonymous tip (saw) $scarlettarrives.1
 
 
@@ -79,9 +80,9 @@ jamie arrives >20:30
   car (prev owned) plumb
   car (owned by) hotel doorman
 
-  scarlett (attend) $party.1 (question) who else was there?
-  diddy    (attend) $party.1
-  martin   (attend) $party.1
+  scarlett      (attend) $party.1 (question) who else was there?
+  dibbly womble (attend) $party.1
+  martin        (attend) $party.1
 
   deadly nightshade (causes) hallucinations / death
 
