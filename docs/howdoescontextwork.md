@@ -1,11 +1,17 @@
 
 # How does context work?
 
-Context is the "hard problem" of knowledge management. We use the context in which we experienced
-something as a "lookup key" for memories. It's not like the primary keys we feed to a database, e.g.
-something like a name, a phone or social security number, etc. Cognitive processes use sensory
-inputs to encode memory. How does one feed that into a directory listing to get an answer? And how do we list
-what was there?
+Context is the "hard problem" of knowledge management. In its simplest form, we use it
+as disambiguation, like the disambiguation pages in Wikipedia for a name like "queen". There
+are many possible things it could refer to, but only one of them is the one we are looking for.
+We need to be more specific.
+
+We use the *context* in which we experienced something as a "lookup key"
+for memories. It's not like the primary keys we feed to a database,
+e.g.  something like a name, a phone or social security number,
+etc. Cognitive processes use sensory inputs to encode memory. How does
+one feed that into a directory listing to get an answer? And how do we
+list what was there?
 
 The knowledge graph is a way of painting a picture of a scene, but we still need to find the right scene.
 Modern recognition methods can match sensory inputs like vision and sound as well as writing now, but
