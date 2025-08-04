@@ -122,6 +122,7 @@ We don't want to look up a road, something to do with summer. A person, scarlet 
 searchN4L  summer in context place
 searchN4L  scarlet in the context of person
 searchN4L  some car in chapter cluedo
+searchN4L  fork in context restaurant chapter chinese
 </pre>
 
 ## Socializing knowledge
