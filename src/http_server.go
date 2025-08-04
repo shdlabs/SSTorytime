@@ -500,19 +500,22 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,ch
 
 	for c := 0; c < len(chap_list); c++ {
 
-		var item SST.ChCtx
+		var chap_anchor SST.ChCtx
 		
-		item.Chapter = chap_list[c]
+		chap_anchor.Chapter = chap_list[c]
+		chap_anchor.XYZ = SST.AssignChapterCoordinates(c,len(chap_list))
+
+		// Fractionate the (chapter,context) information
 
 		dim,clist,adj := SST.IntersectContextParts(toc[chap_list[c]])
-		item.Context = GetContextFractions(dim,clist,adj)
-
 		spectrum := SST.GetContextTokenFrequencies(toc[chap_list[c]])
 		intent,ambient := SST.ContextIntentAnalysis(spectrum,toc[chap_list[c]])		
-		item.Single = GetContextFragments(intent)
-		item.Common = GetContextFragments(ambient)
 
-		chapters = append(chapters,item)
+		chap_anchor.Context = GetContextSets(dim,clist,adj,chap_anchor.XYZ)
+		chap_anchor.Single = GetContextFragments(intent,chap_anchor.XYZ)
+		chap_anchor.Common = GetContextFragments(ambient,chap_anchor.XYZ)
+
+		chapters = append(chapters,chap_anchor)
 	}
 
 	data,_ := json.Marshal(chapters)
@@ -527,7 +530,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,ch
 
 //******************************************************************
 
-func GetContextFractions(dim int,clist []string,adj [][]int) []SST.Loc {
+func GetContextSets(dim int,clist []string,adj [][]int, xyz SST.Coords) []SST.Loc {
 
 	var retvar []SST.Loc
 
@@ -540,6 +543,7 @@ func GetContextFractions(dim int,clist []string,adj [][]int) []SST.Loc {
 		for cp := 0; cp < len(adj[c]); cp++ {
 			if adj[c][cp] > 0 {
 				contextgroup.Reln = append(contextgroup.Reln,cp)
+				contextgroup.XYZ = SST.AssignFractionCoordinates(xyz)
 			}
 		}
 
@@ -550,7 +554,7 @@ func GetContextFractions(dim int,clist []string,adj [][]int) []SST.Loc {
 
 //******************************************************************
 
-func GetContextFragments(clist []string) []SST.Loc {
+func GetContextFragments(clist []string, xyz SST.Coords) []SST.Loc {
 
 	var retvar []SST.Loc
 
@@ -559,6 +563,7 @@ func GetContextFragments(clist []string) []SST.Loc {
 		var contextgroup SST.Loc
 
 		contextgroup.Text = clist[c]
+		contextgroup.XYZ = SST.AssignFragmentCoordinates(xyz)
 
 		retvar = append(retvar,contextgroup)
 	}

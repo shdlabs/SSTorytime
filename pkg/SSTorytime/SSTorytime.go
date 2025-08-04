@@ -4281,6 +4281,31 @@ func AssignPageCoordinates(mapline []Link,nth,swimlanes int) map[NodePtr]Coords 
 
 // **************************************************************************
 
+func AssignChapterCoordinates(nth,swimlanes int) Coords {
+
+	var fxyz Coords
+	return fxyz
+}
+
+// **************************************************************************
+
+func AssignFractionCoordinates(xyz Coords) Coords {
+
+	var fxyz Coords
+	return fxyz
+}
+
+// **************************************************************************
+
+func AssignFragmentCoordinates(xyz Coords) Coords {
+
+	var fxyz Coords
+	return fxyz
+
+}
+
+// **************************************************************************
+
 func MakeCoordinateDirectory(XChannels []float32, unique [][]NodePtr,maxzlen,nth,swimlanes int) map[NodePtr]Coords {
 
 	var directory = make(map[NodePtr]Coords)
