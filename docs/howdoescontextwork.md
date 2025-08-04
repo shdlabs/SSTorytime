@@ -92,7 +92,7 @@ why notes and knowledge are not easy to share. Take this example:
 
  #######################
 
- :: locations :: 
+ :: locations, places :: 
 
  library
  Covent Garden Pub
@@ -110,6 +110,18 @@ why notes and knowledge are not easy to share. Take this example:
 @doormanarrives   doorman arrived at library for work on Monday 7 am
 
 @murder  Wednesday April 1st, around 11 am in the morning
+</pre>
+
+## Looking it up later
+
+When we come to look up these facts, we use context to disambiguate.
+What we remember may be limited, so we want to match the fragments we know:
+We don't want to look up a road, something to do with summer. A person, scarlet or something like that.
+
+<pre>
+searchN4L  summer in context place
+searchN4L  scarlet in the context of person
+searchN4L  some car in chapter cluedo
 </pre>
 
 ## Socializing knowledge
