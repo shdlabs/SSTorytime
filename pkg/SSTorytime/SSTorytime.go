@@ -143,9 +143,12 @@ type PageView struct {
 //**************************************************************
 
 type Coords struct {
-	X float32
-	Y float32
-	Z float32
+	X   float64
+	Y   float64
+	Z   float64
+	R   float64
+	Lat float64
+	Lon float64
 }
 
 //**************************************************************
@@ -4126,8 +4129,8 @@ func RelativeOrbit(origin Coords,radius float64,n int,max int) Coords {
 
 	angle := offset + 2 * math.Pi * float64(n)/float64(max)
 
-	xyz.X = origin.X + float32(radius * math.Cos(angle))
-	xyz.Y = origin.Y + float32(radius * math.Sin(angle))
+	xyz.X = origin.X + float64(radius * math.Cos(angle))
+	xyz.Y = origin.Y + float64(radius * math.Sin(angle))
 	xyz.Z = origin.Z
 
 	return xyz
@@ -4202,7 +4205,7 @@ func AssignConeCoordinates(cone [][]Link,nth,swimlanes int) map[NodePtr]Coords {
 
 	// Count the expanding wavefront sections for unique node entries
 
-	XChannels := make([]float32,maxlen_tz) // node widths along each path step
+	XChannels := make([]float64,maxlen_tz) // node widths along each path step
 
 	// Find the total number of parallel swimlanes
 
@@ -4241,7 +4244,7 @@ func AssignStoryCoordinates(axis []Link,nth,swimlanes int,limit int) map[NodePtr
 		maxlen_tz = limit
 	}
 
-	XChannels := make([]float32,maxlen_tz)        // node widths along the path
+	XChannels := make([]float64,maxlen_tz)        // node widths along the path
 	already := make(map[NodePtr]bool)
 
 	for tz := 0; tz < maxlen_tz; tz++ {
@@ -4264,7 +4267,7 @@ func AssignStoryCoordinates(axis []Link,nth,swimlanes int,limit int) map[NodePtr
 
 func AssignPageCoordinates(mapline []Link,nth,swimlanes int) map[NodePtr]Coords {
 
-	XChannels := make([]float32,len(mapline))        // node widths along the path
+	XChannels := make([]float64,len(mapline))        // node widths along the path
 
 	var unique = make([][]NodePtr,len(mapline))
 	var unique_section = make([]NodePtr,1)
@@ -4289,7 +4292,7 @@ func AssignChapterCoordinates(nth,swimlanes int) Coords {
 	N := float64(swimlanes)
 	n := float64(nth)
 	const fibratio = 1.618
-	const rho = 0.7
+	const rho = 0.75
 
 	latitude := math.Asin(2 * n / (2 * N + 1))
 	longitude := 2 * math.Pi * n/fibratio
@@ -4304,45 +4307,95 @@ func AssignChapterCoordinates(nth,swimlanes int) Coords {
 
 	var fxyz Coords
 
-	fxyz.X = float32(-rho * math.Sin(longitude))
-	fxyz.Y = float32(rho * math.Sin(latitude))
-	fxyz.Z = float32(rho * math.Cos(longitude) * math.Cos(latitude))
+	fxyz.X = float64(-rho * math.Sin(longitude))
+	fxyz.Y = float64(rho * math.Sin(latitude))
+	fxyz.Z = float64(rho * math.Cos(longitude) * math.Cos(latitude))
+
+	fxyz.R = rho
+	fxyz.Lat = latitude
+	fxyz.Lon = longitude
 
 	return fxyz
 }
 
 // **************************************************************************
 
-func AssignContextSetCoordinates(xyz Coords) Coords {
+func AssignContextSetCoordinates(origin Coords,nth,swimlanes int) Coords {
 
-	// Assign orbital
+	N := float64(swimlanes)
+	n := float64(nth)
+	latitude := float64(origin.Lat)
+	longitude := float64(origin.Lon)
+	rho := 0.85
+
+	orbital_angle := math.Pi / 8
 
 	var fxyz Coords
+
+	if N == 1 {
+		fxyz.X = -rho * math.Sin(longitude)
+		fxyz.Y = rho * math.Sin(latitude)
+		fxyz.Z = rho * math.Cos(longitude) * math.Cos(latitude)
+		return fxyz
+	}
+
+	delta_lon := orbital_angle * math.Sin(2 * math.Pi * n / N)
+	delta_lat := orbital_angle * math.Cos(2 * math.Pi * n / N)
+
+	fxyz.X = -rho * math.Sin(longitude+delta_lon)
+	fxyz.Y = rho * math.Sin(latitude+delta_lat)
+	fxyz.Z = rho * math.Cos(longitude+delta_lon) * math.Cos(latitude+delta_lat)
+
 	return fxyz
 }
 
 // **************************************************************************
 
-func AssignFragmentCoordinates(xyz Coords) Coords {
+func AssignFragmentCoordinates(origin Coords,nth,swimlanes int) Coords {
+
+	// These are much more crowded, so stagger radius
+
+	N := float64(swimlanes)
+	n := float64(nth)
+	latitude := float64(origin.Lat)
+	longitude := float64(origin.Lon)
+
+	rho := 0.3 + float64(nth % 2) * 0.1
+
+	orbital_angle := math.Pi / 12
 
 	var fxyz Coords
-	return fxyz
 
+	if N == 1 {
+		fxyz.X = -rho * math.Sin(longitude)
+		fxyz.Y = rho * math.Sin(latitude)
+		fxyz.Z = rho * math.Cos(longitude) * math.Cos(latitude)
+		return fxyz
+	}
+
+	delta_lon := orbital_angle * math.Sin(2 * math.Pi * n / N)
+	delta_lat := orbital_angle * math.Cos(2 * math.Pi * n / N)
+
+	fxyz.X = -rho * math.Sin(longitude+delta_lon)
+	fxyz.Y = rho * math.Sin(latitude+delta_lat)
+	fxyz.Z = rho * math.Cos(longitude+delta_lon) * math.Cos(latitude+delta_lat)
+
+	return fxyz
 }
 
 // **************************************************************************
 
-func MakeCoordinateDirectory(XChannels []float32, unique [][]NodePtr,maxzlen,nth,swimlanes int) map[NodePtr]Coords {
+func MakeCoordinateDirectory(XChannels []float64, unique [][]NodePtr,maxzlen,nth,swimlanes int) map[NodePtr]Coords {
 
 	var directory = make(map[NodePtr]Coords)
 
 	const totwidth = 2.0 // This is the depth dimenion of the paths -1 to +1
 	const arbitrary_elevation = 0.0
 
-	x_lanewidth := totwidth / (float32(swimlanes))
-	tz_steplength := totwidth / float32(maxzlen) 
+	x_lanewidth := totwidth / (float64(swimlanes))
+	tz_steplength := totwidth / float64(maxzlen) 
 
-	x_lane_start := float32(nth) * x_lanewidth - totwidth/2.0
+	x_lane_start := float64(nth) * x_lanewidth - totwidth/2.0
 
 	// Start allocating swimlane into XChannels parallel spaces
 	// x now runs from (x_lane_start to += x_lanewidth)
@@ -4351,14 +4404,14 @@ func MakeCoordinateDirectory(XChannels []float32, unique [][]NodePtr,maxzlen,nth
 
 		x_increment := x_lanewidth / (XChannels[tz]+1)
 
-		z_left := -float32(totwidth/2)
-		x_left := float32(x_lane_start) + x_increment 
+		z_left := -float64(totwidth/2)
+		x_left := float64(x_lane_start) + x_increment 
 
 		var xyz Coords
 
 		xyz.X = x_left
 		xyz.Y = arbitrary_elevation
-		xyz.Z = z_left + tz_steplength * float32(tz)
+		xyz.Z = z_left + tz_steplength * float64(tz)
 
 		for uniqptr := 0; uniqptr < len(unique[tz]); uniqptr++ {
 			directory[unique[tz][uniqptr]] = xyz

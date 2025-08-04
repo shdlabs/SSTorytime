@@ -521,7 +521,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,ch
 	data,_ := json.Marshal(chapters)
 	response := PackageResponse("TOC",string(data))
 
-	fmt.Println("Chap/context...",string(response))
+	//fmt.Println("Chap/context...",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -543,9 +543,10 @@ func GetContextSets(dim int,clist []string,adj [][]int, xyz SST.Coords) []SST.Lo
 		for cp := 0; cp < len(adj[c]); cp++ {
 			if adj[c][cp] > 0 {
 				contextgroup.Reln = append(contextgroup.Reln,cp)
-				contextgroup.XYZ = SST.AssignContextSetCoordinates(xyz)
 			}
 		}
+
+		contextgroup.XYZ = SST.AssignContextSetCoordinates(xyz,c,len(adj))
 
 		retvar = append(retvar,contextgroup)
 	}
@@ -554,7 +555,7 @@ func GetContextSets(dim int,clist []string,adj [][]int, xyz SST.Coords) []SST.Lo
 
 //******************************************************************
 
-func GetContextFragments(clist []string, xyz SST.Coords) []SST.Loc {
+func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
 
 	var retvar []SST.Loc
 
@@ -563,7 +564,7 @@ func GetContextFragments(clist []string, xyz SST.Coords) []SST.Loc {
 		var contextgroup SST.Loc
 
 		contextgroup.Text = clist[c]
-		contextgroup.XYZ = SST.AssignFragmentCoordinates(xyz)
+		contextgroup.XYZ = SST.AssignFragmentCoordinates(ooo,c,len(clist))
 
 		retvar = append(retvar,contextgroup)
 	}

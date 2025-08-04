@@ -1055,8 +1055,7 @@ for (let chp of obj.Content)
    link.appendChild(item);
    panel.appendChild(link);
 
-   Concept(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z);
-   Contains(0,0,0,chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z);
+   Event(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z);
    Label(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z,chp.Chapter,12,"gray");
 
    let chap = document.createElement('p');
@@ -1075,6 +1074,9 @@ for (let chp of obj.Content)
  	 link.textContent = "Context Set/Grouping:: ";
          link.appendChild(sitem)
          chap.appendChild(link);
+
+	 Concept(ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
+	 Contains(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
       }
 
@@ -1094,6 +1096,8 @@ for (let chp of obj.Content)
  	 link.textContent = "Intentionally emph:: ";
          link.appendChild(sitem)
          chap.appendChild(link);
+	 Thing(ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
+	 Near(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
       }
 
@@ -1114,6 +1118,8 @@ for (let chp of obj.Content)
          link.appendChild(sitem)
          link.id = "toc-frag";
          chap.appendChild(link);
+	 Thing(ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
+	 Near(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
       }
 
@@ -1775,7 +1781,7 @@ let headlen = 20 * scale;
 let noderadius = 10 * scale;
 
 CTX.beginPath();
-//CTX.globalAlpha = Alpha(xp,yp,zp);
+
 CTX.strokeStyle = colour;
 CTX.lineWidth = thickness;
 CTX.moveTo(tox-noderadius*Math.cos(angle),toy-noderadius*Math.sin(angle));
