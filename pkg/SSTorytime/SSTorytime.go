@@ -3515,8 +3515,7 @@ func GetDBArrowsWithArrowName(ctx PoSST,s string) (ArrowPtr,int) {
 	}
 
 	fmt.Println("No such arrow found in database:",s)
-	os.Exit(-1)
-	return -1,0
+	return 0,0
 }
 
 // **************************************************************************
@@ -3561,6 +3560,7 @@ func GetDBArrowByName(ctx PoSST,name string) ArrowPtr {
 			if !ok {
 				ptr, ok = ARROW_LONG_DIR[name]
 				fmt.Println(ERR_NO_SUCH_ARROW,"("+name+") - no arrows defined in database yet?")
+				return 0
 			}
 		}
 	}
@@ -3575,13 +3575,12 @@ func GetDBArrowByPtr(ctx PoSST,arrowptr ArrowPtr) ArrowDirectory {
 	if int(arrowptr) > len(ARROW_DIRECTORY) {
 		DownloadArrowsFromDB(ctx)
 	}
-	
+
 	if int(arrowptr) < len(ARROW_DIRECTORY) {
 		a := ARROW_DIRECTORY[arrowptr]
 		return a
 	} else {
-		fmt.Println(ERR_NO_SUCH_ARROW,"(",arrowptr,")")
-		os.Exit(-1)
+		return ARROW_DIRECTORY[0]
 	}
 		
 	return ARROW_DIRECTORY[arrowptr]
@@ -3625,10 +3624,13 @@ func ArrowPtrFromArrowsNames(ctx PoSST,arrows []string) ([]ArrowPtr,[]int) {
 		notnumber := err != nil
 
 		if notnumber {
-			arrowptr,_ := GetDBArrowsWithArrowName(ctx,arrows[a])
-			if arrowptr != -1 {
-				arrdir := GetDBArrowByPtr(ctx,arrowptr)
-				arr = append(arr,arrdir.Ptr)
+			arrs := GetDBArrowsMatchingArrowName(ctx,arrows[a])
+			for  ar := range arrs {
+				arrowptr := arrs[ar]
+				if arrowptr > 0 {
+					arrdir := GetDBArrowByPtr(ctx,arrowptr)
+					arr = append(arr,arrdir.Ptr)
+				}
 			}
 		} else {
 			if number < -EXPRESS {
@@ -8196,12 +8198,6 @@ func SimilarString(s1,s2 string) bool {
 
 	if s1 == "" || s2 == "" || s1 == "any" || s2 == "any" {  // same as any
 		return true
-	}
-
-	if (s1[0] == '!' && s2[0] != '!') || (s1[0] != '!' && s2[0] == '!') {
-		if !strings.Contains(s2,s1) || !strings.Contains(s1,s2) {
-			return true
-		}
 	}
 
 	if strings.Contains(s2,s1) || strings.Contains(s1,s2) {
