@@ -159,7 +159,6 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 		return
 	}
 
-
 	if name && ! sequence && !pagenr {
 		fmt.Println("HandleOrbits()")
 		HandleOrbit(w,r,nodeptrs,limit)
@@ -226,7 +225,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 
 	if arrows || sttypes {
-		//ShowMatchingArrows(ctx,arrowptrs,sttype)
+		HandleMatchingArrows(w,r,CTX,arrowptrs,sttype)
 		return
 	}
 
@@ -477,6 +476,69 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 	response := PackageResponse("Sequence",data)
 
 	//fmt.Println("Sequence...",string(response))
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+
+}
+
+// *********************************************************************
+
+func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
+
+	fmt.Println("Solver/handler: HandleMatchingArrows()")
+
+	type ArrowList struct {
+		ArrPtr SST.ArrowPtr
+		ASTtype int
+		Short string
+		Long string
+		InvPtr SST.ArrowPtr
+		ISTtype int
+		InvS string
+		InvL string
+	}
+
+	var arrows []ArrowList
+
+	for a := range arrowptrs {
+		adir := SST.GetDBArrowByPtr(ctx,arrowptrs[a])
+		inv := SST.GetDBArrowByPtr(ctx,SST.INVERSE_ARROWS[arrowptrs[a]])
+
+		var al ArrowList		
+		al.ArrPtr = arrowptrs[a]
+		al.ASTtype = SST.STIndexToSTType(adir.STAindex)
+		al.Short = adir.Short
+		al.Long = adir.Long
+		al.InvPtr = inv.Ptr
+		al. ISTtype = SST.STIndexToSTType(inv.STAindex)
+		al.InvS = inv.Short
+		al.InvL = inv.Long
+		arrows = append(arrows,al)
+	}
+
+	for st := range sttype {
+		adirs := SST.GetDBArrowBySTType(ctx,sttype[st])
+		for adir := range adirs {
+			inv := SST.GetDBArrowByPtr(ctx,SST.INVERSE_ARROWS[adirs[adir].Ptr])
+
+			var al ArrowList
+			al.ArrPtr = adirs[adir].Ptr
+			al.ASTtype = SST.STIndexToSTType(adirs[adir].STAindex)
+			al.Short = adirs[adir].Short
+			al.Long = adirs[adir].Long
+			al.InvPtr = inv.Ptr
+			al.ISTtype = SST.STIndexToSTType(inv.STAindex)
+			al.InvS = inv.Short
+			al.InvL = inv.Long
+			arrows = append(arrows,al)
+		}
+	}
+
+	data,_ := json.Marshal(arrows)
+	response := PackageResponse("Arrows",string(data))
+
+	fmt.Println("Arrows...",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)

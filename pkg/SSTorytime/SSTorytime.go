@@ -8200,7 +8200,7 @@ func SimilarString(s1,s2 string) bool {
 		return true
 	}
 
-	if strings.Contains(s2,s1) || strings.Contains(s1,s2) {
+	if strings.Contains(s2,s1) {
 		return true
 	}
 

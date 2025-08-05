@@ -191,6 +191,20 @@ a:hover {
  color: darkred;
 }
 
+#fwdarr {
+ margin: 0px; margin: 0px;
+ padding: 5px;
+ color : darkgreen;
+ margin-left: 50px;
+}
+
+#bwdarr {
+ margin: 0px;
+ padding: 5px;
+ color : darkred;
+ margin-left: 60px;
+}
+
 #arrow-0 {
  color: purple;    /* -express */
 }
@@ -839,6 +853,9 @@ switch (obj.Response)
    case "TOC":
       title = "Table of contents";
       break;
+   case "Arrows":
+      title = "Arrow lookup";
+      break;
    default:
       titl = "SSToryGraph browser";
    }
@@ -1133,6 +1150,77 @@ for (let chp of obj.Content)
 }
 
 /***********************************************************/
+
+function DoArrowsPanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('span');
+panel.id = "main_root";
+section.appendChild(panel);
+
+CANVAS = CreateCanvas();
+DrawGrid(0,0,1);
+let counter = 0;
+
+let t = document.createElement('h1');
+t.textContent = "Arrows";
+panel.appendChild(t);
+
+let matches = obj.Content.length;
+
+let angle_increment = Math.PI / matches;
+let angle = 0;
+
+for (let arrow of obj.Content) 
+   {
+   ArrowPair(angle,arrow.ASTtype,arrow.Long,arrow.InvL);
+   angle += angle_increment;
+
+   let a = document.createElement('div');
+   a.textContent = "ArrowPtr = " + arrow.ArrPtr + " (STtype: " + arrow.ASTtype + ")";
+   a.id = 'arrow-'+(arrow.ASTtype + ST_ZERO);
+   panel.appendChild(a);
+
+   let ab = document.createElement('p');
+   ab.textContent = "Long name: (" + arrow.Long + ")";
+   ab.id = "fwdarr";
+   //ab.id = 'arrow-'+(arrow.ASTtype + ST_ZERO);
+   ab.style.fontFamily = 'Verdana';
+   a.appendChild(ab);
+
+   let af = document.createElement('p');
+   af.textContent = "Short alias: (" + arrow.Short + ")";
+   af.id = "fwdarr";
+   //af.id = 'arrow-'+(arrow.ASTtype + ST_ZERO);
+   af.style.fontFamily = 'Verdana';
+   a.appendChild(af);
+
+   // Inverse
+   let i = document.createElement('div');
+   i.textContent = "ArrowPtr = " +arrow.InvPtr + ". (STtype: " + arrow.ISTtype + ")";
+   //i.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
+   panel.appendChild(i);
+
+   let iaf = document.createElement('p');
+   iaf.textContent = "Short: " + arrow.InvS;
+   //iaf.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
+   iaf.id = "bwdarr";
+   iaf.style.fontFamily = 'Verdana';
+   i.appendChild(iaf);
+
+   let ib = document.createElement('p');
+   ib.textContent = "Long: " + arrow.InvL;
+   //ib.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
+   ib.id = "bwdarr";
+   ib.style.fontFamily = 'Verdana';
+   i.appendChild(ib);
+
+   let hr = document.createElement('hr');
+   panel.appendChild(hr);
+   }
+}
+
+/***********************************************************/
 //  Presentation
 /***********************************************************/
 
@@ -1351,6 +1439,43 @@ for (let ngh of event.Orbits[In0])
 }
 
 /***********************************************************/
+
+function ArrowPair(angle,type,fwd,bwd)
+{
+x = 0.5 * Math.cos(angle);
+y = 0.5 * Math.sin(angle);
+
+switch (type)
+   {
+   case 0:
+	Near(0,0,0,x,y,0);
+	Near(0,0,0,-x,-y,0);
+      break;
+   case 1:
+   case -1:
+	LeadsTo(0,0,0,x,y,0);
+	LeadsTo(0,0,0,-x,-y,0);
+      break;
+   case 2:
+   case -2:
+	Contains(0,0,0,x,y,0);
+	Contains(0,0,0,-x,-y,0);
+      break;
+   case 3:
+   case -3:
+	Expresses(0,0,0,x,y,0);
+	Expresses(0,0,0,-x,-y,0);
+      break;
+   }
+
+const size = "12";
+const colour = "black";
+
+Label(x,y,0,fwd,size,colour)
+Label(-x,-y,0,bwd,size,colour)
+}
+
+/***********************************************************/
 // handlers
 /***********************************************************/
 
@@ -1409,6 +1534,9 @@ async function sendsearchData() {
             break;
 	 case "TOC":
 	    DoTOCPanel(resp);
+            break;
+         case "Arrows":
+            DoArrowsPanel(resp);
             break;
          }
 
@@ -1504,6 +1632,9 @@ async function sendLinkSearch(search)
             break;
 	 case "TOC":
 	    DoTOCPanel(resp);
+            break;
+         case "Arrows":
+            DoArrowsPanel(resp);
             break;
          }
 
@@ -1766,7 +1897,6 @@ let headlen = 20 * scale;
 let noderadius = 10 * scale;
 
 CTX.beginPath();
-
 CTX.strokeStyle = colour;
 CTX.lineWidth = thickness;
 CTX.moveTo(tox-noderadius*Math.cos(angle),toy-noderadius*Math.sin(angle));
