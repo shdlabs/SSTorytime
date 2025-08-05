@@ -385,7 +385,6 @@ if (str.includes("\n"))
    // arrow
    let arrow_link = document.createElement('a');
    arrow_link.textContent = `( ${arrow} )  `;
-   //arrow_link.className = 'arrow'+stindex;
    arrow_link.id = 'arrow-'+stindex;
    arrow_link.title = STINDICES[stindex];
    arrow_link.class = "tooltip";
@@ -1050,7 +1049,7 @@ for (let chp of obj.Content)
 
    let link = document.createElement('p');
    let item = document.createElement('h2');
-   link.onclick = function() { sendTOCLinkData(chp.Chapter,""); };
+   link.onclick = function() { sendLinkSearch("notes chapter "+chp.Chapter); };
    item.textContent = counter + ". "+chp.Chapter;
    link.appendChild(item);
    panel.appendChild(link);
@@ -1069,7 +1068,7 @@ for (let chp of obj.Content)
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-elem";
-         link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
+         link.onclick = function() { sendLinkSearch("context "+ctx.Text); };
          link.id = "toc-frag";
  	 link.textContent = "Context Set/Grouping:: ";
          link.appendChild(sitem)
@@ -1092,7 +1091,7 @@ for (let chp of obj.Content)
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-single";
-         link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
+         link.onclick = function() { sendLinkSearch("context "+ctx.Text,ctx); };
  	 link.textContent = "Intentionally emph:: ";
          link.appendChild(sitem)
          chap.appendChild(link);
@@ -1113,7 +1112,7 @@ for (let chp of obj.Content)
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-common";
-         link.onclick = function() { sendTOCLinkData(chp.Chapter,ctx); };
+         link.onclick = function() { sendLinkSearch("context "+ctx.Text); };
 	 link.textContent = "Ambient context:: ";
          link.appendChild(sitem)
          link.id = "toc-frag";
@@ -1450,22 +1449,6 @@ async function sendlinkData(nclass,ncptr)
   })
     .then((resp) => {
 
-      console.log("CHECK ORBIT",JSON.stringify(resp, null, 2))
-
-      let prevh = document.getElementById("header_root");
-
-      if (prevh != null) 
-         {
-         prevh.remove();
-         }
-
-      let prevm = document.getElementById("article");
-
-      if (prevm != null) 
-         {
-         prevm.remove();
-         }
-
       DoHeader(resp);
       DoOrbitPanel(resp);
       MathJax.typeset();
@@ -1479,11 +1462,10 @@ async function sendlinkData(nclass,ncptr)
 
 /***********************************************************/
 
-async function sendTOCLinkData(chap,ctx)
+async function sendLinkSearch(search)
 {
   let formData = new FormData();
-  formData.set("chapter",chap);
-  formData.set("contexts",ctx);
+  formData.set("name",search);
 
   fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData })
    .then(response => {
@@ -1492,36 +1474,35 @@ async function sendTOCLinkData(chap,ctx)
       throw new Error('network returns error');
     }
 
-  let a = document.getElementById("name");
-  a.value = "";
-  let b = document.getElementById("context");
-  b.value=ctx;
-  let c = document.getElementById("chapter");
-  c.value=chap;
-
     return response.json();
 
   })
     .then((resp) => {
 
-      console.log("CHECK TOC",JSON.stringify(resp, null, 2))
-
-      let prevh = document.getElementById("header_root");
-
-      if (prevh != null) 
-         {
-         prevh.remove();
-         }
-
-      let prevm = document.getElementById("article");
-
-      if (prevm != null) 
-         {
-         prevm.remove();
-         }
-
       DoHeader(resp);
-      DoPageMapPanel(resp);
+
+      switch (resp.Response)
+         {
+         case "Orbits":
+            DoOrbitPanel(resp);
+            break;
+         case "ConePaths":
+            DoEntireConePanel(resp);
+            break;
+         case "PathSolve":
+            DoEntireConePanel(resp);
+            break;
+         case "Sequence":
+            DoSeqPanel(resp);
+            break;
+	 case "PageMap":
+	    DoPageMapPanel(resp);
+            break;
+	 case "TOC":
+	    DoTOCPanel(resp);
+            break;
+         }
+
       MathJax.typeset();
     })
 

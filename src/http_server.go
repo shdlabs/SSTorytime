@@ -79,6 +79,8 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 			name = name + nstr
 		}
 
+		fmt.Println("\nReceived command:",name)
+
 		if len(name) == 0 {
 			name = "sstorytime \"semantic spacetime\""
 		}
@@ -429,7 +431,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 func HandlePageMap(w http.ResponseWriter, r *http.Request,notes []SST.PageMap) {
 
 	jstr := SST.JSONPage(CTX,notes)
-
+	fmt.Println("Solver/handler: HandlePageMap()")
 	response := PackageResponse("PageMap",jstr)
 	//fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
