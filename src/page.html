@@ -813,11 +813,9 @@ clearscreen.innerHTML = "";
 
 // Now manage the header
 let header = document.querySelector('header');
+header.innerHTML = "";
 let titlebar = document.createElement('h2');
-titlebar.innerHTML = "";
-titlebar.textContent="SSToryGraph"
 titlebar.id = "header_root";
-header.appendChild(titlebar);
 
 let title = "app";
 
@@ -827,16 +825,22 @@ switch (obj.Response)
       title = obj.Content[0].Text;
       break;
    case "ConePaths":
-      title = "bla";//obj.Content[0].Paths.Title;
+      title = "cone paths";//obj.Content[0].Paths.Title;
       break;
    case "PathSolve":
-      title = "blablab"; obj.Content[0].Paths.Title;
+      title = "path solution"; obj.Content[0].Paths.Title;
       break;
    case "Sequence":
-      title = "Story sequence ... ";
+      title = "Story sequence ... "+ obj.Content[0].Chapter;
       break;
    case "PageMap":
+      title = "Page notes about "+ obj.Content.Title;
       break;
+   case "TOC":
+      title = "Table of contents";
+      break;
+   default:
+      titl = "SSToryGraph browser";
    }
 
 if (title.length < 60 || IsMath(title))
@@ -849,7 +853,7 @@ else
    }
 
 titlebar.style.fontSize = "70%"
-
+header.appendChild(titlebar);
 }
 
 /***********************************************************/
