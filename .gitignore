@@ -11,7 +11,7 @@
 stamp-h1
 plot
 
-
+*edit_me.n4l
 dotest*
 /test-driver
 /tests/unit/*.log
