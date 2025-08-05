@@ -2316,9 +2316,9 @@ func DefineStoredFunctions(ctx PoSST) {
 		"      IF item = 'any' OR item = '' THEN\n"+
 		"        RETURN true;"+
 		"      END IF;"+
-		"      unicode := replace(item,'|','');\n" +
+		"      unicode := Format('.*%s.*',item);\n" +
 		"     FOREACH try IN ARRAY db_ref LOOP\n"+
-		"        IF length(substring(try from lower(unicode))) = length(try) THEN \n" + // unaccented unicode match
+		"        IF substring(try,lower(unicode)) IS NOT NULL THEN \n" + // unaccented unicode match
 	        "           RETURN true;\n" +
 		"        END IF;\n" +
 		"     END LOOP;"+
@@ -6204,7 +6204,7 @@ const (
 	CMD_ON = "on"
 	CMD_FOR = "for"
 	CMD_ABOUT = "about"
-	CMD_NOTES = "note"
+	CMD_NOTES = "notes"
 	CMD_PAGE = "page"
 	CMD_PATH = "path"
 	CMD_SEQ = "seq"
@@ -6433,12 +6433,15 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 			case CMD_ON,CMD_ABOUT,CMD_FOR:
 				if lenp > p+1 {
-
 					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
-						ult := strings.Split(cmd_parts[c][pp]," ")
-						for u := range ult {
-							param.Name = append(param.Name,DeQ(ult[u]))
+						if param.PageNr > 0 {
+							param.Chapter = cmd_parts[c][pp]
+						} else {
+							ult := strings.Split(cmd_parts[c][pp]," ")
+							for u := range ult {
+								param.Name = append(param.Name,DeQ(ult[u]))
+							} 
 						}
 					}
 				} else {
