@@ -105,6 +105,7 @@ var (
 	// Flags
 
 	VERBOSE bool = false
+	SIGN_OF_LIFE int
 	DIAGNOSTIC bool = false
 	UPLOAD bool = false
 	SUMMARIZE bool = false
@@ -236,6 +237,10 @@ func NewFile(filename string) {
 	TEST_DIAG_FILE = DiagnosticName(filename)
 
 	Box("Parsing new file",filename)
+
+	if !VERBOSE {
+		fmt.Printf("[%s]",filename)
+	}
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
 	LINE_NUM = 1
@@ -1048,7 +1053,6 @@ func ParseN4L(src []rune) {
 	var token string
 
 	for pos := 0; pos < len(src); {
-
 		pos = SkipWhiteSpace(src,pos)
 		token,pos = GetToken(src,pos)
 
@@ -1411,6 +1415,14 @@ func HandleNode(annotated string) SST.NodePtr {
 	
 	if len(clean_version) != len(annotated) {
 		AddBackAnnotations(clean_version,clean_ptr,annotated)
+	}
+
+	if !VERBOSE {
+		if (SIGN_OF_LIFE % 10) == 0 {
+			fmt.Print("+",SIGN_OF_LIFE)
+		}
+		SIGN_OF_LIFE++
+
 	}
 
 	return clean_ptr
@@ -2227,12 +2239,17 @@ func ReadUTF8File(filename string) []rune {
 	}
 
 	var unicode []rune
-	
+	var sign_of_life int
+
 	for i, w := 0, 0; i < len(content); i += w {
                 runeValue, width := utf8.DecodeRuneInString(string(content)[i:])
                 w = width
-
 		unicode = append(unicode,runeValue)
+
+		if sign_of_life % 10000 == 0 {
+			fmt.Print(i," ")
+		}
+		sign_of_life++
 	}
 
 	return unicode
@@ -2256,7 +2273,6 @@ func Verbose(a ...interface{}) {
 	if DIAGNOSTIC {
 		AppendStringToFile(TEST_DIAG_FILE,line)
 	}
-
 
 	if VERBOSE {
 		fmt.Print(line)
