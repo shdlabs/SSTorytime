@@ -18,6 +18,36 @@ Modern recognition methods can match sensory inputs like vision and sound as wel
 they don't solve the problem of how to know which experience is the correct match given a generic
 sensory input. There was that one time at band camp....
 
+## The technical challenge of context
+
+The technical challenge of context is that the amount of context in a sensory stream is usually
+much greater than the part you actually want to remember, so knowledge data may quickly become
+dominated by context. We don't want to store intentionally selected items together with ambient
+keys and other "noise", so we need to be careful about how to structure a graph.
+
+Context plays two roles. We know from Promise Thory that each fragment of
+potential "donor" knowledge promises certain information (+), but that a receiver may promise
+to listen only to another set of "receptor" information (-). The overlap between what is offered (donation)
+and what is accepted (reception) is the result of a lookup. Recptor information is usually quite small
+and narrow compared to the entirety of the original context signal. So we split these representations
+into two parts:
+
+* Original signal is encoded as graph nodes that annotate captured events.
+* Query context is encoded in the `:: tags ::` that break up notes into sections.
+
+When we are searching, we primarily use the original signal nodes. When we are filtering
+or narrowing a search, we use the `:: tags ::`.
+
+## Context in the `text2N4L` tool
+
+When we are scanning raw text using the helper tool, we can generate the (+) donor
+context fragments automatically, but we can't generate acceptor context tags automatically.
+Only you can do that, because only you know what you might be looking for in the information.
+It isn't universal and automatic--it's based in your intent.
+
+Intent and intentionality play a large role in understanding context: [The Role of Intent and Context Knowledge Graphs With Cognitive Agents](https://medium.com/@mark-burgess-oslo-mb/the-role-of-intent-and-context-knowledge-graphs-with-cognitive-agents-fb45d8dfb34d)
+
+
 ## An idealized approximation
 
 The way we refer to contexts has to be simple and easy to document,
