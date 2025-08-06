@@ -47,6 +47,12 @@ It isn't universal and automatic--it's based in your intent.
 
 Intent and intentionality play a large role in understanding context: [The Role of Intent and Context Knowledge Graphs With Cognitive Agents](https://medium.com/@mark-burgess-oslo-mb/the-role-of-intent-and-context-knowledge-graphs-with-cognitive-agents-fb45d8dfb34d)
 
+Note that, when scanning a long document, resulting in a large N4L
+file, loading of data becomes very slow. This is because Unicode
+parsing efficiency is low, and because the time grows easily like the
+square of the length of the file--so we need to be cautious is dumping large amounts of data
+into a knowledge store without good reason. You might need to set aside a morning to upload
+an example like Moby Dick.
 
 ## An idealized approximation
 
