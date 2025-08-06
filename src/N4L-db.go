@@ -32,6 +32,7 @@ const (
         HAVE_PLUS = 11
         HAVE_MINUS = 22
 	ROLE_ABBR = 33
+	LARGE_FILE = 500000
 
 	ROLE_EVENT = 1
 	ROLE_RELATION = 2
@@ -45,7 +46,7 @@ const (
 
 	WORD_MISTAKE_LEN = 2 // a string shorter than this is probably a mistake
 
-	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
+	WARN_NOTE_TO_SELF = "WARNING: Found a possible note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	WARN_CHAPTER_CLASS_MIXUP="WARNING: possible space between class cancellation -:: <class> :: ambiguous chapter name, in: "
 
@@ -106,6 +107,7 @@ var (
 
 	VERBOSE bool = false
 	SIGN_OF_LIFE int
+	GIVE_SIGNS_OF_LIFE = false
 	DIAGNOSTIC bool = false
 	UPLOAD bool = false
 	SUMMARIZE bool = false
@@ -240,8 +242,19 @@ func NewFile(filename string) {
 
 	Box("Parsing new file",filename)
 
-	if !VERBOSE {
-		fmt.Printf("[%s]",filename)
+	stat, err := os.Stat(filename)
+
+	if err != nil {
+		ParseError(ERR_NO_SUCH_FILE_FOUND+filename)
+		os.Exit(-1)
+	}
+
+	if stat.Size() > LARGE_FILE {
+		GIVE_SIGNS_OF_LIFE = true
+	}
+
+	if !VERBOSE && GIVE_SIGNS_OF_LIFE {
+		fmt.Printf("[%s] is a large file. This will take a while...\n",filename)
 	}
 
 	LINE_ITEM_STATE = ROLE_BLANK_LINE
@@ -1419,7 +1432,7 @@ func HandleNode(annotated string) SST.NodePtr {
 		AddBackAnnotations(clean_version,clean_ptr,annotated)
 	}
 
-	if !VERBOSE {
+	if !VERBOSE && GIVE_SIGNS_OF_LIFE {
 		if (SIGN_OF_LIFE % 10) == 0 {
 			fmt.Print("+",SIGN_OF_LIFE)
 		}
@@ -2261,7 +2274,7 @@ func ReadUTF8File(filename string) []rune {
                 w = width
 		unicode = append(unicode,runeValue)
 
-		if sign_of_life % 10000 == 0 {
+		if GIVE_SIGNS_OF_LIFE && sign_of_life % 10000 == 0 {
 			fmt.Print(" ",i)
 		}
 		sign_of_life++

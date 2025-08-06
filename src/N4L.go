@@ -41,7 +41,7 @@ const (
 
 	WORD_MISTAKE_LEN = 2 // a string shorter than this is probably a mistake
 
-	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
+	WARN_NOTE_TO_SELF = "WARNING: Found a possible note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	WARN_DIFFERENT_CAPITALS = "WARNING: Another capitalization exists"
 	WARN_CHAPTER_CLASS_MIXUP="WARNING: possible space between class cancellation -:: <class> :: ambiguous chapter name, in: "
