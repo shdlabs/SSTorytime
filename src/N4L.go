@@ -39,7 +39,7 @@ const (
 	ROLE_LINE_ALIAS = 8
 	ROLE_LOOKUP = 9
 
-	WORD_MISTAKE_LEN = 3 // a string shorter than this is probably a mistake
+	WORD_MISTAKE_LEN = 2 // a string shorter than this is probably a mistake
 
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
@@ -69,7 +69,7 @@ const (
         ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
 	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be in the form $label.n"
 	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
-	ERR_SHORT_WORD="Short word, probably a mistake: "
+	ERR_SHORT_WORD="Short word, possible mistake: "
 	ERR_ARR_REDEFINITION="Redefinition of arrow "
 	ERR_ILLEGAL_ANNOT_CHAR="Cannot use +/- reserved tokens for annotation"
 )
@@ -2299,26 +2299,36 @@ func AddBackAnnotations(cleantext string,cleanptr NodePtr,annotated string) {
 
 //**************************************************************
 
-func EmbeddedSymbol(fulltext []rune,offset int) (int,string) {
+func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
+
+	if offset >= len(runetext) {
+		return 0,"end of string"
+	}
 
 	for an := range ANNOTATION {
 
 		// Careful of unicode, convert to runes
 		uni := []rune(an)
-		match := true
+		match := runetext[offset] == uni[0]
 
-		for r := 0; r < len(uni) && r+offset < len(fulltext); r++ {
-			if uni[r] != fulltext[offset+r] {
+		for r := 0; r < len(uni) && r+offset < len(runetext); r++ {
+
+			if uni[r] != runetext[offset+r] {
+				match = false
+				continue
+			}
+
+			if offset+r >= len(runetext)-1 {
 				match = false
 				continue
 			}
 
 			// No space between marker and text
-			if unicode.IsSpace(fulltext[offset+r+1]) {
+			if offset+r+1 < len(runetext) && unicode.IsSpace(runetext[offset+r+1]) {
 				match = false
 				continue
 			}
-		} 
+		}
 
 		if match {
 			return len(an),an
@@ -2333,29 +2343,31 @@ func EmbeddedSymbol(fulltext []rune,offset int) (int,string) {
 func ExtractWord(fulltext string,offset int) string {
 
 	var protected bool = false
-	var word string
 
-	for r := offset+1; r < len(fulltext); r++ {
+	runetext := []rune(fulltext)
+	var word []rune
 
-		if fulltext[r] == '"' {
+	for r := offset+1; r < len(runetext); r++ {
+
+		if runetext[r] == '"' {
 			protected = !protected
 		}
 
-		if !protected && !unicode.IsLetter(rune(fulltext[r])) {
-			word = strings.Trim(strings.TrimSpace(word),"\" ")
-			return word
+		if !protected && !unicode.IsLetter(rune(runetext[r])) {
+			sword := strings.Trim(strings.TrimSpace(string(word)),"\" ")
+			return sword
 		}
 
-		word += string(fulltext[r])
+		word = append(word,runetext[r])
 	}
+
+	sword := strings.Trim(strings.TrimSpace(string(word)),"\" ")
 	
-	word = strings.Trim(strings.TrimSpace(word),"\" ")
-	
-	if len(word) <= WORD_MISTAKE_LEN {
-		ParseError(ERR_SHORT_WORD+word)
+	if len(sword) <= WORD_MISTAKE_LEN {
+		ParseError(ERR_SHORT_WORD+"\""+sword+"\"")
 	}
-	
-	return word
+
+	return sword
 }
 
 //**************************************************************

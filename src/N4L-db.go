@@ -43,7 +43,7 @@ const (
 	ROLE_LINE_ALIAS = 8
 	ROLE_LOOKUP = 9
 
-	WORD_MISTAKE_LEN = 3 // a string shorter than this is probably a mistake
+	WORD_MISTAKE_LEN = 2 // a string shorter than this is probably a mistake
 
 	WARN_NOTE_TO_SELF = "WARNING: Found a note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
@@ -72,7 +72,7 @@ const (
         ERR_STRAY_PAREN="Stray ) in an event/item - illegal character"
 	ERR_MISSING_LINE_LABEL_IN_REFERENCE="Missing a line label in reference, should be in the form $label.n"
 	ERR_NON_WORD_WHITE="Non word (whitespace) character after an annotation: "
-	ERR_SHORT_WORD="Short word, probably a mistake: "
+	ERR_SHORT_WORD="Short word, possible mistake or stray unicode symbol: "
 	ERR_ILLEGAL_ANNOT_CHAR="Cannot use +/- reserved tokens for annotation"
 )
 
@@ -159,6 +159,8 @@ func main() {
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
+
+	fmt.Println()
 
 	if SUMMARIZE {
 		SummarizeGraph()
@@ -1116,7 +1118,7 @@ func AddMandatory() {
         inv = SST.InsertArrowDirectory("contains","is an emphatic proto-concept in","is emph in","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
-	arr = SST.InsertArrowDirectory("contains","mentions topic","ment","+")
+	arr = SST.InsertArrowDirectory("contains","mentions topic","mentions","+")
         inv = SST.InsertArrowDirectory("contains","is mentioned in","ismentin","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
@@ -1870,22 +1872,33 @@ func AddBackAnnotations(cleantext string,cleanptr SST.NodePtr,annotated string) 
 
 //**************************************************************
 
-func EmbeddedSymbol(fulltext []rune,offset int) (int,string) {
+
+func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
+
+	if offset >= len(runetext) {
+		return 0,"end of string"
+	}
 
 	for an := range ANNOTATION {
 
 		// Careful of unicode, convert to runes
 		uni := []rune(an)
-		match := true
+		match := runetext[offset] == uni[0]
 
-		for r := 0; r < len(uni) && r+offset < len(fulltext); r++ {
-			if uni[r] != fulltext[offset+r] {
+		for r := 0; r < len(uni) && r+offset < len(runetext); r++ {
+
+			if uni[r] != runetext[offset+r] {
+				match = false
+				continue
+			}
+
+			if offset+r >= len(runetext)-1 {
 				match = false
 				continue
 			}
 
 			// No space between marker and text
-			if unicode.IsSpace(fulltext[offset+r+1]) {
+			if offset+r+1 < len(runetext) && unicode.IsSpace(runetext[offset+r+1]) {
 				match = false
 				continue
 			}
@@ -1904,29 +1917,31 @@ func EmbeddedSymbol(fulltext []rune,offset int) (int,string) {
 func ExtractWord(fulltext string,offset int) string {
 
 	var protected bool = false
-	var word string
 
-	for r := offset+1; r < len(fulltext); r++ {
+	runetext := []rune(fulltext)
+	var word []rune
 
-		if fulltext[r] == '"' {
+	for r := offset+1; r < len(runetext); r++ {
+
+		if runetext[r] == '"' {
 			protected = !protected
 		}
 
-		if !protected && !unicode.IsLetter(rune(fulltext[r])) {
-			word = strings.Trim(strings.TrimSpace(word),"\" ")
-			return word
+		if !protected && !unicode.IsLetter(rune(runetext[r])) {
+			sword := strings.Trim(strings.TrimSpace(string(word)),"\" ")
+			return sword
 		}
 
-		word += string(fulltext[r])
+		word = append(word,runetext[r])
 	}
 	
-	word = strings.Trim(strings.TrimSpace(word),"\" ")
+	sword := strings.Trim(strings.TrimSpace(string(word)),"\" ")
 	
-	if len(word) <= WORD_MISTAKE_LEN {
-		ParseError(ERR_SHORT_WORD+word)
+	if len(sword) <= WORD_MISTAKE_LEN {
+		ParseError(ERR_SHORT_WORD+"\""+sword+"\"")
 	}
-	
-	return word
+
+	return sword
 }
 
 //**************************************************************
@@ -2158,7 +2173,7 @@ func CheckSection() {
 
 func AllCaps(s string) bool {
 
-	if len(s) <= WORD_MISTAKE_LEN {
+	if len(s) <= 2 * WORD_MISTAKE_LEN {
 		return false
 	}
 
@@ -2247,7 +2262,7 @@ func ReadUTF8File(filename string) []rune {
 		unicode = append(unicode,runeValue)
 
 		if sign_of_life % 10000 == 0 {
-			fmt.Print(i," ")
+			fmt.Print(" ",i)
 		}
 		sign_of_life++
 	}
