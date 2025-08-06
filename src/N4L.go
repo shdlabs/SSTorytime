@@ -1368,7 +1368,6 @@ func AssessGrammarCompletions(token string, prior_state int) {
 
 		if AllCaps(token) {
 			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
-			return
 		}
 
 		HandleNode(this_item)
@@ -2597,7 +2596,7 @@ func CheckSection() {
 
 func AllCaps(s string) bool {
 
-	if len(s) <= WORD_MISTAKE_LEN {
+	if len(s) <= 2*WORD_MISTAKE_LEN {
 		return false
 	}
 
