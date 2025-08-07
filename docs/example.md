@@ -142,7 +142,6 @@ We can use annotations like "%" and ">" to add sub-references to a string of tex
 but sometimes you might want to explicitly connect a sentence to one of its subjects.
 
 You can use quotes around parts of a sentence to collect words with spaces or special characters.
-
 <pre> 
 Kubernetes (short for) "K8s"
            (represents) a %container %orchestration system
@@ -150,7 +149,7 @@ Kubernetes (short for) "K8s"
            (maintainedby) %CNCF
            (enables) %declarative %automation of containerized workloads
 </pre>
-There is no purpose to writing
+There is no purpose to writing:
 <pre>
  %Mark (loves) %Lynn
 </pre>

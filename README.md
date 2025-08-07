@@ -82,6 +82,7 @@ job summary by an LLM text tool in which you get an answer `take it or leave it'
 * [Getting started](docs/README.md)
 * [The Mission of SSTorytelling](docs/Storytelling.md)
 * [A quick tutorial](docs/Tutorial.md)
+* [An example / case study](docs/example.md)
 * [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
 * [How does context work?](docs/howdoescontextwork.md)
 * [N4L - Notes For Learning/Loading](docs/N4L.md)
