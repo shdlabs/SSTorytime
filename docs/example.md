@@ -61,8 +61,7 @@ graph, you need to reduce the number of arrows to a smallish but still expressiv
 must be one of four kinds/types, and this will help you to think about how to express relations.
 
 You might struggle in the beginning to write your arrows in a good way. It takes a bit of practice.
-
-
+Here are some examples to help:
 
 * Leadsto / affects / affected by / causes / caused by
 
