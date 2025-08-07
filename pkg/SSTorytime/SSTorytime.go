@@ -76,7 +76,18 @@ const (
 	LT1024 = 5
 	GT1024 = 6
 
-	// semantics, resverved names
+	// mandatory relations used in text processing
+
+	EXPR_INTENT_L = "describes"
+	EXPR_INTENT_S = "describe"
+        INV_EXPR_INTENT_L = "is described in"
+	INV_EXPR_INTENT_S ="described"
+
+	EXPR_AMBIENT_L = "mentions topic"
+	EXPR_AMBIENT_S = "mentions"
+        INV_EXPR_AMBIENT_L = "is mentioned in"
+	INV_EXPR_AMBIENT_S = "ismentin"
+
 )
 
 var BASE_DB_CHANNEL_STATE[7] ClassedNodePtr

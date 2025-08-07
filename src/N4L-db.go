@@ -573,6 +573,11 @@ func ResolveAliasedItem(token string) string {
 
 	// split $alias.n into (alias string,n int)
 
+	if! strings.Contains(token,".") {
+		// just a dollar amount
+		return token
+	}
+
 	var contig string
 	fmt.Sscanf(token,"%s",&contig)
 	
@@ -1127,12 +1132,12 @@ func AddMandatory() {
         inv = SST.InsertArrowDirectory("contains","in","is in","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
-	arr = SST.InsertArrowDirectory("contains","emphasizes proto-concept","emph","+")
-        inv = SST.InsertArrowDirectory("contains","is an emphatic proto-concept in","is emph in","-")
+	arr = SST.InsertArrowDirectory("properties",SST.EXPR_INTENT_L,SST.EXPR_INTENT_S,"+")
+        inv = SST.InsertArrowDirectory("properties",SST.INV_EXPR_INTENT_L,SST.INV_EXPR_INTENT_S,"-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
-	arr = SST.InsertArrowDirectory("contains","mentions topic","mentions","+")
-        inv = SST.InsertArrowDirectory("contains","is mentioned in","ismentin","-")
+	arr = SST.InsertArrowDirectory("properties",SST.EXPR_AMBIENT_L,SST.EXPR_AMBIENT_S,"+")
+        inv = SST.InsertArrowDirectory("properties",SST.INV_EXPR_AMBIENT_L,SST.INV_EXPR_AMBIENT_S,"-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
 }
@@ -1434,7 +1439,7 @@ func HandleNode(annotated string) SST.NodePtr {
 
 	if !VERBOSE && GIVE_SIGNS_OF_LIFE {
 		if (SIGN_OF_LIFE % 10) == 0 {
-			fmt.Print("+",SIGN_OF_LIFE)
+			fmt.Print("+")
 		}
 		SIGN_OF_LIFE++
 

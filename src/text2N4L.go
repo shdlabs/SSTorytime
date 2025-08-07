@@ -136,11 +136,11 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	for p := range parts {
 		fmt.Fprintf(fp,"\n %s\n",parts[p])
 		for w := range ambi_by_part[p] {
-			fmt.Fprintf(fp,"   \"       (mentions) %s\n",ambi_by_part[p][w])
+			fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.INV_EXPR_AMBIENT_S,ambi_by_part[p][w])
 		}
 
 		for w := range anom_by_part[p] {
-			fmt.Fprintf(fp,"   \"       (emphasizes) %s\n",anom_by_part[p][w])
+			fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.INV_EXPR_INTENT_S,anom_by_part[p][w])
 		}
 	}
 
@@ -150,11 +150,11 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	fmt.Fprintf(fp,"\n %s\n",filename)
 	for w := range all_ambi {
-		fmt.Fprintf(fp,"   \"       (mentions) %s\n",all_ambi[w])
+		fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.INV_EXPR_AMBIENT_S,all_ambi[w])
 	}
 	
 	for w := range all_anom {
-		fmt.Fprintf(fp,"   \"       (emphasizes) %s\n",all_anom[w])
+		fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.INV_EXPR_INTENT_S,all_anom[w])
 	}
 
 	fmt.Println("Wrote file",outputfile)

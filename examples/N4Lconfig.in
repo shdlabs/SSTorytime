@@ -29,7 +29,7 @@
         + injects (inject)         - is injected by (injectby)
         + redirects (redir)        - is redirected by (redirby)
         + provisions (prov)        - is provisioned by (provisionedby)
-        + contrains (constrain)    - is constrained by (constrainby)
+        + constrains (constrain)    - is constrained by (constrainby)
 
         ## RESERVED + is followed by (next) - is preceded by (prev)    
 
