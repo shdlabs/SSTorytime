@@ -13,7 +13,7 @@ again, to improve them.
  :: core concepts, tags, thoughts you have, index terms  ::
 </pre>
 
-# Text, nodes, and names
+## Text, nodes, and names
 
 When you write some text it can mean anything you like. If you want to related it
 to some other comment, you use arrows with "(..)". Parentheses that are not quoted
@@ -28,7 +28,7 @@ the whole thing again:
 
         "          (arrow2)  yet another remark ...
 
-<pre>
+</pre>
 
 The nodes in a graph do not have to be "things". Don't think of notes as:
 <pre>
@@ -46,28 +46,11 @@ A simples mnemonic "etc", for writing notes, is to think of every statement as o
 * **Things** - physical objects
 * **Concepts** - ideas and virtual things
 
-# Adding annotations to text
+These help us to use the "right kind of" arrows for searching and reasoning later, because:
 
-We can use annotations like "%" and ">" to add sub-references to a string of text. There is no need to label too much,
-but sometimes you might want to explicitly connect a sentence to one of its subjects.
-
-You can use quotes around parts of a sentence to collect words with spaces or special characters.
-
-<pre> 
-Kubernetes (short for) "K8s"
-           (represents) a %container %orchestration system
-           (foundedby) %Google
-           (maintainedby) %CNCF
-           (enables) %declarative %automation of containerized workloads
-</pre>
-There is no purpose to writing
-<pre>
- %Mark (loves) %Lynn
-</pre>
-because Mark and Lynn are already defined as text just by writing them independently.
-But you might want to write:
-
-  %Mark sometimes visits the old pub where %Lynn used to work (describes) Some dating habits
+* Events "lead to" other events, they may contain things and express ideas.
+* Things contain other things, but they don't contain events or ideas.
+* Concepts express other concepts but they don't contain physical things. They can refer to events as examples.
 
 ## The arrows in (parentheses) -- the four kinds
 
@@ -153,6 +136,30 @@ Kubernetes (short for) "K8s"
   "   (runsin) a shared %execution context
   "   (managedby) %controllers
 </pre> 
+
+
+## Adding annotations to text
+
+We can use annotations like "%" and ">" to add sub-references to a string of text. There is no need to label too much,
+but sometimes you might want to explicitly connect a sentence to one of its subjects.
+
+You can use quotes around parts of a sentence to collect words with spaces or special characters.
+
+<pre> 
+Kubernetes (short for) "K8s"
+           (represents) a %container %orchestration system
+           (foundedby) %Google
+           (maintainedby) %CNCF
+           (enables) %declarative %automation of containerized workloads
+</pre>
+There is no purpose to writing
+<pre>
+ %Mark (loves) %Lynn
+</pre>
+because Mark and Lynn are already defined as text just by writing them independently.
+But you might want to write:
+
+  %Mark sometimes visits the old pub where %Lynn used to work (describes) Some dating habits
 
 ## Hints and tips
 
