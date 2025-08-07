@@ -10,7 +10,8 @@ How should you use N4L and SSTorytime? You can either use it as a programming fr
 There is no right or wrong way to make notes, but the goal is to make a knowledge graph work successfully
 for you in expressing meaning.
 
-- You write down things you want to remember.
+- You write down things you want to remember (just informally at first).
+- You look for pieces that you want to highlight as separate "characters" in your story.
 - You try to join them up using "(arrows)".
 - You define the arrows as one of four kinds of arrow: about cause-effect, containment, properties, or similarity.
 - You keep going back to organize and improve them.
