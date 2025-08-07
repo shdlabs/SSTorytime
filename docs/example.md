@@ -20,7 +20,7 @@ to some other comment, you use arrows with "(..)". Parentheses that are not quot
 are assumed to  be arrows.
 <pre>
    Remark one ...  (arrow1)  another remark / thing / thought
-<pre>
+</pre>
 If you want to add more arrow connections, use the "ditto" `"` symbol so you don't have to type
 the whole thing again:
 <pre>
@@ -29,7 +29,6 @@ the whole thing again:
         "          (arrow2)  yet another remark ...
 
 </pre>
-
 The nodes in a graph do not have to be "things". Don't think of notes as:
 <pre>
 nouns (verb) noun   #   XXX No..
