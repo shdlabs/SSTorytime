@@ -1,26 +1,22 @@
 
 # Case study: making notes
 
-How should you use N4L and SSTorytime? You can either use it as a programming framework, or create knowledge
-by making notes with N4L. There are many advantages to using N4L: it's a very simple language
-that tries to bridge the gap between natural language and "logical" or at least "formal" knowledge
-graphs--so let's focus on that. 
+How should you use N4L and SSTorytime? You can either use it as a programming framework, using the API,
+ or you can create knowledge graphs by making notes with N4L. There are many
+ advantages to using N4L: it's a very simple language that tries to
+ bridge the gap between natural language and "logical" or at least
+ "formal" knowledge graphs--so let's focus on that.
 
 There is no right or wrong way to make notes, but the goal is to make a knowledge graph work successfully
 for you in expressing meaning.
 
 - You write down things you want to remember.
 - You try to join them up using "(arrows)".
+- You define the arrows as one of four kinds of arrow: about cause-effect, containment, properties, or similarity.
 - You keep going back to organize and improve them.
 
 You don't have to get everything right the first time! The idea is to work on notes over and over
 again, to improve them.
-
-## Labelling "sections" as lookup context
- 
-<pre>
- :: core concepts, tags, thoughts you have, index terms  ::
-</pre>
 
 ## Text, nodes, and names
 
@@ -143,6 +139,16 @@ Kubernetes (short for) "K8s"
   "   (runsin) a shared %execution context
   "   (managedby) %controllers
 </pre> 
+
+## Labelling "sections" as lookup context
+
+The "context" section tags are terms you expect to use to look up
+what you are making notes on. Naively, they are like section headers in a book.
+More deeply, they are like index words that you will be able to filter searches with.
+
+<pre>
+ :: core concepts, tags, thoughts you have, index terms  ::
+</pre>
 
 
 ## Adding annotations to text
