@@ -1,10 +1,19 @@
 
 # Case study: making notes
 
+How should you use N4L and SSTorytime? You can either use it as a programming framework, or create knowledge
+by making notes with N4L. There are many advantages to using N4L: it's a very simple language
+that tries to bridge the gap between natural language and "logical" or at least "formal" knowledge
+graphs--so let's focus on that. 
+
 There is no right or wrong way to make notes, but the goal is to make a knowledge graph work successfully
 for you in expressing meaning.
 
-Also, you don't have to get everything right the first time! The idea is to work on notes over and over
+- You write down things you want to remember.
+- You try to join them up using "(arrows)".
+- You keep going back to organize and improve them.
+
+You don't have to get everything right the first time! The idea is to work on notes over and over
 again, to improve them.
 
 ## Labelling "sections" as lookup context
