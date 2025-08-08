@@ -26,6 +26,8 @@ func main() {
 	// Contra colliding wavefronts as path integral solver
 
 	const maxdepth = 4
+	const limit = 10  // max no results
+
 	var ldepth,rdepth int = 1,1
 	var Lnum,Rnum int
 	var count int
@@ -44,8 +46,8 @@ func main() {
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireConePathsAsLinks(ctx,"any",leftptrs[0],ldepth)		
-		right_paths,Rnum = SST.GetEntireConePathsAsLinks(ctx,"any",rightptrs[0],rdepth)		
+		left_paths,Lnum = SST.GetEntireConePathsAsLinks(ctx,"any",leftptrs[0],ldepth,limit)
+		right_paths,Rnum = SST.GetEntireConePathsAsLinks(ctx,"any",rightptrs[0],rdepth,limit)
 		
 		solutions,loop_corrections := WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 

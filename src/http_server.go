@@ -252,7 +252,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 			break
 		}
 
-		orb := SST.GetNodeOrbit(CTX,nptrs[n],"")
+		orb := SST.GetNodeOrbit(CTX,nptrs[n],"",limit)
 
 		// create a set of coords for len(nptrs) disconnected nodes
 
@@ -314,7 +314,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePt
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
-
+	fmt.Println("Done/sent cone")
 }
 
 //******************************************************************
@@ -423,6 +423,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
+	fmt.Println("Done/sent path solve")
 }
 
 //******************************************************************
@@ -435,6 +436,7 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request,notes []SST.PageMap) {
 	//fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
+	fmt.Println("Done/sent pagemap")
 }
 
 //******************************************************************
@@ -479,7 +481,7 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
-
+	fmt.Println("Done/sent sequence")
 }
 
 // *********************************************************************
@@ -542,7 +544,7 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,a
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
-
+	fmt.Println("Done/sent arrows")
 }
 
 // *********************************************************************
@@ -589,7 +591,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,ch
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
-
+	fmt.Println("Done/sent content")
 }
 
 //******************************************************************

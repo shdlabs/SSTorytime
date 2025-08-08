@@ -347,7 +347,7 @@ func FindOrbits(ctx SST.PoSST, nptrs []SST.NodePtr, limit int) {
 			return
 		}
 		fmt.Print("\n",nptr,": ")
-		SST.PrintNodeOrbit(ctx,nptrs[nptr],100)
+		SST.PrintNodeOrbit(ctx,nptrs[nptr],limit)
 	}
 }
 

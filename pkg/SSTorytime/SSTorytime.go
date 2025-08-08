@@ -1841,7 +1841,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Construct search by sttype. since table names are static we need a case statement
 
-	qstr = "CREATE OR REPLACE FUNCTION GetNeighboursByType(start NodePtr, sttype int)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION GetNeighboursByType(start NodePtr, sttype int, maxlimit int)\n"+
 		"RETURNS Link[] AS $fn$\n"+
 		"DECLARE \n"+
 		"    fwdlinks Link[] := Array[] :: Link[];\n"+
@@ -1851,7 +1851,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start;\n",st,STTypeDBChannel(st));
+			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start LIMIT maxlimit;\n",st,STTypeDBChannel(st));
 	}
 	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
 		"END CASE;\n" +
@@ -1869,7 +1869,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Get the nearest neighbours as NPtr, with respect to each of the four STtype
 
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdNodes(start NodePtr,exclude NodePtr[],sttype int)\n"+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdNodes(start NodePtr,exclude NodePtr[],sttype int,maxlimit int)\n"+
 		"RETURNS NodePtr[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    neighbours NodePtr[];\n" +
@@ -1877,7 +1877,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    lnk Link;\n" +
 		"BEGIN\n" +
 
-		"    fwdlinks =GetNeighboursByType(start,sttype);\n"+
+		"    fwdlinks = GetNeighboursByType(start,sttype,maxlimit);\n"+
 
 		"    IF fwdlinks IS NULL THEN\n" +
 		"        RETURN '{}';\n" +
@@ -1909,7 +1909,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Basic quick neighbour probe
 
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdLinks(start NodePtr,exclude NodePtr[],sttype int)\n"+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetFwdLinks(start NodePtr,exclude NodePtr[],sttype int,maxlimit int)\n"+
 		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    neighbours Link[];\n" +
@@ -1917,7 +1917,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    lnk Link;\n" +
 		"BEGIN\n" +
 
-		"    fwdlinks = GetNeighboursByType(start,sttype);\n"+
+		"    fwdlinks = GetNeighboursByType(start,sttype,maxlimit);\n"+
 
 		"    IF fwdlinks IS NULL THEN\n" +
 		"        RETURN '{}';\n" +
@@ -1946,7 +1946,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	// Get the forward cone / half-ball as NPtr
 
-	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsNodes(start NodePtr,sttype INT, maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsNodes(start NodePtr,sttype INT, maxdepth INT,maxlimit int)\n"+
 		"RETURNS NodePtr[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    nextlevel NodePtr[];\n" +
@@ -1982,7 +1982,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    IF NOT neigh = ANY(exclude) THEN\n" +
 		"      cone = array_append(cone,neigh);\n" +
 		"      exclude := array_append(exclude,neigh);\n" +
-		"      partlevel := GetFwdNodes(neigh,exclude,sttype);\n" +
+		"      partlevel := GetFwdNodes(neigh,exclude,sttype,maxlimit);\n" +
 		"    END IF;" +
 		"    IF partlevel IS NOT NULL THEN\n" +
 		"         level = array_cat(level,partlevel);\n"+
@@ -2199,7 +2199,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// SumAllPaths
 
-	qstr = "CREATE OR REPLACE FUNCTION SumAllPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,exclude NodePtr[])\n"+
+	qstr = "CREATE OR REPLACE FUNCTION SumAllPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,exclude NodePtr[],maxlimit int)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE \n" + 
 		"    fwdlinks Link[];\n" +
@@ -2220,37 +2220,37 @@ func DefineStoredFunctions(ctx PoSST) {
 		// Get *All* in/out Links
 		"CASE \n" +
 		"   WHEN orientation = 'bwd' THEN\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,-3);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-3,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,-2);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-2,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,-1);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-1,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,0);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,0,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   WHEN orientation = 'fwd' THEN\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,0);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,0,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,1);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,1,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,2);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,2,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,3);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,3,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   ELSE\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,-3);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-3,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,-2);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-2,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,-1);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,-1,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,0);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,0,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,1);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,1,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,2);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,2,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetFwdLinks(start.Dst,exclude,3);\n" +
+		"     stlinks := GetFwdLinks(start.Dst,exclude,3,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"END CASE;\n" +
 
@@ -2515,7 +2515,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
         // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
 
-	qstr = "CREATE OR REPLACE FUNCTION AllNCPathsAsLinks(start NodePtr,chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION AllNCPathsAsLinks(start NodePtr,chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT,maxlimit int)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   hop Text;\n" +
@@ -2527,7 +2527,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"BEGIN\n" +
 		"startlnk := GetSingletonAsLink(start);\n"+
 		"path := Format('%s',startlnk::Text);"+
-		"ret_paths := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,rm_acc,context,exclude);" +
+		"ret_paths := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,rm_acc,context,exclude,maxlimit);" +
 
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
@@ -2544,7 +2544,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	row.Close()
 
 	// SumAllNCPaths - a filtering version of the SumAllPaths recursive helper function, slower but more powerful
-	qstr = "CREATE OR REPLACE FUNCTION SumAllNCPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,chapter text,rm_acc boolean,context text[],exclude NodePtr[])\n"+
+	qstr = "CREATE OR REPLACE FUNCTION SumAllNCPaths(start Link,path TEXT,orientation text,depth int, maxdepth INT,chapter text,rm_acc boolean,context text[],exclude NodePtr[],maxlimit int)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE \n" + 
 		"    fwdlinks Link[];\n" +
@@ -2568,37 +2568,37 @@ func DefineStoredFunctions(ctx PoSST) {
 		// Get *All* in/out Links
 		"CASE \n" +
 		"   WHEN orientation = 'bwd' THEN\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-3);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-3,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-2,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-1);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-1,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,0);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,0,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   WHEN orientation = 'fwd' THEN\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,0);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,0,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,1);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,1,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,2,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,3);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,3,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"   ELSE\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-3);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-3,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-2,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-1);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,-1,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,0);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,0,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,1);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,1,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,2);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,2,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
-		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,3);\n" +
+		"     stlinks := GetNCFwdLinks(start.Dst,chapter,rm_acc,context,exclude,3,maxlimit);\n" +
 		"     fwdlinks := array_cat(fwdlinks,stlinks);\n" +
 		"END CASE;\n" +
 
@@ -2678,7 +2678,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
         // An NC/C filtering version of the neighbour scan
 
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCFwdLinks(start NodePtr,chapter text,rm_acc boolean,context text[],exclude NodePtr[],sttype int)\n"+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCFwdLinks(start NodePtr,chapter text,rm_acc boolean,context text[],exclude NodePtr[],sttype int,maxlimit int)\n"+
 		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    neighbours Link[];\n" +
@@ -2686,7 +2686,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    lnk Link;\n" +
 		"BEGIN\n" +
 
-		"    fwdlinks = GetNCNeighboursByType(start,chapter,rm_acc,sttype);\n"+
+		"    fwdlinks = GetNCNeighboursByType(start,chapter,rm_acc,sttype,maxlimit);\n"+
 
 		"    IF fwdlinks IS NULL THEN\n" +
 		"        RETURN '{}';\n" +
@@ -2720,7 +2720,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
         // This one includes an NCC chapter and context filter so slower! 
 
-	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCCLinks(start NodePtr,exclude NodePtr[],sttype int,chapter text,rm_acc boolean,context text[])\n"+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION GetNCCLinks(start NodePtr,exclude NodePtr[],sttype int,chapter text,rm_acc boolean,context text[],maxlimit int)\n"+
 		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    neighbours Link[];\n" +
@@ -2728,7 +2728,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    lnk Link;\n" +
 		"BEGIN\n" +
 
-		"    fwdlinks =GetNCNeighboursByType(start,chapter,rm_acc,sttype);\n"+
+		"    fwdlinks =GetNCNeighboursByType(start,chapter,rm_acc,sttype,maxlimit);\n"+
 
 		"    IF fwdlinks IS NULL THEN\n" +
 		"        RETURN '{}';\n" +
@@ -2750,7 +2750,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	
         // This one includes an NC chapter filter
 	
-	qstr = "CREATE OR REPLACE FUNCTION GetNCNeighboursByType(start NodePtr, chapter text,rm_acc boolean,sttype int)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION GetNCNeighboursByType(start NodePtr, chapter text,rm_acc boolean,sttype int,maxlimit int)\n"+
 		"RETURNS Link[] AS $fn$\n"+
 		"DECLARE \n"+
 		"    fwdlinks Link[] := Array[] :: Link[];\n"+
@@ -2759,7 +2759,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   CASE sttype \n"
 	for st := -EXPRESS; st <= EXPRESS; st++ {
 		qstr += fmt.Sprintf("WHEN %d THEN\n"+
-			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND UnCmp(Chap,rm_acc) LIKE lower(chapter);\n",st,STTypeDBChannel(st));
+			"     SELECT %s INTO fwdlinks FROM Node WHERE Nptr=start AND UnCmp(Chap,rm_acc) LIKE lower(chapter) LIMIT maxlimit;\n",st,STTypeDBChannel(st));
 	}
 	
 	qstr += "ELSE RAISE EXCEPTION 'No such sttype %', sttype;\n" +
@@ -3792,9 +3792,9 @@ func GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
 // Bulk DB Retrieval
 // **************************************************************************
 
-func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int) []NodePtr {
+func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype,depth int,limit int) []NodePtr {
 
-	qstr := fmt.Sprintf("select unnest(fwdconeasnodes) from FwdConeAsNodes('(%d,%d)',%d,%d);",start.Class,start.CPtr,sttype,depth)
+	qstr := fmt.Sprintf("select unnest(fwdconeasnodes) from FwdConeAsNodes('(%d,%d)',%d,%d,%d);",start.Class,start.CPtr,sttype,depth,limit)
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -3870,9 +3870,11 @@ func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) ([][]Link,in
 
 // **************************************************************************
 
-func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth int) ([][]Link,int) {
+func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth int,limit int) ([][]Link,int) {
 
 	// orientation should be "fwd" or "bwd" else "both"
+
+	// Todo: how to limit path search? Usually solutions are small..?
 
 	qstr := fmt.Sprintf("select AllPathsAsLinks from AllPathsAsLinks('(%d,%d)','%s',%d);",
 		start.Class,start.CPtr,orientation,depth)
@@ -3902,7 +3904,7 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 
 // **************************************************************************
 
-func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth int,chapter string,context []string) ([][]Link,int) {
+func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth int,chapter string,context []string,limit int) ([][]Link,int) {
 
 	// orientation should be "fwd" or "bwd" else "both"
 
@@ -3914,8 +3916,8 @@ func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,dept
 		rm_acc = "true"
 	}
 
-	qstr := fmt.Sprintf("select AllNCPathsAsLinks from AllNCPathsAsLinks('(%d,%d)','%s',%s,%s,'%s',%d);",
-		start.Class,start.CPtr,chapter,rm_acc,FormatSQLStringArray(context),orientation,depth)
+	qstr := fmt.Sprintf("select AllNCPathsAsLinks from AllNCPathsAsLinks('(%d,%d)','%s',%s,%s,'%s',%d,%d);",
+		start.Class,start.CPtr,chapter,rm_acc,FormatSQLStringArray(context),orientation,depth,limit)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -3985,7 +3987,11 @@ func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodeP
 
 func CacheNode(n Node) {
 
-	NODE_CACHE[n.NPtr] = AppendTextToDirectory(n,RunErr)
+	_,already := NODE_CACHE[n.NPtr]
+
+	if !already {
+		NODE_CACHE[n.NPtr] = AppendTextToDirectory(n,RunErr)
+	}
 }
 
 // **************************************************************************
@@ -5238,7 +5244,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			ne.Chap = nd.Chap
 			ne.NPtr = axis[lnk].Dst
 			ne.XYZ = directory[ne.NPtr]
-			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname)
+			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname,limit)
 			ne.Orbits = SetOrbitCoords(ne.XYZ,ne.Orbits)
 
 			if lnk > limit {
@@ -5266,7 +5272,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 
 // **************************************************************************
 
-func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit {
+func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string,limit int) [ST_TOP][]Orbit {
 
 	// Start with properties of node, within orbit
 
@@ -5274,7 +5280,7 @@ func GetNodeOrbit(ctx PoSST,nptr NodePtr,exclude_vector string) [ST_TOP][]Orbit 
 
 	// radius = 0 is the starting node
 
-	sweep,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,probe_radius)
+	sweep,_ := GetEntireConePathsAsLinks(ctx,"any",nptr,probe_radius,limit)
 
 	var notes [ST_TOP][]Orbit
 
@@ -5553,15 +5559,15 @@ func GetContextTokenFrequencies(fraglist []string) map[string]int {
 // Presentation on command line
 // **************************************************************************
 
-func PrintNodeOrbit(ctx PoSST, nptr NodePtr,width int) {
+func PrintNodeOrbit(ctx PoSST, nptr NodePtr,limit int) {
 
 	node := GetDBNodeByNodePtr(ctx,nptr)		
 
-	ShowText(node.S,width)
+	ShowText(node.S,SCREENWIDTH)
 	fmt.Println("\tin chapter:",node.Chap)
 	fmt.Println()
 
-	notes := GetNodeOrbit(ctx,nptr,"")
+	notes := GetNodeOrbit(ctx,nptr,"",limit)
 
 	PrintLinkOrbit(notes,EXPRESS,0)
 	PrintLinkOrbit(notes,-EXPRESS,0)
