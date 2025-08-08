@@ -79,15 +79,15 @@ const (
 	// mandatory relations used in text processing, but we should never follow these links
         // when presenting results
 
-	EXPR_INTENT_L = "has contextual topic"
-	EXPR_INTENT_S = "ctx_hastopic"
-        INV_EXPR_INTENT_L = "is a context topic in"
-	INV_EXPR_INTENT_S ="ctx_istopic"
+	EXPR_INTENT_L = "has contextual theme"
+	EXPR_INTENT_S = "has_theme"
+        INV_EXPR_INTENT_L = "is a context theme in"
+	INV_EXPR_INTENT_S ="theme_of"
 
-	EXPR_AMBIENT_L = "has context marker"
-	EXPR_AMBIENT_S = "ctx_marker"
-        INV_EXPR_AMBIENT_L = "is context for"
-	INV_EXPR_AMBIENT_S = "ctx_mentin"
+	EXPR_AMBIENT_L = "has contextual highlight"
+	EXPR_AMBIENT_S = "has_highlight"
+        INV_EXPR_AMBIENT_L = "is contextual highlight of"
+	INV_EXPR_AMBIENT_S = "highlight_of"
 
 )
 
