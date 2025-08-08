@@ -76,17 +76,18 @@ const (
 	LT1024 = 5
 	GT1024 = 6
 
-	// mandatory relations used in text processing
+	// mandatory relations used in text processing, but we should never follow these links
+        // when presenting results
 
-	EXPR_INTENT_L = "describes"
-	EXPR_INTENT_S = "describe"
-        INV_EXPR_INTENT_L = "is described in"
-	INV_EXPR_INTENT_S ="described"
+	EXPR_INTENT_L = "has contextual topic"
+	EXPR_INTENT_S = "ctx_hastopic"
+        INV_EXPR_INTENT_L = "is a context topic in"
+	INV_EXPR_INTENT_S ="ctx_istopic"
 
-	EXPR_AMBIENT_L = "mentions topic"
-	EXPR_AMBIENT_S = "mentions"
-        INV_EXPR_AMBIENT_L = "is mentioned in"
-	INV_EXPR_AMBIENT_S = "ismentin"
+	EXPR_AMBIENT_L = "has context marker"
+	EXPR_AMBIENT_S = "ctx_marker"
+        INV_EXPR_AMBIENT_L = "is context for"
+	INV_EXPR_AMBIENT_S = "ctx_mentin"
 
 )
 
@@ -1122,6 +1123,8 @@ func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
 
 func GraphToDB(ctx PoSST,wait_counter bool) {
 
+	total := len(NODE_DIRECTORY.N1directory) + len(NODE_DIRECTORY.N2directory) + len(NODE_DIRECTORY.N3directory) + len(NODE_DIRECTORY.LT128) + len(NODE_DIRECTORY.LT1024) + len(NODE_DIRECTORY.GT1024)
+
 	for class := N1GRAM; class <= GT1024; class++ {
 
 		offset := int(BASE_DB_CHANNEL_STATE[class])
@@ -1131,38 +1134,38 @@ func GraphToDB(ctx PoSST,wait_counter bool) {
 			for n := offset; n < len(NODE_DIRECTORY.N1directory); n++ {
 				org := NODE_DIRECTORY.N1directory[n]
 				UploadNodeToDB(ctx,org,class)
-				Waiting(wait_counter)
+				Waiting(wait_counter,total)
 			}
 		case N2GRAM:
 			for n := offset; n < len(NODE_DIRECTORY.N2directory); n++ {
 				org := NODE_DIRECTORY.N2directory[n]
 				UploadNodeToDB(ctx,org,class)
-				Waiting(wait_counter)
+				Waiting(wait_counter,total)
 			}
 		case N3GRAM:
 			for n := offset; n < len(NODE_DIRECTORY.N3directory); n++ {
 				org := NODE_DIRECTORY.N3directory[n]
 				UploadNodeToDB(ctx,org,class)
-				Waiting(wait_counter)
+				Waiting(wait_counter,total)
 			}
 		case LT128:
 			for n := offset; n < len(NODE_DIRECTORY.LT128); n++ {
 				org := NODE_DIRECTORY.LT128[n]
 				UploadNodeToDB(ctx,org,class)
-				Waiting(wait_counter)
+				Waiting(wait_counter,total)
 			}
 		case LT1024:
 			for n := offset; n < len(NODE_DIRECTORY.LT1024); n++ {
 				org := NODE_DIRECTORY.LT1024[n]
 				UploadNodeToDB(ctx,org,class)
-				Waiting(wait_counter)
+				Waiting(wait_counter,total)
 			}
 
 		case GT1024:
 			for n := offset; n < len(NODE_DIRECTORY.GT1024); n++ {
 				org := NODE_DIRECTORY.GT1024[n]
 				UploadNodeToDB(ctx,org,class)
-				Waiting(wait_counter)
+				Waiting(wait_counter,total)
 			}
 		}
 	}
@@ -6778,7 +6781,7 @@ func ReadFile(filename string) string {
 //**************************************************************
 
 const N_GRAM_MAX = 6
-const N_GRAM_MIN = 1
+const N_GRAM_MIN = 2  // fragments that are too small are exponentially large in number and meaningless
 
 const DUNBAR_5 =5
 const DUNBAR_15 = 15
@@ -7467,7 +7470,7 @@ func ExtractIntentionalTokens(L int) ([][]string,[][]string,[]string,[]string) {
 
 	for p := 0; p < doc_parts; p++ {
 
-		for n := 1; n < N_GRAM_MAX; n++ {
+		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
 
 			var amb []string
 			var other []string
@@ -8400,11 +8403,13 @@ func NewLine(n int) {
 
 // **************************************************************************
 
-func Waiting(output bool) {
+func Waiting(output bool,total int) {
 
 	if !output {
 		return
 	}
+
+	percent := float64(SILLINESS_COUNTER) / float64(total)
 
 	const propaganda = "IT.ISN'T.KNOWLEDGE.UNLESS.YOU.KNOW.IT.!!"
 	const interval = 3
@@ -8426,6 +8431,7 @@ func Waiting(output bool) {
 
 	if SILLINESS_COUNTER % (len(propaganda)*interval*interval) == 0 {
 		SILLINESS = !SILLINESS
+		fmt.Printf("(%.1f%%)",percent)
 	}
 
 	SILLINESS_COUNTER++

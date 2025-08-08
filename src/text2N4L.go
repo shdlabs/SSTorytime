@@ -150,11 +150,11 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	fmt.Fprintf(fp,"\n %s\n",filename)
 	for w := range all_ambi {
-		fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.INV_EXPR_AMBIENT_S,all_ambi[w])
+		fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.EXPR_AMBIENT_S,all_ambi[w])
 	}
 	
 	for w := range all_anom {
-		fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.INV_EXPR_INTENT_S,all_anom[w])
+		fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.EXPR_INTENT_S,all_anom[w])
 	}
 
 	fmt.Println("Wrote file",outputfile)
