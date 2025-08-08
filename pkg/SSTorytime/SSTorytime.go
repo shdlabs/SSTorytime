@@ -561,7 +561,7 @@ func MemoryInit() {
 		NODE_DIRECTORY.N3grams = make(map[string]ClassedNodePtr)
 	}
 
-	for i := N_GRAM_MIN; i < N_GRAM_MAX; i++ {
+	for i := 1; i < N_GRAM_MAX; i++ {
 
 		STM_NGRAM_FREQ[i] = make(map[string]float64)
 		STM_NGRAM_LOCA[i] = make(map[string][]int)
@@ -1123,7 +1123,9 @@ func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
 
 func GraphToDB(ctx PoSST,wait_counter bool) {
 
-	total := len(NODE_DIRECTORY.N1directory) + len(NODE_DIRECTORY.N2directory) + len(NODE_DIRECTORY.N3directory) + len(NODE_DIRECTORY.LT128) + len(NODE_DIRECTORY.LT1024) + len(NODE_DIRECTORY.GT1024)
+	total := 2 * len(NODE_DIRECTORY.N1directory) + len(NODE_DIRECTORY.N2directory) + len(NODE_DIRECTORY.N3directory) + len(NODE_DIRECTORY.LT128) + len(NODE_DIRECTORY.LT1024) + len(NODE_DIRECTORY.GT1024)
+
+	fmt.Println("\nStoring primary nodes ...\n")
 
 	for class := N1GRAM; class <= GT1024; class++ {
 
@@ -1170,9 +1172,58 @@ func GraphToDB(ctx PoSST,wait_counter bool) {
 		}
 	}
 
-	fmt.Println("\nStoring Arrows...")
+	// upload secondary table separately to avoid fragmentation
 
-	// Avoid duplicates, even if we're not wiping. since we loaded everything
+	fmt.Println("\nStoring secondary nodes arrow node relations ...\n")
+
+	for class := N1GRAM; class <= GT1024; class++ {
+
+		offset := int(BASE_DB_CHANNEL_STATE[class])
+
+		switch class {
+		case N1GRAM:
+			for n := offset; n < len(NODE_DIRECTORY.N1directory); n++ {
+				org := NODE_DIRECTORY.N1directory[n]
+				UploadNodeArrowNodeToDB(ctx,org,class)
+				Waiting(wait_counter,total)
+			}
+		case N2GRAM:
+			for n := offset; n < len(NODE_DIRECTORY.N2directory); n++ {
+				org := NODE_DIRECTORY.N2directory[n]
+				UploadNodeArrowNodeToDB(ctx,org,class)
+				Waiting(wait_counter,total)
+			}
+		case N3GRAM:
+			for n := offset; n < len(NODE_DIRECTORY.N3directory); n++ {
+				org := NODE_DIRECTORY.N3directory[n]
+				UploadNodeArrowNodeToDB(ctx,org,class)
+				Waiting(wait_counter,total)
+			}
+		case LT128:
+			for n := offset; n < len(NODE_DIRECTORY.LT128); n++ {
+				org := NODE_DIRECTORY.LT128[n]
+				UploadNodeArrowNodeToDB(ctx,org,class)
+				Waiting(wait_counter,total)
+			}
+		case LT1024:
+			for n := offset; n < len(NODE_DIRECTORY.LT1024); n++ {
+				org := NODE_DIRECTORY.LT1024[n]
+				UploadNodeArrowNodeToDB(ctx,org,class)
+				Waiting(wait_counter,total)
+			}
+
+		case GT1024:
+			for n := offset; n < len(NODE_DIRECTORY.GT1024); n++ {
+				org := NODE_DIRECTORY.GT1024[n]
+				UploadNodeArrowNodeToDB(ctx,org,class)
+				Waiting(wait_counter,total)
+			}
+		}
+	}
+
+	// Arrows etc
+
+	fmt.Println("\nStoring Arrows...")
 
 	ctx.DB.QueryRow("drop table ArrowDirectory")
 	ctx.DB.QueryRow("drop table ArrowInverses")
@@ -1451,10 +1502,9 @@ func IdempDBAddNode(ctx PoSST,n Node) Node {
 
 func UploadNodeToDB(ctx PoSST, org Node,channel int) {
 
-	CreateDBNode(ctx,org)
-
 	const nolink = 999
-	var empty Link
+
+	CreateDBNode(ctx,org)
 
 	for stindex := 0; stindex < len(org.I); stindex++ {
 
@@ -1464,10 +1514,29 @@ func UploadNodeToDB(ctx PoSST, org Node,channel int) {
 			sttype := STIndexToSTType(stindex)
 
 			AppendDBLinkToNode(ctx,org.NPtr,dstlnk,sttype)
-			CreateDBNodeArrowNode(ctx,org.NPtr,dstlnk,sttype)
 		}
+	}
+}
 
-		CreateDBNodeArrowNode(ctx,org.NPtr,empty,nolink)
+// **************************************************************************
+
+func UploadNodeArrowNodeToDB(ctx PoSST, org Node,channel int) {
+
+	const nolink = 999
+	var empty Link
+
+	for stindex := 0; stindex < len(org.I); stindex++ {
+
+		if len(org.I[stindex]) > 0 {
+			for lnk := range org.I[stindex] {
+				dstlnk := org.I[stindex][lnk]
+				sttype := STIndexToSTType(stindex)
+				CreateDBNodeArrowNode(ctx,org.NPtr,dstlnk,sttype)
+			}
+		} else {
+			// if the node has no links, then still add the node for consistency
+			CreateDBNodeArrowNode(ctx,org.NPtr,empty,nolink)
+		}
 	}
 }
 
@@ -7146,7 +7215,7 @@ func AssessStaticTextAnomalies(L int,frequencies [N_GRAM_MAX]map[string]float64,
 		for ngram := range STM_NGRAM_LOCA[n] {
 
 			var ns TextRank
-			ns.Significance = AssessStaticIntent(ngram,L,STM_NGRAM_FREQ,1)
+			ns.Significance = AssessStaticIntent(ngram,L,STM_NGRAM_FREQ,N_GRAM_MIN)
 			ns.Fragment = ngram
 
 			if IntentionalNgram(n,ngram,L,coherence_length) {
@@ -7513,7 +7582,7 @@ func ExtractIntentionalTokens(L int) ([][]string,[][]string,[]string,[]string) {
 	
 	// Summary ranking of whole doc
 	
-	for n := 1; n < N_GRAM_MAX; n++ {
+	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
 		
 		var amb []string
 		var other []string
@@ -7612,7 +7681,8 @@ func RunningIntentionality(t int, frag string) float64 {
 
 		rrbuffer,change_set = NextWord(words[w],rrbuffer)
 
-		for n := 1; n < N_GRAM_MAX; n++ {
+		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+
 			for ng := range change_set[n] {
 				ngram := change_set[n][ng]
 				work := float64(len(ngram))
@@ -8409,7 +8479,7 @@ func Waiting(output bool,total int) {
 		return
 	}
 
-	percent := float64(SILLINESS_COUNTER) / float64(total)
+	percent := float64(SILLINESS_COUNTER) / float64(total) * 100
 
 	const propaganda = "IT.ISN'T.KNOWLEDGE.UNLESS.YOU.KNOW.IT.!!"
 	const interval = 3
@@ -8431,7 +8501,7 @@ func Waiting(output bool,total int) {
 
 	if SILLINESS_COUNTER % (len(propaganda)*interval*interval) == 0 {
 		SILLINESS = !SILLINESS
-		fmt.Printf("(%.1f%%)",percent)
+		fmt.Printf(" (%.1f%%) ",percent)
 	}
 
 	SILLINESS_COUNTER++

@@ -56,7 +56,7 @@ func GetArgs() string {
 
 func Usage() {
 	
-	fmt.Printf("usage: Text2N4L [-v] [-% percent] filename\n")
+	fmt.Println("usage: Text2N4L [-% percent] filename\n")
 	flag.PrintDefaults()
 
 	os.Exit(2)
