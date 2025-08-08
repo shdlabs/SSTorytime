@@ -68,13 +68,18 @@ func RipFile2File(filename string,percentage float64){
 
 	SST.MemoryInit()
 
+	fmt.Println("Fractionating file...",filename)
 	psf,L := SST.FractionateTextFile(filename)
 
+	fmt.Println("Analyzing longitudinal patterns")
 	ranking1 := SelectByRunningIntent(psf,L,percentage)
+	fmt.Println("Analyzing statistical patterns")
 	ranking2 := SelectByStaticIntent(psf,L,percentage)
+	fmt.Println("Merging selections")
 	selection := MergeSelections(ranking1,ranking2)
 
-	f,s,ff,ss := SST.ExtractIntentionalTokens(L)
+	fmt.Println("Extracting ambient phrases for context")
+	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection)
 
 	WriteOutput(filename,selection,L,percentage,f,s,ff,ss)
 }
@@ -131,30 +136,29 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	// document the parts
 
+	fmt.Fprintf(fp,"\n :: themes and topics you might want to annotate/replace ::\n")
+
 	fmt.Fprintf(fp,"\n :: parts, sections ::\n")
 
 	for p := range parts {
 		fmt.Fprintf(fp,"\n %s\n",parts[p])
 		for w := range ambi_by_part[p] {
-			fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.INV_EXPR_AMBIENT_S,ambi_by_part[p][w])
+			fmt.Fprintf(fp,"  # %s\n",ambi_by_part[p][w])
 		}
 
 		for w := range anom_by_part[p] {
-			fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.INV_EXPR_INTENT_S,anom_by_part[p][w])
+			fmt.Fprintf(fp,"   # %s\n",anom_by_part[p][w])
 		}
 	}
 
 	// whole document summary
 
-	fmt.Fprintf(fp,"\n :: whole document, about ::\n")
-
-	fmt.Fprintf(fp,"\n %s\n",filename)
 	for w := range all_ambi {
-		fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.EXPR_AMBIENT_S,all_ambi[w])
+		fmt.Fprintf(fp," # %s\n",all_ambi[w])
 	}
 	
 	for w := range all_anom {
-		fmt.Fprintf(fp,"   \"       (%s) %s\n",SST.EXPR_INTENT_S,all_anom[w])
+		fmt.Fprintf(fp,"  # %s\n",all_anom[w])
 	}
 
 	fmt.Println("Wrote file",outputfile)

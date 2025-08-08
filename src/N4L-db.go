@@ -2274,6 +2274,10 @@ func ReadUTF8File(filename string) []rune {
 	var unicode []rune
 	var sign_of_life int
 
+	if GIVE_SIGNS_OF_LIFE {
+		fmt.Print("Encoding for unicode: ")
+	}
+
 	for i, w := 0, 0; i < len(content); i += w {
                 runeValue, width := utf8.DecodeRuneInString(string(content)[i:])
                 w = width

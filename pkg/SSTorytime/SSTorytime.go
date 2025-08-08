@@ -6298,7 +6298,8 @@ const (
 	CMD_NOTES = "notes"
 	CMD_PAGE = "page"
 	CMD_PATH = "path"
-	CMD_SEQ = "seq"
+	CMD_SEQ1 = "sequence"
+	CMD_SEQ2 = "seq"
 	CMD_FROM = "from"
 	CMD_TO = "to"
 	CMD_CTX = "ctx"
@@ -6321,7 +6322,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 	var keywords = []string{ 
 		CMD_NOTES, CMD_PATH,
 		CMD_PATH,CMD_FROM,CMD_TO,
-		CMD_SEQ,
+		CMD_SEQ1,CMD_SEQ2,
 		CMD_CONTEXT,CMD_CTX,CMD_AS,
 		CMD_CHAPTER,CMD_IN,CMD_SECTION,
 		CMD_ARROW,
@@ -6518,7 +6519,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					continue
 				}
 
-			case CMD_PATH,CMD_SEQ:
+			case CMD_PATH,CMD_SEQ1,CMD_SEQ2:
 				param.Sequence = true
 				continue
 
@@ -7388,14 +7389,18 @@ func AssessTextFastSlow(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_M
 		// now run through linearly and split nearest neighbours
 
 		// very short excerpts,there is nothing we can do in a single coherence set
+
 		if partitions < 2 {
+
 			slow[n][0] = make(map[string]int)
 			fast[n][0] = make(map[string]int)
 
 			for ngram := range C[n][0] {
 				fast[n][0][ngram]++
 			}
+
 		// multiple coherence zones
+
 		} else {
 			for p := 1; p < partitions; p++ {
 
@@ -7403,6 +7408,7 @@ func AssessTextFastSlow(L int,ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_M
 				fast[n][p-1] = make(map[string]int)
 
 				for ngram := range C[n][p-1] {
+
 					if C[n][p][ngram] > 0 && C[n][p-1][ngram] > 0 {
 						// ambients
 						slow[n][p-1][ngram]++
@@ -7518,7 +7524,14 @@ func CleanNgram(s string) string {
 
 //**************************************************************
 
-func ExtractIntentionalTokens(L int) ([][]string,[][]string,[]string,[]string) {
+func ExtractIntentionalTokens(L int,selected []TextRank) ([][]string,[][]string,[]string,[]string) {
+
+	// This function examines a fractionation of text for fractions, only for
+	// sentences that are selected, and extracts some shared context
+
+	const policy_skim = 15
+	const reuse_threshold = 0
+	const intent_threshold = 1
 
 	slow,fast,doc_parts := AssessTextFastSlow(L,STM_NGRAM_LOCA)
 
@@ -7545,11 +7558,15 @@ func ExtractIntentionalTokens(L int) ([][]string,[][]string,[]string,[]string) {
 			var other []string
 
 			for ngram := range fast[n][p] {
-				other = append(other,ngram)
+				if fast[n][p][ngram] > reuse_threshold {
+					other = append(other,ngram)
+				}
 			}
 
 			for ngram := range slow[n][p] {
-				amb = append(amb,ngram)
+				if slow[n][p][ngram] > reuse_threshold {
+					amb = append(amb,ngram)
+				}
 			}
 			
 			// Sort by intentionality
@@ -7566,26 +7583,44 @@ func ExtractIntentionalTokens(L int) ([][]string,[][]string,[]string,[]string) {
 				return inti > intj
 			})
 			
-			for i := 0 ; i < 150 && i < len(amb); i++ {
+			for i := 0 ; i < policy_skim && i < len(amb); i++ {
 				v := StaticIntentionality(L,amb[i],STM_NGRAM_FREQ[n][amb[i]])
 				slowparts[p] = append(slowparts[p],amb[i])
-				grad_amb[n][amb[i]] += v
+				if v > intent_threshold {
+					grad_amb[n][amb[i]] += v
+				}
 			}
 			
-			for i := 0 ; i < 150 && i < len(other); i++ {
+			for i := 0 ; i < policy_skim && i < len(other); i++ {
 				v := StaticIntentionality(L,other[i],STM_NGRAM_FREQ[n][other[i]])
 				fastparts[p] = append(fastparts[p],other[i])
-				grad_oth[n][other[i]] += v
+				if v > intent_threshold {
+					grad_oth[n][other[i]] += v
+				}
 			}
 		}
 	}
 	
-	// Summary ranking of whole doc
+	// Summary ranking of whole doc, but pick only if selected
 	
 	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
 		
 		var amb []string
 		var other []string
+
+		for s := range selected {
+			for ngram := range grad_amb[n] {
+				if !strings.Contains(selected[s].Fragment,ngram) {
+					delete(grad_amb[n],ngram)
+				}
+			}
+
+			for ngram := range grad_oth[n] {
+				if !strings.Contains(selected[s].Fragment,ngram) {
+					delete(grad_oth[n],ngram)
+				}
+			}
+		}
 				
 		// there is possible overlap
 
@@ -7614,14 +7649,13 @@ func ExtractIntentionalTokens(L int) ([][]string,[][]string,[]string,[]string) {
 			return inti > intj
 		})
 		
-		for i := 0 ; i < 150 && i < len(amb); i++ {
+		for i := 0 ; i < policy_skim && i < len(amb); i++ {
 			slowwhole = append(slowwhole,amb[i])
 		}
 
-		for i := 0 ; i < 150 && i < len(other); i++ {
+		for i := 0 ; i < policy_skim && i < len(other); i++ {
 			fastwhole = append(fastwhole,other[i])
 		}
-		fmt.Println()
 	}	
 
 	return fastparts,slowparts,fastwhole,slowwhole
@@ -7713,6 +7747,14 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 	// SST scales (see "leg" meaning).
 
 	work := float64(len(s)) 
+
+	// if this doesn't occur at least 3 times, then why do we care?
+
+	const ignore = 2
+
+	if freq < ignore {
+		return 0
+	}
 
 	// tempting to measure occurrences relative to total length L in sentences
 	// but this is not the relevant scale. Coherence is on a shorter scale

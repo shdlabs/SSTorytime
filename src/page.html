@@ -236,7 +236,7 @@ a:hover {
 #full-text {
  padding: 10px;
  font-style: italic;
- font-size: 70%;
+ font-size: 130%;
  margin-left: 40px;
  margin-bottom: 40px;
  width: 70%;
@@ -1254,20 +1254,16 @@ if (text.includes("\n"))
    }
 else
    {
-   let from_link = document.createElement('a');
+   let from_link = document.createElement('p');
    from_link.onclick = function() { sendlinkData(event.NPtr.Class,event.NPtr.CPtr); };
    let from_text = document.createElement(anchortag);
    from_link.appendChild(from_text);
    from_link.nameClass = "text";
    child.appendChild(from_link);
 
-   if (text.length > 90)
+   if (!IsMath(event.Text))
       {
-      from_text.style.fontSize = "100%";
-      }
-
-   if (text.length > 90 && !IsMath(event.Text))
-      {
+      //from_text.style.fontSize = "150%";
       from_text.textContent = event.Text.slice(0,70) + "...";
       let small_tot_text = document.createElement('div');
       small_tot_text.textContent = text;
@@ -1294,8 +1290,11 @@ if (event.Orbits[Im1] != null)
    {
    for (let ngh of event.Orbits[Im1]) 
       {
-      child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
-      panel.appendChild(child);
+      if (ngh.Arrow != "follows on from") // because seq mode already emphasized this
+         {
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+         panel.appendChild(child);
+         }
       }
    }
 
