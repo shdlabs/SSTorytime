@@ -216,14 +216,9 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	// Table of contents
 
-	if chapter && !name && !sequence && !pagenr {
+	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
 
 		ShowMatchingChapter(ctx,search.Chapter,search.Context,limit)
-		return
-	}
-
-	if context && !chapter && !name && !sequence && !pagenr {
-		ShowChapterContexts(ctx,search.Chapter,search.Context,limit)
 		return
 	}
 

@@ -34,7 +34,6 @@ func main() {
 
 	http.ListenAndServe(":8080", nil)
 
-
 	code := <-exit_handler
 	os.Exit(code) 
 
@@ -96,7 +95,6 @@ func PageHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-
 		w.Header().Set("Content-Type", "text/html")
 		page,err := os.ReadFile("./page.html")
 
@@ -122,7 +120,7 @@ func PageHandler(w http.ResponseWriter, r *http.Request) {
 func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 	
 	GenHeader(w,r)
-	
+
 	switch r.Method {
 	case "POST","GET":
 		name := r.FormValue("name")
@@ -139,6 +137,9 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Println("\nReceived command:",name)
+		ambient,key := SST.GetContext()
+		fmt.Println("Current ambient context:",ambient,key)
+		fmt.Println("........................")
 
 		if len(name) == 0 {
 			name = "sstorytime \"semantic spacetime\""
@@ -212,7 +213,9 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// SEARCH SELECTION *********************************************
 
-	if (context || chapter) && !name && !sequence && !pagenr {
+	// Table of contents
+
+	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
 
 		ShowChapterContexts(w,r,CTX,search.Chapter,search.Context,limit)
 		return
