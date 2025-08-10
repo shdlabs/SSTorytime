@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 	"os"
+	"os/signal"
+	"syscall"
 	"sort"
 	"encoding/json"
 
@@ -22,11 +24,68 @@ var CTX SST.PoSST
 func main() {
 	
 	CTX = SST.Open(true)	
+
+	exit_handler := SignalHandler()
 	
 	http.HandleFunc("/",PageHandler)
 	http.HandleFunc("/searchN4L",SearchN4LHandler)
+
 	fmt.Println("Listening at http://localhost:8080")
+
 	http.ListenAndServe(":8080", nil)
+
+
+	code := <-exit_handler
+	os.Exit(code) 
+
+}
+
+// *********************************************************************
+// Handlers
+// *********************************************************************
+
+func SignalHandler() chan int {
+
+	signal_chan := make(chan os.Signal,1)
+
+	signal.Notify(signal_chan, 
+		syscall.SIGHUP,  // 1
+		syscall.SIGINT,  // 2 ctrl-c
+		syscall.SIGQUIT, // 3
+		syscall.SIGTERM) // 15, CTRL-c 
+
+	exit_chan := make(chan int)
+
+	go func() {
+		for {
+			sig := <-signal_chan  // block until signal
+
+			switch sig {
+
+			case syscall.SIGHUP:
+				fmt.Println("hungup")
+				
+			case syscall.SIGINT:
+				fmt.Println("Warikomi, cutting in, sandoichi")
+				exit_chan <- 0
+
+			case syscall.SIGTERM:
+				fmt.Println("force stop")
+				exit_chan <- 0
+				
+			case syscall.SIGQUIT:
+				fmt.Println("stop and core dump")
+				exit_chan <- 0
+				
+			default:
+				fmt.Println("Unknown signal.")
+				exit_chan <- 1
+			}
+		}
+	}()
+
+	return exit_chan	
+	
 }
 
 // *********************************************************************
