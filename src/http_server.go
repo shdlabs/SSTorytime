@@ -25,7 +25,8 @@ func main() {
 	
 	CTX = SST.Open(true)	
 
-	exit_handler := SignalHandler()
+	// Comment out mysterious golang signal goroutines for now
+	// exit_handler := SignalHandler()
 	
 	http.HandleFunc("/",PageHandler)
 	http.HandleFunc("/searchN4L",SearchN4LHandler)
@@ -34,8 +35,8 @@ func main() {
 
 	http.ListenAndServe(":8080", nil)
 
-	code := <-exit_handler
-	os.Exit(code) 
+	// code := <-exit_handler
+	// os.Exit(code) 
 
 }
 
@@ -138,8 +139,8 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("\nReceived command:",name)
 		ambient,key := SST.GetContext()
-		fmt.Println("Current ambient context:",ambient,key)
-		fmt.Println("........................")
+
+		ShowContext(ambient,key)
 
 		if len(name) == 0 {
 			name = "sstorytime \"semantic spacetime\""
@@ -697,6 +698,19 @@ func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
 		retvar = append(retvar,contextgroup)
 	}
 	return retvar
+}
+
+// *********************************************************************
+
+func ShowContext(ambient,key string) {
+
+	fmt.Println("  .......................................................")
+	fmt.Println("    Current timekey: ",key)
+	fmt.Print("    Ambient: ")
+	SST.ShowText(ambient,10)
+	fmt.Println()
+	fmt.Println("  .......................................................")
+
 }
 
 // *********************************************************************
