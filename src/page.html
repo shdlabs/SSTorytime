@@ -551,48 +551,20 @@ for (let path = 0; path < array.length; path++)
          thisy = xyz.Y;
          thisz = xyz.Z;
 
-         if (lastx != 0 || lasty != 0 || lastz != 0)
-            {
-            switch (lastarrow)
-               {
-               case -3:
-                  Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case -2:
-                  Contains(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case -1:
-                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case 0:
-                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case 1:
-                  LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
-                  break;
-               case 2:
-                  Contains(lastx,lasty,lastz,thisx,thisy,thisz);
-                  break;
-               case 3:
-                  Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
-                  break;
-               default:
-                  console.log("Bad value",lastarrow);
-               }
-            }
+         DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz);
 
-      if (i < array[path].length-1)
-         {
-         lastx = thisx;
-         lasty = thisy;
-         lastz = thisz;
-         }
-      else
-         {
-         lastx = 0;
-         lasty = 0;
-         lastz = 0;
-         }
+         if (i < array[path].length-1)
+            {
+            lastx = thisx;
+            lasty = thisy;
+            lastz = thisz;
+            }
+         else
+            {
+            lastx = 0;
+            lasty = 0;
+            lastz = 0;
+            }
 
          Event(thisx,thisy,thisz);
          Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
@@ -663,6 +635,41 @@ for (let path = 0; path < array.length; path++)
    }
 
 return parent
+}
+
+/***********************************************************/
+
+function DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz)
+{
+if (lastx != 0 || lasty != 0 || lastz != 0)
+   {
+   switch (lastarrow)
+      {
+      case -3:
+         Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
+         break;
+      case -2:
+         Contains(thisx,thisy,thisz,lastx,lasty,lastz);
+         break;
+      case -1:
+         LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+         break;
+      case 0:
+         LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+         break;
+      case 1:
+         LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
+         break;
+      case 2:
+         Contains(lastx,lasty,lastz,thisx,thisy,thisz);
+         break;
+      case 3:
+         Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
+         break;
+      default:
+         console.log("Bad value",lastarrow);
+      }
+   }
 }
 
 /***********************************************************/
