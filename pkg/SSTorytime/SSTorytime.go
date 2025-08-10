@@ -6290,6 +6290,18 @@ type SearchParameters struct {
 	Sequence bool
 }
 
+// ******************************************************************
+// Short Term Memory (STM) intent event capture
+// ******************************************************************
+
+type STM struct {
+
+	Query SearchParameters
+
+}
+
+// ******************************************************************
+
 const (
 
 	CMD_ON = "on"
@@ -6315,6 +6327,8 @@ const (
 	CMD_DISTANCE = "distance"
 )
 
+//******************************************************************
+// Decoding local receiver (-) intent
 //******************************************************************
 
 func DecodeSearchField(cmd string) SearchParameters {
@@ -6792,6 +6806,8 @@ func DoNowt(then time.Time) (string,string) {
 	//secs := then.Second()
 	//nano := then.Nanosecond()
 
+	n_season,s_season := Season(month)
+
 	dayname := then.Weekday()
 	dow := fmt.Sprintf("%.3s",dayname)
 	daynum := fmt.Sprintf("Day%d",day)
@@ -6801,10 +6817,20 @@ func DoNowt(then time.Time) (string,string) {
         interval_end := (interval_start + 5) % 60
         minD := fmt.Sprintf("Min%02d_%02d",interval_start,interval_end)
 
-	var when string = fmt.Sprintf("%s,%s,%s,%s,%s at %s %s %s %s",shift,dayname,daynum,month,year,hour,mins,quarter,minD)
+	var when string = fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",n_season,s_season,shift,dayname,daynum,month,year,hour,mins,quarter,minD)
 	var key string = fmt.Sprintf("%s:%s:%s",dow,hour,minD)
 
 	return when, key
+}
+
+// ****************************************************************************
+
+func GetContext() (string,string) {
+
+	now := time.Now()
+	context,slot := DoNowt(now)
+
+	return context,slot
 }
 
 // ****************************************************************************
@@ -6819,6 +6845,25 @@ func GetUnixTimeKey(now int64) string {
 	_,slot := DoNowt(t)
 
 	return slot
+}
+
+// ****************************************************************************
+
+func Season (month string) (string,string) {
+
+	switch month {
+
+	case "December","January","February":
+		return "N_Winter","S_Summer"
+	case "March","April","May":
+		return "N_Spring","S_Autumn"
+	case "June","July","August":
+		return "N_Summer","S_Winter"
+	case "September","October","November":
+		return "N_Autumn","S_Spring"
+	}
+
+	return "hurricane","typhoon"
 }
 
 //*****************************************************************
