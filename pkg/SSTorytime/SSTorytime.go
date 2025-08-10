@@ -6388,6 +6388,19 @@ func DecodeSearchField(cmd string) SearchParameters {
 
 	param := FillInParameters(parts,keywords)
 
+	for arg := range param.Name {
+
+		isdirac,beg,end,cnt := DiracNotation(param.Name[arg])
+		
+		if isdirac {
+			param.Name = nil
+			param.From = []string{beg}
+			param.To = []string{end}
+			param.Context = []string{cnt}
+			break
+		}
+	}
+
 	return param
 }
 
@@ -6825,12 +6838,12 @@ func DoNowt(then time.Time) (string,string) {
 
 // ****************************************************************************
 
-func GetContext() (string,string) {
+func GetContext() (string,string,int64) {
 
 	now := time.Now()
 	context,slot := DoNowt(now)
 
-	return context,slot
+	return context,slot,now.Unix()
 }
 
 // ****************************************************************************

@@ -153,21 +153,6 @@ func GetArgs() []string {
 
 func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
-	// Check for Dirac notation
-
-	for arg := range search.Name {
-
-		isdirac,beg,end,cnt := SST.DiracNotation(search.Name[arg])
-		
-		if isdirac {
-			search.Name = nil
-			search.From = []string{beg}
-			search.To = []string{end}
-			search.Context = []string{cnt}
-			break
-		}
-	}
-
 	if VERBOSE {
 		fmt.Println("Your starting expression generated this set: ",line,"\n")
 		fmt.Println(" - start set:",SL(search.Name))
