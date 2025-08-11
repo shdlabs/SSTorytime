@@ -149,7 +149,8 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 		search := SST.DecodeSearchField(name)
 
-		SST.UpdateSTMContext(CTX,ambient,key,now,search)
+		now_ctx := SST.UpdateSTMContext(CTX,ambient,key,now,search)
+		SST.ContextInterferometry(now_ctx)
 
 		HandleSearch(search,name,w,r)
 		

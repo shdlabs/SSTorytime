@@ -92,6 +92,7 @@ func main() {
 		search := SST.DecodeSearchField(search_string)
 
 		SST.UpdateSTMContext(ambient,key,now,search)
+		SST.ContextInterferometry(now)
 
 		Search(ctx,search,search_string)
 	}

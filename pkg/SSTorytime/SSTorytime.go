@@ -5538,7 +5538,7 @@ const FORGOTTEN = 10800
 
 // *********************************************************************
 
-func UpdateSTMContext(ctx PoSST,ambient,key string,now int64,params SearchParameters) {
+func UpdateSTMContext(ctx PoSST,ambient,key string,now int64,params SearchParameters) string {
 
 	var context []string
 
@@ -5547,19 +5547,21 @@ func UpdateSTMContext(ctx PoSST,ambient,key string,now int64,params SearchParame
 		context = append(context,params.Name...)
 		context = append(context,params.From...)
 		context = append(context,params.To...)
-		AddContext(ctx,ambient,key,now,context)
+		return AddContext(ctx,ambient,key,now,context)
 	} else {
 		// ongoing / adhoc are ambient
 		context = append(context,params.Name...)
 		context = append(context,params.Context...)
 		context = append(context,params.Chapter)
-		AddContext(ctx,ambient,key,now,context)
+		return AddContext(ctx,ambient,key,now,context)
 	}
+
+	return ""
 }
 
 // *********************************************************************
 
-func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) {
+func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 
 	// First fractionated DNA
 
@@ -5655,7 +5657,7 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) {
 
 	for r := 0; r < len(format); r++ {
 		full_context += format[r]
-		full_context += ","
+		full_context += ", "
 	}
 
 	full_context += thispr
@@ -5668,6 +5670,25 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) {
 
 	fmt.Printf("\n    - current context %s\n",full_context)
 	fmt.Println("  .......................................................\n")
+
+	return full_context
+}
+
+// *********************************************************************
+
+func ContextInterferometry(now_ctx string) {
+
+	// Go through the previous stored contexts and look for overlap
+
+	fmt.Println("XX")
+
+	for then_ctx := range STM_INV_GROUP {
+
+		common,diff := DiffClusters(now_ctx,then_ctx)
+
+		fmt.Println("OVERLAP",common)
+		fmt.Println("FRINGE",diff)
+	}
 }
 
 // *********************************************************************
@@ -7002,7 +7023,7 @@ func DoNowt(then time.Time) (string,string) {
         interval_end := (interval_start + 5) % 60
         minD := fmt.Sprintf("Min%02d_%02d",interval_start,interval_end)
 
-	var when string = fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",n_season,s_season,shift,dayname,daynum,month,year,hour,mins,quarter,minD)
+	var when string = fmt.Sprintf("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",n_season,s_season,shift,dayname,daynum,month,year,hour,mins,quarter,minD)
 	var key string = fmt.Sprintf("%s:%s:%s",dow,hour,minD)
 
 	return when, key
