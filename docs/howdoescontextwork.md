@@ -38,6 +38,21 @@ into two parts:
 When we are searching, we primarily use the original signal nodes. When we are filtering
 or narrowing a search, we use the `:: tags ::`.
 
+*Note that although context fragments interact in a graph, it is more in the manner of an ad hoc network.
+Context fragments are like "free radicals" in the chemistry of semantics.
+Trying to form a fixed graph of context fragments is a fools errand that would be extremely constly
+in memory and would quickly become outdated. It is constantly reshaping itself for the user.*
+
+We always divide context into:
+
+- ambient (overlap) cases and 
+- the rest (which are specially intended parts)
+
+and record these separately. Intentional parts become irrelevant after a short time because they are not reused.
+But ambient parts are reused for longer, so we keep mainly ambient context as clusters to tell the user
+the previous contexts in which something occurred.
+Additionally, we keep path search cases separate from ad hoc lookups, and these have different intentionality.
+
 ## Context in the `text2N4L` tool
 
 When we are scanning raw text using the helper tool, we can generate the (+) donor
