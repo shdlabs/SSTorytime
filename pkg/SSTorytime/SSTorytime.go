@@ -5530,47 +5530,144 @@ type History struct {
 
 // *********************************************************************
 
-var STM_SST = make(map[string]History)
-var STM_RAM = make(map[string]History)
+var STM_INT_FRAG = make(map[string]History) // for intentional (exceptional) fragments
+var STM_AMB_FRAG = make(map[string]History) // for ambient (repeated) fragments
+var STM_INV_GROUP = make(map[string]History) // look for invariants
+
+const FORGOTTEN = 10800
 
 // *********************************************************************
 
-func UpdateSTMContext(ambient,key string,now int64,params SearchParameters) {
+func UpdateSTMContext(ctx PoSST,ambient,key string,now int64,params SearchParameters) {
+
+	var context []string
 
 	if params.Sequence || params.From != nil || params.To != nil {
-		AddContext("path",ambient,key,now,params.Name,STM_SST)
-		AddContext("path",ambient,key,now,params.From,STM_SST)
-		AddContext("path",ambient,key,now,params.To,STM_SST)
+		// path / cone are intended
+		context = append(context,params.Name...)
+		context = append(context,params.From...)
+		context = append(context,params.To...)
+		AddContext(ctx,ambient,key,now,context)
 	} else {
-		AddContext("idea",ambient,key,now,params.Name,STM_RAM)
-		AddContext("idea",ambient,key,now,params.Context,STM_RAM)
-		AddContext("idea",ambient,key,now,[]string{params.Chapter},STM_RAM)
+		// ongoing / adhoc are ambient
+		context = append(context,params.Name...)
+		context = append(context,params.Context...)
+		context = append(context,params.Chapter)
+		AddContext(ctx,ambient,key,now,context)
 	}
 }
 
 // *********************************************************************
 
-func AddContext(ctype string,ambient,key string,now int64,tokens []string,stm map[string]History) {
+func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) {
+
+	// First fractionated DNA
 
 	for t := range tokens {
 
 		token := tokens[t]
 
-		if len(token) == 0 {
+		if len(token) == 0 || token == "%%" {
 			continue
 		}
 
-		var obs History
-		last := stm[token]
+		// Check for direct NPtr click, watch out for long text
 
-		obs.Freq++ 
+		if token[0] == '(' {
+			var nptr NodePtr
+			fmt.Sscanf(token,"(%d,%d)",&nptr.Class,&nptr.CPtr)
+
+			const size_limit = 30
+
+			if nptr.Class > 0 {
+				node := GetDBNodeByNodePtr(ctx,nptr)
+
+				fmt.Print("    Converting nptr ",token," to: ",)			
+
+				if node.L < size_limit {
+					token = node.S
+				} else {
+					token = node.S[0:size_limit] + "..."
+				}
+				fmt.Println(token)
+			} else {
+				continue
+			}
+		}
+
+		var last,obs History
+
+		// Check if already known ambient
+		last,already := STM_AMB_FRAG[token]
+
+		// if not, then check if already seen
+		if !already {
+			last,already = STM_INT_FRAG[token]
+		}
+
+		if !already {
+			last.Last = now
+		}
+
+		obs.Freq = last.Freq + 1
 		obs.Last = now
-		obs.Delta = last.Last - now
+		obs.Delta = now - last.Last
 
-		pr,_ := DoNowt(time.Unix(last.Last,0))
+		if obs.Freq > 1 {
+			pr,_ := DoNowt(time.Unix(last.Last,0))
+			fmt.Printf("    - last saw \"%s\" at %s\n",token,pr)
+		}
 
-		fmt.Printf(" - last saw %s \"%s\" at %s\n",ctype,token,pr)
+		if already {
+			delete(STM_INT_FRAG,token)
+			STM_AMB_FRAG[token] = obs
+		} else {
+			STM_INT_FRAG[token] = obs
+		}
 	}
+
+	var format []string
+	var full_context string
+
+	for fr := range STM_AMB_FRAG {
+
+		if STM_AMB_FRAG[fr].Delta > FORGOTTEN {
+			delete(STM_AMB_FRAG,fr)
+			continue
+		} 
+
+		format = append(format,fr)
+	}
+
+	for fr := range STM_INT_FRAG {
+
+		if STM_INT_FRAG[fr].Delta > FORGOTTEN {
+			delete(STM_INT_FRAG,fr)
+			continue
+		} 
+
+		format = append(format,fr)
+	}
+
+	sort.Strings(format)
+
+	thispr,_ := DoNowt(time.Unix(now,0))
+
+	for r := 0; r < len(format); r++ {
+		full_context += format[r]
+		full_context += ","
+	}
+
+	full_context += thispr
+
+	obs := STM_INV_GROUP[full_context]
+	obs.Freq++
+	obs.Delta = now - STM_INV_GROUP[full_context].Last
+	obs.Last = now
+	STM_INV_GROUP[full_context] = obs
+
+	fmt.Printf("\n    - current context %s\n",full_context)
+	fmt.Println("  .......................................................\n")
 }
 
 // *********************************************************************
@@ -5589,6 +5686,9 @@ func ShowContext(ambient,key string) {
 // **************************************************************************
 
 func IntersectContextParts(context_clusters []string) (int,[]string,[][]int)  {
+
+	// return a weighted upper triangular matrix of overlaps between frags,
+	// and an idempotent list of fragments
 
 	var idemp = make(map[string]int)
 	var cluster_list []string
@@ -6647,6 +6747,9 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					p++
 					ult := SplitQuotes(cmd_parts[c][pp])
 					for u := range ult {
+						if ult[u] == "any" {
+							ult[u] = "%%"
+						}
 						param.Name = append(param.Name,DeQ(ult[u]))
 					}
 				}

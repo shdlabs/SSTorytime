@@ -49,9 +49,17 @@ We always divide context into:
 - the rest (which are specially intended parts)
 
 and record these separately. Intentional parts become irrelevant after a short time because they are not reused.
-But ambient parts are reused for longer, so we keep mainly ambient context as clusters to tell the user
+But ambient parts are reused for longer (although their specific intentionality is becoming
+diluted by repeated use in different contexts), so we keep mainly ambient context as clusters to tell the user
 the previous contexts in which something occurred.
 Additionally, we keep path search cases separate from ad hoc lookups, and these have different intentionality.
+
+Context is still expensive to store without an explicit graph, because we need to remember each combination
+as well as the individual fragments. The fractions can be kept in two maps: for ambient and intentional, each for
+path and ad hoc look ups. Then we also recall an ordered log (like a moving window) of combinations (get one, drop one).
+
+We use a `CONTEXT_WINDOW_DURATION` of 3 hours for tracking related queries, which is probably longer than human attention, to give
+some superpowers, but not so long that it is incomprehensible.
 
 ## Context in the `text2N4L` tool
 

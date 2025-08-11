@@ -149,7 +149,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 		search := SST.DecodeSearchField(name)
 
-		SST.UpdateSTMContext(ambient,key,now,search)
+		SST.UpdateSTMContext(CTX,ambient,key,now,search)
 
 		HandleSearch(search,name,w,r)
 		
