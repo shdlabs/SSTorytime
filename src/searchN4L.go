@@ -85,7 +85,13 @@ func main() {
 			}
 		}
 
+		ambient,key,now := SST.GetContext()
+
+		SST.ShowContext(ambient,key)
+
 		search := SST.DecodeSearchField(search_string)
+
+		SST.UpdateSTMContext(ambient,key,now,search)
 
 		Search(ctx,search,search_string)
 	}

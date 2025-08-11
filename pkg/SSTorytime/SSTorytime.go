@@ -5517,6 +5517,75 @@ func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,
 	return intentional,Map2List(ambient)
 }
 
+// *********************************************************************
+// STM context tracking
+// *********************************************************************
+
+type History struct {
+
+	Freq  float64  // just use float becasue we'll want to calculate
+	Last  int64    // calc gradient and purge
+	Delta int64
+}
+
+// *********************************************************************
+
+var STM_SST = make(map[string]History)
+var STM_RAM = make(map[string]History)
+
+// *********************************************************************
+
+func UpdateSTMContext(ambient,key string,now int64,params SearchParameters) {
+
+	if params.Sequence || params.From != nil || params.To != nil {
+		AddContext("path",ambient,key,now,params.Name,STM_SST)
+		AddContext("path",ambient,key,now,params.From,STM_SST)
+		AddContext("path",ambient,key,now,params.To,STM_SST)
+	} else {
+		AddContext("idea",ambient,key,now,params.Name,STM_RAM)
+		AddContext("idea",ambient,key,now,params.Context,STM_RAM)
+		AddContext("idea",ambient,key,now,[]string{params.Chapter},STM_RAM)
+	}
+}
+
+// *********************************************************************
+
+func AddContext(ctype string,ambient,key string,now int64,tokens []string,stm map[string]History) {
+
+	for t := range tokens {
+
+		token := tokens[t]
+
+		if len(token) == 0 {
+			continue
+		}
+
+		var obs History
+		last := stm[token]
+
+		obs.Freq++ 
+		obs.Last = now
+		obs.Delta = last.Last - now
+
+		pr,_ := DoNowt(time.Unix(last.Last,0))
+
+		fmt.Printf(" - last saw %s \"%s\" at %s\n",ctype,token,pr)
+	}
+}
+
+// *********************************************************************
+
+func ShowContext(ambient,key string) {
+
+	fmt.Println("  .......................................................")
+	fmt.Println("    Current timekey: ",key)
+	fmt.Print("    Ambient: ")
+	ShowText(ambient,10)
+	fmt.Println()
+	fmt.Println("  .......................................................")
+
+}
+
 // **************************************************************************
 
 func IntersectContextParts(context_clusters []string) (int,[]string,[][]int)  {

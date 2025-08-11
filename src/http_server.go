@@ -12,7 +12,6 @@ import (
 	"os/signal"
 	"syscall"
 	"sort"
-	"time"
 	"encoding/json"
 
         SST "SSTorytime"
@@ -142,7 +141,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 		ambient,key,now := SST.GetContext()
 
-		ShowContext(ambient,key)
+		SST.ShowContext(ambient,key)
 
 		if len(name) == 0 {
 			name = "sstorytime \"semantic spacetime\""
@@ -150,7 +149,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 		search := SST.DecodeSearchField(name)
 
-		UpdateSTMContext(ambient,key,now,search)
+		SST.UpdateSTMContext(ambient,key,now,search)
 
 		HandleSearch(search,name,w,r)
 		
@@ -690,77 +689,6 @@ func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
 		retvar = append(retvar,contextgroup)
 	}
 	return retvar
-}
-
-// *********************************************************************
-// STM context tracking
-// *********************************************************************
-
-type History struct {
-
-	Freq  float64  // just use float becasue we'll want to calculate
-	Last  int64    // calc gradient and purge
-	Delta int64
-}
-
-// *********************************************************************
-
-var STM_SST = make(map[string]History)
-var STM_RAM = make(map[string]History)
-
-// *********************************************************************
-
-func UpdateSTMContext(ambient,key string,now int64,params SST.SearchParameters) {
-
-	fmt.Println("XX",params)
-
-	if params.Sequence || params.From != nil || params.To != nil {
-		AddContext("path",ambient,key,now,params.Name,STM_SST)
-		AddContext("path",ambient,key,now,params.From,STM_SST)
-		AddContext("path",ambient,key,now,params.To,STM_SST)
-	} else {
-		AddContext("idea",ambient,key,now,params.Name,STM_RAM)
-		AddContext("idea",ambient,key,now,params.Context,STM_RAM)
-		AddContext("idea",ambient,key,now,[]string{params.Chapter},STM_RAM)
-	}
-}
-
-// *********************************************************************
-
-func AddContext(ctype string,ambient,key string,now int64,tokens []string,stm map[string]History) {
-
-	for t := range tokens {
-
-		token := tokens[t]
-
-		if len(token) == 0 {
-			continue
-		}
-
-		var obs History
-		last := stm[token]
-
-		obs.Freq++ 
-		obs.Last = now
-		obs.Delta = last.Last - now
-
-		pr,_ := SST.DoNowt(time.Unix(last.Last,0))
-
-		fmt.Printf(" - last saw %s \"%s\" at %s\n",ctype,token,pr)
-	}
-}
-
-// *********************************************************************
-
-func ShowContext(ambient,key string) {
-
-	fmt.Println("  .......................................................")
-	fmt.Println("    Current timekey: ",key)
-	fmt.Print("    Ambient: ")
-	SST.ShowText(ambient,10)
-	fmt.Println()
-	fmt.Println("  .......................................................")
-
 }
 
 // *********************************************************************
