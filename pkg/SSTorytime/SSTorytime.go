@@ -3967,6 +3967,8 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 
 	row.Close()
 
+	// Currently sorts by length, but we'd like to sort by context
+
 	sort.Slice(retval, func(i,j int) bool {
 		return len(retval[i]) < len(retval[j])
 	})
@@ -5526,6 +5528,7 @@ type History struct {
 	Freq  float64  // just use float becasue we'll want to calculate
 	Last  int64    // calc gradient and purge
 	Delta int64
+	TimeKey string
 }
 
 // *********************************************************************
@@ -5613,11 +5616,12 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 
 		obs.Freq = last.Freq + 1
 		obs.Last = now
+		obs.TimeKey = key
 		obs.Delta = now - last.Last
 
 		if obs.Freq > 1 {
-			pr,_ := DoNowt(time.Unix(last.Last,0))
-			fmt.Printf("    - last saw \"%s\" at %s\n",token,pr)
+			pr,okey := DoNowt(time.Unix(last.Last,0))
+			fmt.Printf("    - last saw \"%s\" at %s (%s)\n",token,pr,okey)
 		}
 
 		if already {
@@ -5665,10 +5669,11 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 	obs := STM_INV_GROUP[full_context]
 	obs.Freq++
 	obs.Delta = now - STM_INV_GROUP[full_context].Last
+	obs.TimeKey = key
 	obs.Last = now
 	STM_INV_GROUP[full_context] = obs
 
-	fmt.Printf("\n    - current context %s\n",full_context)
+	fmt.Printf("\n    - current context %s (%s)\n",full_context,key)
 	fmt.Println("  .......................................................\n")
 
 	return full_context
@@ -5679,15 +5684,23 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 func ContextInterferometry(now_ctx string) {
 
 	// Go through the previous stored contexts and look for overlap
-
-	fmt.Println("XX")
+	// Overlapping time is irrelevant, but a matching timekey could be
+	// an indication of pattern
 
 	for then_ctx := range STM_INV_GROUP {
 
-		common,diff := DiffClusters(now_ctx,then_ctx)
+		common,newintent := DiffClusters(now_ctx,then_ctx)
 
-		fmt.Println("OVERLAP",common)
-		fmt.Println("FRINGE",diff)
+		// We might want to prioritise matches by new intent (TBD)
+		// this requires GetEntireCone to order paths
+
+		fmt.Println("?????????????????????????????????????????????????????????????")
+		fmt.Println("  To do: this is tricky/non-trivial, so leave this reminder for future ....")
+		fmt.Println("-->")
+		fmt.Println("  Ongoing context (highlight similar time semantics)",common)
+		fmt.Println("  New intent (prioritise this in future)",newintent)
+		fmt.Println("?????????????????????????????????????????????????????????????")
+		fmt.Println()
 	}
 }
 
@@ -7001,16 +7014,19 @@ func DoNowt(then time.Time) (string,string) {
 	// Return a db-suitable keyname reflecting the coarse-grained SST time
 	// The function also returns a printable summary of the time
 
+	// In this version, we need less accuracy and greater semantic distinction
+	// so prefix temporal classes with a :
+
 	year := fmt.Sprintf("Yr%d",then.Year())
 	month := GR_MONTH_TEXT[int(then.Month())-1]
 	day := then.Day()
 	hour := fmt.Sprintf("Hr%02d",then.Hour())
-	mins := fmt.Sprintf("Min%02d",then.Minute())
-	quarter := fmt.Sprintf("Q%d",then.Minute()/15 + 1)
+	quarter := fmt.Sprintf("Qu%d",then.Minute()/15 + 1)
 	shift :=  fmt.Sprintf("%s",GR_SHIFT_TEXT[then.Hour()/6])
 
 	//secs := then.Second()
 	//nano := then.Nanosecond()
+	//mins := fmt.Sprintf("Min%02d",then.Minute())
 
 	n_season,s_season := Season(month)
 
@@ -7018,13 +7034,15 @@ func DoNowt(then time.Time) (string,string) {
 	dow := fmt.Sprintf("%.3s",dayname)
 	daynum := fmt.Sprintf("Day%d",day)
 
-	// 5 minute resolution capture
+	// 5 minute resolution capture is too fine grained for most human interest
         interval_start := (then.Minute() / 5) * 5
         interval_end := (interval_start + 5) % 60
         minD := fmt.Sprintf("Min%02d_%02d",interval_start,interval_end)
 
-	var when string = fmt.Sprintf("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",n_season,s_season,shift,dayname,daynum,month,year,hour,mins,quarter,minD)
-	var key string = fmt.Sprintf("%s:%s:%s",dow,hour,minD)
+	// Don't include the time key in general context, as it varies too fast to be meaningful
+
+	var when string = fmt.Sprintf(":%s, :%s, :%s, :%s, :%s, :%s, :%s, :%s, :%s",n_season,s_season,shift,dayname,daynum,month,year,hour,quarter)
+	var key string = fmt.Sprintf("%s:%s:%s-%s",dow,hour,quarter,minD)
 
 	return when, key
 }

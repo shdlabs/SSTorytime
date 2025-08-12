@@ -91,8 +91,10 @@ func main() {
 
 		search := SST.DecodeSearchField(search_string)
 
-		SST.UpdateSTMContext(ambient,key,now,search)
-		SST.ContextInterferometry(now)
+		if VERBOSE {
+			now_ctx := SST.UpdateSTMContext(ctx,ambient,key,now,search)
+			SST.ContextInterferometry(now_ctx)
+		}
 
 		Search(ctx,search,search_string)
 	}
