@@ -3735,16 +3735,23 @@ func ArrowPtrFromArrowsNames(ctx PoSST,arrows []string) ([]ArrowPtr,[]int) {
 
 func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr []ArrowPtr) []NodePtr {
 
+	// This is a UI/UX wrapper for the underlying lookup, avoiding
+	// duplicate results and ordering according to interest
+
 	nodeptrs,rest := ParseLiteralNodePtrs(nodenames)
 
 	var idempotence = make(map[NodePtr]bool)
 	var result []NodePtr
+
+	// If we give a precise reference, then that was obviously intended
 
 	for n := range nodeptrs {
 		idempotence[nodeptrs[n]] = true
 	}
 
 	for r := range rest {
+
+		// Takes care of general context matching
 
 		nptrs := GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
 
@@ -3753,11 +3760,23 @@ func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr [
 		}
 	}
 
+	// Currently disordered, sort by additional scoring by running context ..
+
 	for uniqnptr := range idempotence {
 		result = append(result,uniqnptr)
 	}
 
+	sort.Slice(result, ScoreContext)
 	return result
+}
+
+//******************************************************************
+
+func ScoreContext(i,j int) bool {
+
+	// the more matching items the more relevant
+
+	return true
 }
 
 //******************************************************************
@@ -3820,6 +3839,8 @@ func ParseLiteralNodePtrs(names []string) ([]NodePtr,[]string) {
 func GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
 
 	var qstr string
+
+	chap = strings.Trim(chap,"\"")
 
 	context := FormatSQLStringArray(cn)
 	chapter := "%"+chap+"%"
@@ -3966,8 +3987,6 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 	}
 
 	row.Close()
-
-	// Currently sorts by length, but we'd like to sort by context
 
 	sort.Slice(retval, func(i,j int) bool {
 		return len(retval[i]) < len(retval[j])
@@ -5594,41 +5613,10 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 				} else {
 					token = node.S[0:size_limit] + "..."
 				}
-				fmt.Println(token)
+				CommitContextToken(token,now,key)
 			} else {
 				continue
 			}
-		}
-
-		var last,obs History
-
-		// Check if already known ambient
-		last,already := STM_AMB_FRAG[token]
-
-		// if not, then check if already seen
-		if !already {
-			last,already = STM_INT_FRAG[token]
-		}
-
-		if !already {
-			last.Last = now
-		}
-
-		obs.Freq = last.Freq + 1
-		obs.Last = now
-		obs.TimeKey = key
-		obs.Delta = now - last.Last
-
-		if obs.Freq > 1 {
-			pr,okey := DoNowt(time.Unix(last.Last,0))
-			fmt.Printf("    - last saw \"%s\" at %s (%s)\n",token,pr,okey)
-		}
-
-		if already {
-			delete(STM_INT_FRAG,token)
-			STM_AMB_FRAG[token] = obs
-		} else {
-			STM_INT_FRAG[token] = obs
 		}
 	}
 
@@ -5666,6 +5654,7 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 
 	full_context += thispr
 
+	// Need to clean up old context somewhere else
 	obs := STM_INV_GROUP[full_context]
 	obs.Freq++
 	obs.Delta = now - STM_INV_GROUP[full_context].Last
@@ -5681,6 +5670,42 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 
 // *********************************************************************
 
+func CommitContextToken(token string,now int64,key string) {
+	
+	var last,obs History
+	
+	// Check if already known ambient
+	last,already := STM_AMB_FRAG[token]
+	
+	// if not, then check if already seen
+	if !already {
+		last,already = STM_INT_FRAG[token]
+	}
+	
+	if !already {
+		last.Last = now
+	}
+	
+	obs.Freq = last.Freq + 1
+	obs.Last = now
+	obs.TimeKey = key
+	obs.Delta = now - last.Last
+	
+	if obs.Freq > 1 {
+		pr,okey := DoNowt(time.Unix(last.Last,0))
+		fmt.Printf("    - last saw \"%s\" at %s (%s)\n",token,pr,okey)
+	}
+	
+	if already {
+		delete(STM_INT_FRAG,token)
+		STM_AMB_FRAG[token] = obs
+	} else {
+		STM_INT_FRAG[token] = obs
+	}
+}
+
+// *********************************************************************
+
 func ContextInterferometry(now_ctx string) {
 
 	// Go through the previous stored contexts and look for overlap
@@ -5689,19 +5714,80 @@ func ContextInterferometry(now_ctx string) {
 
 	for then_ctx := range STM_INV_GROUP {
 
-		common,newintent := DiffClusters(now_ctx,then_ctx)
-
-		// We might want to prioritise matches by new intent (TBD)
-		// this requires GetEntireCone to order paths
-
-		fmt.Println("?????????????????????????????????????????????????????????????")
-		fmt.Println("  To do: this is tricky/non-trivial, so leave this reminder for future ....")
-		fmt.Println("-->")
-		fmt.Println("  Ongoing context (highlight similar time semantics)",common)
-		fmt.Println("  New intent (prioritise this in future)",newintent)
-		fmt.Println("?????????????????????????????????????????????????????????????")
-		fmt.Println()
+		if now_ctx != then_ctx {
+			common,newintent := DiffClusters(now_ctx,then_ctx)
+			
+			// We might want to prioritise matches by new intent (TBD)
+			// this requires GetEntireCone to order paths
+			
+			fmt.Println("?????????????????????????????????????????????????????????????")
+			fmt.Println("  To do: this is tricky/non-trivial, so leave this reminder for future ....")
+			fmt.Println("-->")
+			fmt.Println("  Ongoing context (highlight similar time semantics)",common)
+			fmt.Println("  New intent (prioritise this in future)",newintent)
+			fmt.Println("?????????????????????????????????????????????????????????????")
+			fmt.Println()
+		}
 	}
+}
+
+// *********************************************************************
+
+func RankNodePtrsByIntent(ctx PoSST,nptrs []NodePtr) []NodePtr {
+
+	type NRank struct {
+		NPtr NodePtr
+		Score int
+	}
+
+	var result []NodePtr
+	var nr NRank
+	var all []NRank
+
+	for n := 0; n < len(nptrs); n++ {
+		nr.NPtr = nptrs[n]
+		nr.Score = ScoreNodeIntent(ctx,nptrs[n])
+		all = append(all,nr)
+	}
+
+	sort.Slice(all, func(i, j int) bool {
+		return all[i].Score < all[j].Score
+	})
+	
+	for a := 0; a < len(all); a++ {
+		result = append(result,all[a].NPtr)
+	}
+
+	return result
+}
+
+// *********************************************************************
+
+func ScoreNodeIntent(ctx PoSST,nptr NodePtr) int {
+
+	score := 0
+
+	node := GetDBNodeByNodePtr(ctx,nptr)
+
+	// We now have many aspects to context, but we are looking for actual
+	// current search intent, which is (STM_INT_FRAG, STM_AMB_FRAG)
+	// compare to running context
+
+	for frag := range STM_INT_FRAG {
+		fmt.Println("scoring int",frag,node.S)
+		if strings.Contains(node.S,frag) {
+			score += 2
+		}
+	}
+		
+	for frag := range STM_AMB_FRAG {
+		fmt.Println("scoring amb",frag)
+		if strings.Contains(node.S,frag) {
+			score += 1
+		}
+	}
+		
+	return score
 }
 
 // *********************************************************************
@@ -6052,6 +6138,8 @@ func GetChaptersByChapContext(ctx PoSST,chap string,cn []string,limit int) map[s
 
 	qstr := ""
 	chap_col := ""
+
+	chap = strings.Trim(chap,"\"")
 
 	if chap != "any" && chap != "" {
 
@@ -6636,11 +6724,11 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 					param.PageNr = 1
 				}
 			
-				if lenp > p+1 && lenp == 2 {
+				if lenp > p+1 {
 					param.Chapter = cmd_parts[c][p+1]
 				} else {
 					if lenp > 1 {
-						param = AddOrphan(param,cmd_parts[c][p])
+						param = AddOrphan(param,cmd_parts[c][p+1])
 					}
 				}
 				continue
@@ -6930,7 +7018,9 @@ func SplitQuotes(s string) []string {
 		upto = append(upto,cmd[r])
 	}
 
-	items = append(items,string(upto))
+	if len(upto) > 0 {
+		items = append(items,string(upto))
+	}
 
 	return items
 }

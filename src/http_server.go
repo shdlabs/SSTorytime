@@ -216,6 +216,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	if name && ! sequence && !pagenr {
 		fmt.Println("HandleOrbits()")
+		nodeptrs = SST.RankNodePtrsByIntent(CTX,nodeptrs)
 		HandleOrbit(w,r,nodeptrs,limit)
 		return
 	}
@@ -485,8 +486,8 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 
 func HandlePageMap(w http.ResponseWriter, r *http.Request,notes []SST.PageMap) {
 
-	jstr := SST.JSONPage(CTX,notes)
 	fmt.Println("Solver/handler: HandlePageMap()")
+	jstr := SST.JSONPage(CTX,notes)
 	response := PackageResponse("PageMap",jstr)
 	//fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")

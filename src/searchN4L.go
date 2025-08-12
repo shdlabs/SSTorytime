@@ -91,10 +91,8 @@ func main() {
 
 		search := SST.DecodeSearchField(search_string)
 
-		if VERBOSE {
-			now_ctx := SST.UpdateSTMContext(ctx,ambient,key,now,search)
-			SST.ContextInterferometry(now_ctx)
-		}
+		now_ctx := SST.UpdateSTMContext(ctx,ambient,key,now,search)
+		SST.ContextInterferometry(now_ctx)
 
 		Search(ctx,search,search_string)
 	}
@@ -221,6 +219,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if name && ! sequence && !pagenr {
 
 		fmt.Println("------------------------------------------------------------------")
+		nodeptrs = SST.RankNodePtrsByIntent(ctx,nodeptrs)
 		FindOrbits(ctx, nodeptrs, limit)
 		return
 	}
