@@ -5557,6 +5557,7 @@ var STM_AMB_FRAG = make(map[string]History) // for ambient (repeated) fragments
 var STM_INV_GROUP = make(map[string]History) // look for invariants
 
 const FORGOTTEN = 10800
+const TEXT_SIZE_LIMIT = 30
 
 // *********************************************************************
 
@@ -5573,8 +5574,17 @@ func UpdateSTMContext(ctx PoSST,ambient,key string,now int64,params SearchParame
 	} else {
 		// ongoing / adhoc are ambient
 		context = append(context,params.Name...)
-		context = append(context,params.Context...)
-		context = append(context,params.Chapter)
+
+		for _,ct := range params.Context {
+			if ct != "" {
+				context = append(context,"c:"+ct)
+			}
+		}
+
+		if params.Chapter != "" {
+			context = append(context,"chp:"+params.Chapter)
+		}
+
 		return AddContext(ctx,ambient,key,now,context)
 	}
 
@@ -5601,23 +5611,21 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 			var nptr NodePtr
 			fmt.Sscanf(token,"(%d,%d)",&nptr.Class,&nptr.CPtr)
 
-			const size_limit = 30
-
 			if nptr.Class > 0 {
 				node := GetDBNodeByNodePtr(ctx,nptr)
 
 				fmt.Print("    Converting nptr ",token," to: ",)			
 
-				if node.L < size_limit {
+				if node.L < TEXT_SIZE_LIMIT {
 					token = node.S
 				} else {
-					token = node.S[0:size_limit] + "..."
+					token = node.S[0:TEXT_SIZE_LIMIT] + "..."
 				}
-				CommitContextToken(token,now,key)
 			} else {
 				continue
 			}
 		}
+		CommitContextToken(token,now,key)
 	}
 
 	var format []string
@@ -5662,9 +5670,6 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 	obs.Last = now
 	STM_INV_GROUP[full_context] = obs
 
-	fmt.Printf("\n    - current context %s (%s)\n",full_context,key)
-	fmt.Println("  .......................................................\n")
-
 	return full_context
 }
 
@@ -5706,99 +5711,39 @@ func CommitContextToken(token string,now int64,key string) {
 
 // *********************************************************************
 
-func ContextInterferometry(now_ctx string) {
+func ContextInterferometry(now_ctx string) (string,string) {
 
 	// Go through the previous stored contexts and look for overlap
 	// Overlapping time is irrelevant, but a matching timekey could be
 	// an indication of pattern
+
+	var ambient = make(map[string]int)
+	var intended = make(map[string]int)
 
 	for then_ctx := range STM_INV_GROUP {
 
 		if now_ctx != then_ctx {
 			common,newintent := DiffClusters(now_ctx,then_ctx)
 			
-			// We might want to prioritise matches by new intent (TBD)
-			// this requires GetEntireCone to order paths
-			
-			fmt.Println("?????????????????????????????????????????????????????????????")
-			fmt.Println("  To do: this is tricky/non-trivial, so leave this reminder for future ....")
-			fmt.Println("-->")
-			fmt.Println("  Ongoing context (highlight similar time semantics)",common)
-			fmt.Println("  New intent (prioritise this in future)",newintent)
-			fmt.Println("?????????????????????????????????????????????????????????????")
-			fmt.Println()
+			ambient[common]++
+			intended[newintent]++
 		}
 	}
+
+	ambi := List2String(Map2List(ambient))
+	intend := List2String(Map2List(intended))
+	return ambi,intend
 }
 
 // *********************************************************************
 
-func RankNodePtrsByIntent(ctx PoSST,nptrs []NodePtr) []NodePtr {
+func ShowContext(amb,intent,key string) {
 
-	type NRank struct {
-		NPtr NodePtr
-		Score int
-	}
-
-	var result []NodePtr
-	var nr NRank
-	var all []NRank
-
-	for n := 0; n < len(nptrs); n++ {
-		nr.NPtr = nptrs[n]
-		nr.Score = ScoreNodeIntent(ctx,nptrs[n])
-		all = append(all,nr)
-	}
-
-	sort.Slice(all, func(i, j int) bool {
-		return all[i].Score < all[j].Score
-	})
-	
-	for a := 0; a < len(all); a++ {
-		result = append(result,all[a].NPtr)
-	}
-
-	return result
-}
-
-// *********************************************************************
-
-func ScoreNodeIntent(ctx PoSST,nptr NodePtr) int {
-
-	score := 0
-
-	node := GetDBNodeByNodePtr(ctx,nptr)
-
-	// We now have many aspects to context, but we are looking for actual
-	// current search intent, which is (STM_INT_FRAG, STM_AMB_FRAG)
-	// compare to running context
-
-	for frag := range STM_INT_FRAG {
-		fmt.Println("scoring int",frag,node.S)
-		if strings.Contains(node.S,frag) {
-			score += 2
-		}
-	}
-		
-	for frag := range STM_AMB_FRAG {
-		fmt.Println("scoring amb",frag)
-		if strings.Contains(node.S,frag) {
-			score += 1
-		}
-	}
-		
-	return score
-}
-
-// *********************************************************************
-
-func ShowContext(ambient,key string) {
-
-	fmt.Println("  .......................................................")
-	fmt.Println("    Current timekey: ",key)
-	fmt.Print("    Ambient: ")
-	ShowText(ambient,10)
 	fmt.Println()
+	fmt.Println("  .......................................................")
+	fmt.Printf("    Recurrent now: %s\n",key)
+	fmt.Printf("    Intentional  : %s\n",intent)
+	fmt.Printf("    Ambient      : %s\n",amb)
 	fmt.Println("  .......................................................")
 
 }
@@ -7131,7 +7076,7 @@ func DoNowt(then time.Time) (string,string) {
 
 	// Don't include the time key in general context, as it varies too fast to be meaningful
 
-	var when string = fmt.Sprintf(":%s, :%s, :%s, :%s, :%s, :%s, :%s, :%s, :%s",n_season,s_season,shift,dayname,daynum,month,year,hour,quarter)
+	var when string = fmt.Sprintf("%s, %s, %s, %s, %s, %s, %s, %s, %s",n_season,s_season,shift,dayname,daynum,month,year,hour,quarter)
 	var key string = fmt.Sprintf("%s:%s:%s-%s",dow,hour,quarter,minD)
 
 	return when, key
@@ -7142,9 +7087,9 @@ func DoNowt(then time.Time) (string,string) {
 func GetContext() (string,string,int64) {
 
 	now := time.Now()
-	context,slot := DoNowt(now)
+	context,keyslot := DoNowt(now)
 
-	return context,slot,now.Unix()
+	return context,keyslot,now.Unix()
 }
 
 // ****************************************************************************
@@ -8836,7 +8781,7 @@ func ShowText(s string, width int) {
 		if unicode.IsPunct(runes[r]) && linecounter > width-RIGHTMARGIN {
 			fmt.Print(string(runes[r]))
 			r++
-			if runes[r] != '\n' {
+			if r < len(runes) && runes[r] != '\n' {
 				fmt.Print("\n",indent)
 				linecounter = 0
 				continue
@@ -8844,7 +8789,10 @@ func ShowText(s string, width int) {
 				linecounter = 0
 			}
 		}
-		fmt.Print(string(runes[r]))
+
+		if r < len(runes) {
+			fmt.Print(string(runes[r]))
+		}
 		linecounter++
 		
 	}

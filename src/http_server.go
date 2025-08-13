@@ -139,18 +139,13 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println("\nReceived command:",name)
 
-		ambient,key,now := SST.GetContext()
-
-		SST.ShowContext(ambient,key)
+		ambient,key,_ := SST.GetContext()
 
 		if len(name) == 0 {
-			name = "sstorytime \"semantic spacetime\""
+			name = "any context " + key + " " + ambient
 		}
 
 		search := SST.DecodeSearchField(name)
-
-		now_ctx := SST.UpdateSTMContext(CTX,ambient,key,now,search)
-		SST.ContextInterferometry(now_ctx)
 
 		HandleSearch(search,name,w,r)
 		
@@ -210,14 +205,13 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
 
-		ShowChapterContexts(w,r,CTX,search.Chapter,search.Context,limit)
+		ShowChapterContexts(w,r,CTX,search,limit)
 		return
 	}
 
 	if name && ! sequence && !pagenr {
 		fmt.Println("HandleOrbits()")
-		nodeptrs = SST.RankNodePtrsByIntent(CTX,nodeptrs)
-		HandleOrbit(w,r,nodeptrs,limit)
+		HandleOrbit(w,r,CTX,search,nodeptrs,limit)
 		return
 	}
 
@@ -230,7 +224,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	// if we have BOTH from/to (maybe with chapter/context) then we are looking for paths
 
 	if from && to {
-		HandlePathSolve(w,r,leftptrs,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+		HandlePathSolve(w,r,CTX,leftptrs,rightptrs,search,arrowptrs,sttype,limit)
 		return
 	}
 
@@ -239,15 +233,15 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	if (name || from || to) && !pagenr && !sequence {
 
 		if nodeptrs != nil {
-			HandleCausalCones(w,r,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			HandleCausalCones(w,r,CTX,nodeptrs,search,arrowptrs,sttype,limit)
 			return
 		}
 		if leftptrs != nil {
-			HandleCausalCones(w,r,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			HandleCausalCones(w,r,CTX,leftptrs,search,arrowptrs,sttype,limit)
 			return
 		}
 		if rightptrs != nil {
-			HandleCausalCones(w,r,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			HandleCausalCones(w,r,CTX,rightptrs,search,arrowptrs,sttype,limit)
 			return
 		}
 	}
@@ -260,12 +254,12 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 		if chapter {
 			notes = SST.GetDBPageMap(CTX,search.Chapter,search.Context,search.PageNr)
-			HandlePageMap(w,r,notes)
+			HandlePageMap(w,r,CTX,search,notes)
 			return
 		} else {
 			for n := range search.Name {
 				notes = SST.GetDBPageMap(CTX,search.Name[n],search.Context,search.PageNr)
-				HandlePageMap(w,r,notes)
+				HandlePageMap(w,r,CTX,search,notes)
 			}
 			return
 		}
@@ -274,14 +268,14 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	// Look for axial trails following a particular arrow, like _sequence_ 
 
 	if name && sequence || sequence && arrows {
-		HandleStories(w,r,CTX,search.Arrows,search.Name,search.Chapter,search.Context,limit)
+		HandleStories(w,r,CTX,search,limit)
 		return
 	}
 
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 
 	if arrows || sttypes {
-		HandleMatchingArrows(w,r,CTX,arrowptrs,sttype)
+		HandleMatchingArrows(w,r,CTX,search,arrowptrs,sttype)
 		return
 	}
 
@@ -290,7 +284,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 // *********************************************************************
 
-func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limit int) {
+func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,nptrs []SST.NodePtr,limit int) {
 
 	w.Header().Set("Content-Type", "application/json")
 
@@ -321,7 +315,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 
 	array = strings.Trim(array,",")
 	content := fmt.Sprintf("[ %s ]",array)
-	response := PackageResponse("Orbits",content)
+	response := PackageResponse(ctx,search,"Orbits",content)
 	
 	//fmt.Println("REPLY:\n",string(response))
 
@@ -331,7 +325,10 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr,limi
 
 // *********************************************************************
 
-func HandleCausalCones(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePtr, chap string, context []string,arrows []SST.ArrowPtr, sttype []int,limit int) {
+func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptrs []SST.NodePtr,search SST.SearchParameters,arrows []SST.ArrowPtr, sttype []int,limit int) {
+
+	chap := search.Chapter
+	context := search.Context
 
 	fmt.Println("HandleCausalCones()")
 	var total int = 1
@@ -365,7 +362,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,nptrs []SST.NodePt
 	data = strings.Trim(data,",")
 	array := fmt.Sprintf("[%s]",data)
 
-	response := PackageResponse("ConePaths",array)
+	response := PackageResponse(ctx,search,"ConePaths",array)
 	//fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
@@ -408,7 +405,10 @@ func PackageConeFromOrigin(nptr SST.NodePtr,nth int,sttype int,chap string,conte
 
 //******************************************************************
 
-func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs []SST.NodePtr,chapter string,context []string,arrowptrs []SST.ArrowPtr,sttype []int,maxdepth int) {
+func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,search SST.SearchParameters,arrowptrs []SST.ArrowPtr,sttype []int,maxdepth int) {
+
+	chapter := search.Chapter
+	context := search.Context
 
 	fmt.Println("HandlePathSolve()")
 
@@ -458,7 +458,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 			jstr += fmt.Sprintf("   \"Paths\" : %s }",string(wstr))
 
 			array_pack := fmt.Sprintf("[%s]",jstr)
-			response := PackageResponse("PathSolve",array_pack)
+			response := PackageResponse(ctx,search,"PathSolve",array_pack)
 
 			//fmt.Println("PATH SOLVE:",string(response))
 
@@ -475,7 +475,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 	}
 	
 	fmt.Println("No paths satisfy constraints")
-	response := PackageResponse("PathSolve","")
+	response := PackageResponse(ctx,search,"PathSolve","")
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -484,11 +484,11 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,leftptrs,rightptrs [
 
 //******************************************************************
 
-func HandlePageMap(w http.ResponseWriter, r *http.Request,notes []SST.PageMap) {
+func HandlePageMap(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,notes []SST.PageMap) {
 
 	fmt.Println("Solver/handler: HandlePageMap()")
 	jstr := SST.JSONPage(CTX,notes)
-	response := PackageResponse("PageMap",jstr)
+	response := PackageResponse(ctx,search,"PageMap",jstr)
 	//fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -497,7 +497,12 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request,notes []SST.PageMap) {
 
 //******************************************************************
 
-func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows []string,name []string,chapter string,context []string, limit int) {
+func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,limit int) {
+
+	name := search.Name
+	arrows := search.Arrows
+	chapter := search.Chapter
+	context := search.Context
 
 	if arrows == nil {
 		arrows = []string{"then"}
@@ -531,7 +536,7 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 	}
 
 	data := strings.Trim(jarray,",")
-	response := PackageResponse("Sequence",data)
+	response := PackageResponse(ctx,search,"Sequence",data)
 
 	//fmt.Println("Sequence...",string(response))
 
@@ -542,7 +547,7 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrows [
 
 // *********************************************************************
 
-func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,arrowptrs []SST.ArrowPtr,sttype []int) {
+func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,arrowptrs []SST.ArrowPtr,sttype []int) {
 
 	fmt.Println("Solver/handler: HandleMatchingArrows()")
 
@@ -594,7 +599,7 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,a
 	}
 
 	data,_ := json.Marshal(arrows)
-	response := PackageResponse("Arrows",string(data))
+	response := PackageResponse(ctx,search,"Arrows",string(data))
 
 	fmt.Println("Arrows...",string(response))
 
@@ -605,7 +610,10 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,a
 
 // *********************************************************************
 
-func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,chap string,context []string,limit int) {
+func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,limit int) {
+
+	chap := search.Chapter
+	context := search.Context
 
 	fmt.Println("Solver/handler: ShowChapterContexts()")
 
@@ -641,7 +649,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,ch
 	}
 
 	data,_ := json.Marshal(chapters)
-	response := PackageResponse("TOC",string(data))
+	response := PackageResponse(ctx,search,"TOC",string(data))
 
 	//fmt.Println("Chap/context...",string(response))
 
@@ -773,9 +781,13 @@ func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
 // **********************************************************
 
-func PackageResponse(kind string, jstr string) []byte {
+func PackageResponse(ctx SST.PoSST,search SST.SearchParameters,kind string, jstr string) []byte {
 
-	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s }",kind,jstr)
+	ambient,key,now := SST.GetContext()
+	now_ctx := SST.UpdateSTMContext(CTX,ambient,key,now,search)
+	amb,intent := SST.ContextInterferometry(now_ctx)
+
+	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Ambient\" : \"%s\" , \"Intent\" : \"%s\" }",kind,jstr,key,amb,intent)
 
 	return []byte(response)
 }

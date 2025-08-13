@@ -74,6 +74,8 @@ func main() {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
+	var search SST.SearchParameters
+
 	if len(args) > 0 {
 
 		search_string := ""
@@ -85,18 +87,14 @@ func main() {
 			}
 		}
 
-		ambient,key,now := SST.GetContext()
-
-		SST.ShowContext(ambient,key)
-
-		search := SST.DecodeSearchField(search_string)
-
-		now_ctx := SST.UpdateSTMContext(ctx,ambient,key,now,search)
-		SST.ContextInterferometry(now_ctx)
+		search = SST.DecodeSearchField(search_string)
 
 		Search(ctx,search,search_string)
+		SST.Close(ctx)
+		return
 	}
 
+	ShowTime(ctx,search)
 	SST.Close(ctx)
 }
 
@@ -211,6 +209,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
 
 		ShowMatchingChapter(ctx,search.Chapter,search.Context,limit)
+		ShowTime(ctx,search)
 		return
 	}
 
@@ -219,8 +218,8 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	if name && ! sequence && !pagenr {
 
 		fmt.Println("------------------------------------------------------------------")
-		nodeptrs = SST.RankNodePtrsByIntent(ctx,nodeptrs)
 		FindOrbits(ctx, nodeptrs, limit)
+		ShowTime(ctx,search)
 		return
 	}
 
@@ -236,6 +235,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 		fmt.Println("------------------------------------------------------------------")
 		PathSolve(ctx,leftptrs,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+		ShowTime(ctx,search)
 		return
 	}
 
@@ -248,16 +248,19 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		if nodeptrs != nil {
 			fmt.Println("------------------------------------------------------------------")
 			CausalCones(ctx,nodeptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			ShowTime(ctx,search)
 			return
 		}
 		if leftptrs != nil {
 			fmt.Println("------------------------------------------------------------------")
 			CausalCones(ctx,leftptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			ShowTime(ctx,search)
 			return
 		}
 		if rightptrs != nil {
 			fmt.Println("------------------------------------------------------------------")
 			CausalCones(ctx,rightptrs,search.Chapter,search.Context,arrowptrs,sttype,limit)
+			ShowTime(ctx,search)
 			return
 		}
 	}
@@ -271,11 +274,13 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 		if chapter {
 			notes = SST.GetDBPageMap(ctx,search.Chapter,search.Context,search.PageNr)
 			ShowNotes(ctx,notes)
+			ShowTime(ctx,search)
 			return
 		} else {
 			for n := range search.Name {
 				notes = SST.GetDBPageMap(ctx,search.Name[n],search.Context,search.PageNr)
 				ShowNotes(ctx,notes)
+				ShowTime(ctx,search)
 			}
 			return
 		}
@@ -285,6 +290,7 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	if name && sequence || sequence && arrows {
 		ShowStories(ctx,search.Arrows,search.Name,search.Chapter,search.Context,limit)
+		ShowTime(ctx,search)
 		return
 	}
 
@@ -292,12 +298,15 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 
 	if arrows || sttypes {
 		ShowMatchingArrows(ctx,arrowptrs,sttype)
+		ShowTime(ctx,search)
 		return
 	}
 
 	if VERBOSE {
 		fmt.Println("Didn't find a solver")
 	}
+
+	ShowTime(ctx,search)
 
 }
 
@@ -733,5 +742,15 @@ func ShowNotes(ctx SST.PoSST,notes []SST.PageMap) {
 	}
 }
 
+// **********************************************************
+
+func ShowTime(ctx SST.PoSST,search SST.SearchParameters) {
+
+	ambient,key,now := SST.GetContext()
+	now_ctx := SST.UpdateSTMContext(ctx,ambient,key,now,search)
+	amb,intent := SST.ContextInterferometry(now_ctx)
+	SST.ShowContext(amb,intent,key)
+
+}
 
 
