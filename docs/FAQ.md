@@ -15,3 +15,7 @@ ASCII encoding, it's easy to get bad character conversion without using this lon
 * Why are there relationships that I didn't intend when I browse the data?
 
 Be careful to ensure that you haven't accidentally used any of the annotation markers (e.g. +,-,=) without surroundings spaces in your text, as these will be interpreted as annotations. Use the verbose mode in N4L to debug.
+
+* Why do I see chapters that don't seem to be relevant?
+
+This is probably a result of certain words and phrases belonging to more than one chapter, and thus bridging chapters that you didn't intend. This bridging is intentional, as it allows >"lateral thinking", which is an important source of discovery.
