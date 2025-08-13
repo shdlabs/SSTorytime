@@ -5828,8 +5828,9 @@ func GetContextTokenFrequencies(fraglist []string) map[string]int {
 func PrintNodeOrbit(ctx PoSST, nptr NodePtr,limit int) {
 
 	node := GetDBNodeByNodePtr(ctx,nptr)		
-
+	fmt.Print("\"")
 	ShowText(node.S,SCREENWIDTH)
+	fmt.Print("\"")
 	fmt.Println("\tin chapter:",node.Chap)
 	fmt.Println()
 
