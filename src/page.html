@@ -53,6 +53,16 @@ h1 {
   line-height: 10px;
 }
 
+#header_root h2 {
+  font-size: 50px;
+  color: #5599cc;
+  padding: 10px;
+}
+
+#header_now {
+  color: orange;
+}
+
 h2 {
   font-size: 30px;
   color: #5599cc;
@@ -843,7 +853,14 @@ let title = "app";
 switch (obj.Response)
    {
    case "Orbits":
-      title = obj.Content[0].Text;
+      if (obj.Content[0] != null)
+         {
+         title = obj.Content[0].Text;
+         }
+      else
+         {
+         title = obj.Time;
+         }
       break;
    case "ConePaths":
       title = "cone paths";//obj.Content[0].Paths.Title;
@@ -864,7 +881,8 @@ switch (obj.Response)
       title = "Arrow lookup";
       break;
    default:
-      titl = "SSToryGraph browser";
+      title = "SSToryGraph browser";
+      break;
    }
 
 if (title.length < 60 || IsMath(title))
@@ -878,6 +896,16 @@ else
 
 titlebar.style.fontSize = "70%"
 header.appendChild(titlebar);
+
+let nowbar = document.createElement('div');
+nowbar.id = "header_now";
+nowbar.textContent = obj.Ambient;
+header.appendChild(nowbar);
+
+let ctxbar = document.createElement('p');
+ctxbar.id = "header_ctx";
+ctxbar.textContent = obj.Intent;
+header.appendChild(ctxbar);
 }
 
 /***********************************************************/

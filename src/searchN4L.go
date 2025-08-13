@@ -748,8 +748,7 @@ func ShowTime(ctx SST.PoSST,search SST.SearchParameters) {
 
 	ambient,key,now := SST.GetContext()
 	now_ctx := SST.UpdateSTMContext(ctx,ambient,key,now,search)
-	amb,intent := SST.ContextInterferometry(now_ctx)
-	SST.ShowContext(amb,intent,key)
+	SST.ShowContext(ambient,now_ctx,key)
 
 }
 

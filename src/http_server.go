@@ -210,7 +210,6 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	}
 
 	if name && ! sequence && !pagenr {
-		fmt.Println("HandleOrbits()")
 		HandleOrbit(w,r,CTX,search,nodeptrs,limit)
 		return
 	}
@@ -785,9 +784,8 @@ func PackageResponse(ctx SST.PoSST,search SST.SearchParameters,kind string, jstr
 
 	ambient,key,now := SST.GetContext()
 	now_ctx := SST.UpdateSTMContext(CTX,ambient,key,now,search)
-	amb,intent := SST.ContextInterferometry(now_ctx)
 
-	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Ambient\" : \"%s\" , \"Intent\" : \"%s\" }",kind,jstr,key,amb,intent)
+	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Intent\" : \"%s\", \"Ambient\" : \"%s\" }",kind,jstr,key,now_ctx,ambient)
 
 	return []byte(response)
 }

@@ -5547,7 +5547,7 @@ type History struct {
 	Freq  float64  // just use float becasue we'll want to calculate
 	Last  int64    // calc gradient and purge
 	Delta int64
-	TimeKey string
+	Time  string
 }
 
 // *********************************************************************
@@ -5577,12 +5577,12 @@ func UpdateSTMContext(ctx PoSST,ambient,key string,now int64,params SearchParame
 
 		for _,ct := range params.Context {
 			if ct != "" {
-				context = append(context,"c:"+ct)
+				context = append(context,ct)
 			}
 		}
 
 		if params.Chapter != "" {
-			context = append(context,"chp:"+params.Chapter)
+			context = append(context,"Chapter:"+params.Chapter)
 		}
 
 		return AddContext(ctx,ambient,key,now,context)
@@ -5594,8 +5594,6 @@ func UpdateSTMContext(ctx PoSST,ambient,key string,now int64,params SearchParame
 // *********************************************************************
 
 func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
-
-	// First fractionated DNA
 
 	for t := range tokens {
 
@@ -5613,23 +5611,20 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 
 			if nptr.Class > 0 {
 				node := GetDBNodeByNodePtr(ctx,nptr)
-
-				fmt.Print("    Converting nptr ",token," to: ",)			
-
 				if node.L < TEXT_SIZE_LIMIT {
 					token = node.S
 				} else {
 					token = node.S[0:TEXT_SIZE_LIMIT] + "..."
 				}
+				fmt.Println("    Converting nptr to: ",token)
 			} else {
 				continue
 			}
 		}
-		CommitContextToken(token,now,key)
+		CommitContextToken(token,now,ambient)
 	}
 
-	var format []string
-	var full_context string
+	var format = make(map[string]int)
 
 	for fr := range STM_AMB_FRAG {
 
@@ -5638,7 +5633,7 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 			continue
 		} 
 
-		format = append(format,fr)
+		format[fr]++
 	}
 
 	for fr := range STM_INT_FRAG {
@@ -5648,27 +5643,10 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 			continue
 		} 
 
-		format = append(format,fr)
+		format[fr]++
 	}
 
-	sort.Strings(format)
-
-	thispr,_ := DoNowt(time.Unix(now,0))
-
-	for r := 0; r < len(format); r++ {
-		full_context += format[r]
-		full_context += ", "
-	}
-
-	full_context += thispr
-
-	// Need to clean up old context somewhere else
-	obs := STM_INV_GROUP[full_context]
-	obs.Freq++
-	obs.Delta = now - STM_INV_GROUP[full_context].Last
-	obs.TimeKey = key
-	obs.Last = now
-	STM_INV_GROUP[full_context] = obs
+	full_context := List2String(Map2List(format))
 
 	return full_context
 }
@@ -5693,7 +5671,7 @@ func CommitContextToken(token string,now int64,key string) {
 	
 	obs.Freq = last.Freq + 1
 	obs.Last = now
-	obs.TimeKey = key
+	obs.Time = key
 	obs.Delta = now - last.Last
 	
 	if obs.Freq > 1 {
@@ -5711,28 +5689,10 @@ func CommitContextToken(token string,now int64,key string) {
 
 // *********************************************************************
 
-func ContextInterferometry(now_ctx string) (string,string) {
+func ContextInterferometry(now_ctx string) {
 
-	// Go through the previous stored contexts and look for overlap
-	// Overlapping time is irrelevant, but a matching timekey could be
-	// an indication of pattern
+ // deleted
 
-	var ambient = make(map[string]int)
-	var intended = make(map[string]int)
-
-	for then_ctx := range STM_INV_GROUP {
-
-		if now_ctx != then_ctx {
-			common,newintent := DiffClusters(now_ctx,then_ctx)
-			
-			ambient[common]++
-			intended[newintent]++
-		}
-	}
-
-	ambi := List2String(Map2List(ambient))
-	intend := List2String(Map2List(intended))
-	return ambi,intend
 }
 
 // *********************************************************************
