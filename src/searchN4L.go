@@ -76,26 +76,26 @@ func main() {
 
 	var search SST.SearchParameters
 
-	if len(args) > 0 {
+	search_string := ""
 
-		search_string := ""
-		for a := 0; a < len(args); a++ {
-			if strings.Contains(args[a]," ") {
-				search_string += fmt.Sprintf("\"%s\"",args[a]) + " "
-			} else {
-				search_string += args[a] + " "
-			}
+	for a := 0; a < len(args); a++ {
+		if strings.Contains(args[a]," ") {
+			search_string += fmt.Sprintf("\"%s\"",args[a]) + " "
+		} else {
+			search_string += args[a] + " "
 		}
-
-		search = SST.DecodeSearchField(search_string)
-
-		Search(ctx,search,search_string)
-		SST.Close(ctx)
-		return
 	}
 
-	ShowTime(ctx,search)
+	if search_string == "" {
+		ambient,key,_ := SST.GetContext()
+		search_string = "any context " + key + " " + ambient
+	}
+
+	search = SST.DecodeSearchField(search_string)
+	
+	Search(ctx,search,search_string)
 	SST.Close(ctx)
+	return
 }
 
 //**************************************************************
