@@ -28,8 +28,13 @@ searchable knowledge maps, tracing the stories that we call reasoning,
 and solving puzzles by connecting the dots between bits of information
 you curate.
 
+You might want to look up something ad hoc:
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/front.png 'Testing a web interface')
+
+You might want to be prompted for reminders:
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/reminder.png 'Testing a web interface')
+
+You might be surveying the breadth of your knowledge:
 ![Alpha interface](https://github.com/markburgess/SSTorytime/blob/main/docs/figs/TOC.png 'Testing a web interface')
 
 Knowledge maps are graph (network) structures that link together
