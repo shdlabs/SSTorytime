@@ -1713,6 +1713,10 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
 func CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool {
 
+	if dst.Wgt == 0 {
+		return false
+	}
+
 	qstr := fmt.Sprintf("SELECT IdempInsertNodeArrowNode(" +
 		"%d," + //infromptr
 		"%d," + //infromchan
@@ -1740,6 +1744,11 @@ func CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool {
 	}
 
 	row.Close()
+
+	if dst.Dst.Class == 0 {
+		// Dummy entry, no inverse
+		return true
+	}
 
 	// And the reverse arrow
 
@@ -1850,8 +1859,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"  ret_wgt real;\n" +
 		"BEGIN\n" +
 
-		"  IF NOT EXISTS (SELECT Wgt FROM NodeArrowNode WHERE (NFrom).Cptr=infromptr AND Arr=iarr AND (NTo).Cptr=intoptr) THEN\n" +
-
+		"  IF NOT EXISTS (SELECT Wgt FROM NodeArrowNode WHERE (NFrom).Cptr=infromptr AND (NFrom).Chan=infromchan AND Arr=iarr AND (NTo).Cptr=intoptr AND (NTo).Chan=intochan)  THEN\n" +
 		"     INSERT INTO NodeArrowNode (nfrom.Cptr,nfrom.Chan,sttype,arr,wgt,ctx,nto.Cptr,nto.Chan) \n" +
 		"       VALUES (infromptr,infromchan,isttype,iarr,iwgt,ictx,intoptr,intochan);" +
 
@@ -3107,12 +3115,6 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 
 	// Match name, context, chapter, with arrows
 
-/*	if cn == nil && arrow == nil {
-
-		// in case a lazy user hasn't filled out NodeArrowNode
-		return GetDBNodePtrMatchingName(ctx,nm,chap)
-	}
-*/
 	var chap_col, nm_col string
 	var context string
 	var qstr string

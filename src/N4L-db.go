@@ -458,6 +458,12 @@ func ClassifyConfigRole(token string) {
 
 func CheckArrow(alias,name string) {
 
+	if !SST.WIPE_DB && UPLOAD {
+
+		// If we're not resetting, we should expect some defs already in place
+		return
+	}
+
 	prev,ok := SST.ARROW_SHORT_DIR[alias]
 
 	if ok {
@@ -1345,7 +1351,8 @@ func AssessGrammarCompletions(token string, prior_state int) {
 			ParseError(WARN_NOTE_TO_SELF+" ("+token+")")
 		}
 
-		HandleNode(this_item)
+		this_iptr := HandleNode(this_item)
+		IdempContextLink(this_iptr)
 		LinkUpStorySequence(this_item)
 	}
 }
@@ -1472,6 +1479,21 @@ func IdempAddNode(s string) (SST.NodePtr,string) {
 	}
 
 	return iptr,clean_version
+}
+
+//**************************************************************
+
+func IdempContextLink(ptr SST.NodePtr) {
+
+	// add a nullpotent link containing root node for 
+	// context membership, in case it's a singleton
+
+	var nowhere SST.NodePtr
+	var empty SST.Link
+	empty.Ctx = GetContext(nil)
+	empty.Arr = 0
+	empty.Wgt = 1
+	SST.AppendLinkToNode(ptr,empty,nowhere)
 }
 
 //**************************************************************
