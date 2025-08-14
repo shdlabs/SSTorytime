@@ -53,6 +53,8 @@ using 不/bù versus  没有/méiyǒu (rule) 不/bù Negates in the Present and 
    " (rule) 没 méi Is for Making Comparisons
    " (rule) 不 bù Is Used Almost Exclusively with Certain Verbs
 
+nǐ dài méi dài jiǎnlì (ph) 你带没带简历 (he) Did you bring your resume?
+
 Wǒ jīntiān méiyǒu qù xuéxiào (ph) 我今天没有去学校 (he) I didn't go to school today
      " (e.g.) $meirule.1
 
@@ -1344,15 +1346,28 @@ yīxiē  (ph) 一些 (he) some
 zhèxiē  (ph) 这些 (he) these
 nàxiē  (ph) 那些 (he) those
 
-:: order, sequence events  ::
+:: order, sequence events , next, previous, before, after ::
 
 měi gè  (ph) 每个 (he) every
-zhège  (ph) 这个  (he) this 
-nàgè  (ph) 那个 (he) that one
-nǎge  (ph) 哪个 (he)which one
-ne gè  (ph) 呢个 (he) that one
-xià gè  (ph) 下个  (he) next/down
+zhège   (ph) 这个 (he) this 
+nàgè    (ph) 那个 (he) that one
+nǎge    (ph) 哪个  (he) which one
+ne gè   (ph) 呢个 (he) that one
+xià gè  (ph) 下个 (he) next/down
+
+yǐqián (ph) 以前 (he) before
+yǐhòu  (ph) 以后 (he) after
+yībiān (ph) 一边 (he) at the same time / alongside
+
+
 shàng gè  (ph) 上个  (he) previous/up
+
+   " (e.g.) >>"wǒ zài shàng yīgè" gōngsī zhuàn dé hěn shǎo (ph)  我在上一个公司赚得很少  (he) I made very little money at my previous company.
+
+wǒ zài shàng yīgè ... (ph) 我在上一个  (he) I was in the previous ...one
+
+
+wǒ yǐqián cānjiāguò  (ph) 我以前参加过  (he)  I have participated before
 
 
 ####################################################################
@@ -2060,7 +2075,11 @@ Wǒmen cóng shūdiàn chūláile  (ph) 我们从书店出来了  (he) We came o
 
 :: caring, interest ::
 
+yǒuqù (ph) 有趣 (he) interesting
+
 gǎn xìngqù (ph) 感兴趣 (he) be interested
+
+yánjiū wùlǐ tèbié yǒuqù  (ph) 研究物理特别有趣  (he) Physics is particularly interesting to study
 
 question/problem  (eh) 问题 (hp) wèntí
  bànfǎ (hp) 办法 (he) solution/way
@@ -2432,7 +2451,7 @@ $PREV.3 (useword)  wù (ph) 物 (he) thing
 wùlǐ zhuānyè (ph)  物理专业  (he) physics major/graduate
 
 
-  " (e.g.) Yánjiū wùlǐ tèbié yǒuqù (ph) 研究物理特别有趣 (he) researching/studying physics is especially interesting
+yánjiū wùlǐ tèbié yǒuqù (ph) 研究物理特别有趣 (he) researching/studying physics is especially interesting
 
 
 
