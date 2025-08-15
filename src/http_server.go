@@ -12,12 +12,15 @@ import (
 	"os/signal"
 	"syscall"
 	"sort"
+	"context"
 	"encoding/json"
 
         SST "SSTorytime"
 )
 
-var CTX SST.PoSST
+// *********************************************************************
+
+var CTX SST.PoSST  // just one persistent connection
 
 // *********************************************************************
 
@@ -25,26 +28,35 @@ func main() {
 	
 	CTX = SST.Open(true)	
 
-	// Comment out mysterious golang signal goroutines for now
-	// exit_handler := SignalHandler()
-	
+	server := &http.Server{	Addr: ":8080", }
+
+	// The server structure in Go is weirdly opinionated ..
+
 	http.HandleFunc("/",PageHandler)
 	http.HandleFunc("/searchN4L",SearchN4LHandler)
 
-	fmt.Println("Listening at http://localhost:8080")
+	go func() {
+		fmt.Println("Listening at http://localhost:8080")
+		err := server.ListenAndServe()
+		fmt.Println("Stop serving connections",err)
+	}()
 
-	http.ListenAndServe(":8080", nil)
+	SignalHandler()
 
-	// code := <-exit_handler
-	// os.Exit(code) 
+	// We have to have this ugly context business...
+	halt, shutdownRelease := context.WithTimeout(context.Background(),10)
+	defer shutdownRelease()
+	
+	server.Shutdown(halt)
 
+	fmt.Println("http_server shutdown complete.")
 }
 
 // *********************************************************************
 // Handlers
 // *********************************************************************
 
-func SignalHandler() chan int {
+func SignalHandler() {
 
 	signal_chan := make(chan os.Signal,1)
 
@@ -54,38 +66,25 @@ func SignalHandler() chan int {
 		syscall.SIGQUIT, // 3
 		syscall.SIGTERM) // 15, CTRL-c 
 
-	exit_chan := make(chan int)
-
-	go func() {
-		for {
-			sig := <-signal_chan  // block until signal
-
-			switch sig {
-
-			case syscall.SIGHUP:
-				fmt.Println("hungup")
-				
-			case syscall.SIGINT:
-				fmt.Println("Warikomi, cutting in, sandoichi")
-				exit_chan <- 0
-
-			case syscall.SIGTERM:
-				fmt.Println("force stop")
-				exit_chan <- 0
-				
-			case syscall.SIGQUIT:
-				fmt.Println("stop and core dump")
-				exit_chan <- 0
-				
-			default:
-				fmt.Println("Unknown signal.")
-				exit_chan <- 1
-			}
-		}
-	}()
-
-	return exit_chan	
+	sig := <-signal_chan  // block until signal
 	
+	switch sig {
+		
+	case syscall.SIGHUP:
+		fmt.Println("hungup")
+		
+	case syscall.SIGINT:
+		fmt.Println("Warikomi, cutting in, sandoichi")
+		
+	case syscall.SIGTERM:
+		fmt.Println("force stop")
+		
+	case syscall.SIGQUIT:
+		fmt.Println("stop and core dump")
+		
+	default:
+		fmt.Println("Unknown signal.")
+	}
 }
 
 // *********************************************************************
