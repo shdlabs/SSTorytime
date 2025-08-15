@@ -2413,13 +2413,12 @@ func DefineStoredFunctions(ctx PoSST) {
 		"DECLARE\n" +
 		"   notes text[];\n" +
 		"   client text[];\n" +
-
-		"   unicode text;\n" +
+		"   pattern text;\n" +
 		"   and_list text[];\n"+
 		"   and_count int;\n"+
 		"   and_result int = 0;\n"+
 		"   end_result int = 0;\n"+
-		"   or_list text[];\n"+
+		"   or_list text[] = ARRAY[]::text[];\n"+
 		"   item text;\n" +
 		"   ref text;\n" +
 		"   c text;\n"+
@@ -2453,11 +2452,13 @@ func DefineStoredFunctions(ctx PoSST) {
 	       // First split check AND strings in the notes
 
 		"FOREACH item IN ARRAY notes LOOP\n" +
-		"   or_list = array_append(or_list,item);\n"+
+
 		"   and_list = regexp_split_to_array(item, '\\.');\n" +
 		"   and_count = array_length(and_list,1);\n"+
 
 		"   IF and_count > 1 THEN\n"+
+
+		// end_result = MatchANDExpression(and_list,client)
 
 	        "      and_result = 0;\n"+
 
@@ -2475,7 +2476,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"      IF and_result = and_count THEN\n"+
 		"         end_result = end_result + 1;\n"+
 	        "      END IF;\n" +
-
 		"   ELSE\n"+
 		"      or_list = array_append(or_list,item);\n"+
 		"   END IF;\n"+
@@ -2486,12 +2486,12 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END IF;\n"+
 
 		// if still not match, check any left overs, client AND matches are still unresolved
-
 		"FOREACH ref IN ARRAY or_list LOOP\n" +
 		    // now we can look at substring partial matches
 		"   FOREACH c IN ARRAY client LOOP\n"+
-		"      unicode := Format('[^.]*%s[^.]*',c);\n" +
-		"      IF substring(ref,unicode) IS NOT NULL THEN \n" +
+		"      pattern := Format('[^.]*%s[^.]*',c);\n" +
+		       // substring too greedy if there is a .
+		"      IF substring(ref,pattern) IS NOT NULL THEN \n" +
 	        "         return true;\n" +
 		"      END IF;\n" +
 		"   END LOOP;\n"+
@@ -3237,7 +3237,7 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 		context,arrows,nm_col,chap_col)
 
 	row, err := ctx.DB.Query(qstr)
-	
+
 	if err != nil {
 		fmt.Println("QUERY GetNodePtrMatchingNCC Failed",err,qstr)
 	}
