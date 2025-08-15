@@ -88,7 +88,7 @@ func main() {
 
 	if search_string == "" {
 		ambient,key,_ := SST.GetContext()
-		search_string = "any context " + key + " " + ambient
+		search_string = "any chapter reminders context " + key + " " + ambient
 	}
 
 	search = SST.DecodeSearchField(search_string)

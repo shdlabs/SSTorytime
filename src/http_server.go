@@ -141,7 +141,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		ambient,key,_ := SST.GetContext()
 
 		if len(name) == 0 {
-			name = "any context " + key + " " + ambient
+			name = "any chapter reminders context " + key + " " + ambient
 		}
 
 		search := SST.DecodeSearchField(name)
