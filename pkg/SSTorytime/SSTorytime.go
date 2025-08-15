@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"math"
 	"time"
+	"sync"
 	_ "github.com/lib/pq"
 
 )
@@ -381,6 +382,7 @@ type NodeEvent struct {
 	Text    string
 	L       int
 	Chap    string
+	Context []string
         NPtr    NodePtr
 	XYZ     Coords
 	Orbits  [ST_TOP][]Orbit
@@ -674,6 +676,22 @@ func Close(ctx PoSST) {
 
 // **************************************************************************
 // In memory representation structures
+// **************************************************************************
+
+func GetNodeContext(ctx PoSST,node Node) []string {
+
+	empty := GetDBArrowByName(ctx,"empty")
+
+	for _,lnk := range node.I[ST_ZERO+LEADSTO] {
+
+		if lnk.Arr == empty {
+			return lnk.Ctx
+		}
+	}
+
+	return nil
+}
+
 // **************************************************************************
 
 func GetNodeTxtFromPtr(frptr NodePtr) string {
@@ -1524,6 +1542,8 @@ func UploadNodeArrowNodeToDB(ctx PoSST, org Node,channel int) {
 
 	const nolink = 999
 	var empty Link
+
+	empty.Arr = GetDBArrowByName(ctx,"empty")
 
 	for stindex := 0; stindex < len(org.I); stindex++ {
 
@@ -2384,38 +2404,101 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
-	// Matching context strings with fuzzy criteria
+	// Matching context strings with fuzzy criteria. The policy/notes expression is db_set
+	// the client/lookup set is user_set - both COULD use AND expressions.
+	// We are looking for sets that overlap for a true result
 
 	qstr = "CREATE OR REPLACE FUNCTION match_context(db_set text[],user_set text[])\n"+
 		"RETURNS boolean AS $fn$\n" +
 		"DECLARE\n" +
-		"   db_ref text[];\n" +
+		"   notes text[];\n" +
+		"   client text[];\n" +
+
 		"   unicode text;\n" +
+		"   and_list text[];\n"+
+		"   and_count int;\n"+
+		"   and_result int = 0;\n"+
+		"   end_result int = 0;\n"+
+		"   or_list text[];\n"+
 		"   item text;\n" +
-		"   try text;\n"+
+		"   ref text;\n" +
+		"   c text;\n"+
 		"BEGIN \n" +
+
+		// If no constraints at all, then match
 		"IF array_length(user_set,1) IS NULL THEN\n"+
 		"   RETURN true;\n"+
 		"END IF;\n"+
 
-		"IF array_length(db_set,1) IS NOT NULL THEN\n"+
-		"   FOREACH item IN ARRAY db_set LOOP\n" +
-		"      db_ref := array_append(db_ref,lower(unaccent(item)));\n" +
-		"   END LOOP;\n" +
-
-		"   FOREACH item IN ARRAY user_set LOOP\n" +
-		"      IF item = 'any' OR item = '' THEN\n"+
-		"        RETURN true;"+
-		"      END IF;"+
-		"      unicode := Format('.*%s.*',item);\n" +
-		"     FOREACH try IN ARRAY db_ref LOOP\n"+
-		"        IF substring(try,lower(unicode)) IS NOT NULL THEN \n" + // unaccented unicode match
-	        "           RETURN true;\n" +
-		"        END IF;\n" +
-		"     END LOOP;"+
-		"   END LOOP;\n" +
+		"IF array_length(db_set,1) IS NULL THEN\n"+
+		"   RETURN true;\n"+
 		"END IF;\n"+
+
+		// clean and unaccent sets
+
+		"FOREACH item IN ARRAY db_set LOOP\n" +
+		"   IF item = 'any' OR item = '' THEN\n" +
+		"      RETURN true;\n"+
+		"   END IF;\n"+
+		"   notes = array_append(notes,lower(unaccent(item)));\n" +
+		"END LOOP;\n" +
+
+		"FOREACH item IN ARRAY user_set LOOP\n" +
+		"   IF item = 'any' OR item = '' THEN\n" +
+		"      RETURN true;\n"+
+		"   END IF;\n"+
+		"   client = array_append(client,lower(unaccent(item)));\n" +
+		"END LOOP;\n" +
+
+	       // First split check AND strings in the notes
+
+		"FOREACH item IN ARRAY notes LOOP\n" +
+		"   or_list = array_append(or_list,item);\n"+
+		"   and_list = regexp_split_to_array(item, '\\.');\n" +
+		"   and_count = array_length(and_list,1);\n"+
+
+		"   IF and_count > 1 THEN\n"+
+
+	        "      and_result = 0;\n"+
+
+                       // check each and expression first
+
+		"      FOREACH ref IN ARRAY and_list LOOP\n"+
+		"         FOREACH c IN ARRAY client LOOP\n"+
+		             // AND need an exact match
+		"            IF ref = c THEN \n" +
+	        "               and_result = and_result + 1;\n" +
+		"            END IF;\n" +
+		"         END LOOP;\n"+
+		"      END LOOP;\n"+
+
+		"      IF and_result = and_count THEN\n"+
+		"         end_result = end_result + 1;\n"+
+	        "      END IF;\n" +
+
+		"   ELSE\n"+
+		"      or_list = array_append(or_list,item);\n"+
+		"   END IF;\n"+
+		"END LOOP;\n"+
+
+		"IF end_result > 0 THEN\n"+
+		"   RETURN true;\n" +
+		"END IF;\n"+
+
+		// if still not match, check any left overs, client AND matches are still unresolved
+
+		"FOREACH ref IN ARRAY or_list LOOP\n" +
+		    // now we can look at substring partial matches
+		"   FOREACH c IN ARRAY client LOOP\n"+
+		"      unicode := Format('[^.]*%s[^.]*',c);\n" +
+		"      IF substring(ref,unicode) IS NOT NULL THEN \n" +
+	        "         return true;\n" +
+		"      END IF;\n" +
+		"   END LOOP;\n"+
+		"END LOOP;\n" +
+
 		"RETURN false;\n" +
+
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
 
@@ -4080,11 +4163,17 @@ func GetEntireNCSuperConePathsAsLinks(ctx PoSST,orientation string,start []NodeP
 // Bulk retrieval helper functions
 // **************************************************************************
 
+var MUTEX sync.Mutex
+
+// **************************************************************************
+
 func CacheNode(n Node) {
 
 	_,already := NODE_CACHE[n.NPtr]
 
 	if !already {
+		MUTEX.Lock()
+		defer MUTEX.Unlock()
 		NODE_CACHE[n.NPtr] = AppendTextToDirectory(n,RunErr)
 	}
 }
@@ -5337,6 +5426,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			ne.Text = nd.S
 			ne.L = nd.L
 			ne.Chap = nd.Chap
+			ne.Context = axis[lnk].Ctx
 			ne.NPtr = axis[lnk].Dst
 			ne.XYZ = directory[ne.NPtr]
 			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname,limit)
@@ -5965,6 +6055,7 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) st
 	event.Text = node.S
 	event.L = node.L
 	event.Chap = node.Chap
+	event.Context = GetNodeContext(ctx,node)
 	event.NPtr = nptr
 	event.XYZ = xyz
 	event.Orbits = orbits
