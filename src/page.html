@@ -466,11 +466,12 @@ else
       text_link.style.padding = '10px';
       }
    box.appendChild(text_link);
+
    if (ctx.length > 0)
       {
       let cntx = document.createElement('i');
       cntx.id = "cntxt";
-      cntx.textContent = " in " + ctx;
+      cntx.textContent = " context hints: " + ctx;
       box.appendChild(cntx);
       }
    let br = document.createElement('br');
@@ -1314,7 +1315,7 @@ else
 if (counter == 0)
    {
    let chapter = document.createElement('i');
-   chapter.textContent = "in chapter ...\"" + event.Chap +"\"";
+   chapter.textContent = "in chapter ...\"" + event.Chap +"\", context: "+ event.Context;
    chapter.id = "chapter";
    child.appendChild(chapter);
    }
