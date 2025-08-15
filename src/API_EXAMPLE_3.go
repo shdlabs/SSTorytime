@@ -43,9 +43,10 @@ func main() {
 			chap := "solve maze"
 			context := []string{""}
 			var w float32 = 1.0
-			
+
 			nfrom := SST.Vertex(ctx,path[p][leg-1],chap)
 			nto := SST.Vertex(ctx,path[p][leg],chap)
+
 			SST.Edge(ctx,nfrom,"fwd",nto,context,w)
 		}
 	}

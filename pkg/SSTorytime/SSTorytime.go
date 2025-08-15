@@ -1327,7 +1327,7 @@ func CreateTable(ctx PoSST,defn string) bool {
 // Store - High level API
 // **************************************************************************
 
-func Vertex(ctx PoSST, name,chap string) Node {
+func Vertex(ctx PoSST,name,chap string) Node {
 
 	var n Node
 
@@ -1658,7 +1658,7 @@ func IdempDBAddLink(ctx PoSST,from Node,link Link,to Node) {
 	link.Dst = toptr // it might have changed, so override
 
 	if frptr == toptr {
-		fmt.Println("Self-loops are not allowed",from.S)
+		fmt.Println("Self-loops are not allowed",from.S,from,link,to)
 		os.Exit(-1)
 	}
 
@@ -1845,6 +1845,9 @@ func DefineStoredFunctions(ctx PoSST) {
 		"BEGIN\n" +
 		"  IF NOT EXISTS (SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi) THEN\n" +
 		"     SELECT max((Nptr).CPtr) INTO icptri FROM Node WHERE (Nptr).Chan=iszchani;\n"+
+		"     IF icptri IS NULL THEN"+
+		"         icptri = 0;"+
+		"     END IF;"+
 		"     INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap) VALUES (iszchani,icptri+1,iLi,iSi,ichapi);" +
 		"  END IF;\n" +
 		"  RETURN QUERY SELECT (NPtr).Chan,(NPtr).CPtr FROM Node WHERE s = iSi;\n" +
@@ -4096,7 +4099,7 @@ func GetEntireNCConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,dept
 
 	qstr := fmt.Sprintf("select AllNCPathsAsLinks from AllNCPathsAsLinks('(%d,%d)','%s',%s,%s,'%s',%d,%d);",
 		start.Class,start.CPtr,chapter,rm_acc,FormatSQLStringArray(context),orientation,depth,limit)
-
+	
 	row, err := ctx.DB.Query(qstr)
 
 	if err != nil {
