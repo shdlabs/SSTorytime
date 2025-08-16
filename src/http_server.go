@@ -314,7 +314,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST
 	content := fmt.Sprintf("[ %s ]",array)
 	response := PackageResponse(ctx,search,"Orbits",content)
 	
-	fmt.Println("REPLY:\n",string(response))
+	//fmt.Println("REPLY:\n",string(response))
 
 	w.Write(response)
 	fmt.Println("Reply Orbit sent")

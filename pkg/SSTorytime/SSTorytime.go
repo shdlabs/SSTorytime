@@ -3875,6 +3875,8 @@ func ParseLiteralNodePtrs(names []string) ([]NodePtr,[]string) {
 	var rest []string
 	var nodeptrs []NodePtr
 
+	// Note that, when we get here (a,b) is already splut into (a and b)
+
 	for n := range names {
 
 		line := []rune(names[n])
@@ -3882,7 +3884,9 @@ func ParseLiteralNodePtrs(names []string) ([]NodePtr,[]string) {
 		for i := 0; i < len(line); i++ {
 			
 			if line[i] == '(' {
+
 				rs := strings.TrimSpace(string(current))
+
 				if len(rs) > 0 {
 					rest = append(rest,string(current))
 					current = nil
@@ -3906,7 +3910,6 @@ func ParseLiteralNodePtrs(names []string) ([]NodePtr,[]string) {
 				}
 				continue
 			}
-
 			current = append(current,line[i])
 		}
 		rs := strings.TrimSpace(string(current))
@@ -6703,7 +6706,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 	var param SearchParameters 
 
 	for c := 0; c < len(cmd_parts); c++ {
-
+	fmt.Println("FILL",cmd_parts[c])
 		lenp := len(cmd_parts[c])
 
 		for p := 0; p < lenp; p++ {
@@ -6800,9 +6803,13 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				if lenp > p+1 {
 					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
-						ult := strings.Split(cmd_parts[c][pp],",")
-						for u := range ult {
-							param.From = append(param.From,DeQ(ult[u]))
+						if !IsLiteralNptr(cmd_parts[c][pp]) {
+							ult := strings.Split(cmd_parts[c][pp],",")
+							for u := range ult {
+								param.From = append(param.From,DeQ(ult[u]))
+							}
+						} else {
+							param.From = append(param.From,cmd_parts[c][pp])
 						}
 					}
 				} else {
@@ -6818,9 +6825,13 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 
 					for pp := p+1; IsParam(pp,lenp,cmd_parts[c],keywords); pp++ {
 						p++
-						ult := strings.Split(cmd_parts[c][pp],",")
-						for u := range ult {
-							param.To = append(param.To,DeQ(ult[u]))
+						if !IsLiteralNptr(cmd_parts[c][pp]) {
+							ult := strings.Split(cmd_parts[c][pp],",")
+							for u := range ult {
+								param.To = append(param.To,DeQ(ult[u]))
+							}
+						} else {
+							param.To = append(param.From,cmd_parts[c][pp])
 						}
 					}
 					continue
@@ -6904,6 +6915,21 @@ func IsParam(i,lenp int,keys []string,keywords []string) bool {
 	}
 
 	return true
+}
+
+//******************************************************************
+
+func IsLiteralNptr(s string) bool {
+	
+	var a,b int = -1,-1
+	
+	fmt.Sscanf(s,"(%d,%d)",&a,&b)
+	
+	if a > 0 && b > 0 {
+		return true
+	}
+	
+	return false
 }
 
 //******************************************************************
@@ -8762,7 +8788,8 @@ func EscapeString(s string) string {
 	var res []rune
 
 	for r := range run {
-		if run[r] == '"' {
+		if run[r] == '\n' {
+		} else if run[r] == '"' {
 			res = append(res,'\\')
 			res = append(res,'"')
 		} else {
