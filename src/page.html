@@ -53,11 +53,6 @@ h1 {
   line-height: 10px;
 }
 
-#header_root h2 {
-  font-size: 50px;
-  color: #5599cc;
-  padding: 10px;
-}
 
 #header_now {
   color: orange;
@@ -70,6 +65,13 @@ h2 {
   margin: 0px;
   margin_bottom : 10px;
   line-height: 10px;
+}
+
+#header_root {
+  font-size: 150%;
+  //color: #5599cc;
+  color: pink;
+  padding: 10px;
 }
 
 /* Create two columns/boxes that floats next to each other */
@@ -895,7 +897,6 @@ else
    titlebar.textContent = title.slice(0,60) + "...";
    }
 
-titlebar.style.fontSize = "70%"
 header.appendChild(titlebar);
 
 let nowbar = document.createElement('div');
