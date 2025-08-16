@@ -301,7 +301,6 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST
 		}
 
 		orb := SST.GetNodeOrbit(CTX,nptrs[n],"",limit)
-
 		// create a set of coords for len(nptrs) disconnected nodes
 
 		xyz := SST.RelativeOrbit(origin,SST.R0,n,len(nptrs))
@@ -315,7 +314,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST
 	content := fmt.Sprintf("[ %s ]",array)
 	response := PackageResponse(ctx,search,"Orbits",content)
 	
-	//fmt.Println("REPLY:\n",string(response))
+	fmt.Println("REPLY:\n",string(response))
 
 	w.Write(response)
 	fmt.Println("Reply Orbit sent")
@@ -784,7 +783,7 @@ func PackageResponse(ctx SST.PoSST,search SST.SearchParameters,kind string, jstr
 	ambient,key,now := SST.GetContext()
 	now_ctx := SST.UpdateSTMContext(CTX,ambient,key,now,search)
 
-	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Intent\" : \"%s\", \"Ambient\" : \"%s\" }",kind,jstr,key,now_ctx,ambient)
+	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Intent\" : \"%s\", \"Ambient\" : \"%s\" }",kind,jstr,key,SST.EscapeString(now_ctx),SST.EscapeString(ambient))
 
 	return []byte(response)
 }

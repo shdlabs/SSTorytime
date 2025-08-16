@@ -1104,7 +1104,7 @@ for (let chp of obj.Content)
    {
    counter++;
 
-   let link = document.createElement('p');
+   let link = document.createElement('a');
    let item = document.createElement('h2');
    link.onclick = function() { sendLinkSearch("notes chapter "+chp.Chapter); };
    item.textContent = counter + ". "+chp.Chapter;
@@ -1270,10 +1270,11 @@ if (event == null)
    }
 
 let text = counter + ". " + event.Text;
+let nptrtxt = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
 
 if (counter == 0)
    {
-   text = "--> " + event.Text;
+   text = "--> " + event.Text
    }
 
 if (text.includes("\n"))
@@ -1315,12 +1316,17 @@ else
 if (counter == 0)
    {
    let chapter = document.createElement('i');
-   chapter.textContent = "in chapter ...\"" + event.Chap +"\", context: "+ event.Context;
+   chapter.textContent = "with NPtr " + nptrtxt + ", in chapter ...\"" + event.Chap +"\", context: "+ event.Context;
    chapter.id = "chapter";
    child.appendChild(chapter);
    }
 
+CheckCone(child,"[LT]",event.Orbits[Im1],event.Orbits[Il1]);
+CheckCone(child,"[CN]",event.Orbits[Im2],event.Orbits[Ic2]);
+CheckCone(child,"[EP]",event.Orbits[Im3],event.Orbits[Ie3]);
+CheckCone(child,"[NR]",event.Orbits[In0],event.Orbits[In0]);
 panel.appendChild(child);
+
 
 if (event.Orbits[Im1] != null)
    {
@@ -1414,6 +1420,38 @@ if (event.Orbits[Il1] != null)
    }
 }
 
+/***********************************************************/
+
+function CheckCone(docpart,name,bwd,fwd)
+{
+if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
+   {
+   //console.log("NN",bwd[0].Dst,fwd[0].Dst)
+
+   let nptrs = "";
+
+   for (let b of bwd)
+      {
+      let np = "("+b.Dst.Class+","+b.Dst.CPtr+") "
+      nptrs = nptrs + np;
+      }
+
+   for (let f of fwd)
+      {
+      let np = "("+f.Dst.Class+","+f.Dst.CPtr+") "
+      nptrs = nptrs + np;
+      }
+
+   let link = document.createElement('a');
+   link.textContent = name;
+   link.onclick = function() { sendLinkSearch("from "+nptrs); };
+   docpart.id = "cone_button"
+   docpart.appendChild(link);
+   }
+}
+
+/***********************************************************/
+// Graphics
 /***********************************************************/
 
 function PlotGraphics(event,lastevent)

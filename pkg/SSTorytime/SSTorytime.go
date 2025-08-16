@@ -5711,7 +5711,6 @@ func AddContext(ctx PoSST,ambient,key string,now int64,tokens []string) string {
 				} else {
 					token = node.S[0:TEXT_SIZE_LIMIT] + "..."
 				}
-				fmt.Println("    Converting nptr to: ",token)
 			} else {
 				continue
 			}
