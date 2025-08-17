@@ -13,6 +13,7 @@
 * This is a work in progress during 2025, as part of an [NLnet project](https://nlnet.nl/project/SmartSemanticDataLookup/). It's currently in an R&D phase, so comments are welcome but there is much to be done. This is not an RDF project. <br><br> [HOW **YOU** CAN CONTRIBUTE!](docs/howtocontribute.md)
 
 * See these Medium articles for a conceptual introduction
+* * [Why Semantic Spacetime (SST) is the answer to rescue property graphs](https://medium.com/@mark-burgess-oslo-mb/why-semantic-spacetime-sst-is-the-answer-to-rescue-property-graphs-2c004fe705b2)
 * * [From cognition to understanding](https://medium.com/@mark-burgess-oslo-mb/from-cognition-to-understanding-677e3b7485de): 
 * * [The Shape of Knowledge](https://medium.com/@mark-burgess-oslo-mb/semantic-spacetime-1-the-shape-of-knowledge-86daced424a5)
 * * [Why you still can’t find what you’re looking for…](https://medium.com/p/922d113177e7)
