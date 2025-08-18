@@ -59,7 +59,8 @@ func DefDeleteChapter(ctx SST.PoSST,chapter string) {
 		// First get all NPtrs contained in the chapter for deletion
 		// To avoid deleting overlaps, select only the automorphic links
 
-		"SELECT array_agg(NPtr) into autoset FROM Node WHERE Chap = chapter;\n"+
+		"chp := Format('%%%s%%',chapter);\n"+
+		"SELECT array_agg(NPtr) into autoset FROM Node WHERE Chap LIKE chp;\n"+
 
 		"IF autoset IS NULL THEN\n"+
 		"   RETURN false;\n"+
@@ -72,7 +73,7 @@ func DefDeleteChapter(ctx SST.PoSST,chapter string) {
 		"oleft := Format('%%%s,%%',chapter);\n"+
 		"oright := Format('%%,%s%%',chapter);\n"+
 
-		"SELECT array_agg(NPtr) into marked FROM Node WHERE Chap = oleft OR Chap = oright;\n"+
+		"SELECT array_agg(NPtr) into marked FROM Node WHERE Chap LIKE oleft OR Chap LIKE oright;\n"+
 
 		"IF marked IS NULL THEN\n"+
 		"   DELETE FROM Node WHERE Chap = chapter;\n"+
@@ -80,18 +81,22 @@ func DefDeleteChapter(ctx SST.PoSST,chapter string) {
 		"END IF;\n"+
 
 		"FOREACH nnptr IN ARRAY marked LOOP\n"+
-
 		"   SELECT Chap into chaplist FROM Node WHERE NPtr = nnptr;\n"+
 		"   chaparray = string_to_array(chaplist,',');\n"+
 
 		// Remove the chapter reference
-		"IF chaparray IS NOT NULL THEN"+
-		"   FOREACH chp IN ARRAY chaparray LOOP"+
+		"IF chaparray IS NOT NULL AND array_length(chaparray,1) > 1 THEN"+
+		"   FOREACH chp IN ARRAY chaparray LOOP\n"+
 		"      IF NOT chp = chapter THEN"+
-		"         ed_chap = array_append(ed_chap,chp);\n"+
+		"         IF length(ed_chap) > 0 THEN\n"+
+		"            ed_chap = Format('%s,%s',ed_chap,chp);\n"+
+		"         ELSE"+
+		"            ed_chap = chp;"+
+		"         END IF;"+
 		"      END IF;"+
 		"   END LOOP;"+
 		"   UPDATE Node SET Chap = ed_chap WHERE NPtr = nnptr;\n"+
+		"   marked = array_remove(marked,nnptr);"+
 		"END IF;\n"
 
 	for st := -SST.EXPRESS; st <= SST.EXPRESS; st++ {
@@ -115,7 +120,7 @@ func DefDeleteChapter(ctx SST.PoSST,chapter string) {
 
 		"DELETE FROM Node WHERE Nptr = ANY(marked);\n"+
 		"DELETE FROM Node WHERE Chap = chapter;\n"+
-	"RAISE NOTICE 'DELETE FROM Node WHERE Chap = %',chapter;\n"+
+
 		"RETURN true;\n" +
 		"END ;\n" +
 		"$fn$ LANGUAGE plpgsql;\n"
