@@ -41,7 +41,8 @@ func DefDeleteChapter(ctx SST.PoSST,chapter string) {
 	qstr := "CREATE OR REPLACE FUNCTION DeleteChapter(chapter text)\n"+
 		"RETURNS boolean AS $fn$\n" +
 		"DECLARE\n" +
-		"   marked NodePtr[] = ARRAY[]::NodePtr[];\n"+
+		"   marked NodePtr[];\n"+
+		"   autoset NodePtr[];\n"+
 		"   nnptr   NodePtr;\n"+
 		"   lnk    Link;\n"+
 		"   links  Link[];\n"+
@@ -51,12 +52,19 @@ func DefDeleteChapter(ctx SST.PoSST,chapter string) {
 	
 	qstr += "BEGIN \n"+
 
+		// First get all NPtrs contained in the chapter for deletion
+		// To avoid deleting overlaps, select only the automorphic links
+
+		"SELECT array_agg(NPtr) into autoset FROM Node WHERE Chap = chapter;\n"+
+
+		"DELETE FROM NodeArrowNode WHERE NFrom = ANY(autoset) AND NTo = ANY(autoset);"+
+
 		// Look for overlapping chapters
 
 		"oleft := Format('%%%s,%%',chapter);\n"+
 		"oright := Format('%%,%s%%',chapter);\n"+
 
-		"SELECT array_agg(NPtr) into marked FROM Node WHERE Chap LIKE oleft OR Chap LIKE oright;\n"+
+		"SELECT array_agg(NPtr) into marked FROM Node WHERE Chap = oleft OR Chap = oright;\n"+
 
 		"IF marked IS NULL THEN\n"+
 		"   DELETE FROM Node WHERE Chap = chapter;\n"+
