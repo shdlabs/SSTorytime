@@ -41,23 +41,31 @@ func DefDeleteChapter(ctx SST.PoSST,chapter string) {
 	qstr := "CREATE OR REPLACE FUNCTION DeleteChapter(chapter text)\n"+
 		"RETURNS boolean AS $fn$\n" +
 		"DECLARE\n" +
-		"   marked NodePtr[];\n"+
-		"   autoset NodePtr[];\n"+
-		"   nnptr   NodePtr;\n"+
-		"   lnk    Link;\n"+
-		"   links  Link[];\n"+
-		"   ed_list Link[];\n"+
-		"   oleft text;\n"+
-		"   oright text;\n"
+		"   marked    NodePtr[];\n"+
+		"   autoset   NodePtr[];\n"+
+		"   nnptr     NodePtr;\n"+
+		"   lnk       Link;\n"+
+		"   links     Link[];\n"+
+		"   ed_list   Link[];\n"+
+		"   oleft     text;\n"+
+		"   oright    text;\n"+
+		"   chaparray text[];\n"+
+		"   chaplist  text;\n"+
+	        "   ed_chap   text;\n"+
+		"   chp       text;\n"+
 	
-	qstr += "BEGIN \n"+
+		"BEGIN \n"+
 
 		// First get all NPtrs contained in the chapter for deletion
 		// To avoid deleting overlaps, select only the automorphic links
 
 		"SELECT array_agg(NPtr) into autoset FROM Node WHERE Chap = chapter;\n"+
 
-		"DELETE FROM NodeArrowNode WHERE NFrom = ANY(autoset) AND NTo = ANY(autoset);"+
+		"IF autoset IS NULL THEN\n"+
+		"   RETURN false;\n"+
+		"END IF;\n"+
+
+		"DELETE FROM NodeArrowNode WHERE NFrom = ANY(autoset) AND NTo = ANY(autoset);\n"+
 
 		// Look for overlapping chapters
 
@@ -68,18 +76,31 @@ func DefDeleteChapter(ctx SST.PoSST,chapter string) {
 
 		"IF marked IS NULL THEN\n"+
 		"   DELETE FROM Node WHERE Chap = chapter;\n"+
-		"   RETURN false;\n"+
+		"   RETURN true;\n"+
 		"END IF;\n"+
 
-		"FOREACH nnptr IN ARRAY marked LOOP\n"
+		"FOREACH nnptr IN ARRAY marked LOOP\n"+
+
+		"   SELECT Chap into chaplist FROM Node WHERE NPtr = nnptr;\n"+
+		"   chaparray = string_to_array(chaplist,',');\n"+
+
+		// Remove the chapter reference
+		"IF chaparray IS NOT NULL THEN"+
+		"   FOREACH chp IN ARRAY chaparray LOOP"+
+		"      IF NOT chp = chapter THEN"+
+		"         ed_chap = array_append(ed_chap,chp);\n"+
+		"      END IF;"+
+		"   END LOOP;"+
+		"   UPDATE Node SET Chap = ed_chap WHERE NPtr = nnptr;\n"+
+		"END IF;\n"
 
 	for st := -SST.EXPRESS; st <= SST.EXPRESS; st++ {
 		qstr += fmt.Sprintf(
-
+			
 			"SELECT %s into links FROM Node WHERE NPtr = nnptr;\n"+
 
 			"   IF links IS NOT NULL THEN\n"+
-			"      ed_list = ARRAY[]::Link[];\n"+
+			"      ed_list = ARRAY[]::Link[];\n"+         // delete reference links
 			"      FOREACH lnk in ARRAY links LOOP\n"+
 			"         IF NOT lnk.Dst = ANY(marked) THEN\n"+
 			"            ed_list = array_append(ed_list,lnk);\n"+
