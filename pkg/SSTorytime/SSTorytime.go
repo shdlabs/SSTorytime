@@ -3148,10 +3148,6 @@ func GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr {
 
 	var qstr string
 
-	if src == "" || src == "empty" {
-		return nil
-	}
- 
 	remove_accents,stripped := IsBracketedSearchTerm(src)
 
 	if remove_accents {
@@ -3172,10 +3168,14 @@ func GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr {
 			chapter := "%"+chap+"%"
 			qstr += fmt.Sprintf(" AND lower(chap) LIKE '%s'",chapter)
 		}
+	} else {
+		if src == "" || src == "empty" {
+			return nil
+		}
 	}
 
 	row, err := ctx.DB.Query(qstr)
-	
+	fmt.Println("QSR",qstr)	
 	if err != nil {
 		fmt.Println("QUERY GetNodePtrMatchingName Failed",err)
 	}
@@ -6706,7 +6706,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 	var param SearchParameters 
 
 	for c := 0; c < len(cmd_parts); c++ {
-	fmt.Println("FILL",cmd_parts[c])
+
 		lenp := len(cmd_parts[c])
 
 		for p := 0; p < lenp; p++ {
