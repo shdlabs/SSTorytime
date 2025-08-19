@@ -11,8 +11,10 @@
 package main
 
 import (
+	"os"
 	"fmt"
-	"strings"
+	"flag"
+
         SST "SSTorytime"
 )
 
@@ -25,11 +27,56 @@ func main() {
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	chapter := "reminders"
+	dbchapters := SST.GetDBChaptersMatchingName(ctx,"")
+
+	fmt.Println("\nThe database currently caches the following chapters:\n")
+	for c := range dbchapters {
+		fmt.Printf("%d. - chapter: \"%s\"\n",c+1,dbchapters[c])
+	}
+	fmt.Println()
+
+	args := Init()
+	chapter := args[0]
 
 	DeleteChapter(ctx,chapter)
 
 	SST.Close(ctx)
+}
+
+//**************************************************************
+
+func Init() []string {
+
+	flag.Usage = Usage
+
+	forcePtr := flag.Bool("force", false,"force remove")
+
+	flag.Parse()
+
+	args := flag.Args()
+
+	if len(args) < 1 {
+		Usage()
+		os.Exit(1);
+	}
+
+	if !*forcePtr {
+		fmt.Println("Are you sure you want to remove a chapter? Use -force to confirm.")
+		os.Exit(1);
+	}
+
+	SST.MemoryInit()
+
+	return args
+}
+
+//**************************************************************
+
+func Usage() {
+	
+	fmt.Printf("\n\nusage: removeN4L \"chapter name\"\n")
+	flag.PrintDefaults()
+	os.Exit(2)
 }
 
 //******************************************************************
@@ -42,64 +89,17 @@ func DeleteChapter(ctx SST.PoSST,chapter string) {
 	
 	if err != nil {
 		fmt.Println("Error running deletechapter function:",qstr,err)
+	} else {
+		fmt.Println("Deleted",chapter)
 	}
 
 	row.Close()
 
 }
 
-//******************************************************************
 
-func RemoveFromStringList(list,remove string) string {
 
-	split := strings.Split(list,",")
 
-	var retvar string
-
-	for s := 0; s < len(split); s++ {
-
-		lc := strings.ToLower(split[s])
-		lt := strings.ToLower(remove)
-
-// this won't work if there are accents
-		if !strings.Contains(lc,lt) {
-			retvar += split[s] + ","
-		}
-	}
-
-	strings.Trim(retvar,",")
-	fmt.Println("XX",retvar)
-	return retvar
-}
-
-//******************************************************************
-
-func UpdateDBNode(ctx SST.PoSST,nptr SST.NodePtr,edited string,list []SST.NodePtr) {
-
-	node := SST.GetDBNodeByNodePtr(ctx,nptr)
-
-	fmt.Println("\nEdit",node.Chap,"with",edited)
-
-	for st := 0; st < SST.ST_TOP; st++ {
-		for dst := range node.I[st] {
-			fmt.Println("  delete lenk",node.I[st][dst].Dst)
-		}
-	}
-}
-
-//******************************************************************
-
-func DeleteDBNodeArrowNode(ctx SST.PoSST,nptr SST.NodePtr) {
-
-	fmt.Println("Remove NodeArrowNode",nptr)
-}
-
-//******************************************************************
-
-func DeleteDBNode(ctx SST.PoSST,nptr SST.NodePtr) {
-
-	fmt.Println("DELETE nptr",nptr)
-}
 
 
 

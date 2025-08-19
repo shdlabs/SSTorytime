@@ -3188,7 +3188,9 @@ func GetDBChaptersMatchingName(ctx PoSST,src string) []string {
 
 	for c := range chapters {
 		if strings.Contains(c,src) {
-			retval = append(retval,c)
+			if len(c) > 0 {
+				retval = append(retval,c)
+			}
 		}
 	}
 
@@ -8282,6 +8284,7 @@ func SplitChapters(str string) []string {
 	}
 
 	retval = append(retval,string(part))
+
 	return retval
 }
 
@@ -9013,8 +9016,8 @@ func Waiting(output bool,total int) {
 
 	percent := float64(SILLINESS_COUNTER) / float64(total) * 100
 
-	const propaganda = "IT.ISN'T.KNOWLEDGE.UNLESS.YOU.KNOW.IT.!!"
-	const interval = 3
+	const propaganda = "IT.ISN'T.KNOWLEDGE.IF.YOU.DON'T.KNOW.IT.!!"
+	const interval = 4
 
 	if SILLINESS {
 		if SILLINESS_COUNTER % interval != 0 {
