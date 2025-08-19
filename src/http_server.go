@@ -122,6 +122,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 	GenHeader(w,r)
 
 	switch r.Method {
+
 	case "POST","GET":
 		name := r.FormValue("name")
 		nclass := r.FormValue("nclass")

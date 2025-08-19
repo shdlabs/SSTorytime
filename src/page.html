@@ -346,6 +346,8 @@ const ST_ZERO = 3;
 
 const STINDICES = ["is a property expressed by","is contained by","comes from","is near/smimilar to","leads to","contains","expresses property"];
 
+const POST_METHOD = "POST";
+
 /***********************************************************/
 // Graphics viewport
 /***********************************************************/
@@ -1561,7 +1563,7 @@ async function sendsearchData() {
 
   let formData = new FormData(form);
 
-  fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData })
+  fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
    .then(response => {
 
     if (!response.ok) {
@@ -1643,7 +1645,7 @@ async function sendlinkData(nclass,ncptr)
   formData.set("nclass",nclass);
   formData.set("ncptr",ncptr);
 
-  fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData })
+  fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
    .then(response => {
 
     if (!response.ok) {
@@ -1673,7 +1675,7 @@ async function sendLinkSearch(search)
   let formData = new FormData();
   formData.set("name",search);
 
-  fetch(API_SERVER+"/searchN4L", { method: "POST", body: formData })
+  fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
    .then(response => {
 
     if (!response.ok) {
