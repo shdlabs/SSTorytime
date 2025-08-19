@@ -49,6 +49,7 @@ const (
 	WARN_NOTE_TO_SELF = "WARNING: Found a possible note to self in the text"
 	WARN_INADVISABLE_CONTEXT_EXPRESSION = "WARNING: Inadvisably complex/parenthetic context expression - simplify?"
 	WARN_CHAPTER_CLASS_MIXUP="WARNING: possible space between class cancellation -:: <class> :: ambiguous chapter name, in: "
+	ERR_CHAPTER_COMMA="You shouldn't use commas in the chapter title (ambiguous separator): "
 
 	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
@@ -110,6 +111,7 @@ var (
 	GIVE_SIGNS_OF_LIFE = false
 	DIAGNOSTIC bool = false
 	UPLOAD bool = false
+	FORCE_UPLOAD bool = false
 	SUMMARIZE bool = false
 	CREATE_ADJACENCY bool = false
 	ADJ_LIST string
@@ -177,8 +179,30 @@ func main() {
 	}
 
 	if UPLOAD {
-		fmt.Println("Uploading nodes..")
-		SST.GraphToDB(ctx,true)
+		dbchapters := SST.GetDBChaptersMatchingName(ctx,"")
+		memchapters := GetMemChapters()
+
+		conflict := false
+
+		for m := range memchapters {
+			for d := range dbchapters {
+				if memchapters[m] == dbchapters[d] {
+
+					fmt.Println(" Database already contains a chapter: ",dbchapters[d])
+					conflict = true
+				}
+			}
+		}
+
+		if conflict && !FORCE_UPLOAD {
+
+			fmt.Println("\nUploading to a pre-existing chapter might corrupt the data. You can remove it first with removeN4L or force using -force. It's recommended to rebuilt everything unless replacing the last added chapter(s) for reminders.")
+
+		} else {
+			fmt.Println("Uploading nodes..")
+			SST.GraphToDB(ctx,true)
+		}
+
 		SST.Close(ctx)
 	}
 }
@@ -191,6 +215,7 @@ func Init() []string {
 	verbosePtr := flag.Bool("v", false,"verbose")
 	diagPtr := flag.Bool("d", false,"diagnostic mode")
 	uploadPtr := flag.Bool("u", false,"upload")
+	forcePtr := flag.Bool("force", false,"force upload")
 	wipePtr := flag.Bool("wipe", false,"wipe and reset")
 	incidencePtr := flag.Bool("s", false,"summary (node,links...)")
 	adjacencyPtr := flag.String("adj", "none", "a quoted, comma-separated list of short link names")
@@ -219,6 +244,11 @@ func Init() []string {
 	if *uploadPtr {
 		UPLOAD = true
 	}
+
+	if *forcePtr {
+		FORCE_UPLOAD = true
+	}
+
 	if *incidencePtr {
 		SUMMARIZE = true
 	}
@@ -1379,6 +1409,11 @@ func CheckChapter(name string) {
 		os.Exit(-1)
 	}
 
+	if strings.Contains(name,",") {
+		ParseError(ERR_CHAPTER_COMMA+name)
+		os.Exit(-1)
+	}
+
 	SEQUENCE_MODE = false
 }
 
@@ -1912,7 +1947,6 @@ func AddBackAnnotations(cleantext string,cleanptr SST.NodePtr,annotated string) 
 
 //**************************************************************
 
-
 func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
 
 	if offset >= len(runetext) {
@@ -1982,6 +2016,45 @@ func ExtractWord(fulltext string,offset int) string {
 	}
 
 	return sword
+}
+
+//**************************************************************
+
+func GetMemChapters() []string {
+
+	var chapters = make(map[string]int)
+
+	for index := range SST.NODE_DIRECTORY.N1directory {
+		chap := SST.NODE_DIRECTORY.N1directory[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range SST.NODE_DIRECTORY.N2directory {
+		chap := SST.NODE_DIRECTORY.N2directory[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range SST.NODE_DIRECTORY.N3directory {
+		chap := SST.NODE_DIRECTORY.N3directory[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range SST.NODE_DIRECTORY.LT128 {
+		chap := SST.NODE_DIRECTORY.LT128[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range SST.NODE_DIRECTORY.LT1024 {
+		chap := SST.NODE_DIRECTORY.LT1024[index].Chap
+		chapters[chap]++
+	}
+
+	for index := range SST.NODE_DIRECTORY.GT1024 {
+		chap := SST.NODE_DIRECTORY.GT1024[index].Chap
+		chapters[chap]++
+	}
+
+	return SST.Map2List(chapters)
 }
 
 //**************************************************************

@@ -46,6 +46,7 @@ const (
 	WARN_DIFFERENT_CAPITALS = "WARNING: Another capitalization exists"
 	WARN_CHAPTER_CLASS_MIXUP="WARNING: possible space between class cancellation -:: <class> :: ambiguous chapter name, in: "
 
+	ERR_CHAPTER_COMMA="You shouldn't use commas in the chapter title (ambiguous separator): "
 	ERR_NO_SUCH_FILE_FOUND = "No file found in the name "
 	ERR_MISSING_EVENT = "Missing item? Dangling section, relation, or context"
 	ERR_MISSING_SECTION = "Declarations outside a section or chapter"
@@ -1394,6 +1395,11 @@ func CheckChapter(name string) {
 
 	if name[0] == ':' {
 		ParseError(WARN_CHAPTER_CLASS_MIXUP+name)
+		os.Exit(-1)
+	}
+
+	if strings.Contains(name,",") {
+		ParseError(ERR_CHAPTER_COMMA+name)
 		os.Exit(-1)
 	}
 
