@@ -9036,7 +9036,11 @@ func Waiting(output bool,total int) {
 
 	if SILLINESS_COUNTER % (len(propaganda)*interval*interval) == 0 {
 		SILLINESS = !SILLINESS
-		fmt.Printf(" (%.1f%%) ",percent)
+		if percent > 100 {
+			fmt.Printf(" (%.1f%% - oops, have to work overtime!) ",percent)
+		} else {
+			fmt.Printf(" (%.1f%%) ",percent)
+		}
 	}
 
 	SILLINESS_COUNTER++
