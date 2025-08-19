@@ -153,6 +153,8 @@ The tool-set consistent of several components, starting with:
 
 * [text2N4L](docs/text2N4L.md) - scan a text file and turn it into a set of notes in N4L file for further editing
 
+* [removeN4L](docs/removeN4L.md) - remove an uploaded chapter from the database
+
 * [notes](docs/notes.md) - a simple command line browser of notes in page view layout
 
 * [pathsolve](docs/pathsolve.md) - a simple and experimental command line tool for testing the graph database
