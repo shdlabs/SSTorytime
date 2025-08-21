@@ -2122,7 +2122,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
           */
 
-	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsLinks(start NodePtr,sttype INT,maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION FwdConeAsLinks(start NodePtr,sttype INT,maxdepth INT,maxlimit int)\n"+
 		"RETURNS Link[] AS $fn$\n" +
 		"DECLARE \n" +
 		"    nextlevel Link[];\n" +
@@ -2160,7 +2160,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    IF NOT neigh.Dst = ANY(exclude) THEN\n" +
 		"      cone = array_append(cone,neigh);\n" +
 		"      exclude := array_append(exclude,neigh.Dst);\n" +
-		"      partlevel := GetFwdLinks(neigh.Dst,exclude,sttype);\n" +
+		"      partlevel := GetFwdLinks(neigh.Dst,exclude,sttype,maxlimit);\n" +
 		"    END IF;" +
 		"    IF partlevel IS NOT NULL THEN\n" +
 		"         level = array_cat(level,partlevel);\n"+
@@ -2184,7 +2184,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Orthogonal (depth first) paths from origin spreading out
 
-	qstr = "CREATE OR REPLACE FUNCTION FwdPathsAsLinks(start NodePtr,sttype INT,maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION FwdPathsAsLinks(start NodePtr,sttype INT,maxdepth INT, maxlimit INT)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   hop Text;\n" +
@@ -2198,7 +2198,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"startlnk := GetSingletonAsLink(start);\n"+
 		"path := Format('%s',startlnk::Text);\n"+
-		"ret_paths := SumFwdPaths(startlnk,path,sttype,1,maxdepth,exclude);" +
+		"ret_paths := SumFwdPaths(startlnk,path,sttype,1,maxdepth,exclude, maxlimit);" +
 
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
@@ -2216,7 +2216,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Return end of path branches as aggregated text summaries
 
-	qstr = "CREATE OR REPLACE FUNCTION SumFwdPaths(start Link,path TEXT, sttype INT,depth int, maxdepth INT,exclude NodePtr[])\n"+
+	qstr = "CREATE OR REPLACE FUNCTION SumFwdPaths(start Link,path TEXT, sttype INT,depth int, maxdepth INT,exclude NodePtr[], maxlimit INT)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE \n" + 
 		"    fwdlinks Link[];\n" +
@@ -2233,7 +2233,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"  RETURN ret_paths;\n"+
 		"END IF;\n"+
 
-		"fwdlinks := GetFwdLinks(start.Dst,exclude,sttype);\n" +
+		"fwdlinks := GetFwdLinks(start.Dst,exclude,sttype, maxlimit);\n" +
 
 		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
 		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
@@ -2245,7 +2245,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"      ELSE\n"+
 		          // Add to the path and descend into new link
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
-		"         appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude);\n" +
+		"         appendix := SumFwdPaths(lnk,tot_path,sttype,depth+1,maxdepth,exclude,maxlimit);\n" +
 		          // when we return, we reached the end of one path
 		"         IF appendix IS NOT NULL THEN\n"+
 	                     // append full path to list of all paths, separated by newlines
@@ -2271,7 +2271,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	// Typeless cone searches
 
-	qstr = "CREATE OR REPLACE FUNCTION AllPathsAsLinks(start NodePtr,orientation text,maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION AllPathsAsLinks(start NodePtr,orientation text,maxdepth INT, maxlimit INT)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   hop Text;\n" +
@@ -2285,7 +2285,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 		"startlnk := GetSingletonAsLink(start);\n"+
 		"path := Format('%s',startlnk::Text);\n"+
-		"ret_paths := SumAllPaths(startlnk,path,orientation,1,maxdepth,exclude);" +
+		"ret_paths := SumAllPaths(startlnk,path,orientation,1,maxdepth,exclude, maxlimit);" +
 		
 		"RETURN ret_paths; \n" +
 		"END ;\n" +
@@ -2366,7 +2366,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"         RETURN ret_paths;"+
 		"      ELSE\n"+
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
-		"         appendix := SumAllPaths(lnk,tot_path,orientation,depth+1,maxdepth,exclude);\n" +
+		"         appendix := SumAllPaths(lnk,tot_path,orientation,depth+1,maxdepth,exclude,maxlimit);\n" +
 		"         IF appendix IS NOT NULL THEN\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
 		"         ELSE\n"+
@@ -2780,7 +2780,7 @@ func DefineStoredFunctions(ctx PoSST) {
                 "         END IF;\n"+
 
 		"         tot_path := Format('%s;%s',path,lnk::Text);\n"+
-		"         appendix := SumAllNCPaths(lnk,tot_path,orientation,depth+1,maxdepth,chapter,rm_acc,context,exclude);\n" +
+		"         appendix := SumAllNCPaths(lnk,tot_path,orientation,depth+1,maxdepth,chapter,rm_acc,context,exclude,maxlimit);\n" +
 
 		"         IF appendix IS NOT NULL THEN\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,appendix);\n"+
@@ -2811,7 +2811,7 @@ func DefineStoredFunctions(ctx PoSST) {
         // A more detailed path search that includes checks for chapter/context boundaries (NC/C functions)
         // with a start set of more than one node
 
-	qstr = "CREATE OR REPLACE FUNCTION AllSuperNCPathsAsLinks(start NodePtr[],chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION AllSuperNCPathsAsLinks(start NodePtr[],chapter text,rm_acc boolean,context text[],orientation text,maxdepth INT, maxlimit INT)\n"+
 		"RETURNS Text AS $fn$\n" +
 		"DECLARE\n" +
 		"   root Text;\n" +
@@ -2827,7 +2827,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"FOREACH node IN ARRAY start LOOP\n"+
 		"   startlnk := GetSingletonAsLink(node);\n"+
 		"   path := Format('%s',startlnk::Text);"+
-		"   root := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,rm_acc,context,exclude);" +
+		"   root := SumAllNCPaths(startlnk,path,orientation,1,maxdepth,chapter,rm_acc,context,exclude, maxlimit);" +
 		"   ret_paths := Format('%s\n%s',ret_paths,root);\n"+
 		"END LOOP;"+
 
@@ -4132,9 +4132,9 @@ func GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype,depth int) []Link {
 
 // **************************************************************************
 
-func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int) ([][]Link,int) {
+func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype,depth int, maxlimit int) ([][]Link,int) {
 
-	qstr := fmt.Sprintf("select FwdPathsAsLinks from FwdPathsAsLinks('(%d,%d)',%d,%d);",start.Class,start.CPtr,sttype,depth)
+	qstr := fmt.Sprintf("select FwdPathsAsLinks from FwdPathsAsLinks('(%d,%d)',%d,%d,%d);",start.Class,start.CPtr,sttype,depth,maxlimit)
 
 	row, err := ctx.DB.Query(qstr)
 	
@@ -4162,8 +4162,8 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 
 	// Todo: how to limit path search? Usually solutions are small..?
 
-	qstr := fmt.Sprintf("select AllPathsAsLinks from AllPathsAsLinks('(%d,%d)','%s',%d);",
-		start.Class,start.CPtr,orientation,depth)
+	qstr := fmt.Sprintf("select AllPathsAsLinks from AllPathsAsLinks('(%d,%d)','%s',%d, %d);",
+		start.Class,start.CPtr,orientation,depth, limit)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -5651,9 +5651,9 @@ func GetLongestAxialPath(ctx PoSST,nptr NodePtr,arrowptr ArrowPtr) []Link {
 
 	var max int = 1
 	const maxdepth = 100 // Hard limit on story length, what?
-
+	const maxlimit = 100 // to be checked !
 	sttype := STIndexToSTType(ARROW_DIRECTORY[arrowptr].STAindex)
-	paths,dim := GetFwdPathsAsLinks(ctx,nptr,sttype,maxdepth)
+	paths,dim := GetFwdPathsAsLinks(ctx,nptr,sttype,maxdepth,maxlimit)
 
 	for pth := 0; pth < dim; pth++ {
 
