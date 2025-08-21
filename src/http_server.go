@@ -781,10 +781,13 @@ func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
 func PackageResponse(ctx SST.PoSST,search SST.SearchParameters,kind string, jstr string) []byte {
 
-	ambient,key,now := SST.GetContext()
-	now_ctx := SST.UpdateSTMContext(CTX,ambient,key,now,search)
+	ambien,key,now := SST.GetContext()
+	now_ctx := SST.UpdateSTMContext(CTX,ambien,key,now,search)
 
-	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Intent\" : \"%s\", \"Ambient\" : \"%s\" }",kind,jstr,key,SST.EscapeString(now_ctx),SST.EscapeString(ambient))
+	intent,_ := json.Marshal(now_ctx)
+	ambient,_ := json.Marshal(ambien)
+
+	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Intent\" : %s, \"Ambient\" : %s }",kind,jstr,key,intent,ambient)
 
 	return []byte(response)
 }
