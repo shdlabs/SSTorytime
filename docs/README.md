@@ -186,3 +186,25 @@ $ cd examples
 $ make
 $ ../src/N4L-db -u LoopyLoo.n4l
 ```
+
+## Option: Installing Postgres in memory [Linux]
+
+Optionally, you can install Postgres in memory to increase performance of the upload and search, and to preserve your laptop SSD disks.
+
+- To do so, create a new data folder, and mount it as a memory file system.
+- grant access rights to your postgres user.
+- stop the default postgres system service.
+- start manually postgres using your new filesystem as data storage, or configure the postgres service to use the new memory data folder
+
+**Beware !**: all data in the postgres database will be lost when restarting processes. 
+But you can always rebuild the schema, and reload your data graph from your N4L files using the tool N4L-db.
+
+```
+$ sudo mkdir -p /mnt/pg_ram
+$ sudo mount -t tmpfs -o size=800M tmpfs /mnt/pg_ram
+$ sudo chown postgres:postgres /mnt/pg_ram
+$ sudo systemctl stop postgres
+$ sudo -u postgres /usr/lib/postgresql/<version>/bin/initdb -D /mnt/pg_ram/pgdata
+$ sudo -u postgres /usr/lib/postgresql/<version>/bin/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start
+```
+
