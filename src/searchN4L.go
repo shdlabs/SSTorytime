@@ -365,7 +365,8 @@ func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 	for n := range nptrs {
 		for st := range sttype {
 
-			fcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],sttype[st],limit)
+			const maxlimit = 1000
+			fcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],sttype[st],limit, maxlimit)
 
 			if fcone != nil {
 				fmt.Printf("%d. ",total)
@@ -376,7 +377,7 @@ func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 				return
 			}
 
-			bcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],-sttype[st],limit)
+			bcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],-sttype[st],limit, maxlimit)
 
 			if bcone != nil {
 				fmt.Printf("%d. ",total)

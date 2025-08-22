@@ -375,11 +375,12 @@ func PackageConeFromOrigin(nptr SST.NodePtr,nth int,sttype int,chap string,conte
 	// Package a JSON object for the nth/dimnptr causal cone , assigning each nth the same width
 
 	var wpaths [][]SST.WebPath
-
-	fcone,countf := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit)
+	
+	const maxlimit = 1000
+	fcone,countf := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit, maxlimit)
 	wpaths = append(wpaths,SST.LinkWebPaths(CTX,fcone,nth,chap,context,dimnptr,limit)...)
 
-	bcone,countb := SST.GetFwdPathsAsLinks(CTX,nptr,-sttype,limit)
+	bcone,countb := SST.GetFwdPathsAsLinks(CTX,nptr,-sttype,limit,maxlimit)
 	wpaths = append(wpaths,SST.LinkWebPaths(CTX,bcone,nth,chap,context,dimnptr,limit)...)
 	
 	wstr,err := json.Marshal(wpaths)

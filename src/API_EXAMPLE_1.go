@@ -65,10 +65,11 @@ func LookupStory(ctx SST.PoSST) {
 	_,sttype := SST.GetDBArrowsWithArrowName(ctx,"then")
 
 	path_length := 4
+	const maxlimit = 1000
 
 	for n := range start_set {
 
-		paths,_ := SST.GetFwdPathsAsLinks(ctx,start_set[n],sttype,path_length)
+		paths,_ := SST.GetFwdPathsAsLinks(ctx,start_set[n],sttype,path_length,maxlimit)
 
 		for p := range paths {
 
