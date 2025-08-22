@@ -29,6 +29,7 @@ API_EXAMPLE_2
 API_EXAMPLE_3
 text2N4L
 searchN4L
+removeN4L
 search_broad 
 search_by_node 
 search_clusters 
