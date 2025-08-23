@@ -1,0 +1,61 @@
+
+
+- contains
+
+  :: identity orientation::
+
+ + consists of        (consists)  - makes up part of    (mkpt)
+ + uses word          (useword)   - is a word used in   (wordin)
+ + uses material      (material)  - is a material for   (mat-for)
+ + contains           (contain)   - belongs to          (belong)
+ + may contain        (m-cont)    - may be contained by (m-cont-by)
+ + has component      (has-cmpt) - is component of      (cmpt-of)
+ + has a part         (has-pt)   - is a part of         (pt-of)
+ + has ingredient     (ingred)   - is an ingredient of  (ingred-of)
+
+ + does not contain   (has no)   - is not from set    (is not)
+ + is a set of        (setof)    - is part of the set  (in-set) 
+ + is a group of      (grp-of)   - is an element of    (in-grp)
+ + is a herd of       (herd)     - is part of herd     (in-herd)
+ + is a tribe of      (tribe)    - is part of tribe    (in-tribe)
+ + is a region of     (region)   - is within region    (within)
+ + is an interval of  (interval) - is part of interval (in-intvl)
+
+ + species has member (smember)  -  belongs to species (sbelongs)
+
+ + is an umbrella for (umbrella) - under the aegis of  (aegis)
+ + is the company of  (company)  - works for           (works)
+ + is the employer of (employer)   - is an employee of (employee)
+
+  :: descriptive ::
+
+ + has many copies of (has-many) - is one of many in   (one-of)
+ + has member         (has-memb) - is a member of      (is-memb)
+ + subsumes           (sub)      - is subsumed by      (sub-by)
+ + encloses           (encl)     - is enclosed by      (is-encl)
+ + has absorbed       (sw)       - absorbed by         (ab-by)
+ + houses             (house)    - is housed by        (is-housed)
+ + situates           (situate)  - is situated in      (is-sit)
+ + bullet point       (bullet)   - is a bulletpoint for (isbullet)
+
+  :: implicit ::
+
+  # these could be represented as properties, but then would hide functional semantics
+
+ + is catchment area for (catches) - shares the resources of (catcher)
+ + is a composite/mixture including (ismix)    -  is part of the mixture (inmix)
+
+ :: warnings ::
+
+  + should not contain        (!contain) - shouldn't be contained in (!contain-in)
+
+ :: events ::
+
+  + in which it happened that (event)    - happened while       (while)
+  + was attended by           (guest)    - attended event       (attend)
+
+
+
+
+
+ 

@@ -7,16 +7,16 @@
 
  :: Dramatis personae ::
 
- scarlett (id) Miss Scarlett, The Woman in Red, New York socialite.
- plumb    (id) Professor Plumb, University of Oxford, Lincoln College.
- dibbly   (id) Florist working at the Summertown flower shop
-          (also called) dibbly womble
- martin   (id) possible boyfriend, unknown
+ scarlett (id-for) Miss Scarlett, The Woman in Red, New York socialite.
+ plumb    (id-for) Professor Plumb, University of Oxford, Lincoln College.
+ dibbly   (id-for) Florist working at the Summertown flower shop
+    "     (also called) dibbly womble
+ martin   (id-for) possible boyfriend, unknown
 
- doorman (id) Fabian Merryweather, former Army officer, 24 Summertown Road
+ doorman (id-for) Fabian Merryweather, former Army officer, 24 Summertown Road
 
- car (id)   Black Ford Cortina 1972, vehicle number 1234
-  "  (role) the get away vehicle
+ car     (id-for) Black Ford Cortina 1972, vehicle number 1234
+  "       (role) the get away vehicle
 
  #######################
 
@@ -69,16 +69,15 @@ jamie arrives >20:30
 
  :: alibis ::
 
-  dibbly womble (saw) $scarlettarrives.1
-  anonymous tip (saw) $scarlettarrives.1
-
+  dibbly womble saw $scarlettarrives.1
+  anonymous tip saw $scarlettarrives.1
 
  #######################
 
  :: what do we know?, facts, established , movements ::
 
-  car (prev owned) plumb
-  car (owned by) hotel doorman
+  car (prev-owned) plumb
+  car (owned-by) hotel doorman
 
   scarlett      (attend) $party.1 (question) who else was there?
   dibbly womble (attend) $party.1
@@ -110,7 +109,7 @@ jamie arrives >20:30
 
  >jamie intended to be at the party by 7pm but got stuck in traffic, arriving at >20:30
 
- >anne came early to the party to meet >jamie (leadsto) >anne sees >sally entering the kitchen
+ >anne came early to the party to meet >jamie (leads to) >anne sees >sally entering the kitchen
 
  >anne blamed >jamie for losing their house
           "   (motive) blame >jamie

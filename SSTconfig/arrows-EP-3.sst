@@ -1,0 +1,185 @@
+
+
+- properties
+
+
+  // THE FIRST PART IS TYPICALLY MADE BY THINGS OR CONCEPTS
+
+ :: basic annotation ::
+
+   + note/remark             (note)    - is a note or remark about (isnotefor)
+   + added remark            (remark)  - is a remark concerning    (concerns)
+   + please note!            (NB)      - is an important remark concerning (important regarding)
+
+ :: attributes, supporting information ::
+
+ + has example       (e.g.)         - is an example of     (ex)
+ + has no example    (noex)         - is not an example of (is-not)
+ + has abbreviation  (abbrev)       - is short for         (short for)
+ + has version       (version)      - is a version of      (is-version)
+
+ + has supplier      (supply)       - is supplied by       (supply-by)
+ + has source        (source)       - the source for       (source-of)
+
+ + discusses          (disc)       - is discussed in              (is-disc)
+ + described as       (descr)      - is used as a description of  (isdescr)
+ + has age character  (age)        - is the age characteristic of (isageof)
+ + mentions study     (ment)       - a kind of study mentioned in (isment)
+ + has a pun about    (pun on)     - was made into pun            (has pun)
+ + famously uses      (fuses)      - famously used in             (fused)
+ + has title          (title)      - is the title of              (title of)
+ + has description    (description) - is the description for      (descrip-for)
+
+ + is about topic     (about)      - is the topic/theme of            (theme-of)
+ + is wrong about     (wrongabt)   - is not accurately represented by (narb)
+ + expresses property (expr)       - is/are expressed by              (expr-by)
+
+
+ :: scientific and technical annotations ::
+
+   + has value               (hasX)    - is the value of           (isXof)
+   + may have value          (maybeX)  - is the possible value for (mXof)
+   + has frequency           (freq)    - is the frequency of       (freq-of)
+   + is characterized by     (state)   - is a/the state of         (state-of)
+
+   + is expressed in formula (formula) - is a formula for (isformula)
+
+
+ :: long term, persistent properties ::
+
+ + defined as              (def)      - is the definition of               (isdef)
+ + is pronounced as        (pronas)   - is the pronunciation for           (pronof)
+ + has friend              (fr)       - is considered a friend of          (isfrof)
+ + speaks language/dialect (speaks)   - is a language or dialect spoken by (spokenby)
+ + is known for            (knownfor) - made famous by                     (knownin)
+ + has story text          (story)    - is the text of the story           (isstory)
+ + has ownership of        (owns)     - is owned by                        (owned-by)
+
+ + used to own             (owned)    - was previously owned by (prev-owned)
+
+ :: steady state relationships ::
+
+ + maintains           (maintains) - is maintained by (maintainedby)  # steady state case
+ + is the author of    (author-of) - is authored by   (author)
+ + wrote               (wrote)     - written by       (written)  
+ + invented            (invent)    - invented by      (invent-by)
+ + is the publisher of (published) - was published by (pub by)
+
+
+ + teaches/taught     (taught)      - is taught by    (taught-by)
+
+
+
+ :: properties, skills, subjects, themes ::
+
+ + has an preference or affinity for (affinity)  - is a preference of     (preference)
+
+ + likes             (lk)           - is liked by          (lkby)
+ + used for          (for)          - is a use of          (useof)
+ + might be used for (perhaps used) - is a possible use of (perhaps useof)
+
+ + pending question            (question) - is an unresolved question about (hasquest)
+ + status within investigation (status)   - status of evidence (statusof)
+ + makes use of                (using)    - is used in (usedin)
+
+
+ + key problem                 (problem)    - is a problem associated with (isproblem)
+ + potential solution          (solution)   - is a potential solution to (issolution)
+ + suggestion                  (suggestion) - is a suggestion about (issugg)
+ + reasoning explainer         (reason)     - is an explanation of the reasoning reasoning behind (isexpl)
+
+
+  :: behaviours ::
+
+ + has feature        (feat)       - is a feature of       (isfeat)
+ + features           (feats)      - is featured in        (feat-in)
+ + has property       (prop)       - is a property of      (propof)
+ + has quote          (quote)      - is a quote from       (quote from)
+
+ + means              (means)      - is meant by           (meansb)
+ + promises           (promise)    - is promised by        (prom-by)
+ + represents/models  (represents) - is represented/modelled by (repr-by)
+
+ + obeys the rule (rule)      - is a rule for        (rule4)
+ + has aspect     (aspect)    - is an aspect of      (aspect of)
+ + has key issue  (key issue) - is a key issue of    (is key)
+ + generalizes    (general)   - is a special case of (special)
+ + includes       (includes)  - is a kind of of      (kind of)
+
+ + should not     (shouldnt)  - is not recommend about (notrecom)
+ + has behaviour  (behaves)   - is a behaviour of      (isbehaviour)
+ 
+ + could be used in the role of (could be) - could be fulfilled by (fulfilled by)
+
+
+
+  :: location, identity ::
+
+ # Here we see type classifiers in action
+
+ + is called       (called)  - is the appellation of         (appel)
+ + has name        (name)    - is the name of                (nom-de)
+ + has family name (family)  - is the family name of         (fam-nom-for)
+ + has identifier  (ident)   - is an identifier for          (indent-for)
+ + is moniker for  (moniker) - is the identity of            (id-for)
+
+ + is based in     (based)    - is the base of operations for (base-of)
+
+  :: information properties relating to web browsing ::
+
+   # RESERVED + has url (url) - is a URL for (isurl)
+   # RESERVED + has image (img) - is an image for (isimg)
+
+
+ :: symbolism, meaning ::
+
+ + stands for            (sfor)       - is a case of (case of)
+ + refers to             (ref)        - may be referred to as (refas)
+ + has role              (role)       - is the role of (isrole)
+ + has employment status (emplstatus) - employment status of (emplstatof)
+
+ + has the structure of  (hasstruct)  - structure found in (structex)
+
+
+ :: languages, translation of meaning ::
+
+ + english has french    (ef) - french has english    (fe)
+ + pinyin has english    (pe) - english has pinyin    (ep) 
+ + pinyin has hanzi      (ph) - hanzi has pinyin      (hp)
+ + hanzi has english     (he) - english has hanzi     (eh)
+ + english has norwegian (en) - norwegian has english (ne)
+
+
+
+
+  #
+  #  THESE ARROWS ARE TYPICALLY EXPRESSED BY PROCESSES AND EVENTS
+  #
+
+ + has actor/subject role   (has-act)   - is the actor/subject role in   (is-act)
+ + has affected object role (has-obj)   - is the affected object role in (is-obj)
+
+ + reported                 (report)    - reported by (repby)
+ + has possible motive      (motive)    - is a possible motive for (is-motive)
+
+ + has service provider     (provider)  - is a service provider in (provides)
+ + implicates the use of    (with)      - is implicated in         (implicated)
+ + involves                 (involves)  - is involved in           (involved)
+
+ + has start at             (start)     - is the start of          (start-of)
+ + has ending at            (end)       - is the end of            (end-of)
+ + has location             (location)  - is the location of       (loc-of)
+ + takes place at location  (where)     - location involved in     (location-of)
+ + takes place at time      (when)      - a time involved in       (time of)
+ + has perpetrator          (perp-by)   - is a perpetrator of      (perp-of)
+ + has a victim             (victim)    - is the role of victim of (victim-of)
+
+ + has purpose or intent    (intention) - is the purpose or intention of (is-intention)
+
+ + has resource/reference   (resource)  - is a resource for (isresource)
+
+
+
+
+
+

@@ -248,13 +248,19 @@ func main() {
 
 	args := Init()
 
-	NewFile("N4Lconfig.in")
-	config := ReadFile(CURRENT_FILE)
-
 	AddMandatory()
-	ParseConfig(config)
 
-	//SummarizeAndTestConfig()
+	// Load arrow configurations
+
+	config := ReadConfig()
+
+	for input := 0; input < len(config); input++ {
+		NewFile(config[input])
+		con := ReadFile(CURRENT_FILE)
+		ParseConfig(con)
+	}
+
+	// Read the user inputs
 
 	for input := 0; input < len(args); input++ {
 		NewFile(args[input])
@@ -1143,6 +1149,42 @@ func AddMandatory() {
         inv = InsertArrowDirectory("contains","is mentioned in","ismentin","-")
 	InsertInverseArrowDirectory(arr,inv)
 
+}
+
+//**************************************************************
+
+func ReadConfig() []string {
+
+	files := []string{"arrows-LT-1.sst","arrows-NR-0.sst","arrows-CN-2.sst","arrows-EP-3.sst","annotations.sst"}
+	dir := os.Getenv("SST_CONFIG_PATH")
+
+	var configs []string
+
+	if dir != "" {
+
+		for f := 0; f < len(files); f++ {
+			configs = append(configs,dir+"/"+files[f])
+		}
+
+		return configs
+
+	} else {
+		search_paths := []string{"./SSTconfig","../SSTconfig","../../SSTconfig"}
+
+		for p := range search_paths {
+
+			info, err := os.Stat(search_paths[p]);
+			
+			if err == nil && info.IsDir() {
+				for f := 0; f < len(files); f++ {
+					configs = append(configs,search_paths[p]+"/"+files[f])
+				}
+				return configs
+			} 
+		}
+	}
+
+	return []string{"no configuration file"}
 }
 
 //**************************************************************
@@ -2177,7 +2219,7 @@ func GetLinkArrowByName(token string) Link {
 		ptr, ok = ARROW_LONG_DIR[name]
 
 		if !ok {
-			ParseError(ERR_NO_SUCH_ARROW+name)
+			ParseError(ERR_NO_SUCH_ARROW+"("+name+")")
 			os.Exit(-1)
 		}
 	}
