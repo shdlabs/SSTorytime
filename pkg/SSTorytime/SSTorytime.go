@@ -2433,6 +2433,12 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   RETURN true;\n"+
 		"END IF;\n"+
 
+		// If there is a constraint, but no db membership, then no match
+		"IF array_length(db_set,1) IS NULL AND array_length(user_set,1) IS NOT NULL THEN\n"+
+		"   RETURN false;\n"+
+		"END IF;\n"+
+
+		// if both are empty, then match
 		"IF array_length(db_set,1) IS NULL THEN\n"+
 		"   RETURN true;\n"+
 		"END IF;\n"+
@@ -3942,7 +3948,6 @@ func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr [
 	for r := range rest {
 
 		// Takes care of general context matching
-
 		nptrs := GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
 
 		for n := range nptrs {
