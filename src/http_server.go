@@ -339,7 +339,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 	for n := range nptrs {
 		for st := range sttype {
 
-			jstr,count := PackageConeFromOrigin(nptrs[n],n,sttype[st],chap,context,len(nptrs),limit)
+			jstr,count := PackageConeFromOrigin(ctx,nptrs[n],n,sttype[st],chap,context,len(nptrs),limit)
 
 			if count > 0 {
 				total += count
@@ -370,7 +370,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 
 //******************************************************************
 
-func PackageConeFromOrigin(nptr SST.NodePtr,nth int,sttype int,chap string,context []string,dimnptr,limit int) (string,int) {
+func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,chap string,context []string,dimnptr,limit int) (string,int) {
 
 	// Package a JSON object for the nth/dimnptr causal cone , assigning each nth the same width
 
@@ -394,9 +394,11 @@ func PackageConeFromOrigin(nptr SST.NodePtr,nth int,sttype int,chap string,conte
 		os.Exit(-1)
 	}
 
+	title := SST.GetDBNodeByNodePtr(ctx,nptr).S
+
 	jstr := fmt.Sprintf(" { \"NClass\" : %d,\n",nptr.Class)
 	jstr += fmt.Sprintf("   \"NCPtr\" : %d,\n",nptr.CPtr)
-	jstr += fmt.Sprintf("   \"Title\" : \"%v\",\n",nptr)  // tbd
+	jstr += fmt.Sprintf("   \"Title\" : \"%s\",\n",title)  // tbd
 	jstr += fmt.Sprintf("   \"Paths\" : %s\n}",string(wstr))	
 
 	return jstr,countf + countb

@@ -531,7 +531,7 @@ return false
 
 /***********************************************************/
 
-function PrintPath(parent,array)
+function PrintPaths(parent,array)
 {
 if (array.length < 1)
    {
@@ -971,14 +971,16 @@ for (let head_nptr of obj.Content)
    {
    let nclass = head_nptr.NClass;
    let ncptr = head_nptr.NCPtr;
-   let item = document.createElement('p');
+
+   let item = document.createElement('h2');
    let link = document.createElement('a');
-   link.textContent = head_nptr.Title;
+   item.textContent = head_nptr.Title;
    link.onclick = function() { sendlinkData(nclass,ncptr); };
    item.appendChild(link);
+   panel.appendChild(item);
    let parent = document.createElement('content');
 
-   parent = PrintPath(parent,head_nptr.Paths);
+   parent = PrintPaths(parent,head_nptr.Paths);
    panel.appendChild(parent);
 
    // Add the centrality box at bottom of page
