@@ -30,7 +30,11 @@ go env -w GO111MODULE=off
 
 ## Installing database Postgres
 
-Hard part first; the postgres database is a bit of a monster. There are several steps to install it an set it up. Here's the summary:
+Hard part first; the postgres database is a bit of a monster. There are several steps to install it an set it up. 
+There is also an option to run the database in RAM memory, which is recommended unless you are already using it for
+something else, since SSTorytime uses postgres basically as a cache.
+
+Here's the summary:
 
 * Use your local package manager to download and install packages for `postgres databaser server` and `psql client`.
 * In postgres, you need root privileges to configure and create a database.
@@ -131,6 +135,44 @@ Postgres is finnicky if you're not used to running it, but once these details ar
 you will be able to use the software. If you're planning to run a publicly available server, you
 should learn more about the security of postgres. We won't go into that here.
 
+
+## Option: Installing Postgres in memory [Linux]
+
+Optionally, you can install Postgres in memory to increase performance of the upload and search, and to preserve your laptop SSD disks.
+
+- To do so, create a new data folder, and mount it as a memory file system.
+- grant access rights to your postgres user.
+- stop the default postgres system service.
+- start manually postgres using your new filesystem as data storage, or configure the postgres service to use the new memory data folder
+
+**Beware !**: all data in the postgres database will be lost when restarting processes. 
+But you can always rebuild the schema, and reload your data graph from your N4L files using the tool N4L-db.
+
+```
+$ sudo mkdir -p /mnt/pg_ram
+$ sudo mount -t tmpfs -o size=800M tmpfs /mnt/pg_ram
+$ sudo chown postgres:postgres /mnt/pg_ram
+$ sudo systemctl stop postgresql
+$ sudo -u postgres /usr/lib/postgresql/<version>/bin/initdb -D /mnt/pg_ram/pgdata
+$ sudo -u postgres /usr/lib/postgresql/<version>/bin/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start
+
+e.g.
+
+sudo su -
+
+mkdir -p /mnt/pg_ram
+mount -t tmpfs -o size=800M tmpfs /mnt/pg_ram
+chown postgres:postgres /mnt/pg_ram
+systemctl stop postgresql17
+/usr/lib/postgresql17/bin/initdb -D /mnt/pg_ram/pgdata
+/usr/lib/postgresql17/bin/initdb -D /mnt/pg_ram/pgdata
+/usr/lib/postgresql17/bin/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start
+
+```
+
+Now repeat the setup steps for the database.
+
+
 ## Installing the Go programming language for building and scripting
 
 See also about Go
@@ -186,25 +228,3 @@ $ cd examples
 $ make
 $ ../src/N4L-db -u LoopyLoo.n4l
 ```
-
-## Option: Installing Postgres in memory [Linux]
-
-Optionally, you can install Postgres in memory to increase performance of the upload and search, and to preserve your laptop SSD disks.
-
-- To do so, create a new data folder, and mount it as a memory file system.
-- grant access rights to your postgres user.
-- stop the default postgres system service.
-- start manually postgres using your new filesystem as data storage, or configure the postgres service to use the new memory data folder
-
-**Beware !**: all data in the postgres database will be lost when restarting processes. 
-But you can always rebuild the schema, and reload your data graph from your N4L files using the tool N4L-db.
-
-```
-$ sudo mkdir -p /mnt/pg_ram
-$ sudo mount -t tmpfs -o size=800M tmpfs /mnt/pg_ram
-$ sudo chown postgres:postgres /mnt/pg_ram
-$ sudo systemctl stop postgres
-$ sudo -u postgres /usr/lib/postgresql/<version>/bin/initdb -D /mnt/pg_ram/pgdata
-$ sudo -u postgres /usr/lib/postgresql/<version>/bin/pg_ctl -D /mnt/pg_ram/pgdata -l /mnt/pg_ram/logfile start
-```
-
