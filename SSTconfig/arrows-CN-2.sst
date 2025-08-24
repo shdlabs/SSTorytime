@@ -11,6 +11,7 @@
  + may contain        (m-cont)    - may be contained by (m-cont-by)
  + has component      (has-cmpt) - is component of      (cmpt-of)
  + has a part         (has-pt)   - is a part of         (pt-of)
+ + has no part        (no-pt)    - is not part of       (not-pt-of)
  + has ingredient     (ingred)   - is an ingredient of  (ingred-of)
 
  + does not contain   (has no)   - is not from set    (is not)
@@ -37,6 +38,11 @@
  + houses             (house)    - is housed by        (is-housed)
  + situates           (situate)  - is situated in      (is-sit)
  + bullet point       (bullet)   - is a bulletpoint for (isbullet)
+
+  :: situation ::
+
+ + occurs within            (occurs)      - situates occurrences of (occurence-of)
+ + is a shared resource for (shared-by)   - shares resource         (shares)
 
   :: implicit ::
 

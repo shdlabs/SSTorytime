@@ -14,11 +14,11 @@
  :: attributes, supporting information ::
 
  + has example       (e.g.)         - is an example of     (ex)
- + has no example    (noex)         - is not an example of (is-not)
+ + has no example    (noex)         - is not an example of (not-ex)
  + has abbreviation  (abbrev)       - is short for         (short for)
  + has version       (version)      - is a version of      (is-version)
 
- + has supplier      (supply)       - is supplied by       (supply-by)
+ + has supplier      (supply)       - is the supplier of   (supply-by)
  + has source        (source)       - the source for       (source-of)
 
  + discusses          (disc)       - is discussed in              (is-disc)
@@ -44,13 +44,17 @@
 
    + is expressed in formula (formula) - is a formula for (isformula)
 
+ :: condition, state ::
+
+   + has condition           (cond)    - is the condition of (cond-of)
+
 
  :: long term, persistent properties ::
 
- + defined as              (def)      - is the definition of               (isdef)
- + is pronounced as        (pronas)   - is the pronunciation for           (pronof)
- + has friend              (fr)       - is considered a friend of          (isfrof)
- + speaks language/dialect (speaks)   - is a language or dialect spoken by (spokenby)
+ + defined as              (def)      - is the definition of               (def-of)
+ + is pronounced as        (pronas)   - is the pronunciation for           (pron-of)
+ + has friend              (fr)       - is considered a friend of          (isfr-of)
+ + speaks language/dialect (speaks)   - is a language or dialect spoken by (spoken-by)
  + is known for            (knownfor) - made famous by                     (knownin)
  + has story text          (story)    - is the text of the story           (isstory)
  + has ownership of        (owns)     - is owned by                        (owned-by)
@@ -59,12 +63,11 @@
 
  :: steady state relationships ::
 
- + maintains           (maintains) - is maintained by (maintainedby)  # steady state case
+ + maintains           (maintains) - is maintained by (maintained-by)  # steady state case
  + is the author of    (author-of) - is authored by   (author)
  + wrote               (wrote)     - written by       (written)  
  + invented            (invent)    - invented by      (invent-by)
  + is the publisher of (published) - was published by (pub by)
-
 
  + teaches/taught     (taught)      - is taught by    (taught-by)
 
@@ -74,13 +77,16 @@
 
  + has an preference or affinity for (affinity)  - is a preference of     (preference)
 
- + likes             (lk)           - is liked by          (lkby)
- + used for          (for)          - is a use of          (useof)
- + might be used for (perhaps used) - is a possible use of (perhaps useof)
+ + works by method (works-by)       - is the modus operandi for (mo)
 
- + pending question            (question) - is an unresolved question about (hasquest)
- + status within investigation (status)   - status of evidence (statusof)
- + makes use of                (using)    - is used in (usedin)
+ + likes             (lk)           - is liked by          (lk-by)
+
+
+ + used for          (use-for)       - is a use of          (use-of)
+ + might be used for (perhaps used)  - is a possible use of (perhaps useof)
+
+ + pending question            (question)  - is an unresolved question about (has-quest)
+ + status within investigation (status)    - status of evidence (status-of)
 
 
  + key problem                 (problem)    - is a problem associated with (isproblem)
@@ -93,12 +99,12 @@
 
  + has feature        (feat)       - is a feature of       (isfeat)
  + features           (feats)      - is featured in        (feat-in)
- + has property       (prop)       - is a property of      (propof)
+ + has property       (propt)      - is a property of      (propt-of)
  + has quote          (quote)      - is a quote from       (quote from)
 
  + means              (means)      - is meant by           (meansb)
  + promises           (promise)    - is promised by        (prom-by)
- + represents/models  (represents) - is represented/modelled by (repr-by)
+ + represents/models  (repr)       - is represented/modelled by (repr-by)
 
  + obeys the rule (rule)      - is a rule for        (rule4)
  + has aspect     (aspect)    - is an aspect of      (aspect of)
@@ -124,6 +130,7 @@
  + is moniker for  (moniker) - is the identity of            (id-for)
 
  + is based in     (based)    - is the base of operations for (base-of)
+ + is an organization in (org)     - is the home of organization (has-org)
 
   :: information properties relating to web browsing ::
 
