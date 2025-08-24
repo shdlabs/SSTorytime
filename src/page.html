@@ -61,7 +61,7 @@ h1 {
 h2 {
   font-size: 30px;
   color: #5599cc;
-  padding: 10px;
+  padding: 20px;
   margin: 0px;
   margin_bottom : 10px;
   line-height: 10px;
@@ -162,6 +162,8 @@ float: left;
 
 #radius-2 {
    margin-left: 150px;
+   color: darkgreen;
+   opacity: 0.8;
 }
 
 #cntxt {
@@ -974,7 +976,7 @@ for (let head_nptr of obj.Content)
 
    let item = document.createElement('h2');
    let link = document.createElement('a');
-   item.textContent = head_nptr.Title;
+   item.textContent = head_nptr.Title.slice(0,50)+"..";
    link.onclick = function() { sendlinkData(nclass,ncptr); };
    item.appendChild(link);
    panel.appendChild(item);
@@ -1332,30 +1334,7 @@ CheckCone(child,"[EP]",event.Orbits[Im3],event.Orbits[Ie3]);
 CheckCone(child,"[NR]",event.Orbits[In0],event.Orbits[In0]);
 panel.appendChild(child);
 
-
-if (event.Orbits[Im1] != null)
-   {
-   for (let ngh of event.Orbits[Im1]) 
-      {
-      if (ngh.Arrow != "follows on from") // because seq mode already emphasized this
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
-         panel.appendChild(child);
-         }
-      }
-   }
-
-if (event.Orbits[In0] != null)
-   {
-   for (let ngh of event.Orbits[In0]) 
-      {
-      if (skiparrow != ngh.Arrow)
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx)
-         panel.appendChild(child);
-         }
-      }
-   }
+// First properties of this node
 
 if (event.Orbits[Im3] != null)
    {
@@ -1400,6 +1379,22 @@ if (direction != "fwd" && event.Orbits[Im2] != null)
       }
    }
 
+// Then any equivalents
+
+if (event.Orbits[In0] != null)
+   {
+   for (let ngh of event.Orbits[In0]) 
+      {
+      if (skiparrow != ngh.Arrow)
+         {
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx)
+         panel.appendChild(child);
+         }
+      }
+   }
+
+// Then containment
+
 if (event.Orbits[Ic2] != null)
    {
    for (let ngh of event.Orbits[Ic2]) 
@@ -1411,6 +1406,21 @@ if (event.Orbits[Ic2] != null)
          }
       }
    }
+
+// Lastly, from-->to
+
+if (event.Orbits[Im1] != null)
+   {
+   for (let ngh of event.Orbits[Im1]) 
+      {
+      if (ngh.Arrow != "follows on from") // because seq mode already emphasized this
+         {
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+         panel.appendChild(child);
+         }
+      }
+   }
+
 
 if (event.Orbits[Il1] != null)
    {
