@@ -320,12 +320,10 @@ MathJax.Hub.Config({
 
 
   </nav>
-
   <pictureframe>
   </pictureframe>
 
   <article>
-
   </article>
 
 </section>
@@ -1808,25 +1806,6 @@ CTX = canvas.getContext("2d");
 parent.appendChild(canvas);
 CTX.beginPath();
 return canvas;
-}
-
-function ResetCanvas() 
-{
-
-}
-
-// *************************************************
-
-function ClearCanvas()
-{
-// clearRect/fillRect method causes seriously pathological behaviour in colour transparency!? WHY!?
-// Don't know how to clear the screen
-return;
-CTX.save();
-CTX.clearRect(0, 0, CANVAS.width, CANVAS.height);
-CTX.globalAlpha = 0.5;
-CTX.restore();
-CTX.beginPath();
 }
 
 // *************************************************
