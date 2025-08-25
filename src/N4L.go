@@ -1137,10 +1137,6 @@ func AddMandatory() {
         inv = InsertArrowDirectory("properties","isimg","is an image for","-")
 	InsertInverseArrowDirectory(arr,inv)
 
-	arr = InsertArrowDirectory("contains","has","has","+")
-        inv = InsertArrowDirectory("contains","in","is in","-")
-	InsertInverseArrowDirectory(arr,inv)
-
 	arr = InsertArrowDirectory("contains","emphasizes proto-concept","emph","+")
         inv = InsertArrowDirectory("contains","is an emphatic proto-concept in","is emph in","-")
 	InsertInverseArrowDirectory(arr,inv)
