@@ -1173,7 +1173,7 @@ for (let chp of obj.Content)
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-elem";
-         link.onclick = function() { sendLinkSearch("context "+ctx.Text); };
+         link.onclick = function() { sendLinkSearch("any context "+ctx.Text); };
          link.id = "toc-frag";
  	 link.textContent = "Context Set/Grouping:: ";
          link.appendChild(sitem)
@@ -1196,7 +1196,7 @@ for (let chp of obj.Content)
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-single";
-         link.onclick = function() { sendLinkSearch("context "+ctx.Text,ctx); };
+         link.onclick = function() { sendLinkSearch("any context "+ctx.Text,ctx); };
  	 link.textContent = "Intentionally emph:: ";
          link.appendChild(sitem)
          chap.appendChild(link);
@@ -1217,7 +1217,7 @@ for (let chp of obj.Content)
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-common";
-         link.onclick = function() { sendLinkSearch("context "+ctx.Text); };
+         link.onclick = function() { sendLinkSearch("any context "+ctx.Text); };
 	 link.textContent = "Ambient context:: ";
          link.appendChild(sitem)
          link.id = "toc-frag";
