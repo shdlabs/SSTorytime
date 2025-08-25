@@ -1173,7 +1173,7 @@ for (let chp of obj.Content)
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-elem";
-         link.onclick = function() { sendLinkSearch("any context "+ctx.Text); };
+         link.onclick = function() { sendLinkSearch("any context "+CtxSplice(ctx.Text)); };
          link.id = "toc-frag";
  	 link.textContent = "Context Set/Grouping:: ";
          link.appendChild(sitem)
@@ -1196,7 +1196,7 @@ for (let chp of obj.Content)
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-single";
-         link.onclick = function() { sendLinkSearch("any context "+ctx.Text,ctx); };
+         link.onclick = function() { sendLinkSearch("any context "+ctx.Text); };
  	 link.textContent = "Intentionally emph:: ";
          link.appendChild(sitem)
          chap.appendChild(link);
@@ -1774,6 +1774,14 @@ async function sendLinkSearch(search)
       // Handle error
       console.log("error ", error);
     });
+}
+
+/***********************************************************/
+
+function CtxSplice(s)
+{
+let ret = s.replaceAll(", ",".");
+return ret;
 }
 
 /***********************************************************/
