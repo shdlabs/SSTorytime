@@ -365,7 +365,7 @@ func CausalCones(ctx SST.PoSST,nptrs []SST.NodePtr, chap string, context []strin
 	for n := range nptrs {
 		for st := range sttype {
 
-			const maxlimit = 1000
+			const maxlimit = SST.CAUSAL_CONE_MAXLIMIT
 			fcone,_ := SST.GetFwdPathsAsLinks(ctx,nptrs[n],sttype[st],limit, maxlimit)
 
 			if fcone != nil {

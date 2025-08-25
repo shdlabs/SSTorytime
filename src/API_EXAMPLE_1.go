@@ -65,7 +65,7 @@ func LookupStory(ctx SST.PoSST) {
 	_,sttype := SST.GetDBArrowsWithArrowName(ctx,"then")
 
 	path_length := 4
-	const maxlimit = 1000
+	const maxlimit = SST.CAUSAL_CONE_MAXLIMIT
 
 	for n := range start_set {
 

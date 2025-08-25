@@ -376,7 +376,7 @@ func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,cha
 
 	var wpaths [][]SST.WebPath
 	
-	const maxlimit = 1000
+	const maxlimit = SST.CAUSAL_CONE_MAXLIMIT
 	fcone,countf := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit, maxlimit)
 	wpaths = append(wpaths,SST.LinkWebPaths(CTX,fcone,nth,chap,context,dimnptr,limit)...)
 

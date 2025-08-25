@@ -53,6 +53,9 @@ const (
 	CONTAINS = 2  // +/-
 	EXPRESS = 3   // +/-
 
+	// Letting a cone search get too large is unresponsive
+	CAUSAL_CONE_MAXLIMIT = 100
+
 	// And shifted indices for array indicesin Go
 
 	ST_ZERO = EXPRESS
