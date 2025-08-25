@@ -118,6 +118,11 @@ nav {
   font-size: 150%;
 }
 
+#ditto {
+   padding: 5px;
+   margin-left: 50px;
+}
+
 article {
   float: left;
   padding: 0px;
@@ -789,13 +794,22 @@ for (let line = 0; line < array.length; line++)
 
          if (i == 0 && str == last_line_start)
             { // repeated item
+            let newline = document.createElement('br');
+            parent.appendChild(newline);
             let text = document.createElement('i');
+            text.id = "ditto";
             text.textContent = "         \"        ";
             text.style.fontFamily = 'Times New Roman';
-            text.style.fontSize = '150%';
+  //          text.style.fontSize = '150%';
             text.style.padding = '10px';
             parent.appendChild(text);
             continue;
+            }
+
+         if (i == 0)
+            {            
+            let spacer = document.createElement('hr');
+            parent.appendChild(spacer);
             }
 
          if (i == 0)
@@ -857,9 +871,6 @@ for (let line = 0; line < array.length; line++)
          parent.appendChild(arrow_link);
          }
       }
-
-   let spacer = document.createElement('hr');
-   parent.appendChild(spacer);
    }
 
 return parent
