@@ -74,6 +74,12 @@ h2 {
   padding: 10px;
 }
 
+#chap_head {
+   margin_top : 20px;
+   font-size: 150%;
+   color: navy;
+}
+
 /* Create two columns/boxes that floats next to each other */
 nav {
   float: left;
@@ -691,7 +697,7 @@ if (lastx != 0 || lasty != 0 || lastz != 0)
 
 function PrintNotes(parent,array)
 {
-if (array.length < 1)
+if (array == null || array.length < 1)
    {
    return parent;
    }
@@ -700,6 +706,9 @@ let lastx = 0;
 let lasty = 0;
 let lastz = 0;
 let lastarrow = 0;
+let last_line_start = "";
+
+// Line by line
 
 for (let line = 0; line < array.length; line++)
    {
@@ -774,6 +783,24 @@ for (let line = 0; line < array.length; line++)
             {
             ncptr = array[line][i].NPtr.CPtr;
             nclass = array[line][i].NPtr.Class;
+            }
+
+         // if the last line starts with the same item, don't repeat it
+
+         if (i == 0 && str == last_line_start)
+            { // repeated item
+            let text = document.createElement('i');
+            text.textContent = "         \"        ";
+            text.style.fontFamily = 'Times New Roman';
+            text.style.fontSize = '150%';
+            text.style.padding = '10px';
+            parent.appendChild(text);
+            continue;
+            }
+
+         if (i == 0)
+            {
+            last_line_start = str;
             }
 
          if (str.includes("\n"))
@@ -1076,14 +1103,23 @@ CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
 
 let parent = document.createElement('content');
+parent.textContent = "* From Chapter ";
+parent.id = "chap_head";
+
 let chapter = obj.Content.Title;
-let ctx = document.createElement('i');
+let ctx = document.createElement('h2');
 let context = obj.Content.Context;
 ctx.textContent = context;
-parent.textContent = "in chapter " + chapter + " in context:   ";
+
+let shchap = document.createElement('b');
+shchap.textContent = chapter;
+parent.appendChild(shchap)
 parent.appendChild(ctx);
+
 let thepage = document.createElement('p');
+
 thepage = PrintNotes(thepage,obj.Content.Notes);
+
 parent.appendChild(thepage);
 panel.appendChild(parent);
 }

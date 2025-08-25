@@ -4057,11 +4057,14 @@ func GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
 	}
 
 	var path string
+	var last_line_start NPtr
+
 	var pagemap []PageMap
 	var line int
 	for row.Next() {		
 
 		var event PageMap
+
 		err = row.Scan(&chap,&context,&line,&path)
 
 		if err != nil {
@@ -4070,8 +4073,11 @@ func GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
 
 		event.Path = ParseMapLinkArray(path)
 
+		last_line_start = event.Path[0].Dst
+
 		event.Chapter = chap
 		event.Context = ParseSQLArrayString(context)
+
 		pagemap = append(pagemap,event)
 	}
 
