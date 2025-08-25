@@ -48,15 +48,15 @@ kuàilè (ph) 快乐 (he) happy
 zǒu (sl) zòu
 zǒu 走 (he) walk
 zǒu 走 (pe) walk
-  "      (has) zǒu
-  "     (has) 走
+  "      (has-cmpt) zǒu
+  "     (has-cmpt) 走
 
 #########
 
 zòu 奏 (he) play perform music on an instrument
 zòu 奏 (pe) play perform music on an instrument
-   "     (has) zòu
-   "     (has) 奏
+   "     (has-cmpt) zòu
+   "     (has-cmpt) 奏
 
 zòuyuè (ph) 奏乐 (he) play music
 
@@ -71,8 +71,8 @@ zòuyuè (ph) 奏乐 (he) play music
 #####
 
 zǎo 早 (sl) zào 造  
-zǎo 早 (has) zǎo
-zǎo 早 (has) 早
+zǎo 早 (has-cmpt) zǎo
+zǎo 早 (has-cmpt) 早
   "  (he) morning/early
   "  (pe) morning/early
 
@@ -82,11 +82,11 @@ zǎo 早 (has) 早
 
  zhǎo 找 (sl) zhào 照
 
- zhǎo 找  (has)  zhǎo
-    "       (has)  找 
+ zhǎo 找  (has-cmpt)  zhǎo
+    "       (has-cmpt)  找 
 
- zhào 照 (has)  zhào
-  "      (has)  照
+ zhào 照 (has-cmpt)  zhào
+  "      (has-cmpt)  照
 
 
 

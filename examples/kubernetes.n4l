@@ -107,7 +107,7 @@ Persistent Volume Claim (abbrev) %PVC
 PVC   (enables) storage decoupling from the lifecycle of %pods
   "   (behaves) pods to be rescheduled without data loss
 
-PV (has) a lifecycle independent of individual %pods
+PV (indep) lifecycle of individual %pods
 
 "Volumes in Kubernetes can be %ephemeral or %persistent. Ephemeral volumes exist only during the pod’s lifetime, while persistent volumes survive pod restarts or rescheduling."
 

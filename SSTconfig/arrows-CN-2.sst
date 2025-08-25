@@ -5,7 +5,7 @@
   :: identity orientation::
 
  + consists of        (consists)  - makes up part of    (mkpt)
- + uses word          (useword)   - is a word used in   (wordin)
+ + uses word          (useword)   - is a word used in   (word-in)
  + uses material      (material)  - is a material for   (mat-for)
  + contains           (contain)   - belongs to          (belong)
  + may contain        (m-cont)    - may be contained by (m-cont-by)

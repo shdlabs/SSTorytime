@@ -85,6 +85,8 @@
        + constrains    (constr)   - is constrained by      (constr-by)
        + decides       (dec)      - decided by             (dec-by)
 
+       + doesn't affect (noeff)   - independent of         (indep)
+
        + lays the groundwork for (gr-wk) - built on groundwork (on-gr-wk)
        + provisions (prov)               - is provisioned by   (prov-by)
 
@@ -97,6 +99,7 @@
        + supports      (support)  - is supported by       (suportby)
 
        + sustains      (sust)     - depends on (dep-on)
+
        + authenticates (auth)     - is authenticated by   (auth-by)
        + injects       (inject)   - is injected by        (inj-by) 
        + named after   (named)    - inspired the name     (inspname)
