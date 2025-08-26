@@ -4,7 +4,10 @@
 <title>SSTorytime Simple viewer</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
+// **************************************************
+
 * {
   box-sizing: border-box;
 }
@@ -14,6 +17,7 @@ body {
 }
 
 /* Style the header */
+
 header {
   background-color: darkblue;
   padding: 5px;
@@ -296,20 +300,25 @@ h1:not(.arrow):hover{
 pre:hover{
   color: #999999;
 }
-
+// **************************************************
 </style>
+
+
+
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
   tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
 });
-
-
 </script>
+
+
 <script type="text/javascript" id="MathJax-script" async
   src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
 </script>
 </head>
 <body>
+
+
 
 <page>
 <header>
@@ -337,7 +346,13 @@ MathJax.Hub.Config({
 </page>
 
 <script>
+/******************************************************************************/
 /* MB SSTorytime poc/demo code - to be cleaned up and improved by an expert.. */
+/******************************************************************************/
+
+/***********************************************************/
+// Global configuration
+/***********************************************************/
 
 var API_SERVER = 'http://localhost:8080';
 
@@ -356,7 +371,7 @@ const STINDICES = ["is a property expressed by","is contained by","comes from","
 const POST_METHOD = "POST";
 
 /***********************************************************/
-// Graphics viewport
+// Graphics config
 /***********************************************************/
 
 var CANVAS = CreateCanvas(); 
@@ -378,21 +393,11 @@ let VP_X = 0;
 let VP_Y = 4;
 let VP_Z = 8;
 
-/***********************************************************
-// Disable ENTER submission
+/************************************************************/
+// Page renderers
+/************************************************************/
 
-window.addEventListener('keydown',function(event)
-   {
-   if(event.keyCode == 13) 
-      {
-      event.preventDefault();
-      return false;
-      }
-   });
-
-***********************************************************/
-
-async function DoPage() 
+async function FetchPage()
 {
 let requestURL = API_SERVER+"/searchN4L";
 let request = new Request(requestURL);
@@ -401,475 +406,6 @@ let mynote = await response.json();
 
 DoHeader(mynote);
 DoOrbitPanel(mynote) // Start in orbit
-}
-
-/***********************************************************/
-
-function PrintLink(parent,radius,stindex,arrow,str,nclass,ncptr,ctx) 
-{
-if (arrow == null)
-   {
-   arrow = "broken arrow"
-   }
-
-let box = document.createElement('div');
-box.id = "radius-" + radius;
-
-if (str.includes("\n"))
-   {
-   // arrow
-   let arrow_link = document.createElement('a');
-   arrow_link.textContent = `( ${arrow} )  `;
-   arrow_link.id = 'arrow-'+stindex;
-   arrow_link.title = STINDICES[stindex];
-   arrow_link.class = "tooltip";
-   arrow_link.style.fontFamily = 'Verdana';
-   box.appendChild(arrow_link);
-
-   // pre formatted text
-   let text_link = document.createElement('a');
-   text_link.onclick = function() { sendlinkData(nclass,ncptr); };
-
-   let pre = document.createElement('pre');
-   pre.textContent = str;
-   text_link.appendChild(pre);
-   text_link.className = 'text';
-   box.appendChild(text_link);
-   }
-else
-   {
-   // arrow
-   let arrow_link = document.createElement('a');
-   arrow_link.textContent = `( ${arrow} )  `;
-
-   box.appendChild(arrow_link);
-   //arrow_link.className = 'arrow'+stindex;
-   arrow_link.id = 'arrow-'+stindex;
-   arrow_link.title = STINDICES[stindex];
-   arrow_link.class = "tooltip";
-   arrow_link.style.fontFamily = 'Verdana';
-
-   // plain text
-   let text_link = document.createElement('a')
-
-   if (IsURL(str,arrow))
-      {
-      text_link.href=str;
-      text_link.target="_blank";
-      text_link.rel="noopener";
-      }
-   else if (IsImage(str,arrow))
-      {
-      let img = document.createElement('img')
-      img.src = str;
-      box.appendChild(img);
-      }
-   else
-      { 
-      text_link.onclick = function() { sendlinkData(nclass,ncptr); };
-      }
-   text_link.textContent = str;
-   text_link.className = 'text';
-   text_link.style.fontFamily = 'Times';
-   if (str.length < 20)
-      {
-      text_link.style.fontSize = '200%';
-      text_link.style.padding = '10px';
-      }
-   box.appendChild(text_link);
-
-   if (ctx.length > 0)
-      {
-      let cntx = document.createElement('i');
-      cntx.id = "cntxt";
-      cntx.textContent = " context hints: " + ctx;
-      box.appendChild(cntx);
-      }
-   let br = document.createElement('br');
-   box.appendChild(br);
-   }
-
-parent.appendChild(box);
-
-return parent
-}
-
-/***********************************************************/
-
-function IsImage(str,arrow)
-{
-if (arrow == "has image" || arrow == "is an image for")
-   {
-   if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/")
-      {
-      return true;
-      }
-   }
-
-return false
-}
-
-/***********************************************************/
-
-function IsMath(str)
-{
-if (str.includes("\(") && str.includes("\)"))
-   {
-   return true;
-   }
-
-return false
-}
-
-/***********************************************************/
-
-function IsURL(str,arrow)
-{
-if (arrow == "has URL")
-   {
-   if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/")
-      {
-      return true;
-      }
-   }
-
-return false
-}
-
-/***********************************************************/
-
-function PrintPaths(parent,array)
-{
-if (array.length < 1)
-   {
-   return parent;
-   }
-
-let lastx = 0;
-let lasty = 0;
-let lastz = 0;
-let lastarrow = 0;
-
-for (let path = 0; path < array.length; path++)
-   {
-   if (array[path] == null)
-      {
-      continue;
-      }
-
-   // The WebPath protocol alternates node-arrow...
-
-   for (let i = 0; i < array[path].length; i++)
-      {
-      if (i % 2 == 0) // node
-         {
-         let str = array[path][i].Name;
-         let ncptr = array[path][i].NPtr.CPtr;
-         let nclass = array[path][i].NPtr.NClass;
-
-         let xyz = array[path][i].XYZ;
-
-         thisx = xyz.X;
-         thisy = xyz.Y;
-         thisz = xyz.Z;
-
-         DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz);
-
-         if (i < array[path].length-1)
-            {
-            lastx = thisx;
-            lasty = thisy;
-            lastz = thisz;
-            }
-         else
-            {
-            lastx = 0;
-            lasty = 0;
-            lastz = 0;
-            }
-
-         Event(thisx,thisy,thisz);
-         Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
-
-         if (array[path][i].NPtr != null)
-            {
-            ncptr = array[path][i].NPtr.CPtr;
-            nclass = array[path][i].NPtr.Class;
-            }
-
-         if (str.includes("\n"))
-            {
-            let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
-            let pre = document.createElement('pre');
-            pre.textContent = str;
-            text_link.appendChild(pre);
-            parent.appendChild(text_link);
-            }
-         else
-            {
-            let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
-            let text = document.createElement('i');
-            text.textContent = str;
-            text.style.fontFamily = 'Times New Roman';
-
-            if (str.length < 20)
-               {
-               text.style.fontSize = '150%';
-               text.style.padding = '10px';
-               }
-
-            text_link.appendChild(text);
-            parent.appendChild(text_link);
-            }
-         }
-      else // arrow 
-         {
-         const then = 2 // reserved vectors
-         const prev = 3
-
-         let arrow = array[path][i].Name
-         let arrptr = array[path][i].Arr
-         let stindex = array[path][i].STindex
-
-         lastarrow = stindex - ST_ZERO;
-
-         if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
-            {
-            let hr = document.createElement('p');
-            parent.appendChild(hr);
-            }
-
-         let arrow_link = document.createElement('a');
-         arrow_link.textContent = `( ${arrow} )  `;
-         arrow_link.id = `arrow-`+stindex;
-         arrow_link.class = "tooltip";
-         arrow_link.title = STINDICES[stindex];
-         arrow_link.style.fontFamily = 'Verdana';
-
-         parent.appendChild(arrow_link);
-         }
-      }
-
-   let spacer = document.createElement('hr');
-   parent.appendChild(spacer);
-   }
-
-return parent
-}
-
-/***********************************************************/
-
-function DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz)
-{
-if (lastx != 0 || lasty != 0 || lastz != 0)
-   {
-   switch (lastarrow)
-      {
-      case -3:
-         Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
-         break;
-      case -2:
-         Contains(thisx,thisy,thisz,lastx,lasty,lastz);
-         break;
-      case -1:
-         LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-         break;
-      case 0:
-         LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-         break;
-      case 1:
-         LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
-         break;
-      case 2:
-         Contains(lastx,lasty,lastz,thisx,thisy,thisz);
-         break;
-      case 3:
-         Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
-         break;
-      default:
-         console.log("Bad value",lastarrow);
-      }
-   }
-}
-
-/***********************************************************/
-
-function PrintNotes(parent,array)
-{
-if (array == null || array.length < 1)
-   {
-   return parent;
-   }
-
-let lastx = 0;
-let lasty = 0;
-let lastz = 0;
-let lastarrow = 0;
-let last_line_start = "";
-
-// Line by line
-
-for (let line = 0; line < array.length; line++)
-   {
-   if (array[line] == null)
-      {
-      continue;
-      }
-
-   // The WebPath protocol alternates node-arrow...
-
-   for (let i = 0; i < array[line].length; i++)
-      {
-      if (i % 2 == 0) // node
-         {
-         let str = array[line][i].Name;
-         let ncptr = array[line][i].NPtr.CPtr;
-         let nclass = array[line][i].NPtr.NClass;
-
-         let xyz = array[line][i].XYZ;
-
-         thisx = xyz.X;
-         thisy = xyz.Y;
-         thisz = xyz.Z;
-
-         if (lastx != 0 || lasty != 0 || lastz != 0)
-            {
-            switch (lastarrow)
-               {
-               case -3:
-                  Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case -2:
-                  Contains(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case -1:
-                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case 0:
-                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case 1:
-                  LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
-                  break;
-               case 2:
-                  Contains(lastx,lasty,lastz,thisx,thisy,thisz);
-                  break;
-               case 3:
-                  Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
-                  break;
-               default:
-                  console.log("Bad value",lastarrow);
-               }
-            }
-
-      if (i < array[line].length-1)
-         {
-         lastx = thisx;
-         lasty = thisy;
-         lastz = thisz;
-         }
-      else
-         {
-         lastx = 0;
-         lasty = 0;
-         lastz = 0;
-         }
-
-         Event(thisx,thisy,thisz);
-         Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
-
-         if (array[line][i].NPtr != null)
-            {
-            ncptr = array[line][i].NPtr.CPtr;
-            nclass = array[line][i].NPtr.Class;
-            }
-
-         // if the last line starts with the same item, don't repeat it
-
-         if (i == 0 && str == last_line_start)
-            { // repeated item
-            let newline = document.createElement('br');
-            parent.appendChild(newline);
-            let text = document.createElement('i');
-            text.id = "ditto";
-            text.textContent = "         \"        ";
-            text.style.fontFamily = 'Times New Roman';
-  //          text.style.fontSize = '150%';
-            text.style.padding = '10px';
-            parent.appendChild(text);
-            continue;
-            }
-
-         if (i == 0)
-            {            
-            let spacer = document.createElement('hr');
-            parent.appendChild(spacer);
-            }
-
-         if (i == 0)
-            {
-            last_line_start = str;
-            }
-
-         if (str.includes("\n"))
-            {
-            let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
-            let pre = document.createElement('pre');
-            pre.textContent = str;
-            text_link.appendChild(pre);
-            parent.appendChild(text_link);
-            }
-         else
-            {
-            let text_link = document.createElement('a');
-            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
-            let text = document.createElement('i');
-            text.textContent = str;
-            text.style.fontFamily = 'Times New Roman';
-
-            if (str.length < 20)
-               {
-               text.style.fontSize = '150%';
-               text.style.padding = '10px';
-               }
-
-            text_link.appendChild(text);
-            parent.appendChild(text_link);
-            }
-         }
-      else // arrow 
-         {
-         const then = 2 // reserved vectors
-         const prev = 3
-
-         let arrow = array[line][i].Name
-         let arrptr = array[line][i].Arr
-         let stindex = array[line][i].STindex
-
-         lastarrow = stindex - ST_ZERO;
-
-         if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
-            {
-            let hr = document.createElement('p');
-            parent.appendChild(hr);
-            }
-
-         let arrow_link = document.createElement('a');
-         arrow_link.textContent = `( ${arrow} )  `;
-         arrow_link.id = `arrow-`+stindex;
-         arrow_link.class = "tooltip";
-         arrow_link.title = STINDICES[stindex];
-         arrow_link.style.fontFamily = 'Verdana';
-
-         parent.appendChild(arrow_link);
-         }
-      }
-   }
-
-return parent
 }
 
 /***********************************************************/
@@ -1305,7 +841,434 @@ for (let arrow of obj.Content)
 }
 
 /***********************************************************/
-//  Presentation
+//  Presentation helpers
+/***********************************************************/
+
+function PrintLink(parent,radius,stindex,arrow,str,nclass,ncptr,ctx) 
+{
+if (arrow == null)
+   {
+   arrow = "broken arrow"
+   }
+
+let box = document.createElement('div');
+box.id = "radius-" + radius;
+
+if (str.includes("\n"))
+   {
+   // arrow
+   let arrow_link = document.createElement('a');
+   arrow_link.textContent = `( ${arrow} )  `;
+   arrow_link.id = 'arrow-'+stindex;
+   arrow_link.title = STINDICES[stindex];
+   arrow_link.class = "tooltip";
+   arrow_link.style.fontFamily = 'Verdana';
+   box.appendChild(arrow_link);
+
+   // pre formatted text
+   let text_link = document.createElement('a');
+   text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+
+   let pre = document.createElement('pre');
+   pre.textContent = str;
+   text_link.appendChild(pre);
+   text_link.className = 'text';
+   box.appendChild(text_link);
+   }
+else
+   {
+   // arrow
+   let arrow_link = document.createElement('a');
+   arrow_link.textContent = `( ${arrow} )  `;
+
+   box.appendChild(arrow_link);
+   //arrow_link.className = 'arrow'+stindex;
+   arrow_link.id = 'arrow-'+stindex;
+   arrow_link.title = STINDICES[stindex];
+   arrow_link.class = "tooltip";
+   arrow_link.style.fontFamily = 'Verdana';
+
+   // plain text
+   let text_link = document.createElement('a')
+
+   if (IsURL(str,arrow))
+      {
+      text_link.href=str;
+      text_link.target="_blank";
+      text_link.rel="noopener";
+      }
+   else if (IsImage(str,arrow))
+      {
+      let img = document.createElement('img')
+      img.src = str;
+      box.appendChild(img);
+      }
+   else
+      { 
+      text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+      }
+   text_link.textContent = str;
+   text_link.className = 'text';
+   text_link.style.fontFamily = 'Times';
+   if (str.length < 20)
+      {
+      text_link.style.fontSize = '200%';
+      text_link.style.padding = '10px';
+      }
+   box.appendChild(text_link);
+
+   if (ctx.length > 0)
+      {
+      let cntx = document.createElement('i');
+      cntx.id = "cntxt";
+      cntx.textContent = " context hints: " + ctx;
+      box.appendChild(cntx);
+      }
+   let br = document.createElement('br');
+   box.appendChild(br);
+   }
+
+parent.appendChild(box);
+
+return parent
+}
+
+/***********************************************************/
+
+function PrintPaths(parent,array)
+{
+if (array.length < 1)
+   {
+   return parent;
+   }
+
+let lastx = 0;
+let lasty = 0;
+let lastz = 0;
+let lastarrow = 0;
+
+for (let path = 0; path < array.length; path++)
+   {
+   if (array[path] == null)
+      {
+      continue;
+      }
+
+   // The WebPath protocol alternates node-arrow...
+
+   for (let i = 0; i < array[path].length; i++)
+      {
+      if (i % 2 == 0) // node
+         {
+         let str = array[path][i].Name;
+         let ncptr = array[path][i].NPtr.CPtr;
+         let nclass = array[path][i].NPtr.NClass;
+
+         let xyz = array[path][i].XYZ;
+
+         thisx = xyz.X;
+         thisy = xyz.Y;
+         thisz = xyz.Z;
+
+         DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz);
+
+         if (i < array[path].length-1)
+            {
+            lastx = thisx;
+            lasty = thisy;
+            lastz = thisz;
+            }
+         else
+            {
+            lastx = 0;
+            lasty = 0;
+            lastz = 0;
+            }
+
+         Event(thisx,thisy,thisz);
+         Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
+
+         if (array[path][i].NPtr != null)
+            {
+            ncptr = array[path][i].NPtr.CPtr;
+            nclass = array[path][i].NPtr.Class;
+            }
+
+         if (str.includes("\n"))
+            {
+            let text_link = document.createElement('a');
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+            let pre = document.createElement('pre');
+            pre.textContent = str;
+            text_link.appendChild(pre);
+            parent.appendChild(text_link);
+            }
+         else
+            {
+            let text_link = document.createElement('a');
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+            let text = document.createElement('i');
+            text.textContent = str;
+            text.style.fontFamily = 'Times New Roman';
+
+            if (str.length < 20)
+               {
+               text.style.fontSize = '150%';
+               text.style.padding = '10px';
+               }
+
+            text_link.appendChild(text);
+            parent.appendChild(text_link);
+            }
+         }
+      else // arrow 
+         {
+         const then = 2 // reserved vectors
+         const prev = 3
+
+         let arrow = array[path][i].Name
+         let arrptr = array[path][i].Arr
+         let stindex = array[path][i].STindex
+
+         lastarrow = stindex - ST_ZERO;
+
+         if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
+            {
+            let hr = document.createElement('p');
+            parent.appendChild(hr);
+            }
+
+         let arrow_link = document.createElement('a');
+         arrow_link.textContent = `( ${arrow} )  `;
+         arrow_link.id = `arrow-`+stindex;
+         arrow_link.class = "tooltip";
+         arrow_link.title = STINDICES[stindex];
+         arrow_link.style.fontFamily = 'Verdana';
+
+         parent.appendChild(arrow_link);
+         }
+      }
+
+   let spacer = document.createElement('hr');
+   parent.appendChild(spacer);
+   }
+
+return parent
+}
+
+/***********************************************************/
+
+function DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz)
+{
+if (lastx != 0 || lasty != 0 || lastz != 0)
+   {
+   switch (lastarrow)
+      {
+      case -3:
+         Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
+         break;
+      case -2:
+         Contains(thisx,thisy,thisz,lastx,lasty,lastz);
+         break;
+      case -1:
+         LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+         break;
+      case 0:
+         LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+         break;
+      case 1:
+         LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
+         break;
+      case 2:
+         Contains(lastx,lasty,lastz,thisx,thisy,thisz);
+         break;
+      case 3:
+         Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
+         break;
+      default:
+         console.log("Bad value",lastarrow);
+      }
+   }
+}
+
+/***********************************************************/
+
+function PrintNotes(parent,array)
+{
+if (array == null || array.length < 1)
+   {
+   return parent;
+   }
+
+let lastx = 0;
+let lasty = 0;
+let lastz = 0;
+let lastarrow = 0;
+let last_line_start = "";
+
+// Line by line
+
+for (let line = 0; line < array.length; line++)
+   {
+   if (array[line] == null)
+      {
+      continue;
+      }
+
+   // The WebPath protocol alternates node-arrow...
+
+   for (let i = 0; i < array[line].length; i++)
+      {
+      if (i % 2 == 0) // node
+         {
+         let str = array[line][i].Name;
+         let ncptr = array[line][i].NPtr.CPtr;
+         let nclass = array[line][i].NPtr.NClass;
+
+         let xyz = array[line][i].XYZ;
+
+         thisx = xyz.X;
+         thisy = xyz.Y;
+         thisz = xyz.Z;
+
+         if (lastx != 0 || lasty != 0 || lastz != 0)
+            {
+            switch (lastarrow)
+               {
+               case -3:
+                  Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case -2:
+                  Contains(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case -1:
+                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case 0:
+                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
+                  break;
+               case 1:
+                  LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
+                  break;
+               case 2:
+                  Contains(lastx,lasty,lastz,thisx,thisy,thisz);
+                  break;
+               case 3:
+                  Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
+                  break;
+               default:
+                  console.log("Bad value",lastarrow);
+               }
+            }
+
+      if (i < array[line].length-1)
+         {
+         lastx = thisx;
+         lasty = thisy;
+         lastz = thisz;
+         }
+      else
+         {
+         lastx = 0;
+         lasty = 0;
+         lastz = 0;
+         }
+
+         Event(thisx,thisy,thisz);
+         Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
+
+         if (array[line][i].NPtr != null)
+            {
+            ncptr = array[line][i].NPtr.CPtr;
+            nclass = array[line][i].NPtr.Class;
+            }
+
+         // if the last line starts with the same item, don't repeat it
+
+         if (i == 0 && str == last_line_start)
+            { // repeated item
+            let newline = document.createElement('br');
+            parent.appendChild(newline);
+            let text = document.createElement('i');
+            text.id = "ditto";
+            text.textContent = "         \"        ";
+            text.style.fontFamily = 'Times New Roman';
+  //          text.style.fontSize = '150%';
+            text.style.padding = '10px';
+            parent.appendChild(text);
+            continue;
+            }
+
+         if (i == 0)
+            {            
+            let spacer = document.createElement('hr');
+            parent.appendChild(spacer);
+            }
+
+         if (i == 0)
+            {
+            last_line_start = str;
+            }
+
+         if (str.includes("\n"))
+            {
+            let text_link = document.createElement('a');
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+            let pre = document.createElement('pre');
+            pre.textContent = str;
+            text_link.appendChild(pre);
+            parent.appendChild(text_link);
+            }
+         else
+            {
+            let text_link = document.createElement('a');
+            text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+            let text = document.createElement('i');
+            text.textContent = str;
+            text.style.fontFamily = 'Times New Roman';
+
+            if (str.length < 20)
+               {
+               text.style.fontSize = '150%';
+               text.style.padding = '10px';
+               }
+
+            text_link.appendChild(text);
+            parent.appendChild(text_link);
+            }
+         }
+      else // arrow 
+         {
+         const then = 2 // reserved vectors
+         const prev = 3
+
+         let arrow = array[line][i].Name
+         let arrptr = array[line][i].Arr
+         let stindex = array[line][i].STindex
+
+         lastarrow = stindex - ST_ZERO;
+
+         if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
+            {
+            let hr = document.createElement('p');
+            parent.appendChild(hr);
+            }
+
+         let arrow_link = document.createElement('a');
+         arrow_link.textContent = `( ${arrow} )  `;
+         arrow_link.id = `arrow-`+stindex;
+         arrow_link.class = "tooltip";
+         arrow_link.title = STINDICES[stindex];
+         arrow_link.style.fontFamily = 'Verdana';
+
+         parent.appendChild(arrow_link);
+         }
+      }
+   }
+
+return parent
+}
+
 /***********************************************************/
 
 function ShowNodeEvent(panel,event,counter,direction,skiparrow,anchortag)
@@ -1477,6 +1440,8 @@ if (event.Orbits[Il1] != null)
 }
 
 /***********************************************************/
+// Checks and tests
+/***********************************************************/
 
 function CheckCone(docpart,name,bwd,fwd)
 {
@@ -1507,105 +1472,62 @@ if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
 }
 
 /***********************************************************/
-// Graphics
-/***********************************************************/
 
-function PlotGraphics(event,lastevent)
+function IsImage(str,arrow)
 {
-let tx = event.XYZ.X;
-let ty = event.XYZ.Y;
-let tz = event.XYZ.Z;
-
-Event(tx,ty,tz);
-Label(tx,ty,tz,event.Text.slice(0,25),12,"black");
-
-if (lastevent != event)
+if (arrow == "has image" || arrow == "is an image for")
    {
-   let lx = lastevent.XYZ.X;
-   let ly = lastevent.XYZ.Y;
-   let lz = lastevent.XYZ.Z;
-
-   LeadsTo(lx,ly,lz,tx,ty,tz)
+   if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/")
+      {
+      return true;
+      }
    }
 
-// Now look at orbits
-
-for (let ngh of event.Orbits[Il1])
-   {
-   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   LeadsTo(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   }
-for (let ngh of event.Orbits[Im1])
-   {
-   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   LeadsTo(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
-   }
-for (let ngh of event.Orbits[Ic2])
-   {
-   Thing(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Contains(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   }
-for (let ngh of event.Orbits[Im2])
-   {
-   Thing(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Contains(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
-   }
-for (let ngh of event.Orbits[Ie3])
-   {
-   Concept(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Expresses(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   }
-for (let ngh of event.Orbits[Im3])
-   {
-   Concept(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Expresses(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
-   }
-for (let ngh of event.Orbits[In0])
-   {
-   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   Near(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
-   }
+return false
 }
 
 /***********************************************************/
 
-function ArrowPair(angle,type,fwd,bwd)
+function IsMath(str)
 {
-x = 0.5 * Math.cos(angle);
-y = 0.5 * Math.sin(angle);
-
-switch (type)
+if (str.includes("\(") && str.includes("\)"))
    {
-   case 0:
-	Near(0,0,0,x,y,0);
-	Near(0,0,0,-x,-y,0);
-      break;
-   case 1:
-   case -1:
-	LeadsTo(0,0,0,x,y,0);
-	LeadsTo(0,0,0,-x,-y,0);
-      break;
-   case 2:
-   case -2:
-	Contains(0,0,0,x,y,0);
-	Contains(0,0,0,-x,-y,0);
-      break;
-   case 3:
-   case -3:
-	Expresses(0,0,0,x,y,0);
-	Expresses(0,0,0,-x,-y,0);
-      break;
+   return true;
    }
 
-const size = "12";
-const colour = "black";
+return false
+}
 
-Label(x,y,0,fwd,size,colour)
-Label(-x,-y,0,bwd,size,colour)
+/***********************************************************/
+
+function IsURL(str,arrow)
+{
+if (arrow == "has URL")
+   {
+   if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/")
+      {
+      return true;
+      }
+   }
+
+return false
 }
 
 /***********************************************************/
 // handlers
+/***********************************************************
+
+// Disable ENTER submission
+
+window.addEventListener('keydown',function(event)
+   {
+   if(event.keyCode == 13) 
+      {
+      event.preventDefault();
+      return false;
+      }
+   });
+
 /***********************************************************/
 
 function SearchHandler()
@@ -1705,6 +1627,8 @@ async function sendlinkData(nclass,ncptr)
       throw new Error('network returns error');
     }
 
+  //let newWindow = window.open('about:blank', '_blank');  How??
+
     return response.json();
 
   })
@@ -1782,6 +1706,104 @@ function CtxSplice(s)
 {
 let ret = s.replaceAll(", ",".");
 return ret;
+}
+
+/***********************************************************/
+// Graphics Drawing
+/***********************************************************/
+
+function PlotGraphics(event,lastevent)
+{
+let tx = event.XYZ.X;
+let ty = event.XYZ.Y;
+let tz = event.XYZ.Z;
+
+Event(tx,ty,tz);
+Label(tx,ty,tz,event.Text.slice(0,25),12,"black");
+
+if (lastevent != event)
+   {
+   let lx = lastevent.XYZ.X;
+   let ly = lastevent.XYZ.Y;
+   let lz = lastevent.XYZ.Z;
+
+   LeadsTo(lx,ly,lz,tx,ty,tz)
+   }
+
+// Now look at orbits
+
+for (let ngh of event.Orbits[Il1])
+   {
+   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   LeadsTo(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   }
+for (let ngh of event.Orbits[Im1])
+   {
+   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   LeadsTo(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+   }
+for (let ngh of event.Orbits[Ic2])
+   {
+   Thing(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Contains(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   }
+for (let ngh of event.Orbits[Im2])
+   {
+   Thing(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Contains(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+   }
+for (let ngh of event.Orbits[Ie3])
+   {
+   Concept(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Expresses(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   }
+for (let ngh of event.Orbits[Im3])
+   {
+   Concept(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Expresses(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z,ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z);
+   }
+for (let ngh of event.Orbits[In0])
+   {
+   Event(ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   Near(ngh.OOO.X,ngh.OOO.Y,ngh.OOO.Z,ngh.XYZ.X,ngh.XYZ.Y,ngh.XYZ.Z);
+   }
+}
+
+/***********************************************************/
+
+function ArrowPair(angle,type,fwd,bwd)
+{
+x = 0.5 * Math.cos(angle);
+y = 0.5 * Math.sin(angle);
+
+switch (type)
+   {
+   case 0:
+	Near(0,0,0,x,y,0);
+	Near(0,0,0,-x,-y,0);
+      break;
+   case 1:
+   case -1:
+	LeadsTo(0,0,0,x,y,0);
+	LeadsTo(0,0,0,-x,-y,0);
+      break;
+   case 2:
+   case -2:
+	Contains(0,0,0,x,y,0);
+	Contains(0,0,0,-x,-y,0);
+      break;
+   case 3:
+   case -3:
+	Expresses(0,0,0,x,y,0);
+	Expresses(0,0,0,-x,-y,0);
+      break;
+   }
+
+const size = "12";
+const colour = "black";
+
+Label(x,y,0,fwd,size,colour)
+Label(-x,-y,0,bwd,size,colour)
 }
 
 /***********************************************************/
@@ -2050,8 +2072,10 @@ CTX.restore();
 }
 
 /***********************************************************/
+// Main program starts here
+/***********************************************************/
 
-DoPage();
+FetchPage();
 SearchHandler();
 
 </script>
