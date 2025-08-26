@@ -854,9 +854,10 @@ if (arrow == null)
 let box = document.createElement('div');
 box.id = "radius-" + radius;
 
-if (str.includes("\n"))
+if (str.includes("\n")) // preformatted item
    {
-   // arrow
+   // any arrow comes first
+
    let arrow_link = document.createElement('a');
    arrow_link.textContent = `( ${arrow} )  `;
    arrow_link.id = 'arrow-'+stindex;
@@ -866,6 +867,7 @@ if (str.includes("\n"))
    box.appendChild(arrow_link);
 
    // pre formatted text
+
    let text_link = document.createElement('a');
    text_link.onclick = function() { sendlinkData(nclass,ncptr); };
 
@@ -877,7 +879,8 @@ if (str.includes("\n"))
    }
 else
    {
-   // arrow
+   // any arrow comes first
+
    let arrow_link = document.createElement('a');
    arrow_link.textContent = `( ${arrow} )  `;
 
@@ -888,7 +891,7 @@ else
    arrow_link.class = "tooltip";
    arrow_link.style.fontFamily = 'Verdana';
 
-   // plain text
+   // now plain text
    let text_link = document.createElement('a')
 
    if (IsURL(str,arrow))
@@ -904,9 +907,12 @@ else
       box.appendChild(img);
       }
    else
-      { 
+      {
+      // THIS IS WHERE WE WANT TO ADD TAB/ORBIT POPUP ON MOUSEOVER
+
       text_link.onclick = function() { sendlinkData(nclass,ncptr); };
       }
+
    text_link.textContent = str;
    text_link.className = 'text';
    text_link.style.fontFamily = 'Times';
@@ -1131,48 +1137,22 @@ for (let line = 0; line < array.length; line++)
          thisy = xyz.Y;
          thisz = xyz.Z;
 
-         if (lastx != 0 || lasty != 0 || lastz != 0)
-            {
-            switch (lastarrow)
-               {
-               case -3:
-                  Expresses(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case -2:
-                  Contains(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case -1:
-                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case 0:
-                  LeadsTo(thisx,thisy,thisz,lastx,lasty,lastz);
-                  break;
-               case 1:
-                  LeadsTo(lastx,lasty,lastz,thisx,thisy,thisz);
-                  break;
-               case 2:
-                  Contains(lastx,lasty,lastz,thisx,thisy,thisz);
-                  break;
-               case 3:
-                  Expresses(lastx,lasty,lastz,thisx,thisy,thisz);
-                  break;
-               default:
-                  console.log("Bad value",lastarrow);
-               }
-            }
+ 	 // Add graphic rendering
 
-      if (i < array[line].length-1)
-         {
-         lastx = thisx;
-         lasty = thisy;
-         lastz = thisz;
-         }
-      else
-         {
-         lastx = 0;
-         lasty = 0;
-         lastz = 0;
-         }
+         DrawPath(lastarrow,thisx,thisy,thisz,lastx,lasty,lastz);
+
+         if (i < array[line].length-1)
+            {
+            lastx = thisx;
+            lasty = thisy;
+            lastz = thisz;
+            }
+         else
+            {
+            lastx = 0;
+            lasty = 0;
+            lastz = 0;
+            }
 
          Event(thisx,thisy,thisz);
          Label(thisx,thisy,thisz,str.slice(0,25),12,"black");
@@ -1186,14 +1166,14 @@ for (let line = 0; line < array.length; line++)
          // if the last line starts with the same item, don't repeat it
 
          if (i == 0 && str == last_line_start)
-            { // repeated item
+            { 
+            // repeated item, so ditto
             let newline = document.createElement('br');
             parent.appendChild(newline);
             let text = document.createElement('i');
             text.id = "ditto";
             text.textContent = "         \"        ";
             text.style.fontFamily = 'Times New Roman';
-  //          text.style.fontSize = '150%';
             text.style.padding = '10px';
             parent.appendChild(text);
             continue;
@@ -1210,6 +1190,8 @@ for (let line = 0; line < array.length; line++)
             last_line_start = str;
             }
 
+         // Subsequent items on same line
+
          if (str.includes("\n"))
             {
             let text_link = document.createElement('a');
@@ -1222,7 +1204,11 @@ for (let line = 0; line < array.length; line++)
          else
             {
             let text_link = document.createElement('a');
+
+            // THIS IS WHERE WE WANT TO ADD TAB/ ORBITPOPUP ON MOUSEOVER
+
             text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+
             let text = document.createElement('i');
             text.textContent = str;
             text.style.fontFamily = 'Times New Roman';
@@ -1332,108 +1318,53 @@ if (counter == 0)
    child.appendChild(chapter);
    }
 
-CheckCone(child,"[LT]",event.Orbits[Im1],event.Orbits[Il1]);
-CheckCone(child,"[CN]",event.Orbits[Im2],event.Orbits[Ic2]);
-CheckCone(child,"[EP]",event.Orbits[Im3],event.Orbits[Ie3]);
-CheckCone(child,"[NR]",event.Orbits[In0],event.Orbits[In0]);
-panel.appendChild(child);
+// See what pathways we are part of and add notes
 
-// First properties of this node
+CheckCone(panel,child,"[LT]",event.Orbits[Im1],event.Orbits[Il1]);
+CheckCone(panel,child,"[CN]",event.Orbits[Im2],event.Orbits[Ic2]);
+CheckCone(panel,child,"[EP]",event.Orbits[Im3],event.Orbits[Ie3]);
+CheckCone(panel,child,"[NR]",event.Orbits[In0],event.Orbits[In0]);
 
-if (event.Orbits[Im3] != null)
+// Local descriptive property attributes first
+
+AddLinkOrbits(panel,child,event,Ie3,skiparrow);
+AddLinkOrbits(panel,child,event,Im2,skiparrow);
+
+// Then any equivalents
+
+AddLinkOrbits(panel,child,event,In0,skiparrow);
+
+// Then containment
+
+AddLinkOrbits(panel,child,event,Ic2,skiparrow);
+
+// Lastly, from-->to
+
+AddLinkOrbits(panel,child,event,Im1,skiparrow);
+AddLinkOrbits(panel,child,event,Il1,skiparrow);
+}
+
+/***********************************************************/
+// Render line link list by STtype
+/***********************************************************/
+
+function AddLinkOrbits(panel,child,event,sttype,skiparrow)
+{
+if (event.Orbits[sttype] != null)
    {
-   for (let ngh of event.Orbits[Im3]) 
+   for (let ngh of event.Orbits[sttype]) 
       {
       if (skiparrow != ngh.Arrow)
          {
          child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
          panel.appendChild(child);
 
-         if (IsImage(event.Text,ngh.Arrow))
+         if (sttype == Im3 && IsImage(event.Text,ngh.Arrow))
             {
             let img = document.createElement('img')
             img.src = event.Text;
             panel.appendChild(img);
             }
-         }
-      }
-   }
-
-if (event.Orbits[Ie3] != null)
-   {
-   for (let ngh of event.Orbits[Ie3]) 
-      {
-      if (skiparrow != ngh.Arrow)
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
-         panel.appendChild(child);
-         }
-      }
-   }
-
-if (direction != "fwd" && event.Orbits[Im2] != null)
-   {
-   for (let ngh of event.Orbits[Im2]) 
-      {
-      if (skiparrow != ngh.Arrow)
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
-         panel.appendChild(child);
-         }
-      }
-   }
-
-// Then any equivalents
-
-if (event.Orbits[In0] != null)
-   {
-   for (let ngh of event.Orbits[In0]) 
-      {
-      if (skiparrow != ngh.Arrow)
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx)
-         panel.appendChild(child);
-         }
-      }
-   }
-
-// Then containment
-
-if (event.Orbits[Ic2] != null)
-   {
-   for (let ngh of event.Orbits[Ic2]) 
-      {
-      if (skiparrow != ngh.Arrow)
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
-         panel.appendChild(child);
-         }
-      }
-   }
-
-// Lastly, from-->to
-
-if (event.Orbits[Im1] != null)
-   {
-   for (let ngh of event.Orbits[Im1]) 
-      {
-      if (ngh.Arrow != "follows on from") // because seq mode already emphasized this
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
-         panel.appendChild(child);
-         }
-      }
-   }
-
-
-if (event.Orbits[Il1] != null)
-   {
-   for (let ngh of event.Orbits[Il1]) 
-      {
-      if (skiparrow != ngh.Arrow)
-         {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
-         panel.appendChild(child);
          }
       }
    }
@@ -1443,7 +1374,7 @@ if (event.Orbits[Il1] != null)
 // Checks and tests
 /***********************************************************/
 
-function CheckCone(docpart,name,bwd,fwd)
+function CheckCone(panel,docpart,name,bwd,fwd)
 {
 if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
    {
@@ -1469,6 +1400,8 @@ if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
    docpart.id = "cone_button"
    docpart.appendChild(link);
    }
+
+panel.appendChild(docpart);
 }
 
 /***********************************************************/
