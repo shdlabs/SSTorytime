@@ -127,8 +127,13 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		nclass := r.FormValue("nclass")
 		ncptr := r.FormValue("ncptr")
-
-		if len(nclass) > 0 && len(ncptr) > 0 {
+		
+		if name == "lastseen" {
+			LastSaw(w,r,nclass,ncptr)
+			return
+		}
+		
+		if name == "" && len(nclass) > 0 && len(ncptr) > 0 {
 			// direct click on an item
 			var a,b int
 			fmt.Sscanf(nclass,"%d",&a)
@@ -136,15 +141,15 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 			nstr := fmt.Sprintf("(%d,%d)",a,b)
 			name = name + nstr
 		}
-
+		
 		fmt.Println("\nReceived command:",name)
-
+		
 		ambient,key,_ := SST.GetContext()
-
+		
 		if len(name) == 0 {
 			name = "any chapter reminders context " + key + " " + ambient
 		}
-
+		
 		search := SST.DecodeSearchField(name)
 
 		HandleSearch(search,name,w,r)
@@ -152,6 +157,16 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
+}
+
+// *********************************************************************
+
+func LastSaw(w http.ResponseWriter, r *http.Request,class,cptr string) {
+
+	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }",class,cptr)
+	w.Write([]byte(response))
+	fmt.Println("Reply LastSaw sent")
+
 }
 
 // *********************************************************************

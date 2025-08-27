@@ -8,6 +8,8 @@
 <style>
 // **************************************************
 
+
+
 * {
   box-sizing: border-box;
 }
@@ -58,6 +60,17 @@ h1 {
   //line-height: 10px;
 }
 
+br {
+  padding : 10px;
+  margin-bottom: 30px;
+}
+
+hr {
+
+ padding: 10px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
 
 #header_now {
   color: orange;
@@ -128,6 +141,10 @@ nav {
    margin-left: 50px;
 }
 
+// CHECKBOXES ............................................
+
+
+// END CHECKBOXES ............................................
 
 article {
   float: left;
@@ -165,6 +182,9 @@ article a {
   color: darkgreen;
   margin-top: 5px;
 }
+
+
+// Canvas
 
 pictureframe {
 //width: 1200px;
@@ -280,6 +300,8 @@ a:hover {
  margin-bottom: 20px;
 }
 
+// Arrow hovering tooltips .....................
+
 a:not(.arrow):hover{
   color: #999999;
 }
@@ -299,7 +321,7 @@ h1:not(.arrow):hover{
 
 pre:hover{
   color: #999999;
-}
+
 // **************************************************
 </style>
 
@@ -346,9 +368,9 @@ MathJax.Hub.Config({
 </page>
 
 <script>
-/******************************************************************************/
-/* MB SSTorytime poc/demo code - to be cleaned up and improved by an expert.. */
-/******************************************************************************/
+/******************************************************************************************/
+/* MB SSTorytime poc/demo code - to be cleaned up and improved by a (respectful) expert.. */
+/******************************************************************************************/
 
 /***********************************************************/
 // Global configuration
@@ -652,7 +674,7 @@ parent.id = "chap_head";
 let chapter = obj.Content.Title;
 let ctx = document.createElement('h2');
 let context = obj.Content.Context;
-ctx.textContent = context;
+ctx.textContent = "In context: \"" + context + "\"";
 
 let shchap = document.createElement('b');
 shchap.textContent = chapter;
@@ -922,6 +944,12 @@ else
       text_link.style.padding = '10px';
       }
    box.appendChild(text_link);
+
+   // Add a checkbox for progress tracking
+
+   ProgressCheckBox(box,nclass,ncptr);
+
+   // End checkbox
 
    if (ctx.length > 0)
       {
@@ -1222,6 +1250,8 @@ for (let line = 0; line < array.length; line++)
             text_link.appendChild(text);
             parent.appendChild(text_link);
             }
+
+         ProgressCheckBox(parent,nclass,ncptr);
          }
       else // arrow 
          {
@@ -1342,6 +1372,37 @@ AddLinkOrbits(panel,child,event,Ic2,skiparrow);
 
 AddLinkOrbits(panel,child,event,Im1,skiparrow);
 AddLinkOrbits(panel,child,event,Il1,skiparrow);
+}
+
+/***********************************************************/
+
+function ProgressCheckBox(container,nclass,ncptr)
+{
+// Create a label for the checkbox
+let label = document.createElement('label');
+label.className = "container";
+label.textContent = '';
+
+let checkbox = document.createElement('input');
+checkbox.type = 'checkbox';
+checkbox.id = 'progress-checkbox';
+checkbox.value = '('+nclass+','+ncptr+')';
+
+checkbox.addEventListener('change',function() {
+
+if (checkbox.checked) 
+   {
+   let ack = sendlastseen(nclass,ncptr);
+   }
+
+});
+
+let spanner = document.createElement('span');
+spanner.className = 'checkmark';
+
+label.appendChild(checkbox);
+label.appendChild(spanner);
+container.appendChild(label);
 }
 
 /***********************************************************/
@@ -1576,6 +1637,39 @@ async function sendlinkData(nclass,ncptr)
       // Handle error
       console.log("error ", error);
     });
+}
+
+/***********************************************************/
+
+async function sendlastseen(nclass,ncptr)
+{
+   let formData = new FormData();
+   formData.set("nclass",nclass);
+   formData.set("ncptr",ncptr);
+   formData.set("name","lastseen");
+
+   fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
+    .then(response => {
+
+    if (!response.ok) 
+       {
+       throw new Error('network returns error');
+       }
+
+    return response.json();
+    })
+    .then((resp) => {
+
+	console.log("LASTSAW ACK",resp.Content);
+	return;
+
+    })
+
+    .catch((error) => {
+      // Handle error
+      console.log("error ", error);
+    });
+ 
 }
 
 /***********************************************************/
