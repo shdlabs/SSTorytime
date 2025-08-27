@@ -335,6 +335,15 @@ const ARROW_INVERSES_TABLE = "CREATE TABLE IF NOT EXISTS ArrowInverses " +
 	"Primary Key(Plus,Minus)" +
 	")"
 
+const LASTSEEN_TABLE = "CREATE TABLE IF NOT EXISTS LastSeen " +
+	"(    " +
+	"Section text," +
+	"NPtr    NodePtr," +
+	"Last    timestamp," +
+	"Delta   interval," +
+	"Freq    int" +
+	")"
+
 //**************************************************************
 // Lookup tables
 //**************************************************************
@@ -612,6 +621,9 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("drop function UnCmp")
 		ctx.DB.QueryRow("drop function DeleteChapter")
 
+		ctx.DB.QueryRow("drop function lastsawsection(text)")
+		ctx.DB.QueryRow("drop function lastsawnptr(nodeptr)")
+		
 		ctx.DB.QueryRow("drop table Node")
 		ctx.DB.QueryRow("drop table PageMap")
 		ctx.DB.QueryRow("drop table NodeArrowNode")
@@ -621,6 +633,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 		ctx.DB.QueryRow("drop table ArrowDirectory")
 		ctx.DB.QueryRow("drop table ArrowInverses")
+		ctx.DB.QueryRow("drop table LastSeen")
 
 	}
 
@@ -661,8 +674,14 @@ func Configure(ctx PoSST,load_arrows bool) {
 		fmt.Println("Unable to create table as, ",ARROW_INVERSES_TABLE)
 		os.Exit(-1)
 	}
+
 	if !CreateTable(ctx,ARROW_DIRECTORY_TABLE) {
 		fmt.Println("Unable to create table as, ",ARROW_DIRECTORY_TABLE)
+		os.Exit(-1)
+	}
+
+	if !CreateTable(ctx,LASTSEEN_TABLE) {
+		fmt.Println("Unable to create table as, ",LASTSEEN_TABLE)
 		os.Exit(-1)
 	}
 
@@ -3154,6 +3173,72 @@ func DefineStoredFunctions(ctx PoSST) {
 		fmt.Println("Error defining postgres function:",qstr,err)
 	}
 
+	row.Close()
+
+	// ************ LAST SEEN **************'
+
+	qstr = "CREATE OR REPLACE FUNCTION LastSawSection(this text)\n"+
+		"RETURNS bool AS $fn$\n"+
+		"DECLARE \n"+
+		"  prev      timestamp = NOW();\n"+
+		"  prevdelta interval;\n"+
+		"  deltat    interval;\n"+
+		"  nowt      timestamp;\n"+
+		"  f    int = 0;"+
+		"BEGIN\n"+
+		"  nowt = NOW();\n"+
+		"  SELECT last,delta,freq INTO prev,prevdelta,f FROM LastSeen WHERE section=this;\n"+
+		"  IF NOT FOUND THEN\n"+
+		"     INSERT INTO LastSeen (section,last,freq) VALUES (this, NOW(),1);\n"+
+		"  ELSE\n"+
+		"     deltat = nowt - prev;\n"+
+		"     f = f + 1;\n"+
+		"     IF deltat > interval '2 minutes' THEN\n"+
+		"       UPDATE LastSeen SET last=nowt,delta=deltat,freq=f WHERE section = this;\n"+
+		"     END IF;\n"+
+		"  END IF;\n"+
+		"  RETURN true;\n"+
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+	
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+	
+	row.Close()
+	
+	qstr = "CREATE OR REPLACE FUNCTION LastSawNPtr(this NodePtr)\n"+
+		"RETURNS bool AS $fn$\n"+
+		"DECLARE \n"+
+		"  prev      timestamp = NOW();\n"+
+		"  prevdelta interval;\n"+
+		"  deltat    interval;\n"+
+		"  nowt      timestamp;\n"+
+		"  f    int = 0;"+
+		"BEGIN\n"+
+		"  nowt = NOW();\n"+
+		"  SELECT last,delta,freq INTO prev,prevdelta,f FROM LastSeen WHERE nptr=this;\n"+
+		"  IF NOT FOUND THEN\n"+
+		"     INSERT INTO LastSeen (nptr,last,freq) VALUES (this,nowt,1);\n"+
+		"  ELSE\n"+
+		"     deltat = nowt - prev;\n"+
+		"     f = f + 1;\n"+
+		"     IF deltat > interval '2 minutes' THEN\n"+
+		"        UPDATE LastSeen SET last=nowt,delta=deltat,freq=f WHERE nptr = this;\n"+
+		"     END IF;\n"+
+		"  END IF;\n"+
+		"  RETURN true;\n"+
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;\n"
+	
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+	
 	row.Close()
 
 }
@@ -5746,6 +5831,22 @@ func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,
 	}
 	
 	return intentional,Map2List(ambient)
+}
+
+// *********************************************************************
+
+func LastSawSection(ctx PoSST,name string) {
+
+	s := fmt.Sprintf("select LastSawSection('%s')",name)
+	ctx.DB.QueryRow(s)
+}
+
+// *********************************************************************
+
+func LastSawNPtr(ctx PoSST,class,cptr int) {
+
+	s := fmt.Sprintf("select LastSawNPtr('(%d,%d)')",class,cptr)
+	ctx.DB.QueryRow(s)
 }
 
 // *********************************************************************
