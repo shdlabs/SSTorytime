@@ -674,7 +674,6 @@ let shchap = document.createElement('b');
 shchap.textContent = chapter;
 parent.appendChild(shchap)
 
-
 let thepage = document.createElement('p');
 
 thepage = PrintNotes(thepage,obj.Content.Notes);
@@ -941,7 +940,7 @@ else
 
    // Add a checkbox for progress tracking
 
-   ProgressCheckBox(box,nclass,ncptr);
+   ProgressCheckBox(box,nclass,ncptr,"any");
 
    // End checkbox
 
@@ -1133,6 +1132,7 @@ let lasty = 0;
 let lastz = 0;
 let lastarrow = 0;
 let last_line_start = "";
+let chtxt;
 
 // Line by line
 
@@ -1207,7 +1207,7 @@ for (let line = 0; line < array.length; line++)
             parent.appendChild(spacer);
 
    	    // New line has possble new chap/context
-            let chtxt = array[line][i].ChCtx;
+            chtxt = array[line][i].ChCtx;
             if (chtxt.length > 4)
                {
                let sec = document.createElement('h2');
@@ -1254,7 +1254,7 @@ for (let line = 0; line < array.length; line++)
             parent.appendChild(text_link);
             }
 
-         ProgressCheckBox(parent,nclass,ncptr);
+         ProgressCheckBox(parent,nclass,ncptr,chtxt);
          }
       else // arrow 
          {
@@ -1379,7 +1379,7 @@ AddLinkOrbits(panel,child,event,Il1,skiparrow);
 
 /***********************************************************/
 
-function ProgressCheckBox(container,nclass,ncptr)
+function ProgressCheckBox(container,nclass,ncptr,chapcontext)
 {
 // Create a label for the checkbox
 let label = document.createElement('label');
@@ -1395,7 +1395,7 @@ checkbox.addEventListener('change',function() {
 
 if (checkbox.checked) 
    {
-   let ack = sendlastseen("lastnptr",nclass,ncptr);
+   let ack = sendlastseen("lastnptr",nclass,ncptr,chapcontext);
    }
 
 });
@@ -1644,12 +1644,13 @@ async function sendlinkData(nclass,ncptr)
 
 /***********************************************************/
 
-async function sendlastseen(name,nclass,ncptr)
+async function sendlastseen(name,nclass,ncptr,chapcontext)
 {
    let formData = new FormData();
    formData.set("nclass",nclass);
    formData.set("ncptr",ncptr);
    formData.set("name",name);
+   formData.set("chapcontext",chapcontext);
 
    fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
     .then(response => {
@@ -1694,8 +1695,6 @@ async function sendLinkSearch(search)
   })
     .then((resp) => {
 
-// sendlastseen any context a.b.c.d
-
       DoHeader(resp);
 
       switch (resp.Response)
@@ -1711,11 +1710,9 @@ async function sendLinkSearch(search)
             break;
          case "Sequence":
             DoSeqPanel(resp);
-// sendlastseen
             break;
 	 case "PageMap":
 	    DoPageMapPanel(resp);
-// sendlastseen
             break;
 	 case "TOC":
 	    DoTOCPanel(resp);

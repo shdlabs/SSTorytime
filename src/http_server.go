@@ -127,17 +127,16 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		nclass := r.FormValue("nclass")
 		ncptr := r.FormValue("ncptr")
+		chapcontext := r.FormValue("chapcontext")
 		
 		if name == "lastnptr" {
+			if chapcontext != "" {
+				LastSawSection(w,r,chapcontext)
+			}
 			LastSawNPtr(w,r,nclass,ncptr)
 			return
 		}
 
-		if name == "lastsection" {
-			LastSawSection(w,r,name)
-			return
-		}
-		
 		if name == "" && len(nclass) > 0 && len(ncptr) > 0 {
 			// direct click on an item
 			var a,b int
@@ -171,11 +170,6 @@ func LastSawSection(w http.ResponseWriter, r *http.Request,query string) {
 	// update lastseen db
 
 	SST.LastSawSection(CTX,query)
-
-	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s)\" }",query)
-	w.Write([]byte(response))
-	fmt.Println("Reply LastSaw sent")
-
 }
 
 // *********************************************************************
@@ -188,11 +182,11 @@ func LastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string) {
 
 	fmt.Sscanf(class,"%d",&nclass)
 	fmt.Sscanf(cptr,"%d",&ncptr)
+
 	SST.LastSawNPtr(CTX,nclass,ncptr)
 
 	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }",class,cptr)
 	w.Write([]byte(response))
-	fmt.Println("Reply LastSaw sent")
 
 }
 
