@@ -138,7 +138,7 @@ should learn more about the security of postgres. We won't go into that here.
 
 ## Option: Installing Postgres in memory [Linux]
 
-Optionally, you can install Postgres in memory to increase performance of the upload and search, and to preserve your laptop SSD disks.
+Optionally, you can install Postgres in memory to increase performance of the upload and search, and to preserve your laptop SSD disks. The downside is that each time you reboot you will have to repeat this procedure and all will be lost.
 
 - To do so, create a new data folder, and mount it as a memory file system.
 - grant access rights to your postgres user.
