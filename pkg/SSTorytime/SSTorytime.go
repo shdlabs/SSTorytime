@@ -4017,7 +4017,29 @@ func GetTOCStats(ctx PoSST) []LastSeen {
 
 //******************************************************************
 
-func GetNPtrStats(ctx PoSST, nptr NodePtr) {
+func GetNPtrStats(ctx PoSST, nptr NodePtr) LastSeen {
+
+
+	var ls LastSeen
+
+	qstr := fmt.Sprintf("SELECT section,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
+
+	row,err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("GetTOCStats failed\n",qstr,err)
+		return ls
+	}
+
+	for row.Next() {		
+
+		err = row.Scan(&ls.Section,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+	}
+
+	row.Close()
+
+	return ls
+
 }
 
 //******************************************************************

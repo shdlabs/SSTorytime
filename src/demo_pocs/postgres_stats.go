@@ -13,8 +13,15 @@ func main() {
 	l := SST.GetTOCStats(ctx)
 
 	for r := range l {
-		fmt.Println("Sec",l[r].Section,"LAST",l[r].Last,"pdel",l[r].Pdelta,"ndel",l[r].Ndelta)
+		fmt.Println(l[r])
 	}
+
+	var nptr SST.NodePtr
+	nptr.Class=2;
+	nptr.CPtr=581
+
+	x := SST.GetNPtrStats(ctx,nptr)
+	fmt.Println("X",x)
 
 	SST.Close(ctx)
 }
