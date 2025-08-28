@@ -5834,6 +5834,8 @@ func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,
 }
 
 // *********************************************************************
+// LTM progress tracking
+// *********************************************************************
 
 func LastSawSection(ctx PoSST,name string) {
 

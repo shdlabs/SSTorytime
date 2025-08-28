@@ -165,6 +165,14 @@ func LastSaw(w http.ResponseWriter, r *http.Request,class,cptr string) {
 
 	// update lastseen db
 
+	var nclass,ncptr int
+
+	fmt.Sscanf(class,"%d",&nclass)
+	fmt.Sscanf(cptr,"%d",&ncptr)
+	SST.LastSawNPtr(CTX,nclass,ncptr)
+
+	fmt.Println("RECEIVCED",class,cptr,"BECASUE",nclass,ncptr)
+
 	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }",class,cptr)
 	w.Write([]byte(response))
 	fmt.Println("Reply LastSaw sent")
