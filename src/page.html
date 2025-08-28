@@ -640,12 +640,9 @@ let laststory = obj.Content[0]; // arbitrary init
 
 for (let story of obj.Content) 
    {
-   let item = document.createElement('h1');
-   item.textContent = story.Chapter;
+   let item = document.createElement('h2');
+   item.textContent = story.Chap;
    panel.appendChild(item);
-   let cntx = document.createElement('i');
-   cntx.id = "cntxt";
-   panel.appendChild(cntx);
 
    ShowNodeEvent(panel,story,counter,"fwd","then","span");
    PlotGraphics(story,laststory);
