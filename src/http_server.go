@@ -128,8 +128,13 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		nclass := r.FormValue("nclass")
 		ncptr := r.FormValue("ncptr")
 		
-		if name == "lastseen" {
-			LastSaw(w,r,nclass,ncptr)
+		if name == "lastnptr" {
+			LastSawNPtr(w,r,nclass,ncptr)
+			return
+		}
+
+		if name == "lastsection" {
+			LastSawSection(w,r,name)
 			return
 		}
 		
@@ -161,7 +166,21 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 // *********************************************************************
 
-func LastSaw(w http.ResponseWriter, r *http.Request,class,cptr string) {
+func LastSawSection(w http.ResponseWriter, r *http.Request,query string) {
+
+	// update lastseen db
+
+	SST.LastSawSection(CTX,query)
+
+	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s)\" }",query)
+	w.Write([]byte(response))
+	fmt.Println("Reply LastSaw sent")
+
+}
+
+// *********************************************************************
+
+func LastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string) {
 
 	// update lastseen db
 
@@ -170,8 +189,6 @@ func LastSaw(w http.ResponseWriter, r *http.Request,class,cptr string) {
 	fmt.Sscanf(class,"%d",&nclass)
 	fmt.Sscanf(cptr,"%d",&ncptr)
 	SST.LastSawNPtr(CTX,nclass,ncptr)
-
-	fmt.Println("RECEIVCED",class,cptr,"BECASUE",nclass,ncptr)
 
 	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }",class,cptr)
 	w.Write([]byte(response))
@@ -513,8 +530,10 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 func HandlePageMap(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,notes []SST.PageMap) {
 
 	fmt.Println("Solver/handler: HandlePageMap()")
+
 	jstr := SST.JSONPage(CTX,notes)
 	response := PackageResponse(ctx,search,"PageMap",jstr)
+
 	//fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)

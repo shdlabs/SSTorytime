@@ -668,18 +668,15 @@ CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
 
 let parent = document.createElement('content');
-parent.textContent = "* From Chapter ";
+parent.textContent = "* Chapters: ";
 parent.id = "chap_head";
 
 let chapter = obj.Content.Title;
 let ctx = document.createElement('h2');
-let context = obj.Content.Context;
-ctx.textContent = "In context: \"" + context + "\"";
-
 let shchap = document.createElement('b');
 shchap.textContent = chapter;
 parent.appendChild(shchap)
-parent.appendChild(ctx);
+
 
 let thepage = document.createElement('p');
 
@@ -1211,6 +1208,15 @@ for (let line = 0; line < array.length; line++)
             {            
             let spacer = document.createElement('hr');
             parent.appendChild(spacer);
+
+   	    // New line has possble new chap/context
+            let chtxt = array[line][i].ChCtx;
+            if (chtxt.length > 4)
+               {
+               let sec = document.createElement('h2');
+               sec.textContent = "In: \"" + chtxt + "\"";
+               parent.appendChild(sec);
+               }
             }
 
          if (i == 0)
@@ -1392,7 +1398,7 @@ checkbox.addEventListener('change',function() {
 
 if (checkbox.checked) 
    {
-   let ack = sendlastseen(nclass,ncptr);
+   let ack = sendlastseen("lastnptr",nclass,ncptr);
    }
 
 });
@@ -1641,12 +1647,12 @@ async function sendlinkData(nclass,ncptr)
 
 /***********************************************************/
 
-async function sendlastseen(nclass,ncptr)
+async function sendlastseen(name,nclass,ncptr)
 {
    let formData = new FormData();
    formData.set("nclass",nclass);
    formData.set("ncptr",ncptr);
-   formData.set("name","lastseen");
+   formData.set("name",name);
 
    fetch(API_SERVER+"/searchN4L", { method: POST_METHOD, body: formData })
     .then(response => {
@@ -1691,6 +1697,8 @@ async function sendLinkSearch(search)
   })
     .then((resp) => {
 
+// sendlastseen any context a.b.c.d
+
       DoHeader(resp);
 
       switch (resp.Response)
@@ -1706,9 +1714,11 @@ async function sendLinkSearch(search)
             break;
          case "Sequence":
             DoSeqPanel(resp);
+// sendlastseen
             break;
 	 case "PageMap":
 	    DoPageMapPanel(resp);
+// sendlastseen
             break;
 	 case "TOC":
 	    DoTOCPanel(resp);
