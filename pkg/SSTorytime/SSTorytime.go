@@ -4136,7 +4136,7 @@ func GetDBPageMap(ctx PoSST,chap string,cn []string,page int) []PageMap {
 	offset := (page-1) * hits_per_page;
 
 	qstr = fmt.Sprintf("SELECT DISTINCT Chap,Ctx,Line,Path FROM PageMap\n"+
-		"WHERE match_context(Ctx,%s)=true AND lower(Chap) LIKE lower('%s') ORDER BY Line OFFSET %d LIMIT %d",
+		"WHERE match_context(Ctx,%s)=true AND lower(Chap) LIKE lower('%s') ORDER BY Chap,Line OFFSET %d LIMIT %d",
 		context,chapter,offset,hits_per_page)
 
 	row, err := ctx.DB.Query(qstr)
@@ -6439,6 +6439,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 	var webnotes PageView
 	var lastchap,lastctx string
 	var signalchap, signalctx, signalchange string
+	var warned bool = false
 
 	for n := 0; n < len(maplines); n++ {
 
@@ -6449,6 +6450,10 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 		// Format superheader aggregate summary
 
 		if lastchap != maplines[n].Chapter {
+			if !warned {
+				webnotes.Title = "(Multiple chapters) : " + webnotes.Title
+				warned = true
+			}
 			webnotes.Title += maplines[n].Chapter + ", "
 			lastchap = maplines[n].Chapter
 			signalchap = maplines[n].Chapter
