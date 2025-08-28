@@ -434,6 +434,8 @@ type ChCtx struct {
 	Common   []Loc
 }
 
+//******************************************************************
+
 type LastSeen struct {
 	Section string
 	Last    string // timestamp
