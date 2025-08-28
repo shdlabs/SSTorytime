@@ -434,6 +434,15 @@ type ChCtx struct {
 	Common   []Loc
 }
 
+type LastSeen struct {
+	Section string
+	Last    string // timestamp
+        Pdelta  float64
+	Ndelta  float64
+	Freq    int
+	NPtr    NodePtr
+}
+
 //******************************************************************
 // Open Library Context
 //******************************************************************
@@ -3185,12 +3194,12 @@ func DefineStoredFunctions(ctx PoSST) {
 		"  prevdelta interval;\n"+
 		"  deltat    interval;\n"+
 		"  nowt      timestamp;\n"+
-		"  f    int = 0;"+
+		"  f         int = 0;"+
 		"BEGIN\n"+
 		"  nowt = NOW();\n"+
 		"  SELECT last,delta,freq INTO prev,prevdelta,f FROM LastSeen WHERE section=this;\n"+
 		"  IF NOT FOUND THEN\n"+
-		"     INSERT INTO LastSeen (section,last,freq) VALUES (this, NOW(),1);\n"+
+		"     INSERT INTO LastSeen (section,last,delta,freq,nptr) VALUES (this, NOW(),interval '0 mins',1,'(-1,-1)');\n"+
 		"  ELSE\n"+
 		"     deltat = nowt - prev;\n"+
 		"     f = f + 1;\n"+
@@ -3222,7 +3231,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"  nowt = NOW();\n"+
 		"  SELECT last,delta,freq INTO prev,prevdelta,f FROM LastSeen WHERE nptr=this;\n"+
 		"  IF NOT FOUND THEN\n"+
-		"     INSERT INTO LastSeen (nptr,last,freq) VALUES (this,nowt,1);\n"+
+		"     INSERT INTO LastSeen (section,nptr,last,freq,delta) VALUES (':',this,nowt,1,interval '0 mins');\n"+
 		"  ELSE\n"+
 		"     deltat = nowt - prev;\n"+
 		"     f = f + 1;\n"+
@@ -3971,6 +3980,42 @@ func GetDBArrowBySTType(ctx PoSST,sttype int) []ArrowDirectory {
 	}
 
 	return retval
+}
+
+//******************************************************************
+// Retrieve access/progress stats
+//******************************************************************
+
+func GetTOCStats(ctx PoSST) []LastSeen {
+
+	qstr := fmt.Sprintf("SELECT section,nptr,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen")
+
+	row,err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("GetTOCStats failed\n",qstr,err)
+		return nil
+	}
+
+	var ret     []LastSeen
+
+	for row.Next() {		
+		var ls LastSeen
+		var nptrstr string // last because if empty fails
+
+		err = row.Scan(&ls.Section,&nptrstr,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+		fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
+		ret = append(ret,ls)
+	}
+
+	row.Close()
+
+	return ret
+}
+
+//******************************************************************
+
+func GetNPtrStats(ctx PoSST, nptr NodePtr) {
 }
 
 //******************************************************************
