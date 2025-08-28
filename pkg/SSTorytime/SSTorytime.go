@@ -174,6 +174,7 @@ type WebPath struct {
 	Arr     ArrowPtr
 	STindex int
 	Name    string
+	ChCtx   string  // chapter context header signal
 	XYZ     Coords
 }
 
@@ -6436,7 +6437,8 @@ func GetChaptersByChapContext(ctx PoSST,chap string,cn []string,limit int) map[s
 func JSONPage(ctx PoSST, maplines []PageMap) string {
 
 	var webnotes PageView
-	var last,lastc string
+	var lastchap,lastctx string
+	var signalchap, signalctx, signalchange string
 
 	for n := 0; n < len(maplines); n++ {
 
@@ -6444,12 +6446,25 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 
 		txtctx := ContextString(maplines[n].Context)
 
-		if last != maplines[n].Chapter || lastc != txtctx {
-			webnotes.Title = maplines[n].Chapter
-			webnotes.Context = txtctx
-			last = maplines[n].Chapter
-			lastc = txtctx
+		// Format superheader aggregate summary
+
+		if lastchap != maplines[n].Chapter {
+			webnotes.Title += maplines[n].Chapter + ", "
+			lastchap = maplines[n].Chapter
+			signalchap = maplines[n].Chapter
+		} else {
+			signalchap = ""
 		}
+
+		if lastctx != txtctx {
+			webnotes.Context += txtctx + ", " 
+			lastctx = txtctx
+			signalctx = txtctx
+		} else {
+			signalctx = ""
+		}
+
+		signalchange = signalchap + " :: " + signalctx
 
 		directory := AssignPageCoordinates(maplines[n].Path,n,len(maplines))
 
@@ -6464,6 +6479,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				ws.Name = text.S
 				ws.NPtr = maplines[n].Path[lnk].Dst
 				ws.XYZ = directory[ws.NPtr]
+				ws.ChCtx = signalchange
 				path = append(path,ws)
 				
 			} else {// ARROW
@@ -6478,6 +6494,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				ws.Name = text.S
 				ws.NPtr = maplines[n].Path[lnk].Dst
 				ws.XYZ = directory[ws.NPtr]
+				ws.ChCtx = signalchange
 				path = append(path,ws)
 				
 			}
