@@ -7159,10 +7159,12 @@ func IsParam(i,lenp int,keys []string,keywords []string) bool {
 func IsLiteralNptr(s string) bool {
 	
 	var a,b int = -1,-1
+
+	s = strings.TrimSpace(s)
 	
 	fmt.Sscanf(s,"(%d,%d)",&a,&b)
 	
-	if a > 0 && b > 0 {
+	if a >= 0 && b >= 0 {
 		return true
 	}
 	
