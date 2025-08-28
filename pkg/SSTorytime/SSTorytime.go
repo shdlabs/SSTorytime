@@ -3372,7 +3372,7 @@ func GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr {
 	}
 
 	row, err := ctx.DB.Query(qstr)
-	fmt.Println("QSR",qstr)	
+
 	if err != nil {
 		fmt.Println("QUERY GetNodePtrMatchingName Failed",err)
 	}
