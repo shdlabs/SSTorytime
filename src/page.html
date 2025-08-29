@@ -991,17 +991,18 @@ else
    ProgressCheckBox(box,nclass,ncptr,"any");
 
    // End checkbox
-
-   if (ctx.length > 0)
-      {
-      let cntx = document.createElement('i');
-      cntx.id = "cntxt";
-      cntx.textContent = " context hints: " + ctx;
-      box.appendChild(cntx);
-      }
-   let br = document.createElement('br');
-   box.appendChild(br);
    }
+
+if (ctx.length > 0)
+   {
+   let cntx = document.createElement('i');
+   cntx.id = "cntxt";
+   cntx.textContent = " context hints: " + ctx;
+   box.appendChild(cntx);
+   }
+
+let br = document.createElement('br');
+box.appendChild(br);
 
 parent.appendChild(box);
 
@@ -1394,10 +1395,12 @@ else
 if (counter == 0)
    {
    let chapter = document.createElement('i');
-   chapter.textContent = "with NPtr " + nptrtxt + ", in chapter ...\"" + event.Chap +"\", context: "+ event.Context;
+   chapter.textContent = "with NPtr " + nptrtxt + ", in chapter ...\"" + event.Chap +"\", context: "+ event.Context+"   ";
    chapter.id = "chapter";
    child.appendChild(chapter);
    }
+
+ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,"any");
 
 // See what pathways we are part of and add notes
 
