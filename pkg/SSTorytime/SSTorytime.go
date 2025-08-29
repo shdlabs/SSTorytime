@@ -438,11 +438,12 @@ type ChCtx struct {
 
 type LastSeen struct {
 	Section string
-	Last    string // timestamp
-        Pdelta  float64
-	Ndelta  float64
-	Freq    int
+	Last    string   // timestamp of last access
+        Pdelta  float64  // previous average of access intervals
+	Ndelta  float64  // current last access interval
+	Freq    int      // count of total accesses
 	NPtr    NodePtr
+	XYZ     Coords
 }
 
 //******************************************************************
@@ -3195,6 +3196,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"  prev      timestamp = NOW();\n"+
 		"  prevdelta interval;\n"+
 		"  deltat    interval;\n"+
+		"  avdeltat  interval;\n"+
 		"  nowt      timestamp;\n"+
 		"  f         int = 0;"+
 		"BEGIN\n"+
@@ -3204,9 +3206,10 @@ func DefineStoredFunctions(ctx PoSST) {
 		"     INSERT INTO LastSeen (section,last,delta,freq,nptr) VALUES (this, NOW(),interval '0 mins',1,'(-1,-1)');\n"+
 		"  ELSE\n"+
 		"     deltat = nowt - prev;\n"+
+		"     avdeltat = 0.5 * deltat + 0.5 * prevdelta;\n"+
 		"     f = f + 1;\n"+
 		"     IF deltat > interval '2 minutes' THEN\n"+
-		"       UPDATE LastSeen SET last=nowt,delta=deltat,freq=f WHERE section = this;\n"+
+		"       UPDATE LastSeen SET last=nowt,delta=avdeltat,freq=f WHERE section = this;\n"+
 		"     END IF;\n"+
 		"  END IF;\n"+
 		"  RETURN true;\n"+
@@ -3226,6 +3229,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"DECLARE \n"+
 		"  prev      timestamp = NOW();\n"+
 		"  prevdelta interval;\n"+
+		"  avdeltat  interval;\n"+
 		"  deltat    interval;\n"+
 		"  nowt      timestamp;\n"+
 		"  f    int = 0;"+
@@ -3236,9 +3240,10 @@ func DefineStoredFunctions(ctx PoSST) {
 		"     INSERT INTO LastSeen (section,nptr,last,freq,delta) VALUES (':',this,nowt,1,interval '0 mins');\n"+
 		"  ELSE\n"+
 		"     deltat = nowt - prev;\n"+
+		"     avdeltat = 0.5 * deltat + 0.5 * prevdelta;\n"+
 		"     f = f + 1;\n"+
 		"     IF deltat > interval '2 minutes' THEN\n"+
-		"        UPDATE LastSeen SET last=nowt,delta=deltat,freq=f WHERE nptr = this;\n"+
+		"        UPDATE LastSeen SET last=nowt,delta=avdeltat,freq=f WHERE nptr = this;\n"+
 		"     END IF;\n"+
 		"  END IF;\n"+
 		"  RETURN true;\n"+
@@ -5874,7 +5879,7 @@ func GetLastSawSection(ctx PoSST) []LastSeen {
 	row,err := ctx.DB.Query(qstr)
 
 	if err != nil {
-		fmt.Println("GetTOCStats failed\n",qstr,err)
+		fmt.Println("GetLastSawSection failed\n",qstr,err)
 		return nil
 	}
 
@@ -5886,7 +5891,14 @@ func GetLastSawSection(ctx PoSST) []LastSeen {
 
 		err = row.Scan(&ls.Section,&nptrstr,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
 		fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
-		ret = append(ret,ls)
+
+		if ls.Section != ":" { // Skip the individual NPtrs
+			ret = append(ret,ls)
+		}
+	}
+
+	for c := 0; c < len(ret); c++ {
+		ret[c].XYZ = AssignChapterCoordinates(c,len(ret))
 	}
 
 	row.Close()
@@ -5905,7 +5917,7 @@ func GetLastSawNPtr(ctx PoSST, nptr NodePtr) LastSeen {
 	row,err := ctx.DB.Query(qstr)
 
 	if err != nil {
-		fmt.Println("GetTOCStats failed\n",qstr,err)
+		fmt.Println("GetLastSawNPtr failed\n",qstr,err)
 		return ls
 	}
 
@@ -5913,6 +5925,8 @@ func GetLastSawNPtr(ctx PoSST, nptr NodePtr) LastSeen {
 
 		err = row.Scan(&ls.Section,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
 	}
+
+	ls.NPtr = nptr
 
 	row.Close()
 
@@ -6888,6 +6902,7 @@ type SearchParameters struct {
 	PageNr   int
 	Range    int
 	Sequence bool
+	Stats    bool
 }
 
 // ******************************************************************
@@ -6925,6 +6940,7 @@ const (
 	CMD_DEPTH = "depth"
 	CMD_RANGE = "range"
 	CMD_DISTANCE = "distance"
+	CMD_STATS = "stats"
 )
 
 //******************************************************************
@@ -6943,6 +6959,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_ON,CMD_ABOUT,CMD_FOR,
 		CMD_PAGE,
 		CMD_LIMIT,CMD_RANGE,CMD_DISTANCE,CMD_DEPTH,
+		CMD_STATS,
         }
 	
 	// parentheses are reserved for unaccenting
@@ -7017,6 +7034,11 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 		for p := 0; p < lenp; p++ {
 
 			switch SomethingLike(cmd_parts[c][p],keywords) {
+
+
+			case CMD_STATS:
+				param.Stats = true
+				continue
 
 			case CMD_CHAPTER, CMD_IN:
 				if lenp > p+1 {

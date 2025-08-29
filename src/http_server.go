@@ -206,6 +206,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	fmt.Println(" -    pagenr:",search.PageNr)
 	fmt.Println(" - sequence/story:",search.Sequence)
 	fmt.Println(" - limit/range/depth:",search.Range)
+	fmt.Println(" - show stats:",search.Stats)
 	fmt.Println()
 
 	// OPTIONS *********************************************
@@ -238,6 +239,11 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	// SEARCH SELECTION *********************************************
 
 	// Table of contents
+
+	if (search.Stats) {
+		ShowStats(w,r,CTX,search,nodeptrs)
+		return
+	}
 
 	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
 
@@ -645,6 +651,33 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,s
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Done/sent arrows")
+}
+
+// *********************************************************************
+
+func ShowStats(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,nptrs []SST.NodePtr) {
+
+	var retval []SST.LastSeen
+
+	if nptrs == nil {
+
+		retval = SST.GetLastSawSection(ctx)
+	} else {
+
+		for  n := range nptrs {
+			nptr := SST.GetLastSawNPtr(ctx,nptrs[n])
+			retval = append(retval,nptr)
+		}
+	}
+
+	data,_ := json.Marshal(retval)
+
+	response := PackageResponse(ctx,search,"STAT",string(data))
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(response)
+	fmt.Println("Done/sent stat")
+
 }
 
 // *********************************************************************

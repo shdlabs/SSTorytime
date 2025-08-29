@@ -786,6 +786,54 @@ for (let chp of obj.Content)
 
 /***********************************************************/
 
+function DoStatsPanel(obj) 
+{
+let section = document.querySelector('article');
+let panel = document.createElement('div');
+panel.id = "main_root";
+section.appendChild(panel);
+
+let item = document.createElement('h1');
+item.textContent = "Progress tracker";
+panel.appendChild(item);
+
+CANVAS = CreateCanvas();
+DrawGrid(0,0,1);
+let counter = 0;
+
+for (let chpctx of obj.Content) 
+   {
+   counter++;
+
+   let link = document.createElement('a');
+   let item = document.createElement('h2');
+   link.onclick = function() { sendLinkSearch("notes chapter "+chpctx.Section); };
+   item.textContent = counter + ". "+chpctx.Section;
+   link.appendChild(item);
+   panel.appendChild(link);
+
+   Concept(chpctx.XYZ.X,chpctx.XYZ.Y,chpctx.XYZ.Z);
+   Label(chpctx.XYZ.X,chpctx.XYZ.Y,chpctx.XYZ.Z,chpctx.Section,12,"gray");
+
+   let last = document.createElement('p');
+   last.id = "toc-panel";
+   panel.appendChild(last);
+
+   let sub1 = document.createElement('span');
+   sub1.textContent = "Last viewed at "+chpctx.Last;
+   last.appendChild(sub1);
+
+   let sub2 = document.createElement('span');
+   sub1.textContent = "  total viewing count = "+chpctx.Freq;
+   last.appendChild(sub1);
+
+//        Pdelta  float64
+//	Ndelta  float64
+   }
+}
+
+/***********************************************************/
+
 function DoArrowsPanel(obj) 
 {
 let section = document.querySelector('article');
@@ -1585,6 +1633,9 @@ async function sendsearchData() {
             break;
          case "Arrows":
             DoArrowsPanel(resp);
+            break;
+	 case "STAT":
+	    DoStatsPanel(resp);
             break;
          }
 
