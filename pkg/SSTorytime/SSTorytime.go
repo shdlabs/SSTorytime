@@ -3985,64 +3985,6 @@ func GetDBArrowBySTType(ctx PoSST,sttype int) []ArrowDirectory {
 }
 
 //******************************************************************
-// Retrieve access/progress stats
-//******************************************************************
-
-func GetTOCStats(ctx PoSST) []LastSeen {
-
-	qstr := fmt.Sprintf("SELECT section,nptr,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen")
-
-	row,err := ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("GetTOCStats failed\n",qstr,err)
-		return nil
-	}
-
-	var ret     []LastSeen
-
-	for row.Next() {		
-		var ls LastSeen
-		var nptrstr string // last because if empty fails
-
-		err = row.Scan(&ls.Section,&nptrstr,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
-		fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
-		ret = append(ret,ls)
-	}
-
-	row.Close()
-
-	return ret
-}
-
-//******************************************************************
-
-func GetNPtrStats(ctx PoSST, nptr NodePtr) LastSeen {
-
-
-	var ls LastSeen
-
-	qstr := fmt.Sprintf("SELECT section,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
-
-	row,err := ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("GetTOCStats failed\n",qstr,err)
-		return ls
-	}
-
-	for row.Next() {		
-
-		err = row.Scan(&ls.Section,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
-	}
-
-	row.Close()
-
-	return ls
-
-}
-
-//******************************************************************
 // Parsing and handling of search strings
 //******************************************************************
 
@@ -5907,7 +5849,7 @@ func ContextIntentAnalysis(spectrum map[string]int,clusters []string) ([]string,
 // LTM progress tracking
 // *********************************************************************
 
-func LastSawSection(ctx PoSST,name string) {
+func UpdateLastSawSection(ctx PoSST,name string) {
 
 	s := fmt.Sprintf("select LastSawSection('%s')",name)
 	ctx.DB.QueryRow(s)
@@ -5915,10 +5857,67 @@ func LastSawSection(ctx PoSST,name string) {
 
 // *********************************************************************
 
-func LastSawNPtr(ctx PoSST,class,cptr int) {
+func UpdateLastSawNPtr(ctx PoSST,class,cptr int) {
 
 	s := fmt.Sprintf("select LastSawNPtr('(%d,%d)')",class,cptr)
 	ctx.DB.QueryRow(s)
+}
+
+//******************************************************************
+// Retrieve access/progress stats
+//******************************************************************
+
+func GetLastSawSection(ctx PoSST) []LastSeen {
+
+	qstr := fmt.Sprintf("SELECT section,nptr,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen")
+
+	row,err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("GetTOCStats failed\n",qstr,err)
+		return nil
+	}
+
+	var ret []LastSeen
+
+	for row.Next() {		
+		var ls LastSeen
+		var nptrstr string // last because if empty fails
+
+		err = row.Scan(&ls.Section,&nptrstr,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+		fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
+		ret = append(ret,ls)
+	}
+
+	row.Close()
+
+	return ret
+}
+
+//******************************************************************
+
+func GetLastSawNPtr(ctx PoSST, nptr NodePtr) LastSeen {
+
+	var ls LastSeen
+
+	qstr := fmt.Sprintf("SELECT section,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
+
+	row,err := ctx.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("GetTOCStats failed\n",qstr,err)
+		return ls
+	}
+
+	for row.Next() {		
+
+		err = row.Scan(&ls.Section,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
+	}
+
+	row.Close()
+
+	return ls
+
 }
 
 // *********************************************************************

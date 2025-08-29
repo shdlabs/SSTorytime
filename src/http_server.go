@@ -131,9 +131,9 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		
 		if name == "lastnptr" {
 			if chapcontext != "" {
-				LastSawSection(w,r,chapcontext)
+				UpdateLastSawSection(w,r,chapcontext)
 			}
-			LastSawNPtr(w,r,nclass,ncptr)
+			UpdateLastSawNPtr(w,r,nclass,ncptr)
 			return
 		}
 
@@ -165,16 +165,16 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 // *********************************************************************
 
-func LastSawSection(w http.ResponseWriter, r *http.Request,query string) {
+func UpdateLastSawSection(w http.ResponseWriter, r *http.Request,query string) {
 
 	// update lastseen db
 
-	SST.LastSawSection(CTX,query)
+	SST.UpdateLastSawSection(CTX,query)
 }
 
 // *********************************************************************
 
-func LastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string) {
+func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string) {
 
 	// update lastseen db
 
@@ -183,7 +183,7 @@ func LastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string) {
 	fmt.Sscanf(class,"%d",&nclass)
 	fmt.Sscanf(cptr,"%d",&ncptr)
 
-	SST.LastSawNPtr(CTX,nclass,ncptr)
+	SST.UpdateLastSawNPtr(CTX,nclass,ncptr)
 
 	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }",class,cptr)
 	w.Write([]byte(response))

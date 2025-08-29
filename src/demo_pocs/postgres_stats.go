@@ -10,7 +10,7 @@ func main() {
 
 	ctx := SST.Open(false)
 
-	l := SST.GetTOCStats(ctx)
+	l := SST.GetLastSawSection(ctx)
 
 	for r := range l {
 		fmt.Println(l[r])
@@ -20,7 +20,7 @@ func main() {
 	nptr.Class=2;
 	nptr.CPtr=581
 
-	x := SST.GetNPtrStats(ctx,nptr)
+	x := SST.GetLastSawNPtr(ctx,nptr)
 	fmt.Println("X",x)
 
 	SST.Close(ctx)
