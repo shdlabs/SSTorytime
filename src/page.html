@@ -1408,8 +1408,8 @@ CheckCone(panel,child,"[NR]",event.Orbits[In0],event.Orbits[In0]);
 
 // Local descriptive property attributes first
 
+AddLinkOrbits(panel,child,event,Im3,skiparrow);
 AddLinkOrbits(panel,child,event,Ie3,skiparrow);
-AddLinkOrbits(panel,child,event,Im2,skiparrow);
 
 // Then any equivalents
 
@@ -1417,6 +1417,7 @@ AddLinkOrbits(panel,child,event,In0,skiparrow);
 
 // Then containment
 
+AddLinkOrbits(panel,child,event,Im2,skiparrow);
 AddLinkOrbits(panel,child,event,Ic2,skiparrow);
 
 // Lastly, from-->to
@@ -1751,6 +1752,7 @@ async function sendLinkSearch(search)
       switch (resp.Response)
          {
          case "Orbits":
+console.log("RR",resp);
             DoOrbitPanel(resp);
             break;
          case "ConePaths":
