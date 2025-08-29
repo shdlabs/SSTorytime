@@ -93,6 +93,12 @@ const (
         INV_EXPR_AMBIENT_L = "is contextual highlight of"
 	INV_EXPR_AMBIENT_S = "highlight_of"
 
+	CONT_FINDS_L = "finds quote"
+	CONT_FINDS_S = "finds"
+	INV_CONT_FOUND_IN_L = "quote is found in"
+	INV_CONT_FOUND_IN_S = "found-in"
+
+
 )
 
 var BASE_DB_CHANNEL_STATE[7] ClassedNodePtr

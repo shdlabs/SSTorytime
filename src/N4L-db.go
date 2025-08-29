@@ -1179,6 +1179,10 @@ func AddMandatory() {
         inv = SST.InsertArrowDirectory("properties",SST.INV_EXPR_AMBIENT_L,SST.INV_EXPR_AMBIENT_S,"-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
+	arr = SST.InsertArrowDirectory("contains",SST.CONT_FINDS_L,SST.CONT_FINDS_S,"+")
+        inv = SST.InsertArrowDirectory("contains",SST.INV_CONT_FOUND_IN_L,SST.INV_CONT_FOUND_IN_S,"-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
 }
 
 //**************************************************************

@@ -113,7 +113,7 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	for i := range selection {
 		fmt.Fprintf(fp,"\n@sen%d   %s\n",selection[i].Order,Sanitize(selection[i].Fragment))
 		part := PartName(selection[i].Partition,filename)
-		fmt.Fprintf(fp,"              \" (is in) %s\n",part)
+		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_L,part)
 		if !partcheck[part] {
 			parts = append(parts,part)
 			partcheck[part] = true

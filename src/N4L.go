@@ -1145,6 +1145,9 @@ func AddMandatory() {
         inv = InsertArrowDirectory("contains","is mentioned in","ismentin","-")
 	InsertInverseArrowDirectory(arr,inv)
 
+	arr = InsertArrowDirectory("contains","finds quote","finds","+")
+        inv = InsertArrowDirectory("contains","quote is found in","found-in","-")
+	InsertInverseArrowDirectory(arr,inv)
 }
 
 //**************************************************************
