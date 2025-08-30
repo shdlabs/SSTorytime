@@ -98,6 +98,10 @@ const (
 	INV_CONT_FOUND_IN_L = "quote is found in"
 	INV_CONT_FOUND_IN_S = "found-in"
 
+	CONT_FRAG_L = "finds fragment"
+	CONT_FRAG_S = "finds-fr"
+	INV_CONT_FRAG_IN_L = "fragment is found in"
+	INV_CONT_FRAG_IN_S = "fr-found-in"
 
 )
 
@@ -8245,7 +8249,7 @@ func CleanNgram(s string) string {
 
 //**************************************************************
 
-func ExtractIntentionalTokens(L int,selected []TextRank) ([][]string,[][]string,[]string,[]string) {
+func ExtractIntentionalTokens(L int,selected []TextRank,Nmin,Nmax int) ([][]string,[][]string,[]string,[]string) {
 
 	// This function examines a fractionation of text for fractions, only for
 	// sentences that are selected, and extracts some shared context
@@ -8266,14 +8270,14 @@ func ExtractIntentionalTokens(L int,selected []TextRank) ([][]string,[][]string,
 	var fastwhole []string
 	var slowwhole []string
 
-	for n := 1; n < N_GRAM_MAX; n++ {
+	for n := 1; n < Nmax; n++ {
 		grad_amb[n] = make(map[string]float64)
 		grad_oth[n] = make(map[string]float64)
 	}
 
 	for p := 0; p < doc_parts; p++ {
 
-		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+		for n := Nmin; n < Nmax; n++ {
 
 			var amb []string
 			var other []string
@@ -8324,7 +8328,7 @@ func ExtractIntentionalTokens(L int,selected []TextRank) ([][]string,[][]string,
 	
 	// Summary ranking of whole doc, but pick only if selected
 	
-	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
+	for n := Nmin; n < Nmax; n++ {
 		
 		var amb []string
 		var other []string

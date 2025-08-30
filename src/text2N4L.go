@@ -79,7 +79,14 @@ func RipFile2File(filename string,percentage float64){
 	selection := MergeSelections(ranking1,ranking2)
 
 	fmt.Println("Extracting ambient phrases for context")
-	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection)
+
+	// We only want short fragments for context, else we're repeating
+	// significant context info from teh actual samples
+
+	const minN = 1 // >= N_GRAM_MIN
+	const maxN = 3 // <= N_GRAM_MAX
+
+	f,s,ff,ss := SST.ExtractIntentionalTokens(L,selection,minN,maxN)
 
 	WriteOutput(filename,selection,L,percentage,f,s,ff,ss)
 }
@@ -105,15 +112,33 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 	fmt.Fprintf(fp,"\n# (begin) ************\n")
 
-	fmt.Fprintf(fp,"\n :: _sequence_ , %s::\n", filename)
+	filealias := strings.Split(filename,".")[0]
+	fmt.Fprintf(fp,"\n :: _sequence_ , %s::\n", filealias)
 
 	var partcheck = make(map[string]bool)
 	var parts []string
+	var lastpart string
 	
 	for i := range selection {
+
+		context := SpliceSet(ambi_by_part[selection[i].Partition])
+		part := PartName(selection[i].Partition,filealias,context)
+
+		// Add context from n = 2,3 fractions
+
+		if part != lastpart {
+			if len(context) > 0 {
+				fmt.Fprintf(fp,"\n :: %s ::\n",context)
+				lastpart = part
+			}
+		}
+
 		fmt.Fprintf(fp,"\n@sen%d   %s\n",selection[i].Order,Sanitize(selection[i].Fragment))
-		part := PartName(selection[i].Partition,filename)
+
 		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FOUND_IN_L,part)
+
+		AddIntentionalContext(fp,anom_by_part[selection[i].Partition])
+
 		if !partcheck[part] {
 			parts = append(parts,part)
 			partcheck[part] = true
@@ -143,11 +168,11 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 	for p := range parts {
 		fmt.Fprintf(fp,"\n %s\n",parts[p])
 		for w := range ambi_by_part[p] {
-			fmt.Fprintf(fp,"  # %s\n",ambi_by_part[p][w])
+			fmt.Fprintf(fp,"  #AMBI %s\n",ambi_by_part[p][w])
 		}
 
 		for w := range anom_by_part[p] {
-			fmt.Fprintf(fp,"   # %s\n",anom_by_part[p][w])
+			fmt.Fprintf(fp,"   #INTENT %s\n",anom_by_part[p][w])
 		}
 	}
 
@@ -168,9 +193,36 @@ func WriteOutput(filename string,selection []SST.TextRank,L int, percentage floa
 
 //*******************************************************************
 
-func PartName(n int,s string) string {
+func PartName(p int,file string,context string) string {
 
-	return fmt.Sprintf("part %d of %s",n,s)
+	// include ambient context in the section name
+
+	return fmt.Sprintf("part %d of %s with %s",p,file,context)
+}
+
+//*******************************************************************
+
+func SpliceSet(ctx []string) string {
+
+	var context string = ""
+
+	for w := 0; w < len(ctx); w++ {
+		context += ctx[w]
+		if w < len(ctx) - 1 {
+			context += ", "
+		}
+	}
+
+	return context
+}
+
+//*******************************************************************
+
+func AddIntentionalContext(fp *os.File,ctx []string) {
+	
+	for w := 0; w < len(ctx); w++ {
+		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.INV_CONT_FRAG_IN_L,ctx[w])
+	}
 }
 
 //*******************************************************************
