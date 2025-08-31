@@ -64,9 +64,9 @@ echo ""
 echo "Testing librarified/database version"
 echo ""
 
-PASS_PROG="../src/N4L-db -adj=all"
-FAIL_PROG="../src/N4L-db"
-WARN_PROG="../src/N4L-db"
+PASS_PROG="../src/N4L -adj=all"
+FAIL_PROG="../src/N4L"
+WARN_PROG="../src/N4L"
 
 for f in pass_*.in; do
    echo -n testing $f
