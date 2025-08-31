@@ -1,6 +1,6 @@
 #
 
-OBJ=text2N4L N4L N4L-db searchN4L removeN4L http_server pathsolve notes graph_report API_EXAMPLE_1 API_EXAMPLE_2 API_EXAMPLE_3
+OBJ=text2N4L N4L searchN4L removeN4L http_server pathsolve notes graph_report API_EXAMPLE_1 API_EXAMPLE_2 API_EXAMPLE_3
 
 all: $(OBJ)
 
@@ -10,10 +10,7 @@ removeN4L: removeN4L.go  ../pkg/SSTorytime/SSTorytime.go
 text2N4L: text2N4L.go  ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
-N4L: N4L.go
-	go build -o $@ $@.go
-
-N4L-db: N4L-db.go ../pkg/SSTorytime/SSTorytime.go
+N4L: N4L.go ../pkg/SSTorytime/SSTorytime.go
 	go build -o $@ $@.go
 
 searchN4L: searchN4L.go ../pkg/SSTorytime/SSTorytime.go
