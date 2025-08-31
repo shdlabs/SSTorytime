@@ -287,16 +287,6 @@ const LINK_TYPE = "CREATE TYPE Link AS  " +
 	"Dst      NodePtr     " +
 	")"
 
-const APPOINTMENT_TYPE = "CREATE TYPE Appointment AS  " +
-	"(                    " +
-	"Arr    int," +
-	"STType int," +
-	"Chap   text," +
-	"Ctx    text[]," +
-	"NTo    NodePtr," +
-	"NFrom  NodePtr[]" +
-	")"
-
 const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
 	"( " +
 	"NPtr      NodePtr,        " +
@@ -670,11 +660,6 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 	if !CreateType(ctx,LINK_TYPE) {
 		fmt.Println("Unable to create type as, ",LINK_TYPE)
-		os.Exit(-1)
-	}
-
-	if !CreateType(ctx,APPOINTMENT_TYPE) {
-		fmt.Println("Unable to create type as, ",APPOINTMENT_TYPE)
 		os.Exit(-1)
 	}
 
