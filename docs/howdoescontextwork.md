@@ -20,6 +20,11 @@ sensory input. There was that one time at band camp....
 
 ## The technical challenge of context
 
+Adding context through N4L is straightforwardish, and we can let the compiler ensure consistency.
+Adding Nodes ad hoc with `Vertex() / Edge()` etc is risky and context will cease to work in detail.
+We can simplify this too by factoring away context, forcing API users to select an already an defined
+context.
+
 The technical challenge of context is that the amount of context in a sensory stream is usually
 much greater than the part you actually want to remember, so knowledge data may quickly become
 dominated by context. We don't want to store intentionally selected items together with ambient
