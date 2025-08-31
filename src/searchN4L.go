@@ -415,14 +415,14 @@ func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",leftptrs,ldepth,chapter,context)
-		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",rightptrs,rdepth,chapter,context)
+		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",leftptrs,ldepth,chapter,context,maxdepth)
+		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",rightptrs,rdepth,chapter,context,maxdepth)
 
 		// try the reverse
 
 		if Lnum == 0 || Rnum == 0 {
-			left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",leftptrs,ldepth,chapter,context)
-			right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",rightptrs,rdepth,chapter,context)
+			left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"bwd",leftptrs,ldepth,chapter,context,maxdepth)
+			right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(ctx,"fwd",rightptrs,rdepth,chapter,context,maxdepth)
 		}
 
 		solutions,_ = SST.WaveFrontsOverlap(ctx,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
@@ -716,7 +716,7 @@ func ShowNotes(ctx SST.PoSST,notes []SST.PageMap) {
 
 	for n := 0; n < len(notes); n++ {
 
-		txtctx := SST.ContextString(notes[n].Context)
+		txtctx := SST.CONTEXT_DIRECTORY[notes[n].Context].Context
 		
 		if last != notes[n].Chapter || lastc != txtctx {
 

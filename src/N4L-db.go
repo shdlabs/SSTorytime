@@ -1,8 +1,7 @@
-//**************************************************************
+
 //
-// N4LParser and compiler
+// N4LParser
 //
-//**************************************************************
 
 package main
 
@@ -17,6 +16,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+
 
         SST "SSTorytime"
 )
@@ -116,7 +116,6 @@ var (
 	CREATE_ADJACENCY bool = false
 	ADJ_LIST string
 
-	CONFIGURING bool
 	CURRENT_FILE string
 	TEST_DIAG_FILE string
 
@@ -158,15 +157,11 @@ func main() {
 
 	config := ReadConfig()
 
-	CONFIGURING = true
-
 	for input := 0; input < len(config); input++ {
 		NewFile(config[input])
 		con := ReadFile(CURRENT_FILE)
 		ParseConfig(con)
 	}
-
-	CONFIGURING = false
 
 	// Read the user inputs
 
@@ -175,6 +170,8 @@ func main() {
 		input := ReadFile(CURRENT_FILE)
 		ParseN4L(input)
 	}
+
+	fmt.Println()
 
 	if SUMMARIZE {
 		SummarizeGraph()
@@ -591,6 +588,7 @@ func GetLinkArrowByName(token string) SST.Link {
 	}
 
 	var link SST.Link
+
 	link.Arr = ptr
 	link.Wgt = weight
 	link.Ctx = SST.RegisterContext(CONTEXT_STATE,ctx)
@@ -1157,7 +1155,7 @@ func SkipWhiteSpace(src []rune, pos int) int {
 
 func AddMandatory() {
 
-	SST.RegisterContext(nil,nil)
+	SST.RegisterContext(CONTEXT_STATE,nil)
 
 	arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
 	inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
@@ -1578,7 +1576,7 @@ func IdempContextLink(ptr SST.NodePtr) {
 
 	var nowhere SST.NodePtr
 	var empty SST.Link
-	empty.Ctx = 0
+	empty.Ctx = SST.RegisterContext(CONTEXT_STATE,nil)
 	empty.Arr = 0
 	empty.Wgt = 1
 	SST.AppendLinkToNode(ptr,empty,nowhere)
@@ -1757,7 +1755,7 @@ func UpdateLastLineCache() {
 		ParseError(ERR_MISSING_EVENT)
 	}
 
-	if !CONFIGURING {
+	if CURRENT_FILE != "N4Lconfig.in" {
 		PageMap(SECTION_STATE,CONTEXT_STATE,LINE_PATH,LINE_NUM,LINE_ALIAS)
 	}
 
@@ -1813,7 +1811,7 @@ func PageMap(chapter string,ctxmap map[string]bool,path []SST.Link,line int,alia
 
 	page_event.Chapter = chapter
 	page_event.Alias = alias
-	page_event.Context = SST.RegisterContext(CONTEXT_STATE,nil)
+	page_event.Context = GetContext(nil)
 	page_event.Line = line
 	page_event.Path = path
 
