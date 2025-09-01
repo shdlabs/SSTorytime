@@ -130,7 +130,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		chapcontext := r.FormValue("chapcontext")
 		
 		if name == "lastnptr" {
-			if chapcontext != "" {
+			if chapcontext != "" && chapcontext != "any" {
 				UpdateLastSawSection(w,r,chapcontext)
 			}
 			UpdateLastSawNPtr(w,r,nclass,ncptr)
@@ -168,6 +168,8 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 func UpdateLastSawSection(w http.ResponseWriter, r *http.Request,query string) {
 
 	// update lastseen db
+
+	fmt.Println("UPDATING",query)
 
 	SST.UpdateLastSawSection(CTX,query)
 }

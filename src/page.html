@@ -76,12 +76,18 @@ hr {
   color: orange;
 }
 
+#statcount {
+color: navy;
+margin-left: 100px;
+padding: 5px;
+}
+
 h2 {
   font-size: 30px;
   color: #5599cc;
   padding: 20px;
   margin: 0px;
-  margin_bottom : 10px;
+  margin-bottom : 10px;
   //line-height: 10px;
 }
 
@@ -825,6 +831,7 @@ for (let chpctx of obj.Content)
 
    let sub2 = document.createElement('span');
    sub1.textContent = "  total viewing count = "+chpctx.Freq;
+   sub1.id = "statcount";
    last.appendChild(sub1);
 
 //        Pdelta  float64
@@ -988,7 +995,7 @@ else
 
    // Add a checkbox for progress tracking
 
-   ProgressCheckBox(box,nclass,ncptr,"any");
+   ProgressCheckBox(box,nclass,ncptr,ctx);
 
    // End checkbox
    }
@@ -1400,7 +1407,7 @@ if (counter == 0)
    child.appendChild(chapter);
    }
 
-ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,"any");
+ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap + ":" + event.Context);
 
 // See what pathways we are part of and add notes
 
