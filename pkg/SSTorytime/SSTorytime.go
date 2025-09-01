@@ -302,17 +302,19 @@ const LINK_TYPE = "CREATE TYPE Link AS  " +
 
 const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
 	"( " +
-	"NPtr      NodePtr,        " +
-	"L         int,            " +
-	"S         text,           " +
-	"Chap      text,           " +
-	I_MEXPR+"  Link[],         " + // Im3
-	I_MCONT+"  Link[],         " + // Im2
-	I_MLEAD+"  Link[],         " + // Im1
-	I_NEAR +"  Link[],         " + // In0
-	I_PLEAD+"  Link[],         " + // Il1
-	I_PCONT+"  Link[],         " + // Ic2
-	I_PEXPR+"  Link[]          " + // Ie3
+	"NPtr      NodePtr,        \n" +
+	"L         int,            \n" +
+	"S         text,           \n" +
+	"Search TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',S)) STORED,\n" +
+	"UnSearch TSVECTOR GENERATED ALWAYS AS (to_tsvector('english',sst_unaccent(S))) STORED,\n" +
+	"Chap      text,           \n" +
+	I_MEXPR+"  Link[],         \n" + // Im3
+	I_MCONT+"  Link[],         \n" + // Im2
+	I_MLEAD+"  Link[],         \n" + // Im1
+	I_NEAR +"  Link[],         \n" + // In0
+	I_PLEAD+"  Link[],         \n" + // Il1
+	I_PCONT+"  Link[],         \n" + // Ic2
+	I_PEXPR+"  Link[]          \n" + // Ie3
 	")"
 
 const LINK_TABLE = "CREATE TABLE IF NOT EXISTS NodeArrowNode " +
@@ -647,6 +649,10 @@ func Configure(ctx PoSST,load_arrows bool) {
 		fmt.Println("* WIPING DB")
 		fmt.Println("***********************")
 		
+		ctx.DB.QueryRow("DROP INDEX sst_nan")
+		ctx.DB.QueryRow("DROP INDEX sst_type")
+		ctx.DB.QueryRow("DROP INDEX sst_gin")
+
 		ctx.DB.QueryRow("drop function fwdconeaslinks")
 		ctx.DB.QueryRow("drop function fwdconeasnodes")
 		ctx.DB.QueryRow("drop function fwdpathsaslinks")
@@ -690,7 +696,8 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 	}
 
-	// Ignore error
+	// Create functions, some we use in autocreating index columns
+
 	ctx.DB.QueryRow("CREATE EXTENSION unaccent")
 
 	if !CreateType(ctx,NODEPTR_TYPE) {
@@ -707,6 +714,11 @@ func Configure(ctx PoSST,load_arrows bool) {
 		fmt.Println("Unable to create type as, ",APPOINTMENT_TYPE)
 		os.Exit(-1)
 	}
+
+
+
+	DefineStoredFunctions(ctx)
+
 
 	if !CreateTable(ctx,PAGEMAP_TABLE) {
 		fmt.Println("Unable to create table as, ",PAGEMAP_TABLE)
@@ -743,7 +755,6 @@ func Configure(ctx PoSST,load_arrows bool) {
 		os.Exit(-1)
 	}
 
-	DefineStoredFunctions(ctx)
 	DownloadArrowsFromDB(ctx)
 	DownloadContextsFromDB(ctx)
 	SynchronizeNPtrs(ctx)
@@ -1434,14 +1445,18 @@ func GraphToDB(ctx PoSST,wait_counter bool) {
 
 	for line := 0; line < len(PAGE_MAP); line ++ {
 		UploadPageMapEvent(ctx,PAGE_MAP[line])
+		fmt.Print("-")
 	}
 
 	// CREATE INDICES
 
 	fmt.Println("Indexing ....")
 
-	ctx.DB.QueryRow("CREATE INDEX on NodeArrowNode (Arr,STType)")
-	ctx.DB.QueryRow("CREATE INDEX on Node (((NPtr).Chan),L,S)")
+	ctx.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_nan on NodeArrowNode (Arr,STType)")
+	ctx.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_type on Node (((NPtr).Chan),L,S)")
+	ctx.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_gin on Node USING GIN (Search)")
+
+	fmt.Println("Finally done!")
 }
 
 // **************************************************************************
@@ -1587,6 +1602,41 @@ func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 // Lower level functions
 // **************************************************************************
 
+func ForceDBNode(ctx PoSST, n Node) {
+
+	// Add node version setting explicit CPtr value, note different function call
+	// We use this function when we ARE managing/counting CPtr values ourselves
+
+	var qstr string
+
+        n.L,n.NPtr.Class = StorageClass(n.S)
+	
+	cptr := n.NPtr.CPtr
+
+	es := SQLEscape(n.S)
+	ec := SQLEscape(n.Chap)
+
+	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s')",n.L,n.NPtr.Class,cptr,es,ec)
+
+	row,err := ctx.DB.Query(qstr)
+	
+	if err != nil {
+		s := fmt.Sprint("Failed to insert",err)
+		
+		if strings.Contains(s,"duplicate key") {
+		} else {
+			fmt.Println(s,"FAILED \n",qstr,err)
+		}
+		return
+	}
+
+	row.Close()
+
+	return
+}
+
+// **************************************************************************
+
 func CreateDBNode(ctx PoSST, n Node) Node {
 
 	// Add node version setting explicit CPtr value, note different function call
@@ -1685,7 +1735,7 @@ func UploadNodeToDB(ctx PoSST, org Node,channel int) {
 
 	const nolink = 999
 
-	CreateDBNode(ctx,org)
+	ForceDBNode(ctx,org)
 
 	for stindex := 0; stindex < len(org.I); stindex++ {
 
@@ -2072,6 +2122,7 @@ func ForceDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool {
 func DefineStoredFunctions(ctx PoSST) {
 
 	// NB! these functions are in "plpgsql" language, NOT SQL. They look similar but they are DIFFERENT!
+
 	
 	// Insert a node structure, also an anchor for and containing link arrays
 	
@@ -2098,6 +2149,27 @@ func DefineStoredFunctions(ctx PoSST) {
 	}
 
 	row.Close()
+
+	// Force for managed input
+
+	qstr = fmt.Sprintf("CREATE OR REPLACE FUNCTION InsertNode(iLi INT, iszchani INT, icptri INT, iSi TEXT, ichapi TEXT)\n" +
+		"RETURNS bool AS $fn$ " +
+		"DECLARE \n" +
+		"BEGIN\n" +
+		"   INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,chap,%s) VALUES (iszchani,icptri,iLi,iSi,ichapi,'{}','{}','{}','{}','{}','{}','{}');" +
+		"   RETURN true;\n"+
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;",cols);
+
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+
+	// Without controlling nptr
 
 	qstr = "CREATE OR REPLACE FUNCTION IdempAppendNode(iLi INT, iszchani INT, iSi TEXT, ichapi TEXT)\n" +
 		"RETURNS TABLE (    \n" +
@@ -3525,6 +3597,26 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	row.Close()
 
+	// Finally an immutable wrapper
+
+	qstr = "CREATE OR REPLACE FUNCTION sst_unaccent(this text)\n"+
+		"RETURNS text AS $fn$\n"+
+		"DECLARE \n"+
+		"  s text;\n"+
+		"BEGIN\n"+
+		"  s = unaccent(this);\n"+
+		"  RETURN s;\n"+
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql IMMUTABLE;\n"
+	
+	row,err = ctx.DB.Query(qstr)
+	
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+	
+	row.Close()
+
 }
 
 // **************************************************************************
@@ -3688,11 +3780,14 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 	remove_name_accents,nm_stripped := IsBracketedSearchTerm(nm)
 
 	if remove_name_accents {
-		nm_search := "%"+nm_stripped+"%"
-		nm_col = fmt.Sprintf("AND lower(unaccent(S)) LIKE lower('%s')",nm_search)
+//		nm_search := "%"+nm_stripped+"%"
+//		nm_col = fmt.Sprintf("AND lower(unaccent(S)) LIKE lower('%s')",nm_search)
+		nm_col = fmt.Sprintf("AND Unsearch @@ phraseto_tsquery('english', '%s')",nm_stripped)
 	} else {
-		nm_search := "%"+nm+"%"
-		nm_col = fmt.Sprintf("AND lower(S) LIKE lower('%s')",nm_search)
+//		nm_search := "%"+nm+"%"
+//		nm_col = fmt.Sprintf("AND lower(S) LIKE lower('%s')",nm_search)
+
+		nm_col = fmt.Sprintf("AND Search @@ phraseto_tsquery('english', '%s')",nm)
 	}
 
 	if chap != "any" && chap != "" {
@@ -3718,6 +3813,8 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 		"     SELECT DISTINCT nfrom FROM matching_nodes "+
 		"      JOIN Node ON nptr=nfrom WHERE match=true AND matcha=true %s %s",
 		context,arrows,nm_col,chap_col)
+
+	fmt.Println("QTRS",qstr)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -4543,7 +4640,7 @@ func GetEntireConePathsAsLinks(ctx PoSST,orientation string,start NodePtr,depth 
 	// Todo: how to limit path search? Usually solutions are small..?
 
 	qstr := fmt.Sprintf("select AllPathsAsLinks from AllPathsAsLinks('(%d,%d)','%s',%d, %d);",
-		start.Class,start.CPtr,orientation,depth, limit)
+		start.Class,start.CPtr,orientation,depth,limit)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -7232,6 +7329,7 @@ const (
 	CMD_FOR = "for"
 	CMD_ABOUT = "about"
 	CMD_NOTES = "notes"
+	CMD_BROWSE = "browse"
 	CMD_PAGE = "page"
 	CMD_PATH = "path"
 	CMD_SEQ1 = "sequence"
@@ -7259,7 +7357,7 @@ const (
 func DecodeSearchField(cmd string) SearchParameters {
 
 	var keywords = []string{ 
-		CMD_NOTES, CMD_PATH,
+		CMD_NOTES, CMD_BROWSE, CMD_PATH,
 		CMD_PATH,CMD_FROM,CMD_TO,
 		CMD_SEQ1,CMD_SEQ2,
 		CMD_CONTEXT,CMD_CTX,CMD_AS,
@@ -7359,7 +7457,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				}
 				continue
 
-			case CMD_NOTES:
+			case CMD_NOTES, CMD_BROWSE:
 				if param.PageNr < 1 {
 					param.PageNr = 1
 				}
