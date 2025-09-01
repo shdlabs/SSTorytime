@@ -146,7 +146,7 @@ Optionally, you can install Postgres in memory to increase performance of the up
 - start manually postgres using your new filesystem as data storage, or configure the postgres service to use the new memory data folder
 
 **Beware !**: all data in the postgres database will be lost when restarting processes. 
-But you can always rebuild the schema, and reload your data graph from your N4L files using the tool N4L-db.
+But you can always rebuild the schema, and reload your data graph from your N4L files using the tool N4L.
 
 ```
 $ sudo mkdir -p /mnt/pg_ram
@@ -226,5 +226,5 @@ Now that everything is working, simply do the following to try out the examples 
 ```
 $ cd examples
 $ make
-$ ../src/N4L-db -u LoopyLoo.n4l
+$ ../src/N4L -u LoopyLoo.n4l
 ```
