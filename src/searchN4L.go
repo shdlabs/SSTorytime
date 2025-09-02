@@ -185,9 +185,6 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	// Now convert strings into NodePointers
 
 	arrowptrs,sttype := SST.ArrowPtrFromArrowsNames(ctx,search.Arrows)
-	nodeptrs := SST.SolveNodePtrs(ctx,search.Name,search.Chapter,search.Context,arrowptrs)
-	leftptrs := SST.SolveNodePtrs(ctx,search.From,search.Chapter,search.Context,arrowptrs)
-	rightptrs := SST.SolveNodePtrs(ctx,search.To,search.Chapter,search.Context,arrowptrs)
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
@@ -198,6 +195,10 @@ func Search(ctx SST.PoSST, search SST.SearchParameters,line string) {
 	} else {
 		limit = 10
 	}
+
+	nodeptrs := SST.SolveNodePtrs(ctx,search.Name,search.Chapter,search.Context,arrowptrs,limit)
+	leftptrs := SST.SolveNodePtrs(ctx,search.From,search.Chapter,search.Context,arrowptrs,limit)
+	rightptrs := SST.SolveNodePtrs(ctx,search.To,search.Chapter,search.Context,arrowptrs,limit)
 
 	// SEARCH SELECTION *********************************************
 

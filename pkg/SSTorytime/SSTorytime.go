@@ -2462,6 +2462,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"    ret_paths Text;\n" +
 		"    appendix Text;\n" +
 		"    tot_path Text;\n"+
+		"    counter int = 0;"+
 		"BEGIN\n" +
 
 		"IF depth = maxdepth THEN\n"+
@@ -2507,6 +2508,9 @@ func DefineStoredFunctions(ctx PoSST) {
 		"END CASE;\n" +
 
 		"FOREACH lnk IN ARRAY fwdlinks LOOP \n" +
+		"   IF counter > maxlimit THEN\n"+
+		"      RETURN ret_paths;"+
+		"   END IF;"+
 		"   IF NOT lnk.Dst = ANY(exclude) THEN\n"+
 		"      exclude = array_append(exclude,lnk.Dst);\n" +
 		"      IF lnk IS NULL THEN\n" +
@@ -2520,6 +2524,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"         ELSE\n"+
 		"            ret_paths := Format('%s\n%s',ret_paths,tot_path);"+
 		"         END IF;\n"+
+		"         counter = counter + 1;\n"+
 		"      END IF;\n"+
 		"   END IF;\n"+
 		"END LOOP;\n"+
@@ -3552,7 +3557,7 @@ func GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr {
 
 // **************************************************************************
 
-func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr) []NodePtr {
+func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,limit int) []NodePtr {
 
 	// Match name, context, chapter, with arrows
 
@@ -3593,7 +3598,7 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 	arrows := FormatSQLIntArray(Arrow2Int(arrow))
 	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(arrow))
 
-	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE %s %s AND NCC_match(NPtr,%s,%s,%s,Im3,Im2,Im1,In0,Il1,Ic2,Ie3) ORDER BY Chap",chap_col,nm_col,context,arrows,sttypes)
+	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE %s %s AND NCC_match(NPtr,%s,%s,%s,Im3,Im2,Im1,In0,Il1,Ic2,Ie3) ORDER BY Chap LIMIT %d",chap_col,nm_col,context,arrows,sttypes,limit)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -3635,7 +3640,7 @@ func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
 
 func IgnoreArrow(ctx PoSST,arr ArrowPtr) bool {
 
-	var ignorables = []string{EXPR_INTENT_S,INV_EXPR_INTENT_S,EXPR_AMBIENT_S,INV_EXPR_AMBIENT_S,CONT_FINDS_S,INV_CONT_FOUND_IN_S,CONT_FRAG_S,INV_CONT_FRAG_IN_S}
+	var ignorables = []string{EXPR_INTENT_L,INV_EXPR_INTENT_L,EXPR_AMBIENT_L,INV_EXPR_AMBIENT_L,CONT_FINDS_L,INV_CONT_FOUND_IN_L,CONT_FRAG_L,INV_CONT_FRAG_IN_L}
 
 	if len(IGNORE_ARROWS) == 0 {
 		for a := range ignorables {
@@ -3645,6 +3650,7 @@ func IgnoreArrow(ctx PoSST,arr ArrowPtr) bool {
 	}
 
 	for _,dbarr := range IGNORE_ARROWS {
+
 		if arr == dbarr {
 			return true
 		}
@@ -4054,7 +4060,7 @@ func ArrowPtrFromArrowsNames(ctx PoSST,arrows []string) ([]ArrowPtr,[]int) {
 
 //******************************************************************
 
-func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr []ArrowPtr) []NodePtr {
+func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr []ArrowPtr,limit int) []NodePtr {
 
 	// This is a UI/UX wrapper for the underlying lookup, avoiding
 	// duplicate results and ordering according to interest
@@ -4073,7 +4079,7 @@ func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr [
 	for r := range rest {
 
 		// Takes care of general context matching
-		nptrs := GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr)
+		nptrs := GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr,limit)
 
 		for n := range nptrs {
 			idempotence[nptrs[n]] = true
