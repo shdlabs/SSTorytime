@@ -127,18 +127,6 @@ type Node struct {
 
 //**************************************************************
 
-type NodeArrowNode struct {
-
-	NFrom NodePtr
-	STType int
-	Arr ArrowPtr
-	Wgt float32
-	Ctx []string
-	NTo NodePtr
-}
-
-//**************************************************************
-
 type QNodePtr struct {
 
 	// A Qualified NodePtr 
@@ -317,16 +305,6 @@ const NODE_TABLE = "CREATE TABLE IF NOT EXISTS Node " +
 	I_PEXPR+"  Link[]          \n" + // Ie3
 	")"
 
-const LINK_TABLE = "CREATE TABLE IF NOT EXISTS NodeArrowNode " +
-	"( " +
-	"NFrom    NodePtr, " +
-	"STtype   int,     " +
-	"Arr      int,     " +
-	"Wgt      int,     " +
-	"Ctx      int,     " +
-	"NTo      NodePtr  " +
-	")"
-
 const PAGEMAP_TABLE = "CREATE TABLE IF NOT EXISTS PageMap " +
 	"( " +
 	"Chap     Text,  " +
@@ -389,6 +367,8 @@ var (
 	ARROW_LONG_DIR = make(map[string]ArrowPtr)  // Look up long name int referene
 	ARROW_DIRECTORY_TOP ArrowPtr = 0
 	INVERSE_ARROWS = make(map[ArrowPtr]ArrowPtr)
+
+	IGNORE_ARROWS []ArrowPtr
 
 	// Context array factorization
 
@@ -652,6 +632,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 		ctx.DB.QueryRow("DROP INDEX sst_nan")
 		ctx.DB.QueryRow("DROP INDEX sst_type")
 		ctx.DB.QueryRow("DROP INDEX sst_gin")
+		ctx.DB.QueryRow("DROP INDEX sst_ungin")
 
 		ctx.DB.QueryRow("drop function fwdconeaslinks")
 		ctx.DB.QueryRow("drop function fwdconeasnodes")
@@ -705,17 +686,10 @@ func Configure(ctx PoSST,load_arrows bool) {
 		os.Exit(-1)
 	}
 
-	if !CreateType(ctx,LINK_TYPE) {
-		fmt.Println("Unable to create type as, ",LINK_TYPE)
-		os.Exit(-1)
-	}
-
 	if !CreateType(ctx,APPOINTMENT_TYPE) {
 		fmt.Println("Unable to create type as, ",APPOINTMENT_TYPE)
 		os.Exit(-1)
 	}
-
-
 
 	DefineStoredFunctions(ctx)
 
@@ -727,11 +701,6 @@ func Configure(ctx PoSST,load_arrows bool) {
 
 	if !CreateTable(ctx,NODE_TABLE) {
 		fmt.Println("Unable to create table as, ",NODE_TABLE)
-		os.Exit(-1)
-	}
-
-	if !CreateTable(ctx,LINK_TABLE) {
-		fmt.Println("Unable to create table as, ",LINK_TABLE)
 		os.Exit(-1)
 	}
 
@@ -759,6 +728,7 @@ func Configure(ctx PoSST,load_arrows bool) {
 	DownloadContextsFromDB(ctx)
 	SynchronizeNPtrs(ctx)
 
+	// Find ignorable arrows
 }
 
 // **************************************************************************
@@ -1309,7 +1279,7 @@ func InsertInverseArrowDirectory(fwd,bwd ArrowPtr) {
 
 func GraphToDB(ctx PoSST,wait_counter bool) {
 
-	total := 2 * len(NODE_DIRECTORY.N1directory) + len(NODE_DIRECTORY.N2directory) + len(NODE_DIRECTORY.N3directory) + len(NODE_DIRECTORY.LT128) + len(NODE_DIRECTORY.LT1024) + len(NODE_DIRECTORY.GT1024)
+	total := len(NODE_DIRECTORY.N1directory) + len(NODE_DIRECTORY.N2directory) + len(NODE_DIRECTORY.N3directory) + len(NODE_DIRECTORY.LT128) + len(NODE_DIRECTORY.LT1024) + len(NODE_DIRECTORY.GT1024) + len(PAGE_MAP)
 
 	fmt.Println("\nStoring primary nodes ...\n")
 
@@ -1358,55 +1328,6 @@ func GraphToDB(ctx PoSST,wait_counter bool) {
 		}
 	}
 
-	// upload secondary table separately to avoid fragmentation
-
-	fmt.Println("\nStoring secondary nodes arrow node relations ...\n")
-
-	for class := N1GRAM; class <= GT1024; class++ {
-
-		offset := int(BASE_DB_CHANNEL_STATE[class])
-
-		switch class {
-		case N1GRAM:
-			for n := offset; n < len(NODE_DIRECTORY.N1directory); n++ {
-				org := NODE_DIRECTORY.N1directory[n]
-				UploadNodeArrowNodeToDB(ctx,org,class)
-				Waiting(wait_counter,total)
-			}
-		case N2GRAM:
-			for n := offset; n < len(NODE_DIRECTORY.N2directory); n++ {
-				org := NODE_DIRECTORY.N2directory[n]
-				UploadNodeArrowNodeToDB(ctx,org,class)
-				Waiting(wait_counter,total)
-			}
-		case N3GRAM:
-			for n := offset; n < len(NODE_DIRECTORY.N3directory); n++ {
-				org := NODE_DIRECTORY.N3directory[n]
-				UploadNodeArrowNodeToDB(ctx,org,class)
-				Waiting(wait_counter,total)
-			}
-		case LT128:
-			for n := offset; n < len(NODE_DIRECTORY.LT128); n++ {
-				org := NODE_DIRECTORY.LT128[n]
-				UploadNodeArrowNodeToDB(ctx,org,class)
-				Waiting(wait_counter,total)
-			}
-		case LT1024:
-			for n := offset; n < len(NODE_DIRECTORY.LT1024); n++ {
-				org := NODE_DIRECTORY.LT1024[n]
-				UploadNodeArrowNodeToDB(ctx,org,class)
-				Waiting(wait_counter,total)
-			}
-
-		case GT1024:
-			for n := offset; n < len(NODE_DIRECTORY.GT1024); n++ {
-				org := NODE_DIRECTORY.GT1024[n]
-				UploadNodeArrowNodeToDB(ctx,org,class)
-				Waiting(wait_counter,total)
-			}
-		}
-	}
-
 	// Arrows etc
 
 	fmt.Println("\nStoring Arrows...")
@@ -1445,16 +1366,16 @@ func GraphToDB(ctx PoSST,wait_counter bool) {
 
 	for line := 0; line < len(PAGE_MAP); line ++ {
 		UploadPageMapEvent(ctx,PAGE_MAP[line])
-		fmt.Print("-")
+		Waiting(wait_counter,total)
 	}
 
 	// CREATE INDICES
 
 	fmt.Println("Indexing ....")
 
-	ctx.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_nan on NodeArrowNode (Arr,STType)")
 	ctx.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_type on Node (((NPtr).Chan),L,S)")
 	ctx.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_gin on Node USING GIN (Search)")
+	ctx.DB.QueryRow("CREATE INDEX IF NOT EXISTS sst_ungin on Node USING GIN (UnSearch)")
 
 	fmt.Println("Finally done!")
 }
@@ -1529,7 +1450,6 @@ func Edge(ctx PoSST,from Node,arrow string,to Node,context []string,weight float
 	link.Ctx = RegisterContext(nil,context)
 
 	IdempDBAddLink(ctx,from,link,to)
-	CreateDBNodeArrowNode(ctx,from.NPtr,link,sttype)
 
 	return arrowptr,sttype
 }
@@ -1583,6 +1503,7 @@ func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 
 	arrowptr,sttype := GetDBArrowsWithArrowName(ctx,arrow)
 
+fmt.Println("FIX ME xxxxxxxxxxx",sttype)
 	for nptr := range nptrs {
 
 		var link Link
@@ -1592,7 +1513,6 @@ func HubJoin(ctx PoSST,name,chap string,nptrs []NodePtr,arrow string,context []s
 		link.Ctx = RegisterContext(nil,context)
 		from := GetDBNodeByNodePtr(ctx,nptrs[nptr])
 		IdempDBAddLink(ctx,from,link,container)
-		CreateDBNodeArrowNode(ctx,nptrs[nptr],link,sttype)
 	}
 
 	return GetDBNodeByNodePtr(ctx,container.NPtr)
@@ -1745,30 +1665,6 @@ func UploadNodeToDB(ctx PoSST, org Node,channel int) {
 			sttype := STIndexToSTType(stindex)
 
 			AppendDBLinkToNode(ctx,org.NPtr,dstlnk,sttype)
-		}
-	}
-}
-
-// **************************************************************************
-
-func UploadNodeArrowNodeToDB(ctx PoSST, org Node,channel int) {
-
-	const nolink = 999
-	var empty Link
-
-	empty.Arr = GetDBArrowByName(ctx,"empty")
-
-	for stindex := 0; stindex < len(org.I); stindex++ {
-
-		if len(org.I[stindex]) > 0 {
-			for lnk := range org.I[stindex] {
-				dstlnk := org.I[stindex][lnk]
-				sttype := STIndexToSTType(stindex)
-				ForceDBNodeArrowNode(ctx,org.NPtr,dstlnk,sttype)
-			}
-		} else {
-			// if the node has no links, then still add the node for consistency
-			ForceDBNodeArrowNode(ctx,org.NPtr,empty,nolink)
 		}
 	}
 }
@@ -1971,158 +1867,9 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 
 // **************************************************************************
 
-func CreateDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool {
-
-	if dst.Wgt == 0 {
-		return false
-	}
-
-	qstr := fmt.Sprintf("SELECT IdempInsertNodeArrowNode(" +
-		"%d," + //infromptr
-		"%d," + //infromchan
-		"%d," + //isttype
-		"%d," + //iarr
-		"%.2f," + //iwgt
-		"%d," + //ictx
-		"%d," + //intoptr
-		"%d " + //intochan,
-		")",
-		org.CPtr,
-		org.Class,
-		sttype,
-		dst.Arr,
-		dst.Wgt,
-		dst.Ctx,
-		dst.Dst.CPtr,
-		dst.Dst.Class)
-
-	row,err := ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("Failed to make node-arrow-node",err,qstr)
-	       return false
-	}
-
-	row.Close()
-
-	if dst.Dst.Class == 0 {
-		// Dummy entry, no inverse
-		return true
-	}
-
-	// And the reverse arrow
-
-	qstr = fmt.Sprintf("SELECT IdempInsertNodeArrowNode(" +
-		"%d," + //infromptr
-		"%d," + //infromchan
-		"%d," + //isttype
-		"%d," + //iarr
-		"%.2f," + //iwgt
-		"%d," + //ictx
-		"%d," + //intoptr
-		"%d " + //intochan,
-		")",
-		dst.Dst.CPtr,
-		dst.Dst.Class,
-		-sttype,
-		INVERSE_ARROWS[dst.Arr],
-		dst.Wgt,
-		dst.Ctx,
-		org.CPtr,
-		org.Class,)
-
-	row,err = ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("Failed to make inverse node-arrow-node",err,qstr)
-	       return false
-	}
-
-	row.Close()
-
-	return true
-}
-
-// **************************************************************************
-
-func ForceDBNodeArrowNode(ctx PoSST, org NodePtr, dst Link, sttype int) bool {
-
-	if dst.Wgt == 0 {
-		return false
-	}
-
-	qstr := fmt.Sprintf("SELECT InsertNodeArrowNode(" +
-		"%d," + //infromptr
-		"%d," + //infromchan
-		"%d," + //isttype
-		"%d," + //iarr
-		"%.2f," + //iwgt
-		"%d," + //ictx
-		"%d," + //intoptr
-		"%d " + //intochan,
-		")",
-		org.CPtr,
-		org.Class,
-		sttype,
-		dst.Arr,
-		dst.Wgt,
-		dst.Ctx,
-		dst.Dst.CPtr,
-		dst.Dst.Class)
-
-	row,err := ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("Failed to make node-arrow-node",err,qstr)
-	       return false
-	}
-
-	row.Close()
-
-	if dst.Dst.Class == 0 {
-		// Dummy entry, no inverse
-		return true
-	}
-
-	// And the reverse arrow
-
-	qstr = fmt.Sprintf("SELECT InsertNodeArrowNode(" +
-		"%d," + //infromptr
-		"%d," + //infromchan
-		"%d," + //isttype
-		"%d," + //iarr
-		"%.2f," + //iwgt
-		"%d," + //ictx
-		"%d," + //intoptr
-		"%d " + //intochan,
-		")",
-		dst.Dst.CPtr,
-		dst.Dst.Class,
-		-sttype,
-		INVERSE_ARROWS[dst.Arr],
-		dst.Wgt,
-		dst.Ctx,
-		org.CPtr,
-		org.Class,)
-
-	row,err = ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("Failed to make inverse node-arrow-node",err,qstr)
-	       return false
-	}
-
-	row.Close()
-
-	return true
-}
-
-// **************************************************************************
-
 func DefineStoredFunctions(ctx PoSST) {
 
 	// NB! these functions are in "plpgsql" language, NOT SQL. They look similar but they are DIFFERENT!
-
 	
 	// Insert a node structure, also an anchor for and containing link arrays
 	
@@ -2199,34 +1946,98 @@ func DefineStoredFunctions(ctx PoSST) {
 	row.Close()
 
 	// For lookup by arrow
+	
+	qstr = "CREATE OR REPLACE FUNCTION NCC_match(thisnptr NodePtr,context text[],arrows int[],sttypes int[],lm3 Link[],lm2 Link[],lm1 Link[],ln0 Link[],lp1 Link[],lp2 Link[],lp3 Link[])\n"+
+		"RETURNS boolean AS $fn$\n"+
+		"DECLARE \n"+
+		"    emptyarray Link[] := Array[] :: Link[];\n"+
+		"    lnkarray Link[] := Array[] :: Link[];\n"+
+		"    lnk Link;\n"+
+		"    st int;\n"+
+		"BEGIN\n"+
+		
+		// If there are no arrows
+		"IF array_length(arrows,1) IS NULL THEN\n"+
 
-	qstr = "CREATE OR REPLACE FUNCTION IdempInsertNodeArrowNode\n" +
-		"(\n" +
-		"infromptr  int,   \n" +
-		"infromchan int,   \n" +
-		"isttype    int,   \n" +
-		"iarr       int,   \n" +
-		"iwgt       real,  \n" +
-		"ictx       int,   \n" +
-		"intoptr    int,   \n" +
-		"intochan   int    \n" +
-		")\n" +
+		"   IF lp1 IS NOT NULL THEN"+		
+		"      FOREACH lnk IN ARRAY lp1 LOOP\n"+
+		"         IF match_context(lnk.Ctx,context) THEN"+
+		"            RETURN true;"+
+		"         END IF;"+
+		"      END LOOP;\n"+
+		"   END IF;\n"+
 
-		"RETURNS real AS $fn$ " +
+		"   IF lp2 IS NOT NULL THEN"+		
+		"      FOREACH lnk IN ARRAY lp2 LOOP\n"+
+		"         IF match_context(lnk.Ctx,context) THEN"+
+		"            RETURN true;"+
+		"         END IF;"+
+		"      END LOOP;\n"+
+		"   END IF;\n"+
 
-		"DECLARE \n" +
-		"  ret_wgt real;\n" +
-		"BEGIN\n" +
+		"   IF lp3 IS NOT NULL THEN"+				
+		"      FOREACH lnk IN ARRAY lp3 LOOP\n"+
+		"         IF match_context(lnk.Ctx,context) THEN"+
+		"            RETURN true;"+
+		"         END IF;"+
+		"      END LOOP;\n"+
+		"   END IF;\n"+
 
-		"  IF NOT EXISTS (SELECT Wgt FROM NodeArrowNode WHERE (NFrom).Cptr=infromptr AND (NFrom).Chan=infromchan AND Arr=iarr AND (NTo).Cptr=intoptr AND (NTo).Chan=intochan)  THEN\n" +
-		"     INSERT INTO NodeArrowNode (nfrom.Cptr,nfrom.Chan,sttype,arr,wgt,ctx,nto.Cptr,nto.Chan) \n" +
-		"       VALUES (infromptr,infromchan,isttype,iarr,iwgt,ictx,intoptr,intochan);" +
+		"   IF lm1 IS NOT NULL THEN"+		
+		"      FOREACH lnk IN ARRAY lm1 LOOP\n"+
+		"         IF match_context(lnk.Ctx,context) THEN"+
+		"            RETURN true;"+
+		"         END IF;"+
+		"      END LOOP;\n"+
+		"   END IF;\n"+
 
-		"  END IF;\n" +
-		"  SELECT Wgt into ret_wgt FROM NodeArrowNode WHERE (NFrom).Cptr=infromptr AND Arr=iarr AND (NTo).Cptr=intoptr;\n" +
-		"  RETURN ret_wgt;" +
-		"END ;\n" +
-		"$fn$ LANGUAGE plpgsql;";
+		"   IF lm2 IS NOT NULL THEN"+		
+		"      FOREACH lnk IN ARRAY lm2 LOOP\n"+
+		"         IF match_context(lnk.Ctx,context) THEN"+
+		"            RETURN true;"+
+		"         END IF;"+
+		"      END LOOP;\n"+
+		"   END IF;\n"+
+
+		"   IF lm3 IS NOT NULL THEN"+		
+		"      FOREACH lnk IN ARRAY lm3 LOOP\n"+
+		"         IF match_context(lnk.Ctx,context) THEN"+
+		"            RETURN true;"+
+		"         END IF;"+
+		"      END LOOP;\n"+
+		"   END IF;\n"+
+
+		"   IF ln0 IS NOT NULL THEN"+		
+		"      FOREACH lnk IN ARRAY ln0 LOOP\n"+
+		"         IF match_context(lnk.Ctx,context) THEN"+
+		"            RETURN true;"+
+		"         END IF;"+
+		"      END LOOP;\n"+
+		"   END IF;\n"+
+
+		"ELSE\n"+
+
+		// If there are arrows
+		"   FOREACH st IN ARRAY sttypes LOOP\n"+
+		"      CASE st \n"		
+	for st := -EXPRESS; st <= EXPRESS; st++ {
+		qstr += fmt.Sprintf("   WHEN %d THEN\n"+
+			"         SELECT %s INTO lnkarray FROM Node WHERE Nptr=thisnptr;\n",st,STTypeDBChannel(st));
+	}
+	qstr +=	"      ELSE RAISE EXCEPTION 'No such sttype in NCC_match %', sttype;\n" +
+		"      END CASE;\n" +
+		
+		"      FOREACH lnk IN ARRAY lnkarray LOOP\n"+
+		"         IF match_arrow(lnk.arr,arrows) AND match_context(lnk.ctx,context) THEN\n"+
+		"            RETURN true;\n"+
+		"         END IF;\n"+
+		"      END LOOP;\n"+
+		"   END LOOP;\n"+
+		"END IF;\n"+
+
+		"RETURN false; \n"+
+		"END ;\n"+
+		"$fn$ LANGUAGE plpgsql;"
 
 	row,err = ctx.DB.Query(qstr)
 	
@@ -2236,38 +2047,7 @@ func DefineStoredFunctions(ctx PoSST) {
 
 	row.Close()
 
-	// Without idempotency check for speed when wiping
 
-	qstr = "CREATE OR REPLACE FUNCTION InsertNodeArrowNode\n" +
-		"(\n" +
-		"infromptr  int,   \n" +
-		"infromchan int,   \n" +
-		"isttype    int,   \n" +
-		"iarr       int,   \n" +
-		"iwgt       real,  \n" +
-		"ictx       int,   \n" +
-		"intoptr    int,   \n" +
-		"intochan   int    \n" +
-		")\n" +
-
-		"RETURNS real AS $fn$ " +
-
-		"DECLARE \n" +
-		"  ret_wgt real = 1;\n" +
-		"BEGIN\n" +
-		"     INSERT INTO NodeArrowNode (nfrom.Cptr,nfrom.Chan,sttype,arr,wgt,ctx,nto.Cptr,nto.Chan) \n" +
-		"       VALUES (infromptr,infromchan,isttype,iarr,iwgt,ictx,intoptr,intochan);" +
-		"  RETURN ret_wgt;" +
-		"END ;\n" +
-		"$fn$ LANGUAGE plpgsql;";
-
-	row,err = ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("Error defining postgres function:",qstr,err)
-	}
-
-	row.Close()
 
 	// Construct an empty link pointing nowhere as a starting node
 
@@ -2797,6 +2577,11 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   ref text;\n" +
 		"   c text;\n"+
 		"BEGIN \n" +
+
+		// If the db has no context but the search does, then no need to waste any time
+		"IF thisctxptr = 0 AND array_length(user_set,1) IS NOT NULL THEN\n"+
+		"   RETURN false;\n"+
+		"END IF;\n"+
 
 		// Convert context ptr into a list from the new factored cache
 		"SELECT Context INTO ctxstr FROM ContextDirectory WHERE ctxPtr=thisctxptr;" +
@@ -3460,8 +3245,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"   RETURN false;\n"+
 		"END IF;\n"+
 
-		"DELETE FROM NodeArrowNode WHERE NFrom = ANY(autoset) AND NTo = ANY(autoset);\n"+
-
 		// Look for overlapping chapters
 
 		"oleft := Format('%%%s,%%',chapter);\n"+
@@ -3679,10 +3462,10 @@ func GetDBContextsMatchingName(ctx PoSST,src string) []string {
 
 	if remove_accents {
 		search := stripped
-		qstr = fmt.Sprintf("SELECT DISTINCT Ctx FROM NodeArrowNode WHERE match_context(Ctx,'{%s}')",search)
+		qstr = fmt.Sprintf("SELECT DISTINCT Context FROM ContextDirectory WHERE match_context(unaccent(Context),'{%s}')",search)
 	} else {
 		search := src
-		qstr = fmt.Sprintf("SELECT DISTINCT Ctx FROM NodeArrowNode WHERE match_context(Ctx,'{%s}')",search)
+		qstr = fmt.Sprintf("SELECT DISTINCT Context FROM ContextDirectory WHERE match_context(Ctx,'{%s}')",search)
 	}
 
 	row, err := ctx.DB.Query(qstr)
@@ -3777,17 +3560,16 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 	var context string
 	var qstr string
 
-	remove_name_accents,nm_stripped := IsBracketedSearchTerm(nm)
-
-	if remove_name_accents {
-//		nm_search := "%"+nm_stripped+"%"
-//		nm_col = fmt.Sprintf("AND lower(unaccent(S)) LIKE lower('%s')",nm_search)
-		nm_col = fmt.Sprintf("AND Unsearch @@ phraseto_tsquery('english', '%s')",nm_stripped)
+	if nm == "any" || nm == "%%" {
+		nm_col = ""
 	} else {
-//		nm_search := "%"+nm+"%"
-//		nm_col = fmt.Sprintf("AND lower(S) LIKE lower('%s')",nm_search)
+		remove_name_accents,nm_stripped := IsBracketedSearchTerm(nm)
 
-		nm_col = fmt.Sprintf("AND Search @@ phraseto_tsquery('english', '%s')",nm)
+		if remove_name_accents {
+			nm_col = fmt.Sprintf("AND Unsearch @@ phraseto_tsquery('english', '%s')",nm_stripped)
+		} else {
+			nm_col = fmt.Sprintf("AND Search @@ phraseto_tsquery('english', '%s')",nm)
+		}
 	}
 
 	if chap != "any" && chap != "" {
@@ -3796,25 +3578,22 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 
 		if remove_chap_accents {
 			chap_search := "%"+chap_stripped+"%"
-			chap_col = fmt.Sprintf("AND lower(unaccent(chap)) LIKE lower('%s')",chap_search)
+			chap_col = fmt.Sprintf("lower(unaccent(Chap)) LIKE lower('%s')",chap_search)
 		} else {
 			chap_search := "%"+chap+"%"
-			chap_col = fmt.Sprintf("AND lower(chap) LIKE lower('%s')",chap_search)
+			chap_col = fmt.Sprintf("lower(Chap) LIKE lower('%s')",chap_search)
 		}
+	} else {
+		chap_col = fmt.Sprintf("lower(Chap) LIKE lower('%%%%')")
 	}
 
 	_,cn_stripped := IsBracketedSearchList(cn)
 	context = FormatSQLStringArray(cn_stripped)
 
 	arrows := FormatSQLIntArray(Arrow2Int(arrow))
+	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(arrow))
 
-	qstr = fmt.Sprintf("WITH matching_nodes AS "+
-		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)"+
-		"     SELECT DISTINCT nfrom FROM matching_nodes "+
-		"      JOIN Node ON nptr=nfrom WHERE match=true AND matcha=true %s %s",
-		context,arrows,nm_col,chap_col)
-
-	fmt.Println("QTRS",qstr)
+	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE %s %s AND NCC_match(NPtr,%s,%s,%s,Im3,Im2,Im1,In0,Il1,Ic2,Ie3) ORDER BY Chap",chap_col,nm_col,context,arrows,sttypes)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -3835,6 +3614,43 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 	row.Close()
 	return retval
 
+}
+
+// **************************************************************************
+
+func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
+
+	var sttypes []int
+
+	for a := range arrows {
+		sta := ARROW_DIRECTORY[arrows[a]].STAindex
+		st := STIndexToSTType(sta)
+		sttypes = append(sttypes,st)
+	}
+
+	return sttypes
+}
+
+// **************************************************************************
+
+func IgnoreArrow(ctx PoSST,arr ArrowPtr) bool {
+
+	var ignorables = []string{EXPR_INTENT_S,INV_EXPR_INTENT_S,EXPR_AMBIENT_S,INV_EXPR_AMBIENT_S,CONT_FINDS_S,INV_CONT_FOUND_IN_S,CONT_FRAG_S,INV_CONT_FRAG_IN_S}
+
+	if len(IGNORE_ARROWS) == 0 {
+		for a := range ignorables {
+			dbarr := GetDBArrowByName(ctx,ignorables[a])
+			IGNORE_ARROWS = append(IGNORE_ARROWS,dbarr)
+		}
+	}
+
+	for _,dbarr := range IGNORE_ARROWS {
+		if arr == dbarr {
+			return true
+		}
+	} 
+
+	return false
 }
 
 // **************************************************************************
@@ -3996,166 +3812,6 @@ func GetDBSingletonBySTType(ctx PoSST,sttypes []int,chap string,cn []string) ([]
 	
 	return src_nptrs,snk_nptrs
 	
-}
-
-// **************************************************************************
-
-func GetDBNodeArrowNodeMatchingArrowPtrs(ctx PoSST,chap string,cn []string,arrows []ArrowPtr) []NodeArrowNode {
-
-	var intarrows []int
-
-	for i := range arrows {
-		intarrows = append(intarrows,int(arrows[i]))
-	}
-
-	qstr := fmt.Sprintf("SELECT NFrom,STType,Arr,Wgt,Ctx,NTo FROM NodeArrowNode where Arr=ANY(%s::int[])",FormatSQLIntArray(intarrows))
-
-	if cn != nil {
-		context := FormatSQLStringArray(cn)
-		chapter := "%"+chap+"%"
-		
-		qstr = fmt.Sprintf("WITH matching_rel AS "+
-			" (SELECT NFrom,STType,Arr,Wgt,Ctx,NTo,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
-			"   SELECT DISTINCT NFrom,STType,Arr,Wgt,Ctx,NTo FROM matching_rel "+
-			"    JOIN Node ON nptr=nfrom WHERE match=true AND lower(chap) LIKE lower('%s')",context,chapter)	
-	}
-
-	row, err := ctx.DB.Query(qstr)
-	
-	if err != nil {
-		fmt.Println("GetDBNodeArrowNodeMatchingArrowPtrs Failed:",err,qstr)
-	}
-
-	var from_node string
-	var to_node string
-	var actx string
-	var st,arr int
-	var wgt float32
-
-	var nfr,nto NodePtr
-	var nan NodeArrowNode
-	var nanlist []NodeArrowNode
-
-	for row.Next() {		
-		err = row.Scan(&from_node,&st,&arr,&wgt,&actx,&to_node)
-
-		fmt.Sscanf(from_node,"(%d,%d)",&nfr.Class,&nfr.CPtr)
-		fmt.Sscanf(to_node,"(%d,%d)",&nto.Class,&nto.CPtr)
-
-		nan.NFrom = nfr
-		nan.STType = st
-		nan.Arr = ArrowPtr(arr)
-		nan.Wgt = wgt
-		nan.Ctx = ParseSQLArrayString(actx)
-		nan.NTo = nto
-
-		nanlist = append(nanlist,nan)
-
-	}
-
-	row.Close()
-
-	return nanlist
-}
-
-// **************************************************************************
-
-func GetDBNodeContextsMatchingArrow(ctx PoSST,searchtext string,chap string,cn []string,arrow []ArrowPtr,page int) []QNodePtr {
-	var qstr string
-
-	context := FormatSQLStringArray(cn)
-	chapter := "%"+chap+"%"
-	arrows := FormatSQLIntArray(Arrow2Int(arrow))
-
-	const hits_per_page = 60
-	offset := (page-1) * hits_per_page;
-
-	// sufficient to search NFrom to get all nodes in context, as +/- relations complete
-	
-	qstr = fmt.Sprintf("WITH matching_nodes AS \n"+
-		" (SELECT DISTINCT NFrom,Arr,Ctx,match_context(Ctx,%s) AS matchc,match_arrows(Arr,%s) AS matcha FROM NodeArrowNode)\n"+
-		"   SELECT DISTINCT NFrom,Ctx,Chap FROM matching_nodes \n"+
-		"    JOIN Node ON nptr=nfrom WHERE matchc=true AND matcha=true AND lower(Chap) LIKE lower('%s') ORDER BY Ctx,NFrom DESC OFFSET %d LIMIT %d",context,arrows,chapter,offset,hits_per_page)
-
-	row, err := ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("GetDBNodeArrowNodeByContext Failed:",err,qstr)
-	}
-
-	var return_value []QNodePtr
-
-	var qptr QNodePtr
-	var nptr NodePtr
-	var nctx string
-	var nchap string
-	var nptrs string
-
-	for row.Next() {		
-
-		nctx = ""
-		nchap = ""
-		err = row.Scan(&nptrs,&nctx,&nchap)
-		fmt.Sscanf(nptrs,"(%d,%d)",&nptr.Class,&nptr.CPtr)
-		qptr.NPtr = nptr
-		qptr.Chapter = nchap
-
-		if nctx == "" {
-			nctx = "(no context)"
-		}
-
-		qptr.Context = nctx
-
-		return_value = append(return_value,qptr)
-	}
-
-	row.Close()
-	return return_value
-}
-
-// **************************************************************************
-
-func GetDBNodeArrowNodeByContexts(ctx PoSST,chap string,cn []string) []NodeArrowNode {
-
-	var qstr string
-
-	_,cn_stripped := IsBracketedSearchList(cn)
-	context := FormatSQLStringArray(cn_stripped)
-
-	qstr = fmt.Sprintf("SELECT DISTINCT NFrom,Arr,STType,NTo,Ctx FROM NodeArrowNode WHERE match_context(Ctx,%s)",context)
-	row, err := ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("GetDBNodesInContexts Failed:",err,qstr)
-	}
-
-	var return_value []NodeArrowNode
-
-	var nan NodeArrowNode
-	var fromptr NodePtr
-	var toptr NodePtr
-	var from string
-	var to string
-	var nctx string
-	var arr ArrowPtr
-	var sttype int
-
-	for row.Next() {
-		nctx = ""
-		err = row.Scan(&from,&arr,&sttype,&to,&nctx)
-
-		fmt.Sscanf(from,"(%d,%d)",&fromptr.Class,&fromptr.CPtr)
-		nan.NFrom = fromptr
-		fmt.Sscanf(to,"(%d,%d)",&toptr.Class,&toptr.CPtr)
-		nan.NTo = toptr
-		nan.Ctx = ParseSQLArrayString(nctx)
-		nan.Arr = arr
-		nan.STType = sttype
-		return_value = append(return_value,nan)
-	}
-
-	row.Close()
-	return return_value
 }
 
 // **************************************************************************
@@ -6868,11 +6524,7 @@ func GetChaptersByChapContext(ctx PoSST,chap string,cn []string,limit int) map[s
 	_,cn_stripped := IsBracketedSearchList(cn)
 	context := FormatSQLStringArray(cn_stripped)
 
-	qstr = fmt.Sprintf("WITH matching_nodes AS "+
-		"  (SELECT NFrom,ctx,match_context(ctx,%s) AS match FROM NodeArrowNode)"+
-		"     SELECT DISTINCT chap,ctx FROM matching_nodes "+
-		"      JOIN Node ON nptr=nfrom WHERE match=true %s ORDER BY Chap",
-		context,chap_col)
+	qstr = fmt.Sprintf("SELECT DISTINCT chap,ctx FROM PageMap WHERE match_context(ctx,%s) %s ORDER BY Chap",context,chap_col)
 
 	row, err := ctx.DB.Query(qstr)
 	

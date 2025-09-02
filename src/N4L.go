@@ -1159,10 +1159,32 @@ func AddMandatory() {
 
 	SST.RegisterContext(nil,nil)
 
+	// empty link for orphans to retain context
+
 	arr := SST.InsertArrowDirectory("leadsto","empty","debug","+")
 	inv := SST.InsertArrowDirectory("leadsto","void","unbug","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 	
+	// reserved for text2N4L
+
+	arr = SST.InsertArrowDirectory("contains",SST.CONT_FINDS_S,SST.CONT_FINDS_L,"+")
+        inv = SST.InsertArrowDirectory("contains",SST.INV_CONT_FOUND_IN_S,SST.INV_CONT_FOUND_IN_L,"-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
+	arr = SST.InsertArrowDirectory("contains",SST.CONT_FRAG_S,SST.CONT_FRAG_L,"+")
+        inv = SST.InsertArrowDirectory("contains",SST.INV_CONT_FRAG_IN_S,SST.INV_CONT_FRAG_IN_L,"-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
+	arr = SST.InsertArrowDirectory("properties",SST.EXPR_INTENT_S,SST.EXPR_INTENT_L,"+")
+        inv = SST.InsertArrowDirectory("properties",SST.INV_EXPR_INTENT_S,SST.INV_EXPR_INTENT_L,"-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
+	arr = SST.InsertArrowDirectory("properties",SST.EXPR_AMBIENT_S,SST.EXPR_AMBIENT_L,"+")
+        inv = SST.InsertArrowDirectory("properties",SST.INV_EXPR_AMBIENT_S,SST.INV_EXPR_AMBIENT_L,"-")
+	SST.InsertInverseArrowDirectory(arr,inv)
+
+	// Reserved for special UX handling
+
 	arr = SST.InsertArrowDirectory("leadsto",SEQUENCE_RELN,SEQUENCE_RELN,"+")
 	inv = SST.InsertArrowDirectory("leadsto","prev","follows on from","-")
 	SST.InsertInverseArrowDirectory(arr,inv)
@@ -1173,24 +1195,6 @@ func AddMandatory() {
 	
 	arr = SST.InsertArrowDirectory("properties","img","has image","+")
 	inv = SST.InsertArrowDirectory("properties","isimg","is an image for","-")
-	SST.InsertInverseArrowDirectory(arr,inv)
-
-	arr = SST.InsertArrowDirectory("properties",SST.EXPR_INTENT_L,SST.EXPR_INTENT_S,"+")
-        inv = SST.InsertArrowDirectory("properties",SST.INV_EXPR_INTENT_L,SST.INV_EXPR_INTENT_S,"-")
-	SST.InsertInverseArrowDirectory(arr,inv)
-
-	arr = SST.InsertArrowDirectory("properties",SST.EXPR_AMBIENT_L,SST.EXPR_AMBIENT_S,"+")
-        inv = SST.InsertArrowDirectory("properties",SST.INV_EXPR_AMBIENT_L,SST.INV_EXPR_AMBIENT_S,"-")
-	SST.InsertInverseArrowDirectory(arr,inv)
-
-	// reserved for text2N4L
-
-	arr = SST.InsertArrowDirectory("contains",SST.CONT_FINDS_L,SST.CONT_FINDS_S,"+")
-        inv = SST.InsertArrowDirectory("contains",SST.INV_CONT_FOUND_IN_L,SST.INV_CONT_FOUND_IN_S,"-")
-	SST.InsertInverseArrowDirectory(arr,inv)
-
-	arr = SST.InsertArrowDirectory("contains",SST.CONT_FRAG_L,SST.CONT_FRAG_S,"+")
-        inv = SST.InsertArrowDirectory("contains",SST.INV_CONT_FRAG_IN_L,SST.INV_CONT_FRAG_IN_S,"-")
 	SST.InsertInverseArrowDirectory(arr,inv)
 
 }
@@ -1578,7 +1582,7 @@ func IdempContextLink(ptr SST.NodePtr) {
 
 	var nowhere SST.NodePtr
 	var empty SST.Link
-	empty.Ctx = 0
+	empty.Ctx = SST.RegisterContext(CONTEXT_STATE,nil)
 	empty.Arr = 0
 	empty.Wgt = 1
 	SST.AppendLinkToNode(ptr,empty,nowhere)
