@@ -412,7 +412,7 @@ func PathSolve(ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,chapter string,con
 	}
 
 	var solutions [][]SST.Link
-	var ldepth,rdepth int = 1,1
+	var ldepth,rdepth int = 2,2
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 

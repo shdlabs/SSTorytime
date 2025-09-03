@@ -422,7 +422,7 @@ func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,cha
 	// Package a JSON object for the nth/dimnptr causal cone , assigning each nth the same width
 
 	var wpaths [][]SST.WebPath
-	
+
 	const maxlimit = SST.CAUSAL_CONE_MAXLIMIT
 	fcone,countf := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit, maxlimit)
 	wpaths = append(wpaths,SST.LinkWebPaths(CTX,fcone,nth,chap,context,dimnptr,limit)...)
@@ -466,7 +466,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 	// Find the path matrix
 
 	var solutions [][]SST.Link
-	var ldepth,rdepth int = 1,1
+	var ldepth,rdepth int = 2,2
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
@@ -477,12 +477,18 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 			fmt.Println("Nothing, trying reverse")
 			left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"bwd",leftptrs,ldepth,chapter,context,maxdepth)
 			right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"fwd",rightptrs,rdepth,chapter,context,maxdepth)
+
+			if Lnum == 0 || Rnum == 0 {
+				response := PackageResponse(ctx,search,"PathSolve","")	
+				w.Header().Set("Content-Type", "application/json")
+				w.Write(response)
+				return
+			}
 		}
 
 		solutions,_ = SST.WaveFrontsOverlap(CTX,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
 
 		if len(solutions) > 0 {
-
 			// format paths
 			var jstr string
 

@@ -576,6 +576,7 @@ for (let head_nptr of obj.Content)
    panel.appendChild(item);
    let parent = document.createElement('content');
 
+console.log("XX",head_nptr);
    parent = PrintPaths(parent,head_nptr.Paths);
    panel.appendChild(parent);
 
@@ -1782,7 +1783,6 @@ async function sendLinkSearch(search)
       switch (resp.Response)
          {
          case "Orbits":
-console.log("RR",resp);
             DoOrbitPanel(resp);
             break;
          case "ConePaths":

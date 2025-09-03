@@ -3941,7 +3941,7 @@ func GetDBArrowsMatchingArrowName(ctx PoSST,s string) []ArrowPtr {
 	}
 
 	for a := range ARROW_DIRECTORY {
-		if SimilarString(s,ARROW_DIRECTORY[a].Long) || SimilarString(s,ARROW_DIRECTORY[a].Short) {
+		if SimilarString(ARROW_DIRECTORY[a].Long,s) || SimilarString(ARROW_DIRECTORY[a].Short,s) {
 			list = append(list,ARROW_DIRECTORY[a].Ptr)
 		}
 	}
@@ -6372,6 +6372,7 @@ func PrintSomeLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter st
 			}
 
 			if !start_shown {
+
 				if len(cone) > 1 {
 					fmt.Printf("%s (%d) %s",prefix,p+1,path_start.S)
 				} else {
@@ -6385,7 +6386,7 @@ func PrintSomeLinkPath(ctx PoSST, cone [][]Link, p int, prefix string,chapter st
 			if !SimilarString(nextnode.Chap,chapter) {
 				break
 			}
-			
+
 			arr := GetDBArrowByPtr(ctx,cone[p][l].Arr)
 
 			if arr.Short == "then" {
@@ -9091,20 +9092,20 @@ func STTypeName(sttype int) string {
 // String matching - keep this simple for now
 // **************************************************************************
 
-func SimilarString(s1,s2 string) bool {
+func SimilarString(full,like string) bool {
 
 	// Placeholder
 	// Need to handle pluralisation patterns etc... multi-language
 
-	if s1 == s2 {
+	if full == like {
 		return true
 	}
 
-	if s1 == "" || s2 == "" || s1 == "any" || s2 == "any" {  // same as any
+	if full == "" || like == "" || full == "any" || like == "any" {  // same as any
 		return true
 	}
 
-	if strings.Contains(s2,s1) {
+	if strings.Contains(full,like) {
 		return true
 	}
 
@@ -9140,6 +9141,7 @@ func MatchContexts(context1 []string,context2ptr ContextPtr) bool {
 			return true
 		}
 	}
+
 	return false 
 }
 
