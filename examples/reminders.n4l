@@ -3,26 +3,74 @@
 
   # This is a special kind of note
 
+
+ ###########
+
  :: Monday ::
 
  Order lunch delivery on Mondays
 
  :: Monday, Hr10, Hr11 ::
 
+
+ ###########
+
+ :: Tuesday ::
+
  Check the bank
 
  Check web stats
 
- Call with %"Sven F"
+ Regular call with %"Sven F"
+
+ ###########
+
+ :: Wednesday ::
+
+
+ ###########
 
  :: Thursday ::
 
  Regular meetings, prepare
 
- :: Day14.August ::
+
+ ##################
+ # Special dates
+ ##################
+
+ :: Day3.September ::
 
  Meeting downtown, by the fountain
 
- :: August | October ::
+ :: September.Day26 ::
 
- to do: Write conference talk
+ Mum's birthday
+
+ ##################
+ # Monthly
+ ##################
+
+ :: August | September ::
+
+   to do: Write conference talk
+
+   Mum's birthday coming up
+
+
+ ###############
+ # Seasons (northern hemisphere)
+ ###############
+
+  :: N_Spring ::
+
+    Spring cleaning: air and wash bedding, clean windows
+
+  :: N_Summer ::
+
+
+  :: N_Autumn ::
+
+  
+
+  :: N_Winter ::
