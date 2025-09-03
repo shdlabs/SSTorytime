@@ -1,6 +1,7 @@
 
 -CFEngine notes
 
+  // to check this, run   ../src/N4L (-v) CFEngine.n4l
 
   #####################################################
 
