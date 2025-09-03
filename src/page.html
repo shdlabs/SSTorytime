@@ -8,8 +8,6 @@
 <style>
 // **************************************************
 
-
-
 * {
   box-sizing: border-box;
 }
@@ -329,6 +327,7 @@ pre:hover{
   color: #999999;
 
 // **************************************************
+
 </style>
 
 
@@ -349,23 +348,22 @@ MathJax.Hub.Config({
 
 
 <page>
+
 <header>
 <h2>SSToryGraph</h2>
 </header>
-
 <section>
   <nav>
-
 <form id="search">
     <label for="subject">?</label>
     <input size="100" type="text" id="name" name="name" value="" />
     <input type="submit" id="gosubmit" value="Go!" />
 </form>
   </nav>
-
   <pictureframe>
   </pictureframe>
 </section>
+
 <section>
   <article>
   </article>
@@ -466,13 +464,13 @@ switch (obj.Response)
          }
       break;
    case "ConePaths":
-      title = "cone paths";//obj.Content[0].Paths.Title;
+      title = "Local cone paths";//obj.Content[0].Paths.Title;
       break;
    case "PathSolve":
-      title = "path solution"; obj.Content[0].Paths.Title;
+      title = "Path solutions"; obj.Content[0].Paths.Title;
       break;
    case "Sequence":
-      title = "Story sequence ... "+ obj.Content[0].Chapter;
+      title = "Story sequences ... "+ obj.Content[0].Chapter;
       break;
    case "PageMap":
       title = "Page notes about "+ obj.Content.Title;
@@ -1471,6 +1469,10 @@ label.appendChild(checkbox);
 label.appendChild(spanner);
 container.appendChild(label);
 }
+
+/***********************************************************/
+// Busy wheel of time...
+/***********************************************************/
 
 /***********************************************************/
 // Render line link list by STtype
