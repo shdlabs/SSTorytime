@@ -94,15 +94,17 @@ const (
         INV_EXPR_AMBIENT_L = "is contextual highlight of"
 	INV_EXPR_AMBIENT_S = "highlight_of"
 
-	CONT_FINDS_L = "finds quote"
-	CONT_FINDS_S = "finds"
-	INV_CONT_FOUND_IN_L = "quote is found in"
-	INV_CONT_FOUND_IN_S = "found-in"
+	CONT_FINDS_L = "contains extract/quote"
+	CONT_FINDS_S = "has-extract"
+	INV_CONT_FOUND_IN_L = "extract/quote from"
+	INV_CONT_FOUND_IN_S = "extract-fr"
 
-	CONT_FRAG_L = "finds fragment"
-	CONT_FRAG_S = "finds-fr"
-	INV_CONT_FRAG_IN_L = "fragment is found in"
-	INV_CONT_FRAG_IN_S = "fr-found-in"
+	// This is a "contained-by something that expresses" shortcut => NEAR
+
+	NEAR_FRAG_L = "in a section intentionally expressing"
+	NEAR_FRAG_S = "intend-expr"
+	INV_NEAR_FRAG_IN_L = "intentionally expressed nearby"
+	INV_NEAR_FRAG_IN_S = "intent-nr"
 
 )
 
@@ -3640,7 +3642,7 @@ func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
 
 func IgnoreArrow(ctx PoSST,arr ArrowPtr) bool {
 
-	var ignorables = []string{EXPR_INTENT_L,INV_EXPR_INTENT_L,EXPR_AMBIENT_L,INV_EXPR_AMBIENT_L,CONT_FINDS_L,INV_CONT_FOUND_IN_L,CONT_FRAG_L,INV_CONT_FRAG_IN_L}
+	var ignorables = []string{EXPR_INTENT_L,INV_EXPR_INTENT_L,EXPR_AMBIENT_L,INV_EXPR_AMBIENT_L,CONT_FINDS_L,INV_CONT_FOUND_IN_L,NEAR_FRAG_L,INV_NEAR_FRAG_IN_L}
 
 	if len(IGNORE_ARROWS) == 0 {
 		for a := range ignorables {
@@ -4093,6 +4095,7 @@ func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr [
 	}
 
 	sort.Slice(result, ScoreContext)
+
 	return result
 }
 

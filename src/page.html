@@ -1411,10 +1411,15 @@ ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap + ":" + event
 
 // See what pathways we are part of and add notes
 
-CheckCone(panel,child,"[LT]",event.Orbits[Im1],event.Orbits[Il1]);
-CheckCone(panel,child,"[CN]",event.Orbits[Im2],event.Orbits[Ic2]);
-CheckCone(panel,child,"[EP]",event.Orbits[Im3],event.Orbits[Ie3]);
-CheckCone(panel,child,"[NR]",event.Orbits[In0],event.Orbits[In0]);
+//CheckCones(panel,child,"[LT]",event.Orbits[Im1],event.Orbits[Il1]);
+//CheckCones(panel,child,"[CN]",event.Orbits[Im2],event.Orbits[Ic2]);
+//CheckCones(panel,child,"[EP]",event.Orbits[Im3],event.Orbits[Ie3]);
+//CheckCones(panel,child,"[NR]",event.Orbits[In0],event.Orbits[In0]);
+
+CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr);
+CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr);
+CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr);
+CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr);
 
 // Local descriptive property attributes first
 
@@ -1497,7 +1502,7 @@ if (event.Orbits[sttype] != null)
 // Checks and tests
 /***********************************************************/
 
-function CheckCone(panel,docpart,name,bwd,fwd)
+function CheckCones(panel,docpart,name,bwd,fwd)
 {
 if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
    {
@@ -1523,6 +1528,19 @@ if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
    docpart.id = "cone_button"
    docpart.appendChild(link);
    }
+
+panel.appendChild(docpart);
+}
+
+/***********************************************************/
+
+function CheckSingleCone(panel,docpart,name,nclass,nptr)
+{
+let link = document.createElement('a');
+link.textContent = name;
+link.onclick = function() { sendLinkSearch("from "+"("+nclass+","+nptr+") "); };
+docpart.id = "cone_button"
+docpart.appendChild(link);
 
 panel.appendChild(docpart);
 }

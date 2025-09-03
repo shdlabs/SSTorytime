@@ -239,6 +239,8 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	leftptrs := SST.SolveNodePtrs(CTX,search.From,search.Chapter,search.Context,arrowptrs,limit)
 	rightptrs := SST.SolveNodePtrs(CTX,search.To,search.Chapter,search.Context,arrowptrs,limit)
 
+	fmt.Println("Solved search nodes ...")
+
 	// SEARCH SELECTION *********************************************
 
 	// Table of contents
@@ -330,9 +332,6 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,nptrs []SST.NodePtr,limit int) {
 
-	w.Header().Set("Content-Type", "application/json")
-
-	fmt.Println("HandleOrbit()")
 	var count int
 	var array string
 
@@ -345,6 +344,8 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST
 		if count > limit {
 			break
 		}
+
+		fmt.Printf("Assembling Node Orbit(%v)\n",nptrs[n])
 
 		orb := SST.GetNodeOrbit(CTX,nptrs[n],"",limit)
 		// create a set of coords for len(nptrs) disconnected nodes
@@ -362,6 +363,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST
 	
 	//fmt.Println("REPLY:\n",string(response))
 
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Reply Orbit sent")
 }
@@ -373,7 +375,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 	chap := search.Chapter
 	context := search.Context
 
-	fmt.Println("HandleCausalCones()")
+	fmt.Println("HandleCausalCones()",nptrs)
 	var total int = 1
 	var data string
 

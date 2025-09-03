@@ -221,7 +221,7 @@ func SpliceSet(ctx []string) string {
 func AddIntentionalContext(fp *os.File,ctx []string) {
 	
 	for w := 0; w < len(ctx); w++ {
-		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.CONT_FRAG_L,ctx[w])
+		fmt.Fprintf(fp,"              \" (%s) %s\n",SST.NEAR_FRAG_L,ctx[w])
 	}
 }
 
