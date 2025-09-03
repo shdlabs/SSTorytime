@@ -18,21 +18,21 @@
  + has abbreviation  (abbrev)       - is short for         (short for)
  + has version       (version)      - is a version of      (is-version)
 
- + has supplier      (supply)       - is the supplier of   (supply-by)
- + has source        (source)       - the source for       (source-of)
+ + has supplier        (supply)      - is the supplier of           (supply-by)
+ + has source          (source)      - the source for               (source-of)
 
- + discusses          (disc)       - is discussed in              (is-disc)
- + described as       (descr)      - is used as a description of  (isdescr)
- + has age character  (age)        - is the age characteristic of (isageof)
- + mentions study     (ment)       - a kind of study mentioned in (isment)
- + has a pun about    (pun on)     - was made into pun            (has pun)
- + famously uses      (fuses)      - famously used in             (fused)
- + has title          (title)      - is the title of              (title of)
- + has description    (description) - is the description for      (descrip-for)
+ + discusses           (disc)        - is discussed in              (is-disc)
+ + described as        (descr)       - is used as a description of  (isdescr)
+ + has age character   (age)         - is the age characteristic of (isageof)
+ + mentions study      (ment)        - a kind of study mentioned in (isment)
+ + has a pun about     (pun on)      - was made into pun            (has pun)
+ + famously uses       (fuses)       - famously used in             (fused)
+ + has title           (title)       - is the title of              (title of)
+ + has description     (description) - is the description for      (descrip-for)
 
- + is about topic     (about)      - is the topic/theme of            (theme-of)
- + is wrong about     (wrongabt)   - is not accurately represented by (narb)
- + expresses property (expr)       - is/are expressed by              (expr-by)
+ + is about topic/them (about)       - is the topic/theme of            (theme-of)
+ + is wrong about      (wrongabt)    - is not accurately represented by (narb)
+ + expresses property  (expr)        - is/are expressed by              (expr-by)
 
 
  :: scientific and technical annotations ::
@@ -47,7 +47,7 @@
  :: condition, state ::
 
    + has condition           (cond)    - is the condition of (cond-of)
-
+   + has an attribute        (attr)    - is an attribute of  (attr-of)
 
  :: long term, persistent properties ::
 

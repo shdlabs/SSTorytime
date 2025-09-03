@@ -79,3 +79,25 @@ For example, the files type promise centers around managing file presence, conte
    editfiles *insert_lines     (sh-precede)  replace_patterns
    editfiles *replace_patterns (sh-precede)  reports
    editfiles *reports          (comes after) replace_patterns
+
+
+  #####################################################
+
+   :: syntax tips ::
+
+    Use basic promises rather than embedding shell commands
+
+  #####################################################
+
+   :: scenarios ::
+
+     Suppose you have 1000 machines of different kinds ...
+
+  #####################################################
+
+   :: user stories ::
+
+      There was this one time, at LinkedIn camp....
+
+  #####################################################
+
