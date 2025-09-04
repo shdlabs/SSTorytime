@@ -14,6 +14,7 @@
 
 body {
   font-family: Arial, Verdana, sans-serif;
+background: #eee;
 }
 
 /* Style the header */
@@ -21,7 +22,7 @@ body {
 header {
   background-color: darkblue;
   padding: 5px;
-  width: 100%;
+  width: 100vw;
   text-align: center;
   font-size: 20px;
   color: white;
@@ -91,21 +92,22 @@ h2 {
 
 #header_root {
   font-size: 150%;
-  //color: #5599cc;
   color: pink;
   padding: 10px;
+  background: navy;
 }
 
-#chap_head {
+#chap_head {   //   In page notes, this is to top of the page header
    margin_top : 20px;
-   font-size: 150%;
-   color: navy;
+   font-size: 180%;
+   color: #005511;
+   background: navy;
 }
 
 /* Create two columns/boxes that floats next to each other */
 nav {
   float: left;
-  width: 100%;
+  width: 100vw;
   height: 40px;
   background: #ccc;
   padding: 10px;
@@ -153,9 +155,10 @@ nav {
 article {
   float: left;
   padding: 0px;
-  width: 100%;
+  width: 100vw;
   font-size: 20px;
   background-color: #f1f1f1;
+  background: #fff;
 }
 
 article p {
@@ -167,6 +170,7 @@ article p {
 article div {
  padding: 15px;
  margin-bottom: 10px;
+  background: #fff;
 }
 
 article img {
@@ -179,12 +183,15 @@ article img {
 
 article pre {
    color: green;
+   font-size: 120%;
+  background: #fff;
 }
 
 article a {
   padding: 10px;
   color: darkgreen;
   margin-top: 5px;
+  background: #fff;
 }
 
 
@@ -195,6 +202,7 @@ pictureframe {
 //height: 600px;
 padding: 10px;
 float: left;
+  background: #fff;
 }
 
 #radius-1 {
@@ -208,7 +216,7 @@ float: left;
 }
 
 #cntxt {
-  fontSize: 50%;
+  font-size: 90%;
 }
 
 #errormesg {
@@ -220,7 +228,7 @@ table {
    padding: 30px;
    align: center;
    border-spacing: 30px;
-   width: 100%;
+   width: 100vw;
 }
 
 tr {
@@ -294,14 +302,17 @@ a:hover {
  font-size: 130%;
  margin-left: 40px;
  margin-bottom: 40px;
- width: 100%;
+ width: 100vw;
  color: darkblue;
  text-wrap: balance;
+  background: #fff;
 }
 
 #chapter {
  margin-left: 60px;
  margin-bottom: 20px;
+  padding 10px;
+  background: #fff;
 }
 
 // Arrow hovering tooltips .....................
@@ -407,6 +418,9 @@ var CTX = CANVAS.getContext("2d");
 
 let WIDTH = CANVAS.offsetWidth;
 let HEIGHT = CANVAS.offsetHeight;
+
+CANVAS.width = WIDTH;
+
 let ORGX = WIDTH/2;
 let ORGY = HEIGHT/2 + 100;
 let THETA = Math.PI/8;
@@ -576,7 +590,6 @@ for (let head_nptr of obj.Content)
    panel.appendChild(item);
    let parent = document.createElement('content');
 
-console.log("XX",head_nptr);
    parent = PrintPaths(parent,head_nptr.Paths);
    panel.appendChild(parent);
 
@@ -812,7 +825,7 @@ for (let chpctx of obj.Content)
 
    let link = document.createElement('a');
    let item = document.createElement('h2');
-   link.onclick = function() { sendLinkSearch("notes XXXXXX "+chpctx.Section); };
+   link.onclick = function() { sendLinkSearch("notes "+chpctx.Section); };
    item.textContent = counter + ". "+chpctx.Section;
    link.appendChild(item);
    panel.appendChild(link);
@@ -1262,7 +1275,9 @@ for (let line = 0; line < array.length; line++)
             parent.appendChild(spacer);
 
    	    // New line has possble new chap/context
-            chtxt = array[line][i].ChCtx;
+
+            chtxt = array[line][i].Ctx;
+
             if (chtxt.length > 4)
                {
                let sec = document.createElement('h2');
