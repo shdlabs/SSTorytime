@@ -812,7 +812,7 @@ for (let chpctx of obj.Content)
 
    let link = document.createElement('a');
    let item = document.createElement('h2');
-   link.onclick = function() { sendLinkSearch("notes chapter "+chpctx.Section); };
+   link.onclick = function() { sendLinkSearch("notes XXXXXX "+chpctx.Section); };
    item.textContent = counter + ". "+chpctx.Section;
    link.appendChild(item);
    panel.appendChild(link);
@@ -1400,10 +1400,28 @@ else
 
 if (counter == 0)
    {
-   let chapter = document.createElement('i');
-   chapter.textContent = "with NPtr " + nptrtxt + ", in chapter ...\"" + event.Chap +"\", context: "+ event.Context+"   ";
-   chapter.id = "chapter";
-   child.appendChild(chapter);
+   let setting = document.createElement('span');
+   setting.id = "chapter";
+
+   let text1 = document.createElement('i');
+   text1.textContent = "with NPtr " + nptrtxt + ", in chapter "
+   setting.appendChild(text1);
+
+   let chplink = document.createElement('a');
+   chplink.textContent = '"'+event.Chap+'"';
+   chplink.onclick = function() { sendLinkSearch("any chapter \""+event.Chap)+"\""; };
+   setting.appendChild(chplink);
+
+   let text2 = document.createElement('i');
+   text2.textContent = ", context ";
+   setting.appendChild(text2);
+
+   let ctxlink = document.createElement('a');
+   ctxlink.textContent = '"'+event.Context+'"';
+   ctxlink.onclick = function() { sendLinkSearch("any context \""+event.Context+"\""); };
+   setting.appendChild(ctxlink);
+
+   child.appendChild(setting);
    }
 
 ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap + ":" + event.Context);

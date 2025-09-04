@@ -418,7 +418,7 @@ type NodeEvent struct {
 	Text    string
 	L       int
 	Chap    string
-	Context []string
+	Context string
         NPtr    NodePtr
 	XYZ     Coords
 	Orbits  [ST_TOP][]Orbit
@@ -794,6 +794,19 @@ func RegisterContext(parse_state map[string]bool,ctx []string) ContextPtr {
 
 func GetNodeContext(ctx PoSST,node Node) []string {
 
+	str := GetNodeContextString(ctx,node)
+
+	if str != "" {
+		return strings.Split(str,",")
+	}
+
+	return nil
+}
+
+// **************************************************************************
+
+func GetNodeContextString(ctx PoSST,node Node) string {
+
 	// This reads the ghost link planted for the purpose of attaching
 	// a context to floating nodes
 
@@ -802,11 +815,11 @@ func GetNodeContext(ctx PoSST,node Node) []string {
 	for _,lnk := range node.I[ST_ZERO+LEADSTO] {
 
 		if lnk.Arr == empty {
-			return strings.Split(CONTEXT_DIRECTORY[lnk.Ctx].Context,",")
+			return CONTEXT_DIRECTORY[lnk.Ctx].Context
 		}
 	}
 
-	return nil
+	return ""
 }
 
 // **************************************************************************
@@ -5700,7 +5713,7 @@ func GetSequenceContainers(ctx PoSST,arrname string,search,chapter string,contex
 			ne.Text = nd.S
 			ne.L = nd.L
 			ne.Chap = nd.Chap
-			ne.Context = strings.Split(CONTEXT_DIRECTORY[axis[lnk].Ctx].Context,",")
+			ne.Context = CONTEXT_DIRECTORY[axis[lnk].Ctx].Context
 			ne.NPtr = axis[lnk].Dst
 			ne.XYZ = directory[ne.NPtr]
 			ne.Orbits = GetNodeOrbit(ctx,axis[lnk].Dst,arrname,limit)
@@ -6413,7 +6426,7 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr,xyz Coords,orbits [ST_TOP][]Orbit) st
 	event.Text = node.S
 	event.L = node.L
 	event.Chap = node.Chap
-	event.Context = GetNodeContext(ctx,node)
+	event.Context = GetNodeContextString(ctx,node)
 	event.NPtr = nptr
 	event.XYZ = xyz
 	event.Orbits = orbits

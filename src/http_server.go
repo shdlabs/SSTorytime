@@ -169,7 +169,7 @@ func UpdateLastSawSection(w http.ResponseWriter, r *http.Request,query string) {
 
 	// update lastseen db
 
-	fmt.Println("UPDATING",query)
+	fmt.Println("UPDATING STATS FOR",query)
 
 	SST.UpdateLastSawSection(CTX,query)
 }
@@ -185,6 +185,7 @@ func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string)
 	fmt.Sscanf(class,"%d",&nclass)
 	fmt.Sscanf(cptr,"%d",&ncptr)
 
+	fmt.Println("UPDATING STATS FOR",nclass,ncptr)
 	SST.UpdateLastSawNPtr(CTX,nclass,ncptr)
 
 	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }",class,cptr)
@@ -544,6 +545,8 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 
 	jstr := SST.JSONPage(CTX,notes)
 	response := PackageResponse(ctx,search,"PageMap",jstr)
+
+	UpdateLastSawSection(w,r,notes[0].Chapter)
 
 	//fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")

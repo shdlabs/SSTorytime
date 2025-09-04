@@ -56,7 +56,7 @@ func Init() []string {
 
 	chapterPtr := flag.String("chapter", "", "a optional substring to match specific chapters")
 	sttypePtr := flag.String("sttype", "+L", "link st-types e.g. L,C,P,N")
-	depthPtr := flag.Int("depth", 6, "maximum probe depth for loop detection")
+	depthPtr := flag.Int("depth", 3, "maximum probe depth for loop detection")
 
 	flag.Parse()
 	args := flag.Args()
@@ -157,7 +157,7 @@ func AnalyzeGraph(ctx SST.PoSST,chapter string,context []string,sttypes []int,de
 	PrintNodes(ctx,sinks)
 
 	fmt.Println("")
-	fmt.Println("* DIRECTED LOOPS AND CYCLES:\n")
+	fmt.Println("* DIRECTED LOOPS AND CYCLES (max depth < ",depth,"):\n")
 	fmt.Println("\n")
 
 	// Find power matrices
