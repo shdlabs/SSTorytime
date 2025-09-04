@@ -14,7 +14,7 @@
 
 body {
   font-family: Arial, Verdana, sans-serif;
-background: #eee;
+  background: #eee;
 }
 
 /* Style the header */
@@ -811,41 +811,61 @@ let panel = document.createElement('div');
 panel.id = "main_root";
 section.appendChild(panel);
 
-let item = document.createElement('h1');
-item.textContent = "Progress tracker";
-panel.appendChild(item);
+let title = document.createElement('h1');
+title.textContent = "Progress tracker";
+panel.appendChild(title);
 
 CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
 let counter = 0;
+let lastsection = "xxx";
+let link;
+let item;
+let last;
 
 for (let chpctx of obj.Content) 
    {
-   counter++;
+   if (chpctx.Section != lastsection)
+      {
+      counter++;
+      lastsection = chpctx.Section;
+      link = document.createElement('a');
+      item = document.createElement('h2');
+      link.onclick = function() { sendLinkSearch("notes "+chpctx.Section); };
+      item.textContent = counter + ". "+chpctx.Section;
+      link.appendChild(item);
+      panel.appendChild(link);
 
-   let link = document.createElement('a');
-   let item = document.createElement('h2');
-   link.onclick = function() { sendLinkSearch("notes "+chpctx.Section); };
-   item.textContent = counter + ". "+chpctx.Section;
-   link.appendChild(item);
-   panel.appendChild(link);
+      sec = document.createElement('p');
+      sec.id = "toc-panel";
 
-   Concept(chpctx.XYZ.X,chpctx.XYZ.Y,chpctx.XYZ.Z);
-   Label(chpctx.XYZ.X,chpctx.XYZ.Y,chpctx.XYZ.Z,chpctx.Section,12,"gray");
+      let sub1 = document.createElement('i');
+      sub1.textContent = "Last viewed at "+chpctx.Last;
+      sec.appendChild(sub1);
+      let sub2 = document.createElement('i');
+      sub2.textContent = "  total viewing count = "+chpctx.Freq;
+      sub2.id = "statcount";
+      sec.appendChild(sub2);
 
-   let last = document.createElement('p');
-   last.id = "toc-panel";
-   panel.appendChild(last);
+      let spacer = document.createElement('br');
+      sec.appendChild(spacer);
+      panel.appendChild(sec);
 
-   let sub1 = document.createElement('span');
-   sub1.textContent = "Last viewed at "+chpctx.Last;
-   last.appendChild(sub1);
-
-   let sub2 = document.createElement('span');
-   sub1.textContent = "  total viewing count = "+chpctx.Freq;
-   sub1.id = "statcount";
-   last.appendChild(sub1);
-
+      Concept(chpctx.XYZ.X,chpctx.XYZ.Y,chpctx.XYZ.Z);
+      Label(chpctx.XYZ.X,chpctx.XYZ.Y,chpctx.XYZ.Z,chpctx.Section,12,"gray");
+      }
+   else
+      {
+      nlink = document.createElement('a');
+      nitem = document.createElement('span');
+      nitem.id = "heatmap";
+      nlink.onclick = function() { sendLinkSearch("("+chpctx.NPtr.Class+","+chpctx.NPtr.CPtr+")"); };
+      nitem.textContent = "("+chpctx.NPtr.Class+","+chpctx.NPtr.CPtr+")";
+      nitem.style.backgroundColor = "orange";
+      nitem.style.padding = "15px";
+      nlink.appendChild(nitem);
+      sec.appendChild(nlink);
+      }
 //        Pdelta  float64
 //	Ndelta  float64
    }

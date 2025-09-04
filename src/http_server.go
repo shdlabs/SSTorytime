@@ -169,7 +169,7 @@ func UpdateLastSawSection(w http.ResponseWriter, r *http.Request,query string) {
 
 	// update lastseen db
 
-	fmt.Println("UPDATING STATS FOR",query)
+	fmt.Println("UPDATING STATS FOR section",query)
 
 	SST.UpdateLastSawSection(CTX,query)
 }
@@ -180,13 +180,22 @@ func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string)
 
 	// update lastseen db
 
-	var nclass,ncptr int
-
+	var nptr SST.NodePtr
+	var nclass int
+	var ncptr int
 	fmt.Sscanf(class,"%d",&nclass)
 	fmt.Sscanf(cptr,"%d",&ncptr)
+	nptr.Class = nclass
+	nptr.CPtr = SST.ClassedNodePtr(ncptr)
 
-	fmt.Println("UPDATING STATS FOR",nclass,ncptr)
-	SST.UpdateLastSawNPtr(CTX,nclass,ncptr)
+	node := SST.GetDBNodeByNodePtr(CTX,nptr)
+	classifier := node.Chap + ":" + SST.GetNodeContextString(CTX,node)
+
+	SST.UpdateLastSawNPtr(CTX,nclass,ncptr,classifier)
+
+	fmt.Println("UPDATING STATS FOR",nclass,ncptr,"WITHIN",classifier)
+
+	SST.UpdateLastSawSection(CTX,classifier)
 
 	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }",class,cptr)
 	w.Write([]byte(response))
@@ -674,7 +683,6 @@ func ShowStats(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.S
 	var retval []SST.LastSeen
 
 	if nptrs == nil {
-
 		retval = SST.GetLastSawSection(ctx)
 	} else {
 

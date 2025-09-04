@@ -3356,7 +3356,7 @@ func DefineStoredFunctions(ctx PoSST) {
 	
 	row.Close()
 	
-	qstr = "CREATE OR REPLACE FUNCTION LastSawNPtr(this NodePtr)\n"+
+	qstr = "CREATE OR REPLACE FUNCTION LastSawNPtr(this NodePtr,name text)\n"+
 		"RETURNS bool AS $fn$\n"+
 		"DECLARE \n"+
 		"  prev      timestamp = NOW();\n"+
@@ -3369,7 +3369,7 @@ func DefineStoredFunctions(ctx PoSST) {
 		"  nowt = NOW();\n"+
 		"  SELECT last,delta,freq INTO prev,prevdelta,f FROM LastSeen WHERE nptr=this;\n"+
 		"  IF NOT FOUND THEN\n"+
-		"     INSERT INTO LastSeen (section,nptr,last,freq,delta) VALUES (':',this,nowt,1,interval '0 mins');\n"+
+		"     INSERT INTO LastSeen (section,nptr,last,freq,delta) VALUES (name,this,nowt,1,interval '0 mins');\n"+
 		"  ELSE\n"+
 		"     deltat = nowt - prev;\n"+
 		"     avdeltat = 0.5 * deltat + 0.5 * prevdelta;\n"+
@@ -5919,9 +5919,9 @@ func UpdateLastSawSection(ctx PoSST,name string) {
 
 // *********************************************************************
 
-func UpdateLastSawNPtr(ctx PoSST,class,cptr int) {
+func UpdateLastSawNPtr(ctx PoSST,class,cptr int,name string) {
 
-	s := fmt.Sprintf("select LastSawNPtr('(%d,%d)')",class,cptr)
+	s := fmt.Sprintf("select LastSawNPtr('(%d,%d)','%s')",class,cptr,name)
 	ctx.DB.QueryRow(s)
 }
 
@@ -5931,7 +5931,7 @@ func UpdateLastSawNPtr(ctx PoSST,class,cptr int) {
 
 func GetLastSawSection(ctx PoSST) []LastSeen {
 
-	qstr := fmt.Sprintf("SELECT section,nptr,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen")
+	qstr := fmt.Sprintf("SELECT section,nptr,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen ORDER BY section")
 
 	row,err := ctx.DB.Query(qstr)
 
@@ -5949,9 +5949,7 @@ func GetLastSawSection(ctx PoSST) []LastSeen {
 		err = row.Scan(&ls.Section,&nptrstr,&ls.Last,&ls.Freq,&ls.Pdelta,&ls.Ndelta)
 		fmt.Sscanf(nptrstr,"(%d,%d)",&ls.NPtr.Class,&ls.NPtr.CPtr)
 
-		if ls.Section != ":" { // Skip the individual NPtrs
-			ret = append(ret,ls)
-		}
+		ret = append(ret,ls)
 	}
 
 	for c := 0; c < len(ret); c++ {
