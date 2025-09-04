@@ -458,7 +458,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 	chapter := search.Chapter
 	context := search.Context
 
-	fmt.Println("HandlePathSolve()")
+	fmt.Println("HandlePathSolve(",leftptrs,",",rightptrs,")")
 
 	var Lnum,Rnum int
 	var left_paths, right_paths [][]SST.Link

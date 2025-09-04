@@ -1415,10 +1415,12 @@ ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap + ":" + event
 //CheckCones(panel,child,"[EP]",event.Orbits[Im3],event.Orbits[Ie3]);
 //CheckCones(panel,child,"[NR]",event.Orbits[In0],event.Orbits[In0]);
 
-CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1);
-CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2);
-CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3);
-CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0);
+CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
+CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
+CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
+CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
+
+panel.appendChild(child);
 
 // Local descriptive property attributes first
 
@@ -1537,15 +1539,16 @@ panel.appendChild(docpart);
 
 /***********************************************************/
 
-function CheckSingleCone(panel,docpart,name,nclass,nptr,arrow)
+function CheckSingleCone(panel,docpart,name,nclass,nptr,arrow,bwd,fwd)
 {
-let link = document.createElement('a');
-link.textContent = name;
-link.onclick = function() { sendLinkSearch("from "+"("+nclass+","+nptr+") arrow "+arrow); };
-docpart.id = "cone_button"
-docpart.appendChild(link);
-
-panel.appendChild(docpart);
+if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
+   {
+   let link = document.createElement('a');
+   link.textContent = name;
+   link.onclick = function() { sendLinkSearch("from "+"("+nclass+","+nptr+") arrow "+arrow); };
+   docpart.id = "cone_button"
+   docpart.appendChild(link);
+   }
 }
 
 /***********************************************************/

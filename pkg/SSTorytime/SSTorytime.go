@@ -3506,101 +3506,21 @@ func GetDBContextsMatchingName(ctx PoSST,src string) []string {
 
 // **************************************************************************
 
-func GetDBNodePtrMatchingName(ctx PoSST,src,chap string) []NodePtr {
+func GetDBNodePtrMatchingName(ctx PoSST,name,chap string) []NodePtr {
 
-	var qstr string
-
-	remove_accents,stripped := IsBracketedSearchTerm(src)
-
-	if remove_accents {
-		search := "%"+stripped+"%"
-		qstr = fmt.Sprintf("select NPtr from Node where lower(unaccent(S)) LIKE lower('%s')",search)
-	} else {
-		search := "%"+src+"%"
-		qstr = fmt.Sprintf("select NPtr from Node where lower(S) LIKE lower('%s')",search)
-	}
-
-	if chap != "any" && chap != "" {
-
-		remove_accents,stripped := IsBracketedSearchTerm(chap)
-		if remove_accents {
-			chapter := "%"+stripped+"%"
-			qstr += fmt.Sprintf(" AND lower(unaccent(chap)) LIKE '%s'",chapter)
-		} else {
-			chapter := "%"+chap+"%"
-			qstr += fmt.Sprintf(" AND lower(chap) LIKE '%s'",chapter)
-		}
-	} else {
-		if src == "" || src == "empty" {
-			return nil
-		}
-	}
-
-	row, err := ctx.DB.Query(qstr)
-
-	if err != nil {
-		fmt.Println("QUERY GetNodePtrMatchingName Failed",err)
-	}
-
-	var whole string
-	var n NodePtr
-	var retval []NodePtr
-
-	for row.Next() {		
-		err = row.Scan(&whole)
-		fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
-		retval = append(retval,n)
-	}
-
-	row.Close()
-	return retval
-
+	return GetDBNodePtrMatchingNCC(ctx,name,chap,nil,nil,CAUSAL_CONE_MAXLIMIT)
 }
 
 // **************************************************************************
 
 func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowPtr,limit int) []NodePtr {
 
-	// Match name, context, chapter, with arrows
+	// Order by L to favour exact matches
 
-	var chap_col, nm_col string
-	var context string
-	var qstr string
+	nm = SQLEscape(nm)
+	chap = SQLEscape(chap)
 
-	if nm == "any" || nm == "%%" {
-		nm_col = ""
-	} else {
-		remove_name_accents,nm_stripped := IsBracketedSearchTerm(nm)
-
-		if remove_name_accents {
-			nm_col = fmt.Sprintf("AND Unsearch @@ phraseto_tsquery('english', '%s')",nm_stripped)
-		} else {
-			nm_col = fmt.Sprintf("AND Search @@ phraseto_tsquery('english', '%s')",nm)
-		}
-	}
-
-	if chap != "any" && chap != "" {
-
-		remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chap)
-
-		if remove_chap_accents {
-			chap_search := "%"+chap_stripped+"%"
-			chap_col = fmt.Sprintf("lower(unaccent(Chap)) LIKE lower('%s')",chap_search)
-		} else {
-			chap_search := "%"+chap+"%"
-			chap_col = fmt.Sprintf("lower(Chap) LIKE lower('%s')",chap_search)
-		}
-	} else {
-		chap_col = fmt.Sprintf("lower(Chap) LIKE lower('%%%%')")
-	}
-
-	_,cn_stripped := IsBracketedSearchList(cn)
-	context = FormatSQLStringArray(cn_stripped)
-
-	arrows := FormatSQLIntArray(Arrow2Int(arrow))
-	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(arrow))
-
-	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE %s %s AND NCC_match(NPtr,%s,%s,%s,Im3,Im2,Im1,In0,Il1,Ic2,Ie3) ORDER BY Chap LIMIT %d",chap_col,nm_col,context,arrows,sttypes,limit)
+	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L LIMIT %d",NodeWhereString(nm,chap,cn,arrow),limit)
 
 	row, err := ctx.DB.Query(qstr)
 
@@ -3620,7 +3540,71 @@ func GetDBNodePtrMatchingNCC(ctx PoSST,nm,chap string,cn []string,arrow []ArrowP
 
 	row.Close()
 	return retval
+}
 
+// **************************************************************************
+
+func NodeWhereString(name,chap string,context []string,arrow []ArrowPtr) string {
+
+	var chap_col, nm_col string
+	var ctx_col string
+	var qstr string
+
+	// Format a WHERE clause for a Node search satisfying constraints
+
+	// Chapter first to limit search by block
+
+	if chap != "any" && chap != "" {
+
+		remove_chap_accents,chap_stripped := IsBracketedSearchTerm(chap)
+
+		if remove_chap_accents {
+			chap_search := "%"+chap_stripped+"%"
+			chap_col = fmt.Sprintf("lower(unaccent(Chap)) LIKE lower('%s')",chap_search)
+		} else {
+			chap_search := "%"+chap+"%"
+			chap_col = fmt.Sprintf("lower(Chap) LIKE lower('%s')",chap_search)
+		}
+	} else {
+		chap_col = "true"
+	}
+
+	// Name search using tsquery for wildcards and additional S = exact_constraint for !exact!
+
+	outer_exact_match,nopling := IsExactMatch(name)
+	remove_name_accents,nobrack := IsBracketedSearchTerm(nopling)
+	inner_exact_match,bare_name := IsExactMatch(nobrack)
+
+	is_exact_match := outer_exact_match || inner_exact_match
+
+	if name == "any" || name == "%%" {
+		nm_col = ""
+	} else {
+		if remove_name_accents {
+			nm_col = fmt.Sprintf(" AND Unsearch @@ phraseto_tsquery('english', '%s')",bare_name)
+		} else {
+			nm_col = fmt.Sprintf(" AND Search @@ phraseto_tsquery('english', '%s')",bare_name)
+		}
+	}
+
+	if is_exact_match {
+		nm_col += fmt.Sprintf(" AND lower(S) = '%s'",bare_name)
+	}
+
+	// context and arrows
+
+	_,cn_stripped := IsBracketedSearchList(context)
+	ctx_col = FormatSQLStringArray(cn_stripped)
+
+	arrows := FormatSQLIntArray(Arrow2Int(arrow))
+	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(arrow))
+
+	dbcols := I_MEXPR+","+I_MCONT+","+I_MLEAD+","+I_NEAR +","+I_PLEAD+","+I_PCONT+","+I_PEXPR
+
+	qstr = fmt.Sprintf("%s %s AND NCC_match(NPtr,%s,%s,%s,%s)",
+		chap_col,nm_col,ctx_col,arrows,sttypes,dbcols)
+
+	return qstr
 }
 
 // **************************************************************************
@@ -4078,12 +4062,12 @@ func SolveNodePtrs(ctx PoSST,nodenames []string,chap string,cntx []string, arr [
 		idempotence[nodeptrs[n]] = true
 	}
 
-	for r := range rest {
+	for r := 0; r < len(rest); r++ {
 
 		// Takes care of general context matching
 		nptrs := GetDBNodePtrMatchingNCC(ctx,rest[r],chap,cntx,arr,limit)
 
-		for n := range nptrs {
+		for n := 0; n < len(nptrs); n++ {
 			idempotence[nptrs[n]] = true
 		}
 	}
@@ -9412,7 +9396,21 @@ func IsBracketedSearchTerm(src string) (bool,string) {
 		stripped = strings.TrimSpace(stripped)
 	}
 
-	return retval,stripped
+	return retval,SQLEscape(stripped)
+}
+
+//****************************************************************************
+
+func IsExactMatch(org string) (bool,string) {
+
+	org = strings.TrimSpace(org)
+
+	if org[0] == '!' && org[len(org)-1] == '!' {
+
+		return true,strings.Trim(org,"!")
+	}
+
+	return false,org
 }
 
 //****************************************************************************
