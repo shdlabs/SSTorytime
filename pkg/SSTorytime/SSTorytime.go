@@ -129,17 +129,6 @@ type Node struct {
 
 //**************************************************************
 
-type QNodePtr struct {
-
-	// A Qualified NodePtr 
-
-	NPtr    NodePtr
-	Context string  // array in string form
-	Chapter string
-}
-
-//**************************************************************
-
 type PageMap struct {  // Thereis additional intent in the layout
 
 	Chapter string
@@ -175,7 +164,8 @@ type WebPath struct {
 	Arr     ArrowPtr
 	STindex int
 	Name    string
-	ChCtx   string  // chapter context header signal
+	Chp     string
+	Ctx     string
 	XYZ     Coords
 }
 
@@ -6613,7 +6603,7 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 			lastctx = txtctx
 			signalctx = txtctx
 		} else {
-			signalctx = ""
+			signalctx = txtctx
 		}
 
 		signalchange = signalchap + " :: " + signalctx
@@ -6631,7 +6621,8 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				ws.Name = text.S
 				ws.NPtr = maplines[n].Path[lnk].Dst
 				ws.XYZ = directory[ws.NPtr]
-				ws.ChCtx = signalchange
+				ws.Chp = CONTEXT_DIRECTORY[maplines[n].Context].Context
+				ws.Ctx = maplines[n].Chapter
 				path = append(path,ws)
 				
 			} else {// ARROW
@@ -6646,7 +6637,8 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				ws.Name = text.S
 				ws.NPtr = maplines[n].Path[lnk].Dst
 				ws.XYZ = directory[ws.NPtr]
-				ws.ChCtx = signalchange
+				ws.Chp = signalchange
+				ws.Ctx = maplines[n].Chapter
 				path = append(path,ws)
 				
 			}
