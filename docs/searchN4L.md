@@ -27,6 +27,24 @@ to protect them.
 - `limit` or `depth` or `range` or `distance`
 
 
+SSToryline allows you to use node addresses, called NPtr-s, which are coordinates looking like `(a,b)`. These are shown in searches
+in case you want to go quickly to a specific dode.
+
+Text searches are otherwise based on substring matches, unless you mark a string with pling/bang/exclamation characters,
+e.g. `search !a1!` which matches the full precise string 'a1'. This can be a problem for short strings, e.g. suppose
+you have notes
+
+<pre>
+- alphabet
+
+  A (comes from) Greek letter Alpha
+  B
+  C
+
+</pre>
+The chances that 'A' is a substring of another string is very high! So if you want to access that, without knowing
+its actual coordinate NPtr, you can write `!A!` to find it uniquely.
+
 ## Examples
 
 <pre>
