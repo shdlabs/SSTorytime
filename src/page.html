@@ -71,7 +71,7 @@ hr {
   margin-bottom: 30px;
 }
 
-#header_now {
+#current_time_context {
   color: orange;
 }
 
@@ -90,17 +90,18 @@ h2 {
   //line-height: 10px;
 }
 
-#header_root {
+#topmost_page_title {
   font-size: 150%;
   color: pink;
   padding: 10px;
   background: navy;
 }
 
-#chap_head {   //   In page notes, this is to top of the page header
+#chapter_notes_heading {   //   In page notes, this is to top of the page header
+   padding: 10px;
    margin_top : 20px;
-   font-size: 180%;
-   color: #005511;
+   font-size: 30px;
+   color: slategray;
 }
 
 /* Create two columns/boxes that floats next to each other */
@@ -111,9 +112,14 @@ nav {
   padding: 10px;
 }
 
+#toc-panel {
+   padding: 15px;
+   margin-left: 10px;
+}
+
 #toc-submit {
+  padding: 15px;
    float : right;
-   margin_top: 0px;
 }
 
 #toc-frag {
@@ -124,20 +130,22 @@ nav {
 #toc-elem {
   padding: 15px;
   color: purple;
-  font-size: 90%;
-
+  font-size: 150%;
+  line-height: 150%;
 }
 
 #toc-single{
   padding: 15px;
   color: darkorange;
   font-size: 150%;
+  line-height: 150%;
 }
 
 #toc-common {
   padding: 15px;
   color: mediumslateblue;
   font-size: 150%;
+  line-height: 150%;
 }
 
 #ditto {
@@ -150,7 +158,7 @@ nav {
 
 // END CHECKBOXES ............................................
 
-article {
+main {
   float: left;
   padding: 0px;
   font-size: 20px;
@@ -158,19 +166,19 @@ article {
   background: #fff;
 }
 
-article p {
+main p {
    color: green;
    //line-height: 15px;
    padding: 8px;
 }
 
-article div {
+main div {
  padding: 15px;
  margin-bottom: 10px;
   background: #fff;
 }
 
-article img {
+main img {
   padding: 30px;
   border-radius: 60%;
   width: auto;
@@ -178,13 +186,13 @@ article img {
   float: right;
 }
 
-article pre {
+main pre {
    color: green;
    font-size: 120%;
   background: #fff;
 }
 
-article a {
+main a {
   padding: 10px;
   color: darkgreen;
   margin-top: 5px;
@@ -369,13 +377,12 @@ MathJax.Hub.Config({
 </section>
 
 <section>
-  <article>
-  </article>
-
+  <main>
+  </main>
 </section>
 </page>
-
 <script>
+
 /******************************************************************************************/
 /* MB SSTorytime poc/demo code - to be cleaned up and improved by a (respectful) expert.. */
 /******************************************************************************************/
@@ -432,7 +439,7 @@ let VP_Z = 8;
 
 async function FetchPage()
 {
-let requestURL = API_SERVER+"/searchN4L";
+let requestURL = API_SERVER + "/searchN4L";
 let request = new Request(requestURL);
 let response = await fetch(request);
 let mynote = await response.json();
@@ -447,14 +454,16 @@ function DoHeader(obj)
 {
 // Clear the main panel here, as it's common to all
 
-let clearscreen = document.querySelector('article');
+let clearscreen = document.querySelector('main');
 clearscreen.innerHTML = "";
 
 // Now manage the header
+
 let header = document.querySelector('header');
 header.innerHTML = "";
+
 let titlebar = document.createElement('h2');
-titlebar.id = "header_root";
+titlebar.id = "topmost_page_title";
 
 let title = "app";
 
@@ -471,10 +480,10 @@ switch (obj.Response)
          }
       break;
    case "ConePaths":
-      title = "Local cone paths";//obj.Content[0].Paths.Title;
+      title = "Local cone paths";
       break;
    case "PathSolve":
-      title = "Path solutions"; obj.Content[0].Paths.Title;
+      title = "Path solutions";
       break;
    case "Sequence":
       title = "Story sequences ... "+ obj.Content[0].Chapter;
@@ -505,12 +514,12 @@ else
 header.appendChild(titlebar);
 
 let nowbar = document.createElement('div');
-nowbar.id = "header_now";
+nowbar.id = "current_time_context";
 nowbar.textContent = obj.Ambient;
 header.appendChild(nowbar);
 
 let ctxbar = document.createElement('p');
-ctxbar.id = "header_ctx";
+ctxbar.id = "context_history";
 ctxbar.textContent = obj.Intent;
 header.appendChild(ctxbar);
 }
@@ -519,9 +528,9 @@ header.appendChild(ctxbar);
 
 function DoOrbitPanel(obj) 
 {
-let section = document.querySelector('article');
+let section = document.querySelector('main');
 let panel = document.createElement('span');
-panel.id = "main_root";
+panel.id = "main_content_panel";
 section.appendChild(panel);
 
 // List of events unrelated
@@ -560,9 +569,9 @@ for (let node_event of obj.Content)
 
 function DoEntireConePanel(obj) 
 {
-let section = document.querySelector('article');
+let section = document.querySelector('main');
 let panel = document.createElement('div');
-panel.id = "main_root";
+panel.id = "main_content_panel";
 section.appendChild(panel);
 
 CANVAS = CreateCanvas();
@@ -638,9 +647,9 @@ for (let head_nptr of obj.Content)
 
 function DoSeqPanel(obj) 
 {
-let section = document.querySelector('article');
+let section = document.querySelector('main');
 let panel = document.createElement('div');
-panel.id = "main_root";
+panel.id = "main_content_panel";
 section.appendChild(panel);
 
 CANVAS = CreateCanvas();
@@ -667,39 +676,35 @@ for (let story of obj.Content)
 
 function DoPageMapPanel(obj) 
 {
-let section = document.querySelector('article');
+let section = document.querySelector('main');
 let panel = document.createElement('div');
-panel.id = "main_root";
+panel.id = "main_content_panel";
 section.appendChild(panel);
 
 CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
 
-let parent = document.createElement('content');
-parent.textContent = "* Chapters: ";
-parent.id = "chap_head";
+let parent = document.createElement('h1');
+parent.textContent = "* Chapter Notes: ";
+parent.id = "chapter_notes_heading";
+panel.appendChild(parent);
 
-let chapter = obj.Content.Title;
-let ctx = document.createElement('h2');
-let shchap = document.createElement('b');
-shchap.textContent = chapter;
-parent.appendChild(shchap)
+let shchap = document.createElement('p');
+shchap.textContent = obj.Content.Title;
+panel.appendChild(shchap)
 
 let thepage = document.createElement('p');
-
 thepage = PrintNotes(thepage,obj.Content.Notes);
-
 parent.appendChild(thepage);
-panel.appendChild(parent);
 }
 
 /***********************************************************/
 
 function DoTOCPanel(obj) 
 {
-let section = document.querySelector('article');
+let section = document.querySelector('main');
 let panel = document.createElement('div');
-panel.id = "main_root";
+panel.id = "main_content_panel";
 section.appendChild(panel);
 
 let item = document.createElement('h1');
@@ -710,86 +715,95 @@ CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
 let counter = 0;
 
-for (let chp of obj.Content) 
+for (let chpblk of obj.Content) 
    {
    counter++;
 
+   // N. Section/chapter header title
+
    let link = document.createElement('a');
-   let item = document.createElement('h2');
-   link.onclick = function() { sendLinkSearch("notes chapter "+chp.Chapter); };
-   item.textContent = counter + ". "+chp.Chapter;
-   link.appendChild(item);
+    let item = document.createElement('h2');
+    link.onclick = function() { sendLinkSearch("notes chapter "+chpblk.Chapter); };
+    item.textContent = counter + ". " + chpblk.Chapter;
+    link.appendChild(item);
    panel.appendChild(link);
 
-   Event(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z);
-   Label(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z,chp.Chapter,12,"gray");
+   Event(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z);
+   Label(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,chpblk.Chapter,12,"gray");
 
-   let chap = document.createElement('p');
-   chap.id = "toc-panel";
+   let chapter_section = document.createElement('p');
+   chapter_section.id = "toc-panel";
 
-   if (chp.Context != null)
+   // First do the context groups or ambient parts
+
+   if (chpblk.Context != null)
       {
-      for (let ctx of chp.Context)
+      for (let ctx of chpblk.Context)
          {
-         let link = document.createElement('span');
+         let link = document.createElement('a');
+         link.onclick = function() { sendLinkSearch("any context " + CtxSplice(ctx.Text)); };
+         link.id = "toc-frag";
+ 	 link.textContent = "Context Set/Grouping:: ";
+
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-elem";
-         link.onclick = function() { sendLinkSearch("any context "+CtxSplice(ctx.Text)); };
-         link.id = "toc-frag";
- 	 link.textContent = "Context Set/Grouping:: ";
          link.appendChild(sitem)
-         chap.appendChild(link);
+
+         chapter_section.appendChild(link);
 
 	 Concept(ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
-	 Contains(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
+	 Contains(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
       }
 
-   let br = document.createElement('br');
-   chap.appendChild(br);
-   chap.appendChild(br);
+   //Spacer ?
 
-   if (chp.Single != null)
+   if (chpblk.Single != null)
       {
-      for (let ctx of chp.Single)
+      for (let ctx of chpblk.Single)
          {
-         let link = document.createElement('csets');
+         let link = document.createElement('a');
+         link.onclick = function() { sendLinkSearch("any context "+ctx.Text); };
+ 	 link.textContent = "Intentionally emph:: ";
+
          let sitem = document.createElement('span');
          sitem.textContent = ctx.Text;
          sitem.id = "toc-single";
-         link.onclick = function() { sendLinkSearch("any context "+ctx.Text); };
- 	 link.textContent = "Intentionally emph:: ";
          link.appendChild(sitem)
-         chap.appendChild(link);
+
+         chapter_section.appendChild(link);
+
 	 Thing(ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
-	 Near(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
+	 Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
       }
 
-   br = document.createElement('br');
-   chap.appendChild(br);
-   chap.appendChild(br);
+   // Spacer ?
 
-   if (chp.Common != null)
+   if (chpblk.Common != null)
       {
-      for (let ctx of chp.Common)
+      for (let ctx of chpblk.Common)
          {
-         let link = document.createElement('i');
+         let link = document.createElement('a');
          let sitem = document.createElement('span');
-         sitem.textContent = ctx.Text;
-         sitem.id = "toc-common";
          link.onclick = function() { sendLinkSearch("any context "+ctx.Text); };
 	 link.textContent = "Ambient context:: ";
-         link.appendChild(sitem)
          link.id = "toc-frag";
-         chap.appendChild(link);
+
+         sitem.textContent = ctx.Text;
+         sitem.id = "toc-common";
+
+         link.appendChild(sitem)
+         chapter_section.appendChild(link);
+
 	 Thing(ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
-	 Near(chp.XYZ.X,chp.XYZ.Y,chp.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
+	 Near(chpblk.XYZ.X,chpblk.XYZ.Y,chpblk.XYZ.Z,ctx.XYZ.X,ctx.XYZ.Y,ctx.XYZ.Z);
          }
       }
 
-   panel.appendChild(chap)
+   panel.appendChild(chapter_section)
+
    let spacer = document.createElement('hr');
    panel.appendChild(spacer);
    }
@@ -799,9 +813,9 @@ for (let chp of obj.Content)
 
 function DoStatsPanel(obj) 
 {
-let section = document.querySelector('article');
+let section = document.querySelector('main');
 let panel = document.createElement('div');
-panel.id = "main_root";
+panel.id = "main_content_panel";
 section.appendChild(panel);
 
 let title = document.createElement('h1');
@@ -810,11 +824,13 @@ panel.appendChild(title);
 
 CANVAS = CreateCanvas();
 DrawGrid(0,0,1);
+
 let counter = 0;
 let lastsection = "xxx";
 let link;
 let item;
 let last;
+let hmpanel;
 
 for (let ls of obj.Content) 
    {
@@ -823,8 +839,9 @@ for (let ls of obj.Content)
       counter++;
       lastsection = ls.Section;
       link = document.createElement('a');
-      item = document.createElement('h2');
       link.onclick = function() { sendLinkSearch("notes "+"\""+ls.Section+"\""); };
+
+      item = document.createElement('h2');
       item.textContent = counter + ". "+ls.Section;
       link.appendChild(item);
       panel.appendChild(link);
@@ -833,28 +850,30 @@ for (let ls of obj.Content)
       sec.id = "toc-panel";
 
       let sub1 = document.createElement('i');
-      sub1.textContent = "Last viewed at "+ls.Last;
+      sub1.textContent = "Last viewed at " + ls.Last;
       sec.appendChild(sub1);
+
       let sub2 = document.createElement('i');
-      sub2.textContent = "  total viewing count = "+ls.Freq;
+      sub2.textContent = "  total viewing count = " + ls.Freq;
       sub2.id = "statcount";
       sec.appendChild(sub2);
 
-      let spacer = document.createElement('br');
-      sec.appendChild(spacer);
       panel.appendChild(sec);
+
+      hmpanel = document.createElement('div');
+      panel.appendChild(hmpanel)
 
       Concept(ls.XYZ.X,ls.XYZ.Y,ls.XYZ.Z);
       Label(ls.XYZ.X,ls.XYZ.Y,ls.XYZ.Z,ls.Section,12,"gray");
       }
    else
       {
-      nlink = document.createElement('a');
-      nitem = document.createElement('span');
+      let nlink = document.createElement('a');
+      let nitem = document.createElement('span');
       nitem.id = "heatmap";
+
       if (ls.NPtr.Class < 0)
          {
-console.log("XX",ls)
          nlink.onclick = function() { sendLinkSearch("any chapter \""+ls.Section+"\""); };
          nitem.textContent = "browse";
          }
@@ -868,7 +887,7 @@ console.log("XX",ls)
       nitem.style.backgroundColor = HeatColour(ls.Freq,ls.Pdelta,100);
       nitem.style.padding = "15px";
       nlink.appendChild(nitem);
-      sec.appendChild(nlink);
+      hmpanel.appendChild(nlink);
       }
    }
 }
@@ -877,9 +896,9 @@ console.log("XX",ls)
 
 function DoArrowsPanel(obj) 
 {
-let section = document.querySelector('article');
+let section = document.querySelector('main');
 let panel = document.createElement('span');
-panel.id = "main_root";
+panel.id = "main_content_panel";
 section.appendChild(panel);
 
 CANVAS = CreateCanvas();
@@ -895,6 +914,9 @@ let matches = obj.Content.length;
 let angle_increment = Math.PI / matches;
 let angle = 0;
 
+let subpanel = document.createElement('div');
+panel.appendChild(subpanel);
+
 for (let arrow of obj.Content) 
    {
    ArrowPair(angle,arrow.ASTtype,arrow.Long,arrow.InvL);
@@ -903,7 +925,7 @@ for (let arrow of obj.Content)
    let a = document.createElement('div');
    a.textContent = "ArrowPtr = " + arrow.ArrPtr + " (STtype: " + arrow.ASTtype + ")";
    a.id = 'arrow-'+(arrow.ASTtype + ST_ZERO);
-   panel.appendChild(a);
+   subpanel.appendChild(a);
 
    let ab = document.createElement('p');
    ab.textContent = "Long name: (" + arrow.Long + ")";
@@ -923,7 +945,7 @@ for (let arrow of obj.Content)
    let i = document.createElement('div');
    i.textContent = "ArrowPtr = " +arrow.InvPtr + ". (STtype: " + arrow.ISTtype + ")";
    //i.id = 'arrow-'+(arrow.ISTtype + ST_ZERO);
-   panel.appendChild(i);
+   subpanel.appendChild(i);
 
    let iaf = document.createElement('p');
    iaf.textContent = "Short: " + arrow.InvS;
@@ -940,7 +962,7 @@ for (let arrow of obj.Content)
    i.appendChild(ib);
 
    let hr = document.createElement('hr');
-   panel.appendChild(hr);
+   subpanel.appendChild(hr);
    }
 }
 
@@ -1282,7 +1304,7 @@ for (let line = 0; line < array.length; line++)
             // repeated item, so ditto
             let newline = document.createElement('br');
             parent.appendChild(newline);
-            let text = document.createElement('i');
+            let text = document.createElement('span');
             text.id = "ditto";
             text.textContent = "         \"        ";
             text.style.fontFamily = 'Times New Roman';
@@ -1292,9 +1314,12 @@ for (let line = 0; line < array.length; line++)
             }
 
          if (i == 0)
-            {            
-            let spacer = document.createElement('hr');
-            parent.appendChild(spacer);
+            {
+            if (line != 0)
+               {   
+               let spacer = document.createElement('hr');
+               parent.appendChild(spacer);
+            }
 
    	    // New line has possble new chap/context
 
@@ -1332,7 +1357,7 @@ for (let line = 0; line < array.length; line++)
 
             text_link.onclick = function() { sendlinkData(nclass,ncptr); };
 
-            let text = document.createElement('i');
+            let text = document.createElement('span');
             text.textContent = str;
             text.style.fontFamily = 'Times New Roman';
 
@@ -1361,8 +1386,8 @@ for (let line = 0; line < array.length; line++)
 
          if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
             {
-            let hr = document.createElement('p');
-            parent.appendChild(hr);
+            let newline = document.createElement('p');
+            parent.appendChild(newline);
             }
 
          let arrow_link = document.createElement('a');
@@ -1681,14 +1706,14 @@ async function sendsearchData() {
   })
     .then((resp) => {
 
-      let prevh = document.getElementById("header_root");
+      let prevh = document.getElementById("topmost_page_title");
 
       if (prevh != null) 
          {
          prevh.remove();
          }
 
-      let prevm = document.getElementById("article");
+      let prevm = document.getElementById("main");
 
       if (prevm != null) 
          {
@@ -1732,7 +1757,7 @@ async function sendsearchData() {
     .catch((error) => {
       // Handle error
       console.log("error ", error);
-     let section = document.querySelector('article');
+     let section = document.querySelector('main');
      let text = document.createElement('h2');
      section.textContent = "No results (perhaps no connection)";
      section.id = "errormesg"
