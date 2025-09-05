@@ -1,12 +1,14 @@
 
 - reminders
 
-  # This is a special kind of note
+  # This is a special kind of note presented by default on reload of the page
 
 
  ###########
 
  :: Monday ::
+
+ Monday's child is fair of face...
 
  Order lunch delivery on Mondays
 
@@ -16,6 +18,8 @@
  ###########
 
  :: Tuesday ::
+
+ Tuesday's child is full of grace...
 
  Check the bank
 
@@ -27,13 +31,35 @@
 
  :: Wednesday ::
 
+ Wednesday's child is full of woe...
+
 
  ###########
 
  :: Thursday ::
 
+ Thursday's child has far to go...
+
  Regular meetings, prepare
 
+ ###########
+
+ :: Friday ::
+
+ Friday's child is loving and giving...
+
+ ###########
+ # WEEKEND
+ ###########
+
+ :: Saturday ::
+
+ Saturday's child works hard for a living...
+
+
+ :: Sunday ::
+
+ The child that is born on Sabbath day, is bonny and blithe, good and gay
 
  ##################
  # Special dates
