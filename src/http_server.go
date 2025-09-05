@@ -133,7 +133,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 			if chapcontext != "" && chapcontext != "any" {
 				UpdateLastSawSection(w,r,chapcontext)
 			}
-			UpdateLastSawNPtr(w,r,nclass,ncptr)
+			UpdateLastSawNPtr(w,r,nclass,ncptr,chapcontext)
 			return
 		}
 
@@ -176,7 +176,7 @@ func UpdateLastSawSection(w http.ResponseWriter, r *http.Request,query string) {
 
 // *********************************************************************
 
-func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string) {
+func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string,classifier string) {
 
 	// update lastseen db
 
@@ -187,9 +187,6 @@ func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string)
 	fmt.Sscanf(cptr,"%d",&ncptr)
 	nptr.Class = nclass
 	nptr.CPtr = SST.ClassedNodePtr(ncptr)
-
-	node := SST.GetDBNodeByNodePtr(CTX,nptr)
-	classifier := node.Chap + ":" + SST.GetNodeContextString(CTX,node)
 
 	SST.UpdateLastSawNPtr(CTX,nclass,ncptr,classifier)
 

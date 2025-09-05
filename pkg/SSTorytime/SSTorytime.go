@@ -123,7 +123,7 @@ type Node struct {
 	Chap      string  // section/chapter name in which this was added
 	NPtr      NodePtr // Pointer to self index
 
-	I [ST_TOP][]Link  // link incidence list, by STindex
+	I [ST_TOP][]Link  // link incidence list, by STindex - these are the "vectors" +/-
   	                  // NOTE: carefully how STindex offsets represent negative SSTtypes
 }
 
@@ -326,7 +326,7 @@ const LASTSEEN_TABLE = "CREATE TABLE IF NOT EXISTS LastSeen " +
 	"Section text," +
 	"NPtr    NodePtr," +
 	"Last    timestamp," +
-	"Delta   interval," +
+	"Delta   real," +
 	"Freq    int" +
 	")"
 
@@ -3326,22 +3326,23 @@ func DefineStoredFunctions(ctx PoSST) {
 		"RETURNS bool AS $fn$\n"+
 		"DECLARE \n"+
 		"  prev      timestamp = NOW();\n"+
-		"  prevdelta interval;\n"+
-		"  deltat    interval;\n"+
-		"  avdeltat  interval;\n"+
-		"  nowt      timestamp;\n"+
+		"  prevdelta int;\n"+
+		"  deltat    int;\n"+
+		"  avdeltat  real;\n"+
+		"  nowt      int;\n"+
 		"  f         int = 0;"+
 		"BEGIN\n"+
-		"  nowt = NOW();\n"+
-		"  SELECT last,delta,freq INTO prev,prevdelta,f FROM LastSeen WHERE section=this;\n"+
+		"  SELECT last,EXTRACT(EPOCH FROM NOW()-last),delta,freq INTO prev,deltat,prevdelta,f FROM LastSeen WHERE section=this;\n"+
 		"  IF NOT FOUND THEN\n"+
-		"     INSERT INTO LastSeen (section,last,delta,freq,nptr) VALUES (this, NOW(),interval '0 mins',1,'(-1,-1)');\n"+
+		"     INSERT INTO LastSeen (section,last,delta,freq,nptr) VALUES (this, NOW(),0,1,'(-1,-1)');\n"+
 		"  ELSE\n"+
-		"     deltat = nowt - prev;\n"+
-		"     avdeltat = 0.5 * deltat + 0.5 * prevdelta;\n"+
+		"     avdeltat = 0.5 * deltat::real + 0.5 * prevdelta::real;\n"+
 		"     f = f + 1;\n"+
-		"     IF deltat > interval '2 minutes' THEN\n"+
-		"       UPDATE LastSeen SET last=nowt,delta=avdeltat,freq=f WHERE section = this;\n"+
+		      // 1 minute dead time
+		"     IF deltat > 60 THEN\n"+
+		"       UPDATE LastSeen SET last=NOW(),delta=avdeltat,freq=f WHERE section = this;\n"+
+		"     ELSE\n"+
+		"        return false;\n"+
 		"     END IF;\n"+
 		"  END IF;\n"+
 		"  RETURN true;\n"+
@@ -3360,22 +3361,24 @@ func DefineStoredFunctions(ctx PoSST) {
 		"RETURNS bool AS $fn$\n"+
 		"DECLARE \n"+
 		"  prev      timestamp = NOW();\n"+
-		"  prevdelta interval;\n"+
-		"  avdeltat  interval;\n"+
-		"  deltat    interval;\n"+
-		"  nowt      timestamp;\n"+
-		"  f    int = 0;"+
+		"  prevdelta int;\n"+
+		"  avdeltat  real;\n"+
+		"  deltat    int;\n"+
+		"  nowt      int;\n"+
+		"  ep        int = 0;"+
+		"  f         int = 0;"+
 		"BEGIN\n"+
-		"  nowt = NOW();\n"+
-		"  SELECT last,delta,freq INTO prev,prevdelta,f FROM LastSeen WHERE nptr=this;\n"+
+		"  SELECT last,EXTRACT(EPOCH FROM NOW()-last),delta,freq INTO prev,deltat,prevdelta,f FROM LastSeen WHERE nptr=this;\n"+
 		"  IF NOT FOUND THEN\n"+
-		"     INSERT INTO LastSeen (section,nptr,last,freq,delta) VALUES (name,this,nowt,1,interval '0 mins');\n"+
+		"     INSERT INTO LastSeen (section,nptr,last,freq,delta) VALUES (name,this,NOW(),1,0);\n"+
 		"  ELSE\n"+
-		"     deltat = nowt - prev;\n"+
-		"     avdeltat = 0.5 * deltat + 0.5 * prevdelta;\n"+
+		"     avdeltat = 0.5 * deltat::real + 0.5 * prevdelta::real;\n"+
 		"     f = f + 1;\n"+
-		"     IF deltat > interval '2 minutes' THEN\n"+
-		"        UPDATE LastSeen SET last=nowt,delta=avdeltat,freq=f WHERE nptr = this;\n"+
+		      // 1 minute dead time
+		"     IF deltat > 60 THEN\n"+
+		"        UPDATE LastSeen SET last=NOW(),delta=avdeltat,freq=f WHERE nptr = this;\n"+
+		"     ELSE\n"+
+		"        return false;\n"+
 		"     END IF;\n"+
 		"  END IF;\n"+
 		"  RETURN true;\n"+
@@ -5931,7 +5934,7 @@ func UpdateLastSawNPtr(ctx PoSST,class,cptr int,name string) {
 
 func GetLastSawSection(ctx PoSST) []LastSeen {
 
-	qstr := fmt.Sprintf("SELECT section,nptr,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen ORDER BY section")
+	qstr := fmt.Sprintf("SELECT section,nptr,last,freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen ORDER BY section")
 
 	row,err := ctx.DB.Query(qstr)
 
@@ -5967,7 +5970,7 @@ func GetLastSawNPtr(ctx PoSST, nptr NodePtr) LastSeen {
 
 	var ls LastSeen
 
-	qstr := fmt.Sprintf("SELECT section,last,freq,EXTRACT(EPOCH FROM delta) as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
+	qstr := fmt.Sprintf("SELECT section,last,freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr",nptr.Class,nptr.CPtr)
 
 	row,err := ctx.DB.Query(qstr)
 
@@ -6461,6 +6464,7 @@ func LinkWebPaths(ctx PoSST,cone [][]Link,nth int,chapter string,context []strin
 				var ws WebPath
 				ws.Name = path_start.S
 				ws.NPtr = cone[p][0].Dst
+				ws.Chp = nextnode.Chap
 				ws.XYZ = directory[cone[p][0].Dst]
 				path = append(path,ws)
 				start_shown = true
@@ -6479,6 +6483,7 @@ func LinkWebPaths(ctx PoSST,cone [][]Link,nth int,chapter string,context []strin
 
 			var wn WebPath
 			wn.Name = nextnode.S
+			wn.Chp = nextnode.Chap
 			wn.NPtr = cone[p][l].Dst
 			wn.XYZ = directory[cone[p][l].Dst]
 			path = append(path,wn)
@@ -6619,8 +6624,8 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				ws.Name = text.S
 				ws.NPtr = maplines[n].Path[lnk].Dst
 				ws.XYZ = directory[ws.NPtr]
-				ws.Chp = CONTEXT_DIRECTORY[maplines[n].Context].Context
-				ws.Ctx = maplines[n].Chapter
+				ws.Chp = maplines[n].Chapter
+				ws.Ctx = CONTEXT_DIRECTORY[maplines[n].Context].Context
 				path = append(path,ws)
 				
 			} else {// ARROW
@@ -6635,8 +6640,8 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 				ws.Name = text.S
 				ws.NPtr = maplines[n].Path[lnk].Dst
 				ws.XYZ = directory[ws.NPtr]
-				ws.Chp = signalchange
-				ws.Ctx = maplines[n].Chapter
+				ws.Chp = maplines[n].Chapter
+				ws.Ctx = signalchange
 				path = append(path,ws)
 				
 			}

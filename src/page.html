@@ -20,7 +20,7 @@ body {
 /* Style the header */
 
 header {
-  background-color: darkblue;
+  background: navy;
   padding: 5px;
   width: 100vw;
   text-align: center;
@@ -101,13 +101,11 @@ h2 {
    margin_top : 20px;
    font-size: 180%;
    color: #005511;
-   background: navy;
 }
 
 /* Create two columns/boxes that floats next to each other */
 nav {
   float: left;
-  width: 100vw;
   height: 40px;
   background: #ccc;
   padding: 10px;
@@ -155,7 +153,6 @@ nav {
 article {
   float: left;
   padding: 0px;
-  width: 100vw;
   font-size: 20px;
   background-color: #f1f1f1;
   background: #fff;
@@ -198,8 +195,6 @@ article a {
 // Canvas
 
 pictureframe {
-//width: 1200px;
-//height: 600px;
 padding: 10px;
 float: left;
   background: #fff;
@@ -228,7 +223,6 @@ table {
    padding: 30px;
    align: center;
    border-spacing: 30px;
-   width: 100vw;
 }
 
 tr {
@@ -302,7 +296,6 @@ a:hover {
  font-size: 130%;
  margin-left: 40px;
  margin-bottom: 40px;
- width: 100vw;
  color: darkblue;
  text-wrap: balance;
   background: #fff;
@@ -823,16 +816,16 @@ let link;
 let item;
 let last;
 
-for (let chpctx of obj.Content) 
+for (let ls of obj.Content) 
    {
-   if (chpctx.Section != lastsection)
+   if (ls.Section != lastsection)
       {
       counter++;
-      lastsection = chpctx.Section;
+      lastsection = ls.Section;
       link = document.createElement('a');
       item = document.createElement('h2');
-      link.onclick = function() { sendLinkSearch("notes "+chpctx.Section); };
-      item.textContent = counter + ". "+chpctx.Section;
+      link.onclick = function() { sendLinkSearch("notes "+"\""+ls.Section+"\""); };
+      item.textContent = counter + ". "+ls.Section;
       link.appendChild(item);
       panel.appendChild(link);
 
@@ -840,10 +833,10 @@ for (let chpctx of obj.Content)
       sec.id = "toc-panel";
 
       let sub1 = document.createElement('i');
-      sub1.textContent = "Last viewed at "+chpctx.Last;
+      sub1.textContent = "Last viewed at "+ls.Last;
       sec.appendChild(sub1);
       let sub2 = document.createElement('i');
-      sub2.textContent = "  total viewing count = "+chpctx.Freq;
+      sub2.textContent = "  total viewing count = "+ls.Freq;
       sub2.id = "statcount";
       sec.appendChild(sub2);
 
@@ -851,23 +844,32 @@ for (let chpctx of obj.Content)
       sec.appendChild(spacer);
       panel.appendChild(sec);
 
-      Concept(chpctx.XYZ.X,chpctx.XYZ.Y,chpctx.XYZ.Z);
-      Label(chpctx.XYZ.X,chpctx.XYZ.Y,chpctx.XYZ.Z,chpctx.Section,12,"gray");
+      Concept(ls.XYZ.X,ls.XYZ.Y,ls.XYZ.Z);
+      Label(ls.XYZ.X,ls.XYZ.Y,ls.XYZ.Z,ls.Section,12,"gray");
       }
    else
       {
       nlink = document.createElement('a');
       nitem = document.createElement('span');
       nitem.id = "heatmap";
-      nlink.onclick = function() { sendLinkSearch("("+chpctx.NPtr.Class+","+chpctx.NPtr.CPtr+")"); };
-      nitem.textContent = "("+chpctx.NPtr.Class+","+chpctx.NPtr.CPtr+")";
-      nitem.style.backgroundColor = "orange";
+      if (ls.NPtr.Class < 0)
+         {
+console.log("XX",ls)
+         nlink.onclick = function() { sendLinkSearch("any chapter \""+ls.Section+"\""); };
+         nitem.textContent = "browse";
+         }
+      else
+         {
+         nlink.onclick = function() { sendLinkSearch("("+ls.NPtr.Class+","+ls.NPtr.CPtr+")"); };
+         nitem.textContent = "("+ls.NPtr.Class+","+ls.NPtr.CPtr+")";
+         }
+      nitem.style.color = HeatColour(ls.Freq,ls.Pdelta,70);
+      nitem.style.fontSize = '80%';
+      nitem.style.backgroundColor = HeatColour(ls.Freq,ls.Pdelta,100);
       nitem.style.padding = "15px";
       nlink.appendChild(nitem);
       sec.appendChild(nlink);
       }
-//        Pdelta  float64
-//	Ndelta  float64
    }
 }
 
@@ -946,7 +948,7 @@ for (let arrow of obj.Content)
 //  Presentation helpers
 /***********************************************************/
 
-function PrintLink(parent,radius,stindex,arrow,str,nclass,ncptr,ctx) 
+function PrintLink(parent,radius,stindex,arrow,str,nclass,ncptr,chap,ctx) 
 {
 if (arrow == null)
    {
@@ -1027,7 +1029,7 @@ else
 
    // Add a checkbox for progress tracking
 
-   ProgressCheckBox(box,nclass,ncptr,ctx);
+   ProgressCheckBox(box,nclass,ncptr,chap,ctx);
 
    // End checkbox
    }
@@ -1296,7 +1298,7 @@ for (let line = 0; line < array.length; line++)
 
    	    // New line has possble new chap/context
 
-            chtxt = array[line][i].Ctx;
+            chtxt = array[line][i].Chp + ":" + array[line][i].Ctx;
 
             if (chtxt.length > 4)
                {
@@ -1344,7 +1346,7 @@ for (let line = 0; line < array.length; line++)
             parent.appendChild(text_link);
             }
 
-         ProgressCheckBox(parent,nclass,ncptr,chtxt);
+         ProgressCheckBox(parent,nclass,ncptr,array[line][i].Chp,array[line][i].Ctx);
          }
       else // arrow 
          {
@@ -1459,14 +1461,9 @@ if (counter == 0)
    child.appendChild(setting);
    }
 
-ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap + ":" + event.Context);
+ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
 
 // See what pathways we are part of and add notes
-
-//CheckCones(panel,child,"[LT]",event.Orbits[Im1],event.Orbits[Il1]);
-//CheckCones(panel,child,"[CN]",event.Orbits[Im2],event.Orbits[Ic2]);
-//CheckCones(panel,child,"[EP]",event.Orbits[Im3],event.Orbits[Ie3]);
-//CheckCones(panel,child,"[NR]",event.Orbits[In0],event.Orbits[In0]);
 
 CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
 CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
@@ -1497,7 +1494,7 @@ AddLinkOrbits(panel,child,event,Il1,skiparrow);
 
 /***********************************************************/
 
-function ProgressCheckBox(container,nclass,ncptr,chapcontext)
+function ProgressCheckBox(container,nclass,ncptr,chap,context)
 {
 // Create a label for the checkbox
 let label = document.createElement('label');
@@ -1509,14 +1506,15 @@ checkbox.type = 'checkbox';
 checkbox.id = 'progress-checkbox';
 checkbox.value = '('+nclass+','+ncptr+')';
 
-checkbox.addEventListener('change',function() {
-
-if (checkbox.checked) 
-   {
-   let ack = sendlastseen("lastnptr",nclass,ncptr,chapcontext);
-   }
-
-});
+//BEGIN
+ checkbox.addEventListener('change',function() {
+ let chapcontext = chap + ":" + context;
+ if (checkbox.checked) 
+    {
+    let ack = sendlastseen("lastnptr",nclass,ncptr,chapcontext);
+    }
+ });
+//END
 
 let spanner = document.createElement('span');
 spanner.className = 'checkmark';
@@ -1542,7 +1540,7 @@ if (event.Orbits[sttype] != null)
       {
       if (skiparrow != ngh.Arrow)
          {
-         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,ngh.Ctx);
+         child = PrintLink(child,ngh.Radius,ngh.STindex,ngh.Arrow,ngh.Text,ngh.Dst.Class,ngh.Dst.CPtr,event.Chap,ngh.Ctx);
          panel.appendChild(child);
 
          if (sttype == Im3 && IsImage(event.Text,ngh.Arrow))
@@ -1882,6 +1880,39 @@ return ret;
 // Graphics Drawing
 /***********************************************************/
 
+function HeatColour(freq,pdelta,sat)  // pdelta is measured in seconds --> HSL
+{
+const hottest = 100;
+const coldest = 3600 * 24 * 7 - hottest;
+
+let hue = (pdelta-hottest)/coldest * 230;
+
+let saturation = sat;
+
+let lightness = 40 + freq * 2;
+
+if (hue < 0)
+   {
+   hue = 0;
+   }
+
+if (hue > 230)
+   {
+   hue = 230;
+   }
+
+if (lightness > 100)
+   {
+   lightness = 100;
+   }
+
+let hsl = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+
+return hsl; 
+}
+
+/***********************************************************/
+
 function PlotGraphics(event,lastevent)
 {
 let tx = event.XYZ.X;
@@ -2041,8 +2072,8 @@ if (oldcanvas != null)
 let parent = document.querySelector('pictureframe');
 canvas = document.createElement("canvas");
 canvas.id = "myCanvas";
-canvas.width = window.innerWidth; //1200;
-canvas.height = window.innerWidth/2; //600;
+canvas.width = window.innerWidth;
+canvas.height = window.innerWidth/2;
 //canvas.style.position = "relative";
 canvas.style.border = "1px solid";
 CTX = canvas.getContext("2d");
