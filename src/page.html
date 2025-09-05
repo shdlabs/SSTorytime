@@ -213,13 +213,13 @@ float: left;
 }
 
 #radius-2 {
-   margin-left: 150px;
-   color: darkgreen;
+   margin-left: 250px;
+   color: slategray;
    opacity: 0.8;
 }
 
 #cntxt {
-  font-size: 90%;
+
 }
 
 #errormesg {
@@ -298,7 +298,7 @@ a:hover {
  color: purple;
 }
 
-#full-text {
+#orbital-full-text {
  padding: 10px;
  font-style: italic;
  font-size: 130%;
@@ -309,7 +309,7 @@ a:hover {
   background: #fff;
 }
 
-#chapter {
+#nptr-chapter-context-helpline {
  margin-left: 60px;
  margin-bottom: 20px;
   padding 10px;
@@ -997,9 +997,10 @@ if (str.includes("\n")) // preformatted item
    let text_link = document.createElement('a');
    text_link.onclick = function() { sendlinkData(nclass,ncptr); };
 
-   let pre = document.createElement('pre');
-   pre.textContent = str;
-   text_link.appendChild(pre);
+   let pretxt = document.createElement('pre');
+   pretxt.textContent = str;
+
+   text_link.appendChild(pretxt);
    text_link.className = 'text';
    box.appendChild(text_link);
    }
@@ -1011,13 +1012,13 @@ else
    arrow_link.textContent = `( ${arrow} )  `;
 
    box.appendChild(arrow_link);
-   //arrow_link.className = 'arrow'+stindex;
    arrow_link.id = 'arrow-'+stindex;
    arrow_link.title = STINDICES[stindex];
    arrow_link.class = "tooltip";
    arrow_link.style.fontFamily = 'Verdana';
 
    // now plain text
+
    let text_link = document.createElement('a')
 
    if (IsURL(str,arrow))
@@ -1034,7 +1035,7 @@ else
       }
    else
       {
-      // THIS IS WHERE WE WANT TO ADD TAB/ORBIT POPUP ON MOUSEOVER
+      // THIS IS WHERE WE WANT TO ADD TAB/ORBIT POPUP ON MOUSEOVER ??
 
       text_link.onclick = function() { sendlinkData(nclass,ncptr); };
       }
@@ -1042,6 +1043,7 @@ else
    text_link.textContent = str;
    text_link.className = 'text';
    text_link.style.fontFamily = 'Times';
+
    if (str.length < 20)
       {
       text_link.style.fontSize = '200%';
@@ -1049,11 +1051,7 @@ else
       }
    box.appendChild(text_link);
 
-   // Add a checkbox for progress tracking
-
    ProgressCheckBox(box,nclass,ncptr,chap,ctx);
-
-   // End checkbox
    }
 
 if (ctx.length > 0)
@@ -1063,9 +1061,6 @@ if (ctx.length > 0)
    cntx.textContent = " context hints: " + ctx;
    box.appendChild(cntx);
    }
-
-let br = document.createElement('br');
-box.appendChild(br);
 
 parent.appendChild(box);
 
@@ -1137,15 +1132,18 @@ for (let path = 0; path < array.length; path++)
             {
             let text_link = document.createElement('a');
             text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+
             let pre = document.createElement('pre');
             pre.textContent = str;
             text_link.appendChild(pre);
+
             parent.appendChild(text_link);
             }
          else
             {
             let text_link = document.createElement('a');
             text_link.onclick = function() { sendlinkData(nclass,ncptr); };
+
             let text = document.createElement('i');
             text.textContent = str;
             text.style.fontFamily = 'Times New Roman';
@@ -1173,8 +1171,8 @@ for (let path = 0; path < array.length; path++)
 
          if (arrptr == then || arrptr == prev)  // represent a privileged sequence for proper time
             {
-            let hr = document.createElement('p');
-            parent.appendChild(hr);
+            let newline = document.createElement('p');
+            parent.appendChild(newline);
             }
 
          let arrow_link = document.createElement('a');
@@ -1431,9 +1429,10 @@ if (text.includes("\n"))
 
    let from_text = document.createElement('pre');
    from_text.nameClass = "text";
-   from_text.textContent = text; // event.Text;
-   from_link.appendChild(from_text);
+   from_text.textContent = text;
    from_link.nameClass = "text";
+   from_link.appendChild(from_text);
+
    child.appendChild(from_link);
    }
 else
@@ -1441,17 +1440,17 @@ else
    let from_link = document.createElement('p');
    from_link.onclick = function() { sendlinkData(event.NPtr.Class,event.NPtr.CPtr); };
    let from_text = document.createElement(anchortag);
-   from_link.appendChild(from_text);
    from_link.nameClass = "text";
+   from_link.appendChild(from_text);
+
    child.appendChild(from_link);
 
    if (!IsMath(event.Text))
       {
-      //from_text.style.fontSize = "150%";
       from_text.textContent = event.Text.slice(0,70) + "...";
       let small_tot_text = document.createElement('div');
       small_tot_text.textContent = text;
-      small_tot_text.id = "full-text";
+      small_tot_text.id = "orbital-full-text";
       child.appendChild(small_tot_text);
       }
    else 
@@ -1463,15 +1462,15 @@ else
 if (counter == 0)
    {
    let setting = document.createElement('span');
-   setting.id = "chapter";
+   setting.id = "nptr-chapter-context-helpline";
 
    let text1 = document.createElement('i');
    text1.textContent = "with NPtr " + nptrtxt + ", in chapter "
    setting.appendChild(text1);
 
    let chplink = document.createElement('a');
-   chplink.textContent = '"'+event.Chap+'"';
-   chplink.onclick = function() { sendLinkSearch("any chapter \""+event.Chap)+"\""; };
+   chplink.textContent = '"' + event.Chap + '"';
+   chplink.onclick = function() { sendLinkSearch("any chapter \"" + event.Chap) + "\""; };
    setting.appendChild(chplink);
 
    let text2 = document.createElement('i');
@@ -1479,8 +1478,8 @@ if (counter == 0)
    setting.appendChild(text2);
 
    let ctxlink = document.createElement('a');
-   ctxlink.textContent = '"'+event.Context+'"';
-   ctxlink.onclick = function() { sendLinkSearch("any context \""+event.Context+"\""); };
+   ctxlink.textContent = '"' + event.Context + '"';
+   ctxlink.onclick = function() { sendLinkSearch("any context \"" + event.Context + "\""); };
    setting.appendChild(ctxlink);
 
    child.appendChild(setting);
@@ -1523,7 +1522,7 @@ function ProgressCheckBox(container,nclass,ncptr,chap,context)
 {
 // Create a label for the checkbox
 let label = document.createElement('label');
-label.className = "container";
+label.className = "checkbox";
 label.textContent = '';
 
 let checkbox = document.createElement('input');
@@ -1587,8 +1586,6 @@ function CheckCones(panel,docpart,name,bwd,fwd)
 {
 if (bwd[0] != null && fwd[0] != null) // we are in the middle of a cone
    {
-   //console.log("NN",bwd[0].Dst,fwd[0].Dst)
-
    let nptrs = "";
 
    for (let b of bwd)
