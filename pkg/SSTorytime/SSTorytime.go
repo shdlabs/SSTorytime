@@ -6989,6 +6989,7 @@ const (
 	CMD_CONTEXT = "context"
 	CMD_AS = "as"
 	CMD_CHAPTER = "chapter"
+	CMD_CONTENTS = "contents"
 	CMD_SECTION = "section"
 	CMD_IN = "in"
 	CMD_ARROW = "arrow"
@@ -7010,7 +7011,7 @@ func DecodeSearchField(cmd string) SearchParameters {
 		CMD_PATH,CMD_FROM,CMD_TO,
 		CMD_SEQ1,CMD_SEQ2,
 		CMD_CONTEXT,CMD_CTX,CMD_AS,
-		CMD_CHAPTER,CMD_IN,CMD_SECTION,
+		CMD_CHAPTER,CMD_IN,CMD_SECTION,CMD_CONTENTS,
 		CMD_ARROW,
 		CMD_ON,CMD_ABOUT,CMD_FOR,
 		CMD_PAGE,
@@ -7096,7 +7097,7 @@ func FillInParameters(cmd_parts [][]string,keywords []string) SearchParameters {
 				param.Stats = true
 				continue
 
-			case CMD_CHAPTER, CMD_IN:
+			case CMD_CHAPTER, CMD_IN, CMD_CONTENTS:
 				if lenp > p+1 {
 					param.Chapter = cmd_parts[c][p+1]
 					break
