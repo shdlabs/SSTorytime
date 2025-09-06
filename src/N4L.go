@@ -10,6 +10,7 @@ import (
 	"strings"
 	"os"
 	"io/ioutil"
+	"bufio"
 	"flag"
 	"fmt"
 	"unicode/utf8"
@@ -1537,11 +1538,10 @@ func HandleNode(annotated string) SST.NodePtr {
 	}
 
 	if !VERBOSE && GIVE_SIGNS_OF_LIFE {
-		if (SIGN_OF_LIFE % 10) == 0 {
-			fmt.Print("+")
+		if (SIGN_OF_LIFE % 1000) == 0 {
+			fmt.Print("--> ")
 		}
 		SIGN_OF_LIFE++
-
 	}
 
 	return clean_ptr
@@ -1594,7 +1594,7 @@ func IdempContextLink(ptr SST.NodePtr) {
 
 func ReadFile(filename string) []rune {
 
-	text := ReadUTF8File(filename)
+	text := ReadUTF8FileBuffered(filename)
 
 	// clean unicode nonsense
 
@@ -2328,6 +2328,10 @@ func AllCaps(s string) bool {
 		}
 	}
 
+	if LINE_ITEM_CACHE["THIS"][0] == LINE_ITEM_CACHE["PREV"][0] {
+		return false
+	}
+
 	return true
 }
 
@@ -2417,6 +2421,69 @@ func ReadUTF8File(filename string) []rune {
 	}
 
 	return unicode
+}
+
+//**************************************************************
+
+func ReadUTF8FileBuffered(filename string) []rune { 
+
+	// Open a stream to the file instead of reading it all at once.
+
+	file, err := os.Open(filename) 
+
+	if err != nil { 
+		ParseError(ERR_NO_SUCH_FILE_FOUND + filename) 
+		os.Exit(-1) 
+	} 
+
+	defer file.Close() 
+
+	// Create a new scanner to read from the file stream.
+
+	scanner := bufio.NewScanner(file) 
+
+	// Configure the scanner to split the input by Unicode runes, not lines.
+
+	scanner.Split(bufio.ScanRunes) 
+
+	var unicode []rune 
+	var sign_of_life int
+
+	if GIVE_SIGNS_OF_LIFE {
+		fmt.Print("Encoding for unicode: ")
+	}
+
+	// The scanner reads one rune at a time until the end of the file. 
+
+	for scanner.Scan() { 
+
+		// Get the text for the current rune
+
+		runeText := scanner.Text() 
+
+		// Decode the string (which contains one rune) to a rune value
+
+		r, _ := utf8.DecodeRuneInString(runeText) 
+
+		unicode = append(unicode, r) 
+
+		if GIVE_SIGNS_OF_LIFE && sign_of_life % 10000 == 0 {
+			fmt.Print(" ",sign_of_life)
+		}
+		sign_of_life++
+
+	} 
+
+	// Check for any errors that occurred during scanning. 
+
+	if err := scanner.Err(); err != nil { 
+
+		fmt.Printf("Error reading file %s: %v\n", filename, err) 
+		os.Exit(-1) 
+
+	} 
+
+	return unicode 
 }
 
 //**************************************************************
