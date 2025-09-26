@@ -26,16 +26,9 @@
       white-space: nowrap;
       direction: ltr;
       color: var(--blue-10);
-
-      /* Support for all WebKit browsers. */
       -webkit-font-smoothing: antialiased;
-      /* Support for Safari and Chrome. */
       text-rendering: optimizeLegibility;
-
-      /* Support for Firefox. */
       -moz-osx-font-smoothing: grayscale;
-
-      /* Support for IE. */
       font-feature-settings: 'liga';
     }
 
@@ -68,15 +61,14 @@
     }
 
     header {
-      padding: clamp(5px, 5px + 1vw, 1rem);
+      padding-top: clamp(5px, 5px + 1vw, 1rem);
       display: flex;
       position: absolute;
       align-items: start;
       justify-content: space-around;
-      width: 95svw;
+      max-width: 100svw;
       z-index: 100;
       gap: 1ch;
-
     }
 
     header h2 {
@@ -89,20 +81,20 @@
       overflow: hidden;
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 5;
+      -webkit-line-clamp: 6;
       line-clamp: 6;
-      min-width: 30svw;
+      min-width: 35svw;
 
     }
 
     header div {
-      text-wrap: pretty;
+      text-wrap: wrap;
       text-align: left;
       padding-block: 1ch;
       overflow-x: clip;
       font-size: 0.8rem;
       font-weight: var(--font-weight-6);
-      color: rgba(52, 58, 64, 0.3);
+      color: rgba(52, 58, 64, 0.4);
       font-family: Arial, Helvetica, sans-serif;
       max-width: 20svw;
 
@@ -116,7 +108,7 @@
       box-shadow: var(--shadow-4);
       background-color: rgba(120, 159, 226, 0.2);
       margin-inline: auto;
-      position: absolute;
+      position: fixed;
       bottom: 5svh;
       inset-inline: auto;
       z-index: 100;
@@ -138,12 +130,12 @@
       background-repeat: no-repeat;
       background-position: center center;
       background-size: cover;
-      box-shadow: var(--inner-shadow-2);
-      /* display: flex; */
+      box-shadow: var(--inner-shadow-3);
       min-width: 100svw;
       align-items: center;
       align-content: center;
-      min-height: fit-content;
+      padding-bottom: 1em;
+      min-height: 100svh;
     }
 
     canvas {
@@ -151,8 +143,7 @@
       background-position: center center;
       background-size: cover;
       flex-basis: 100%;
-      align-self: center;
-      max-height: fit-content;
+      max-height: 100svh;
       min-width: fit-content;
       z-index: 20;
     }
@@ -357,13 +348,10 @@
     </nav>
 
     <section id="canvas"></section>
-    <section>
+    <section class="pb-[14svh]">
       <main class=""></main>
     </section>
-    <footer>
 
-
-    </footer>
   </page>
   <script>
     /******************************************************************************************/
