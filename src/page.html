@@ -73,13 +73,9 @@
       position: absolute;
       align-items: start;
       justify-content: space-around;
-      /* background-color: var(--gray-2); */
-      /* box-shadow: var(--shadow-3); */
       width: 95svw;
       z-index: 100;
       gap: 1ch;
-
-
 
     }
 
@@ -94,7 +90,7 @@
       display: -webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 5;
-      line-clamp: 5;
+      line-clamp: 6;
       min-width: 30svw;
 
     }
@@ -362,12 +358,11 @@
 
     <section id="canvas"></section>
     <section>
-      <main></main>
+      <main class=""></main>
     </section>
     <footer>
-      <span class="material-symbols-sharp">
-        arrow_right_alt
-      </span>
+
+
     </footer>
   </page>
   <script>
@@ -2470,13 +2465,13 @@
       }
 
       // *************************************************
-
+      let P = window.innerHeight * window.innerWidth / 1000000
       function Node(x, y, z, r, col1, col2) {
         CTX.save();
         CTX.beginPath();
         let x0 = Tx(x, y, z);
         let y0 = Ty(x, y, z);
-        r = (r * 1.6) / Horizon(x, y, z);
+        r = (r * P) / Horizon(x, y, z);
 
         let grad = CTX.createLinearGradient(x0, y0, x0 + r, y0 + r);
 
