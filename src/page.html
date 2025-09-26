@@ -246,6 +246,12 @@
       align-items: baseline;
       white-space: pre;
 
+      & :hover {
+        color: var(--indigo-10);
+        text-shadow:
+          1px 2px 5px rgba(52, 58, 64, 0.3),
+          -2px -1px 3px rgba(56, 217, 169, 0.2);
+      }
 
     }
 
@@ -335,9 +341,9 @@
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.js"></script>
 </head>
 
-<body class="antialiased bg-slate-100">
-  <span id="wait"></span>
-  <page>
+<body class="antialiased from-slate-200 via-sky-200 to-slate-200 bg-liniar-to-bl">
+  <span id="wait" class=""></span>
+  <page class="">
     <header>
       <h2>SSToryGraph</h2>
     </header>
