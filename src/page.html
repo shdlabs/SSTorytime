@@ -167,7 +167,7 @@
       animation: fade-in 1s var(--ease-5);
       text-decoration: italic;
       color: var(--blue-10);
-
+      padding-inline: 0;
       font-weight: var(--font-weight-6);
 
       &::before {
@@ -263,12 +263,12 @@
     }
 
     #radius-1 {
-      min-width: 100%;
+      min-width: fit-content;
       display: inline-block;
     }
 
     #radius-2 {
-      min-width: 100%;
+      min-width: fit-content;
       display: inline-block;
     }
 
@@ -312,21 +312,21 @@
     }
 
     #toc-elem {
-      padding: 10px;
+      padding: 1ch;
       color: var(--purple-10);
       font-size: 150%;
       line-height: 150%;
     }
 
     #toc-single {
-      padding: 2ch;
+      padding: 1ch;
       color: var(--orange-10);
       font-size: 150%;
       line-height: 120%;
     }
 
     #toc-common {
-      padding: 2ch;
+      padding: 1ch;
       font-size: 120%;
       line-height: 110%;
     }
@@ -1111,7 +1111,7 @@
 
           if (str.length < 20) {
             text_link.style.fontSize = "200%";
-            text_link.style.paddingInline = "2ch";
+            // text_link.style.paddingInline = "2ch";
           }
 
           text_link.appendChild(spantext);
@@ -1212,7 +1212,7 @@
 
                 if (str.length < 20) {
                   text.style.fontSize = "150%";
-                  text.style.paddingInline = "O.5rem";
+                  // text.style.paddingInline = "O.5rem";
                 }
 
                 text_link.appendChild(text);
@@ -1368,7 +1368,7 @@
                 text.id = "ditto";
                 text.textContent = ' . . . .  .   " . . . . .   ';
                 // text.style.fontFamily = "Times New Roman";
-                text.style.padding = "1ch";
+                // text.style.padding = "1ch";
                 subline.appendChild(text);
                 continue;
               } else if (i == 0) {
