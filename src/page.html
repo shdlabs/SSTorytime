@@ -1884,9 +1884,9 @@
    event.preventDefault();
    return false;
    }
-  });
-  
-  /***********************************************************/
+});
+
+/***********************************************************/
 
       function SearchHandler() {
         let form = document.querySelector("#search");
@@ -1896,11 +1896,10 @@
 
           startHipnotize();
 
-          fetch(API_SERVER + "/searchN4L", {
-            method: POST_METHOD,
-            body: formData,
-          })
+          fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData, })
+
             .then((response) => {
+
               stopHipnotize();
 
               if (!response.ok) {
@@ -1911,6 +1910,7 @@
             })
 
             .then((resp) => {
+
               let prevh = document.getElementById("topmost_page_title");
 
               if (prevh != null) {
@@ -1956,6 +1956,7 @@
             })
 
             .catch((error) => {
+
               // Handle error
               console.log("error ", error);
               let section = document.querySelector("main");
@@ -1969,10 +1970,7 @@
         // Take over form submission
 
         ((button = document.getElementById("gosubmit")),
-          button.addEventListener("click", (event) => {
-            event.preventDefault();
-            sendsearchData();
-          }));
+          button.addEventListener("click", (event) => { event.preventDefault(); sendsearchData(); }));
       }
 
       /***********************************************************/
@@ -1982,13 +1980,15 @@
         formData.set("nclass", nclass);
         formData.set("ncptr", ncptr);
 
+        let searchfield = document.getElementById("name");
+        searchfield.value = "(" + nclass + "," + ncptr + ")";
+
         startHipnotize();
 
-        fetch(API_SERVER + "/searchN4L", {
-          method: POST_METHOD,
-          body: formData,
-        })
+        fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData, })
+
           .then((response) => {
+
             stopHipnotize();
 
             if (!response.ok) {
@@ -2018,10 +2018,8 @@
         formData.set("name", name);
         formData.set("chapcontext", chapcontext);
 
-        fetch(API_SERVER + "/searchN4L", {
-          method: POST_METHOD,
-          body: formData,
-        })
+        fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData, })
+
           .then((response) => {
             if (!response.ok) {
               throw new Error("network returns error");
@@ -2054,10 +2052,8 @@
 
         startHipnotize();
 
-        fetch(API_SERVER + "/searchN4L", {
-          method: POST_METHOD,
-          body: formData,
-        })
+        fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData, })
+
           .then((response) => {
             if (!response.ok) {
               throw new Error("network returns error");
@@ -2067,6 +2063,7 @@
           })
 
           .then((resp) => {
+
             stopHipnotize();
 
             DoHeader(resp);
@@ -2165,86 +2162,37 @@
 
         for (let ngh of event.Orbits[Il1]) {
           Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-          LeadsTo(
-            ngh.OOO.X,
-            ngh.OOO.Y,
-            ngh.OOO.Z,
-            ngh.XYZ.X,
-            ngh.XYZ.Y,
-            ngh.XYZ.Z,
-          );
+          LeadsTo(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
         }
 
         for (let ngh of event.Orbits[Im1]) {
           Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-          LeadsTo(
-            ngh.XYZ.X,
-            ngh.XYZ.Y,
-            ngh.XYZ.Z,
-            ngh.OOO.X,
-            ngh.OOO.Y,
-            ngh.OOO.Z,
-          );
+          LeadsTo(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z);
         }
 
         for (let ngh of event.Orbits[Ic2]) {
           Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-          Contains(
-            ngh.OOO.X,
-            ngh.OOO.Y,
-            ngh.OOO.Z,
-            ngh.XYZ.X,
-            ngh.XYZ.Y,
-            ngh.XYZ.Z,
-          );
+          Contains(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
         }
 
         for (let ngh of event.Orbits[Im2]) {
           Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-          Contains(
-            ngh.XYZ.X,
-            ngh.XYZ.Y,
-            ngh.XYZ.Z,
-            ngh.OOO.X,
-            ngh.OOO.Y,
-            ngh.OOO.Z,
-          );
+          Contains(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z);
         }
 
         for (let ngh of event.Orbits[Ie3]) {
           Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-          Expresses(
-            ngh.OOO.X,
-            ngh.OOO.Y,
-            ngh.OOO.Z,
-            ngh.XYZ.X,
-            ngh.XYZ.Y,
-            ngh.XYZ.Z,
-          );
+          Expresses(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
         }
 
         for (let ngh of event.Orbits[Im3]) {
           Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-          Expresses(
-            ngh.XYZ.X,
-            ngh.XYZ.Y,
-            ngh.XYZ.Z,
-            ngh.OOO.X,
-            ngh.OOO.Y,
-            ngh.OOO.Z,
-          );
+          Expresses(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z);
         }
 
         for (let ngh of event.Orbits[In0]) {
           Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-          Near(
-            ngh.OOO.X,
-            ngh.OOO.Y,
-            ngh.OOO.Z,
-            ngh.XYZ.X,
-            ngh.XYZ.Y,
-            ngh.XYZ.Z,
-          );
+          Near(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
         }
       }
 
@@ -2342,7 +2290,7 @@
         let canvas = document.createElement("canvas");
         canvas.id = "myCanvas";
         canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.height = window.innerWidth / 2;
         CTX = canvas.getContext("2d");
         parent.appendChild(canvas);
         CTX.beginPath();
@@ -2373,23 +2321,13 @@
       // *************************************************
 
       function Horizon(x, y, z) {
-        return Math.sqrt(
-          (x - OBS_X) * (x - OBS_X) +
-          (y - OBS_Y) * (y - OBS_Y) +
-          (z - OBS_Z) * (z - OBS_Z),
-        );
+        return Math.sqrt((x - OBS_X) * (x - OBS_X) + (y - OBS_Y) * (y - OBS_Y) + (z - OBS_Z) * (z - OBS_Z));
       }
 
       // *************************************************
 
       function Alpha(x, y, z) {
-        let alpha =
-          1.5 /
-          Math.sqrt(
-            (x - OBS_X) * (x - OBS_X) +
-            (y - OBS_Y) * (y - OBS_Y) +
-            (z - OBS_Z) * (z - OBS_Z),
-          );
+        let alpha = 1.5 / Math.sqrt((x - OBS_X) * (x - OBS_X) + (y - OBS_Y) * (y - OBS_Y) + (z - OBS_Z) * (z - OBS_Z));
 
         if (alpha > 1) {
           return 1;
@@ -2413,8 +2351,7 @@
 
       function Ty(x, y, z) {
         let scale = (SCALE * WIDTH) / (1 + 1.5 * Horizon(x, y, z));
-        let yt =
-          HEIGHT - ORGY - scale * (y + z * Math.sin(PHI) - x * Math.sin(THETA));
+        let yt = HEIGHT - ORGY - scale * (y + z * Math.sin(PHI) - x * Math.sin(THETA));
         return yt;
       }
 
@@ -2466,14 +2403,12 @@
 
       // *************************************************
 
-
-      let P = window.innerHeight * window.innerWidth / 1110000
       function Node(x, y, z, r, col1, col2) {
         CTX.save();
         CTX.beginPath();
         let x0 = Tx(x, y, z);
         let y0 = Ty(x, y, z);
-        r = (r * P) / Horizon(x, y, z);
+        r = (r * 1.6) / Horizon(x, y, z);
 
         let grad = CTX.createLinearGradient(x0, y0, x0 + r, y0 + r);
 
@@ -2506,22 +2441,10 @@
         CTX.beginPath();
         CTX.strokeStyle = colour;
         CTX.lineWidth = thickness;
-        CTX.moveTo(
-          tox - noderadius * Math.cos(angle),
-          toy - noderadius * Math.sin(angle),
-        );
-        CTX.lineTo(
-          tox - headlen * Math.cos(angle - headangle),
-          toy - headlen * Math.sin(angle - headangle),
-        );
-        CTX.moveTo(
-          tox - noderadius * Math.cos(angle),
-          toy - noderadius * Math.sin(angle),
-        );
-        CTX.lineTo(
-          tox - headlen * Math.cos(angle + headangle),
-          toy - headlen * Math.sin(angle + headangle),
-        );
+        CTX.moveTo(tox - noderadius * Math.cos(angle), toy - noderadius * Math.sin(angle));
+        CTX.lineTo(tox - headlen * Math.cos(angle - headangle), toy - headlen * Math.sin(angle - headangle));
+        CTX.moveTo(tox - noderadius * Math.cos(angle), toy - noderadius * Math.sin(angle));
+        CTX.lineTo(tox - headlen * Math.cos(angle + headangle), toy - headlen * Math.sin(angle + headangle));
         CTX.stroke();
         CTX.beginPath();
         CTX.restore();
@@ -2599,5 +2522,7 @@
     });
   </script>
 </body>
+
+</html>
 
 </html>
