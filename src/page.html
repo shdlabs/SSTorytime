@@ -17,7 +17,6 @@
       font-weight: normal;
       font-style: normal;
       font-size: 24px;
-      /* Preferred icon size */
       display: inline-block;
       line-height: 1;
       text-transform: none;
@@ -70,36 +69,33 @@
       width: 98svw;
       z-index: 100;
       gap: 1ch;
-    }
 
-    header h2 {
-      text-wrap: wrap;
-      color: var(--orange-11);
-      text-shadow: -1px 3px 4px rgba(15, 51, 11, 0.2);
-      font-size: var(--font-size-fluid-1);
-      font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-      text-align: start;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 4;
-      line-clamp: 4;
-      min-width: 45svw;
+      & h2 {
+        text-wrap: wrap;
+        color: var(--orange-11);
+        text-shadow: -1px 3px 4px rgba(15, 51, 11, 0.2);
+        font-size: var(--font-size-fluid-1);
+        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+        text-align: start;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        line-clamp: 4;
+        min-width: 45svw;
+      }
 
-    }
-
-    header div {
-      text-wrap: wrap;
-      text-align: left;
-      padding-block: 1ch;
-      overflow-x: clip;
-      font-size: 0.8rem;
-      font-weight: var(--font-weight-6);
-      color: rgba(52, 58, 64, 0.4);
-      font-family: Arial, Helvetica, sans-serif;
-      max-width: 20svw;
-
-
+      & div {
+        text-wrap: wrap;
+        text-align: left;
+        padding-block: 1ch;
+        overflow-x: clip;
+        font-size: 0.8rem;
+        font-weight: var(--font-weight-6);
+        color: rgba(52, 58, 64, 0.4);
+        font-family: Arial, Helvetica, sans-serif;
+        max-width: 20svw;
+      }
     }
 
     /* Navigation & Search */
@@ -138,16 +134,17 @@
       align-content: center;
       padding-bottom: 1em;
       min-height: 100svh;
-    }
 
-    canvas {
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: cover;
-      flex-basis: 100%;
-      max-height: 100svh;
-      min-width: fit-content;
-      z-index: 20;
+
+      & canvas {
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+        flex-basis: 100%;
+        max-height: 100svh;
+        min-width: fit-content;
+        z-index: 20;
+      }
     }
 
     a {
@@ -494,6 +491,15 @@
       // Page renderers
       /************************************************************/
 
+      window.addEventListener('popstate', (event) => {
+        console.log("Popped state:", event.state);
+
+        if (event.state && event.state.searchQuery) {
+          sendLinkSearch(event.state.searchQuery);
+        } else {
+          FetchPage(); // Reload the initial view.
+        }
+      });
       async function FetchPage() {
         let requestURL = API_SERVER + "/searchN4L";
         let request = new Request(requestURL);
@@ -514,12 +520,27 @@
         }
       }
 
+      function AppRouter() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        const searchQuery = urlParams.get('search');
+
+        if (searchQuery) {
+          console.log("Routing to saved search:", searchQuery);
+          sendLinkSearch(searchQuery);
+        } else {
+          console.log("Routing to default page.");
+          FetchPage();
+        }
+      }
       function DisplayError(message) {
         const main = document.querySelector("main");
-        main.innerHTML = `<div class="text-center p-8 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded-lg shadow-md border border-red-300 dark:border-red-700">
-        <h2 class="text-xl font-bold mb-2">An Error Occurred</h2>
-        <p>${message}</p>
-    </div>`;
+        main.innerHTML = `<div class="text-center p-8 bg-red-100 dark:bg-red-900/50
+                text-red-700 dark:text-red-300 rounded-lg shadow-md 
+                border border-red-300 dark:border-red-700">
+                <h4 class="text-xl font-bold mb-2">An Error Occurred</h2>
+                <h5>${message}</h5>
+            </div>`;
       }
       /***********************************************************/
 
@@ -2014,6 +2035,11 @@
             event.preventDefault();
             sendsearchData();
             topFunction();
+
+            // const state = { searchQuery: search };
+            // const title = "Results for: " + search;
+            // const url = "?search=" + encodeURIComponent(search);
+            // history.pushState(state, title, url);
           }));
       }
 
@@ -2108,6 +2134,11 @@
 
 
           .then((resp) => {
+            const state = { searchQuery: search };
+            const title = "Results for: " + search;
+            const url = "?search=" + encodeURIComponent(search);
+            history.pushState(state, title, url);
+
 
             stopHipnotize();
 
@@ -2570,8 +2601,8 @@
       // Main program starts here
       /***********************************************************/
 
-      FetchPage();
       SearchHandler();
+      AppRouter();
     });
   </script>
 </body>
