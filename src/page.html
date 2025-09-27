@@ -2009,7 +2009,11 @@
         // Take over form submission
 
         ((button = document.getElementById("gosubmit")),
-          button.addEventListener("click", (event) => { event.preventDefault(); sendsearchData(); topFunction(); }));
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            sendsearchData();
+            topFunction();
+          }));
       }
 
       /***********************************************************/
@@ -2085,11 +2089,10 @@
         formData.set("name", search);
 
         // rewrite the search field for clarity
+        topFunction();
 
         let searchfield = document.getElementById("name");
         searchfield.value = search;
-
-        topFunction();
 
         startHipnotize();
 
