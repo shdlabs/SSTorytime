@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://unpkg.com/open-props/buttons.light.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
   <style>
     .material-icons-sharp,
     .material-symbols-sharp {
@@ -412,16 +413,27 @@
     }
   </style>
 
-  <script type="text/x-mathjax-config">
-            MathJax.Hub.Config({
-              tex2jax: {
-                  inlineMath: [['$','$'], ['\\(','\\)']],
-                  displayMath: [['$$','$$'], ['\\[','\\]']],
-      }
-            });
-    </script>
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      startup: {
+        ready: function () {
+          console.log('MathJax is ready. Initializing application.');
 
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.js"></script>
+          if (window.initializeApp) {
+            window.initializeApp();
+          }
+
+          MathJax.startup.defaultReady();
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+
 </head>
 
 <body class="antialiased relative from-slate-200 via-sky-200 to-slate-200 bg-liniar-to-bl">
@@ -438,13 +450,13 @@
         <label for="name"><span class="material-icons-sharp">
             question_mark
           </span></label>
-        <input type="text" autocomplete="on=" id="name" name="name" value="" />
+        <input type="text" autocomplete="on" id="name" name="name" value="" list="search-suggestions" />
         <input type="submit" id="gosubmit" value="Go!" />
       </form>
       <span id="scroll-indicator" class="scroll-indicator">
         <span class="material-icons-sharp">arrow_downward</span>
       </span>
-    </nav>
+    </nav><datalist id="search-suggestions"></datalist>
 
     <section id="canvas"></section>
     <section class="pb-[14svh]">
@@ -462,6 +474,7 @@
     /***********************************************************/
     document.addEventListener('DOMContentLoaded', (event) => {
       var API_SERVER = "http://localhost:8080";
+
       MathJax = {
         output: {
           scale: 1, // global scaling factor for all expressions
@@ -510,7 +523,84 @@
       ];
 
       const POST_METHOD = "POST";
+      const SEARCH_COMMANDS = [
+        "\\from",
+        "\\to",
+        "\\chapter",
+        "\\on",
+        "\\about",
+        "\\in",
+        "\\for",
+        "\\browse",
+        "\\page",
+        "\\path",
+        "\\sequence",
+        "\\story",
+        "\\stories",
+        "\\as",
+        "\\section",
+        "\\content",
+        "\\toc",
+        "\\depth",
+        "\\range",
+        "\\distance",
+        "\\stats",
+        "\\remind",
+        "\\help",
+        "\\context",
+        "\\arrow",
+        "\\limit",
+        "\\notes",
+        "\\seq",
+        "\\stats"
+      ];
 
+      function populateCommandSuggestions() {
+        const datalist = document.getElementById('search-suggestions');
+        if (!datalist) return;
+
+        SEARCH_COMMANDS.forEach(command => {
+          const option = document.createElement('option');
+          option.value = command;
+          datalist.appendChild(option);
+        });
+      }
+      const HISTORY_KEY = 'sst-search-history';
+      const MAX_HISTORY_ITEMS = 50;
+
+      function saveSearchToHistory(query) {
+        if (!query) return;
+
+        // 1. Get existing history from localStorage
+        let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+
+        // 2. Remove any previous instance of the same query to avoid duplicates
+        history = history.filter(item => item !== query);
+
+        // 3. Add the new query to the front of the array
+        history.unshift(query);
+
+        // 4. Limit the history to a maximum size
+        if (history.length > MAX_HISTORY_ITEMS) {
+          history = history.slice(0, MAX_HISTORY_ITEMS);
+        }
+
+        // 5. Save the updated array back to localStorage
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      }
+
+      function loadHistoryIntoDatalist() {
+        const datalist = document.getElementById('search-suggestions');
+        const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+
+        if (!datalist) return;
+
+        history.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item;
+          datalist.appendChild(option);
+        });
+      }
       /***********************************************************/
       // Graphics config
       /***********************************************************/
@@ -550,6 +640,22 @@
           FetchPage(); // Reload the initial view.
         }
       });
+
+
+      function RerenderMath() {
+        if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+          window.MathJax.startup.promise.then(() => {
+            window.MathJax.typesetPromise();
+          }).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+        }
+      }
+
+
+      function topFunction() {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      }
+
 
       async function FetchPage() {
         let requestURL = API_SERVER + "/searchN4L";
@@ -2036,10 +2142,10 @@
               }
 
               const searchQuery = new FormData(form).get('name');
+              saveSearchToHistory(searchQuery); // SAVE
               const state = { searchQuery: searchQuery };
               const title = "Results for: " + searchQuery;
               const url = "?search=" + encodeURIComponent(searchQuery);
-
               history.pushState(state, title, url);
 
               DoHeader(resp);
@@ -2201,7 +2307,9 @@
             const state = { searchQuery: search };
             const title = "Results for: " + search;
             const url = "?search=" + encodeURIComponent(search);
+            saveSearchToHistory();
             history.pushState(state, title, url);
+
 
 
             stopHipnotize();
@@ -2657,11 +2765,6 @@
       }
 
 
-      function topFunction() {
-        document.body.scrollTop = 0;
-        document.documentElement.scrollTop = 0;
-        window.scrollTo(0, 0)
-      }
 
       window.addEventListener('scroll', () => {
         const indicator = document.getElementById('scroll-indicator');
@@ -2669,24 +2772,22 @@
           indicator.classList.remove('visible');
         }
       }, { once: true });
-
-      function RerenderMath() {
-        if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
-          window.MathJax.startup.promise.then(() => {
-            window.MathJax.typesetPromise();
-          }).catch((err) => console.log('MathJax typeset failed: ' + err.message));
-        }
-      }
       /***********************************************************/
       // Main program starts here
       /***********************************************************/
 
+      function initializeApp() {
+        populateCommandSuggestions();
+        loadHistoryIntoDatalist();
+        SearchHandler();
+        AppRouter();
+      }
+      populateCommandSuggestions();
+      loadHistoryIntoDatalist();
       SearchHandler();
       AppRouter();
     });
   </script>
 </body>
-
-</html>
 
 </html>
