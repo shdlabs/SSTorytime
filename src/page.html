@@ -336,13 +336,14 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      width: 100lvw;
-      height: 100%;
+      width: 98svw;
+      height: 98svh;
       inset: 0;
       background: rgba(0, 0, 0, 0.2);
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
-      overflow: hidden;
+      overflow: clip;
+      z-index: 45;
 
       transition:
         transform 1s var(--ease-spring-2) 1s,
@@ -364,7 +365,7 @@
     #wait {
       height: 0;
       overflow: hidden;
-      z-index: 7;
+      z-index: 50;
     }
   </style>
 
@@ -500,14 +501,16 @@
           FetchPage(); // Reload the initial view.
         }
       });
+
       async function FetchPage() {
         let requestURL = API_SERVER + "/searchN4L";
         let request = new Request(requestURL);
 
-        startHipnotize();
 
         try {
           let response = await fetch(request);
+          startHipnotize();
+
           let mynote = await response.json();
 
           DoHeader(mynote);
@@ -1982,6 +1985,13 @@
               if (prevm != null) {
                 prevm.remove();
               }
+
+              const searchQuery = new FormData(form).get('name');
+              const state = { searchQuery: searchQuery };
+              const title = "Results for: " + searchQuery;
+              const url = "?search=" + encodeURIComponent(searchQuery);
+
+              history.pushState(state, title, url);
 
               DoHeader(resp);
 
