@@ -1931,7 +1931,6 @@
 
         async function sendsearchData() {
           let formData = new FormData(form);
-
           startHipnotize();
 
           fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData, })
@@ -2025,7 +2024,8 @@
 
         let searchfield = document.getElementById("name");
         searchfield.value = "(" + nclass + "," + ncptr + ")";
-
+        topFunction();
+        topFunction();
         startHipnotize();
 
         fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData, })
@@ -2088,8 +2088,6 @@
         let formData = new FormData();
         formData.set("name", search);
 
-        // rewrite the search field for clarity
-        topFunction();
 
         let searchfield = document.getElementById("name");
         searchfield.value = search;
@@ -2138,6 +2136,7 @@
             }
 
             MathJax.typeset();
+
           })
 
 
@@ -2563,6 +2562,7 @@
       function topFunction() {
         document.body.scrollTop = 0;
         document.documentElement.scrollTop = 0;
+        window.scrollTo(0, 0)
       }
       /***********************************************************/
       // Main program starts here
