@@ -11,19 +11,19 @@ var API_SERVER = "http://localhost:8080";
 // Config Attributes
 MathJax = {
   output: {
-    scale: 1.2, // global scaling factor for all expressions
-    minScale: 0.7, // smallest scaling factor to use
+    scale: 1, // global scaling factor for all expressions
+    minScale: 0.5, // smallest scaling factor to use
     mtextInheritFont: false, // true to make mtext elements use surrounding font
     merrorInheritFont: false, // true to make merror text use surrounding font
     mtextFont: "", // font to use for mtext, if not inheriting (empty means use MathJax fonts)
     merrorFont: "", // font to use for merror, if not inheriting (empty means use MathJax fonts)
     unknownFamily: "", // font to use for character that aren't in MathJax's fonts
-    mathmlSpacing: true, // true for MathML spacing rules, false for TeX rules
+    mathmlSpacing: false, // true for MathML spacing rules, false for TeX rules
     skipAttributes: {}, // RFDa and other attributes NOT to copy to the output
     exFactor: 0.5, // default size of ex in em units
     displayAlign: "auto", // default for indentalign when set to 'auto'
     displayIndent: "0", // default for indentshift when set to 'auto'
-    displayOverflow: "overflow", // default for overflow (scroll/scale/truncate/elide/linebreak/overflow)
+    displayOverflow: "scale", // default for overflow (scroll/scale/truncate/elide/linebreak/overflow)
     linebreaks: {
       // options for when overflow is linebreak
       inline: true, // true for browser-based breaking of inline equations

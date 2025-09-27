@@ -66,7 +66,7 @@
       position: absolute;
       align-items: start;
       justify-content: space-around;
-      max-width: 100svw;
+      min-width: 100svw;
       z-index: 100;
       gap: 1ch;
     }
@@ -81,9 +81,9 @@
       overflow: hidden;
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 6;
-      line-clamp: 6;
-      min-width: 35svw;
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+      min-width: 45svw;
 
     }
 
@@ -155,6 +155,7 @@
       text-decoration: italic;
       color: var(--blue-10);
       padding-inline: 0;
+      cursor: auto;
       font-weight: var(--font-weight-6);
 
       &::before {
@@ -184,9 +185,10 @@
     }
 
     h3 {
-      margin-top: 1ch;
+      margin-block: 2ch;
       color: var(--indigo-12);
-
+      font-size: var(--font-size-fluid-1);
+      min-width: fit-content;
     }
 
     .card-view {
@@ -204,7 +206,7 @@
 
 
       & h3 {
-        font-size: var(--font-size-fluid-1);
+        font-size: var(--font-size-fluid-0);
         min-width: fit-content;
         margin-top: 0.5ch;
       }
@@ -225,6 +227,8 @@
     .card-view span {
       /* font-size: var(--font-size-fluid-0); */
       padding: 1ch;
+      min-width: max-content;
+      display: inline;
 
     }
 
@@ -317,6 +321,52 @@
       font-size: 120%;
       line-height: 110%;
     }
+
+    /* ********************* */
+    #context_history {
+      display: none;
+    }
+
+    mjx-container[display] {
+      text-align: start !important;
+      text-indent: 2ch;
+    }
+
+    .hipnosis {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100lvw;
+      height: 100%;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      overflow: hidden;
+
+      transition:
+        transform 1s var(--ease-spring-2) 1s,
+        opacity 1s ease 1s;
+
+      @starting-style {
+        opacity: 0;
+        transform: scale(0);
+      }
+    }
+
+    .hipnosis svg {
+      width: 100px;
+      height: 100px;
+      margin: 20px;
+      display: inline-block;
+    }
+
+    #wait {
+      height: 0;
+      overflow: hidden;
+      z-index: 7;
+    }
   </style>
 
   <script type="text/x-mathjax-config">
@@ -331,7 +381,7 @@
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4.0.0/tex-mml-chtml.js"></script>
 </head>
 
-<body class="antialiased from-slate-200 via-sky-200 to-slate-200 bg-liniar-to-bl">
+<body class="antialiased relative from-slate-200 via-sky-200 to-slate-200 bg-liniar-to-bl">
   <span id="wait" class=""></span>
   <page class="">
     <header>
@@ -342,7 +392,7 @@
         <label for="name"><span class="material-icons-sharp">
             question_mark
           </span></label>
-        <input type="text" id="name" name="name" value="" />
+        <input type="text" autocomplete="on=" id="name" name="name" value="" />
         <input type="submit" id="gosubmit" value="Go!" />
       </form>
     </nav>
@@ -365,24 +415,24 @@
       var API_SERVER = "http://localhost:8080";
       MathJax = {
         output: {
-          scale: 1.2, // global scaling factor for all expressions
-          minScale: 0.7, // smallest scaling factor to use
+          scale: 1, // global scaling factor for all expressions
+          minScale: 0.4, // smallest scaling factor to use
           mtextInheritFont: false, // true to make mtext elements use surrounding font
           merrorInheritFont: false, // true to make merror text use surrounding font
           mtextFont: "", // font to use for mtext, if not inheriting (empty means use MathJax fonts)
           merrorFont: "", // font to use for merror, if not inheriting (empty means use MathJax fonts)
           unknownFamily: "", // font to use for character that aren't in MathJax's fonts
-          mathmlSpacing: true, // true for MathML spacing rules, false for TeX rules
+          mathmlSpacing: false, // true for MathML spacing rules, false for TeX rules
           skipAttributes: {}, // RFDa and other attributes NOT to copy to the output
           exFactor: 0.5, // default size of ex in em units
           displayAlign: "auto", // default for indentalign when set to 'auto'
           displayIndent: "0", // default for indentshift when set to 'auto'
-          displayOverflow: "overflow", // default for overflow (scroll/scale/truncate/elide/linebreak/overflow)
+          displayOverflow: "scale", // default for overflow (scroll/scale/truncate/elide/linebreak/overflow)
           linebreaks: {
             // options for when overflow is linebreak
             inline: true, // true for browser-based breaking of inline equations
             width: "100%", // a fixed size or a percentage of the container width
-            lineleading: 0.2, // the default lineleading in em units
+            lineleading: 0.1, // the default lineleading in em units
           },
           htmlHDW: "auto", // 'use', 'force', or 'ignore' data-mjx-hdw attributes
           preFilters: [], // A list of pre-filters to add to the output jax
@@ -1862,9 +1912,9 @@
       /***********************************************************/
       // handlers
       /***********************************************************
-  
+   
   // Disable ENTER submission
-  
+   
   window.addEventListener('keydown',function(event)
   {
   if (event.keyCode == 13)
@@ -1872,9 +1922,9 @@
    event.preventDefault();
    return false;
    }
-});
-
-/***********************************************************/
+  });
+  
+  /***********************************************************/
 
       function SearchHandler() {
         let form = document.querySelector("#search");
@@ -1953,12 +2003,13 @@
               section.id = "errormesg";
               section.appendChild(text);
             });
+
         }
 
         // Take over form submission
 
         ((button = document.getElementById("gosubmit")),
-          button.addEventListener("click", (event) => { event.preventDefault(); sendsearchData(); }));
+          button.addEventListener("click", (event) => { event.preventDefault(); sendsearchData(); topFunction(); }));
       }
 
       /***********************************************************/
@@ -2038,6 +2089,8 @@
         let searchfield = document.getElementById("name");
         searchfield.value = search;
 
+        topFunction();
+
         startHipnotize();
 
         fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData, })
@@ -2049,6 +2102,7 @@
 
             return response.json();
           })
+
 
           .then((resp) => {
 
@@ -2082,6 +2136,7 @@
 
             MathJax.typeset();
           })
+
 
           .catch((error) => {
             // Handle error
@@ -2501,6 +2556,11 @@
         }
       }
 
+
+      function topFunction() {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      }
       /***********************************************************/
       // Main program starts here
       /***********************************************************/
