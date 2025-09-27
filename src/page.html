@@ -367,6 +367,49 @@
       overflow: hidden;
       z-index: 50;
     }
+
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 3vh;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--gray-8);
+      cursor: pointer;
+
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+
+    .scroll-indicator.visible {
+      opacity: 1;
+      visibility: visible;
+      animation: bounce 2s infinite;
+    }
+
+    .scroll-indicator .material-icons-sharp {
+      font-size: 3rem;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      20%,
+      50%,
+      80%,
+      100% {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      40% {
+        transform: translateX(-50%) translateY(-20px);
+      }
+
+      60% {
+        transform: translateX(-50%) translateY(-10px);
+      }
+    }
   </style>
 
   <script type="text/x-mathjax-config">
@@ -386,6 +429,9 @@
   <page class="">
     <header>
       <h2>SSToryGraph</h2>
+      <a href="#main-section" id="scroll-indicator" class="scroll-indicator">
+        <span class="material-icons-sharp">arrow_downward</span>
+      </a>
     </header>
     <nav>
       <form id="search">
@@ -395,11 +441,14 @@
         <input type="text" autocomplete="on=" id="name" name="name" value="" />
         <input type="submit" id="gosubmit" value="Go!" />
       </form>
+      <span id="scroll-indicator" class="scroll-indicator">
+        <span class="material-icons-sharp">arrow_downward</span>
+      </span>
     </nav>
 
     <section id="canvas"></section>
     <section class="pb-[14svh]">
-      <main class=""></main>
+      <main></main>
     </section>
 
   </page>
@@ -434,7 +483,7 @@
             width: "100%", // a fixed size or a percentage of the container width
             lineleading: 0.1, // the default lineleading in em units
           },
-          htmlHDW: "auto", // 'use', 'force', or 'ignore' data-mjx-hdw attributes
+          htmlHDW: "ignore", // 'use', 'force', or 'ignore' data-mjx-hdw attributes
           preFilters: [], // A list of pre-filters to add to the output jax
           postFilters: [], // A list of post-filters to add to the output jax
         },
@@ -2021,8 +2070,12 @@
                   DoStatsPanel(resp);
                   break;
               }
-
-              MathJax.typeset();
+              const indicator = document.getElementById('scroll-indicator');
+              if (indicator) {
+                indicator.classList.add('visible');
+              }
+              // MathJax.typeset();
+              RerenderMath()
             })
 
             .catch((error) => {
@@ -2081,8 +2134,9 @@
           .then((resp) => {
             DoHeader(resp);
             DoOrbitPanel(resp);
-            MathJax.typeset();
+            RerenderMath();
           })
+
 
           .catch((error) => {
             // Handle error
@@ -2178,7 +2232,8 @@
                 break;
             }
 
-            MathJax.typeset();
+            // MathJax.typeset();
+            RerenderMath();
 
           })
 
@@ -2606,6 +2661,21 @@
         document.body.scrollTop = 0;
         document.documentElement.scrollTop = 0;
         window.scrollTo(0, 0)
+      }
+
+      window.addEventListener('scroll', () => {
+        const indicator = document.getElementById('scroll-indicator');
+        if (indicator) {
+          indicator.classList.remove('visible');
+        }
+      }, { once: true });
+
+      function RerenderMath() {
+        if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+          window.MathJax.startup.promise.then(() => {
+            window.MathJax.typesetPromise();
+          }).catch((err) => console.log('MathJax typeset failed: ' + err.message));
+        }
       }
       /***********************************************************/
       // Main program starts here
