@@ -5,21 +5,16 @@
   <title>SSTorytime Simple viewer</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
   <link rel="stylesheet" href="/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script>
     MathJax = {
-      tex: {
-        inlineMath: [
-          ["$", "$"],
-          ["\\(", "\\)"],
-        ],
-        displayMath: [
-          ["$$", "$$"],
-          ["\\[", "\\]"],
-        ],
-      },
+      tex: { inlineMath: [["$", "$"], ["\\(", "\\)"],], displayMath: [["$$", "$$"], ["\\[", "\\]"],], },
       startup: {
         ready: function () {
           console.log("MathJax is ready. Initializing application.");
@@ -36,9 +31,9 @@
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
 </head>
 
-<body class="antialiased relative from-slate-200 via-sky-200 to-slate-200 bg-liniar-to-bl">
+<body class="">
   <span id="wait" class=""></span>
-  <page class="">
+  <page class="antialiased from-slate-100 via-sky-100/80 to-slate-100 bg-linear-to-bl">
     <header>
       <h2>SSToryGraph</h2>
       <a href="#main-section" id="scroll-indicator" class="scroll-indicator">
@@ -52,10 +47,9 @@
         <input type="submit" id="gosubmit" value="Go!" />
       </form>
       <span id="scroll-indicator" class="scroll-indicator">
-        <span class="material-icons-sharp">arrow_downward</span>
+        <span class="material-icons-sharp">swipe_down</span>
       </span>
     </nav>
-    <!-- <datalist id="search-suggestions"></datalist> -->
 
     <section id="canvas"></section>
     <section class="pb-[14svh]">

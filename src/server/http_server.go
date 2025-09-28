@@ -252,7 +252,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 		return
 	}
 
-	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
+	if (context || chapter) && !name && !sequence && !pagenr && (!from && !to) {
 		ShowChapterContexts(w, r, CTX, search, limit)
 		return
 	}
@@ -375,7 +375,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, np
 	context := search.Context
 
 	fmt.Println("HandleCausalCones()", nptrs)
-	var total = 1
+	total := 1
 	var data string
 
 	if len(sttype) == 0 {
@@ -465,7 +465,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, left
 	// Find the path matrix
 
 	var solutions [][]SST.Link
-	var ldepth, rdepth = 2, 2
+	ldepth, rdepth := 2, 2
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
@@ -759,7 +759,7 @@ func GetContextSets(dim int, clist []string, adj [][]int, xyz SST.Coords) []SST.
 func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
 	var retvar []SST.Loc
 
-	for c := 0; c < len(clist); c++ {
+	for c := range clist {
 
 		var contextgroup SST.Loc
 
@@ -806,7 +806,7 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 
 	var arrays string
 
-	for sti := 0; sti < SST.ST_TOP; sti++ {
+	for sti := range SST.ST_TOP {
 		var arr string
 		if en.Orbits[sti] != nil {
 			js, _ := json.Marshal(en.Orbits[sti])
@@ -836,10 +836,10 @@ func GenHeader(w http.ResponseWriter, r *http.Request) {
 // *********************************************************************
 
 func CleanText(c string) string {
-	c = strings.Replace(c, "{", "", -1)
-	c = strings.Replace(c, "}", "", -1)
-	c = strings.Replace(c, ",", " ", -1)
-	c = strings.Replace(c, "\"", "\\\"", -1)
+	c = strings.ReplaceAll(c, "{", "")
+	c = strings.ReplaceAll(c, "}", "")
+	c = strings.ReplaceAll(c, ",", " ")
+	c = strings.ReplaceAll(c, "\"", "\\\"")
 	return c
 }
 
@@ -848,7 +848,7 @@ func CleanText(c string) string {
 func ShowNode(ctx SST.PoSST, nptr []SST.NodePtr) string {
 	var ret string
 
-	for n := 0; n < len(nptr); n++ {
+	for n := range nptr {
 		node := SST.GetDBNodeByNodePtr(ctx, nptr[n])
 		ret += fmt.Sprintf("%.30s", node.S)
 		if n < len(nptr)-1 {

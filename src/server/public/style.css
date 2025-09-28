@@ -3,24 +3,12 @@
 @import "https://unpkg.com/open-props/buttons.light.min.css";
 
 body {
-  font-family: var(--font-system-ui);
+  font-size: var(--font-size-fluid-0);
 }
 
 page {
   min-height: 100svh;
-  background-image: linear-gradient(to left bottom,
-      #f9ebfc,
-      #f2eefe,
-      #ecf0ff,
-      #e9f2fd,
-      #e8f3fa,
-      #e8f4f9,
-      #e8f4f8,
-      #e9f5f7,
-      #e8f5f8,
-      #e7f6f8,
-      #e6f6f9,
-      #e5f6fa);
+
   max-width: 100svw;
   overflow: hidden;
   display: grid;
@@ -124,10 +112,12 @@ a {
   transition-property: transform, translate, scale, rotate;
   animation: fade-in 1s var(--ease-5);
   text-decoration: italic;
-  color: var(--blue-10);
+  color: var(--blue-8);
   padding-inline: 0;
   cursor: pointer;
   font-weight: var(--font-weight-6);
+  text-wrap: wrap balance;
+
 
   &::before {
     content: "";
@@ -352,7 +342,7 @@ mjx-container[display] {
 .scroll-indicator.visible {
   opacity: 1;
   visibility: visible;
-  animation: bounce 2s infinite;
+  animation: bounce 2s 4;
 }
 
 .scroll-indicator .material-icons-sharp {

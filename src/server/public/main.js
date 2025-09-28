@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", (event) => {
+document.addEventListener("DOMContentLoaded", function (event) {
   var API_SERVER = "http://asus:8080";
 
   MathJax = {
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
   const Il1 = 4;
   const Ic2 = 5;
   const Ie3 = 6;
-  const ST_TOP = 7;
+  // const ST_TOP = 7;
   const ST_ZERO = 3;
 
   const STINDICES = [
@@ -130,12 +130,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
   /***********************************************************/
   // Graphics config
   /***********************************************************/
-
   var CANVAS = CreateCanvas();
   var CTX = CANVAS.getContext("2d");
 
   // Adjust coordinates
-
   let WIDTH = CANVAS.offsetWidth;
   let HEIGHT = CANVAS.offsetHeight;
 
@@ -156,7 +154,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   /************************************************************/
   // Page renderers
   /************************************************************/
-
   window.addEventListener("popstate", (event) => {
     console.log("Popped state:", event.state);
 
@@ -209,7 +206,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
   function AppRouter() {
     const urlParams = new URLSearchParams(window.location.search);
 
-    const searchQuery = urlParams.get("search");
+    const searchQuery = urlParams.get("search=");
 
     if (searchQuery) {
       console.log("Routing to saved search:", searchQuery);
@@ -219,6 +216,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
       FetchPage();
     }
   }
+
   function DisplayError(message) {
     const main = document.querySelector("main");
     main.innerHTML = `<div class="text-center p-8 bg-red-100 dark:bg-red-900/50
@@ -229,15 +227,12 @@ document.addEventListener("DOMContentLoaded", (event) => {
             </div>`;
   }
   /***********************************************************/
-
   function DoHeader(obj) {
     // Clear the main panel here, as it's common to all
-
     let clearscreen = document.querySelector("main");
     clearscreen.innerHTML = "";
 
     // Now manage the header
-
     let header = document.querySelector("header");
     header.innerHTML = "";
 
@@ -301,7 +296,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function DoOrbitPanel(obj) {
     let section = document.querySelector("main");
     let panel = document.createElement("i");
@@ -309,7 +303,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     section.appendChild(panel);
 
     // List of events unrelated
-
     if (obj == null) {
       return;
     }
@@ -335,7 +328,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function DoEntireConePanel(obj) {
     let section = document.querySelector("main");
     let panel = document.createElement("span");
@@ -346,7 +338,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     DrawGrid(0, 0, 1);
 
     // Iterate over the cones from different starting nodes
-
     for (let head_nptr of obj.Content) {
       let nclass = head_nptr.NClass;
       let ncptr = head_nptr.NCPtr;
@@ -369,7 +360,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
       card = PrintPaths(card, head_nptr.Paths);
 
       // Add the centrality box at bottom of page
-
       let tab = document.createElement("table");
       let row = document.createElement("tr");
       let col1 = document.createElement("td");
@@ -381,7 +371,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
       let lst1 = document.createElement("ol");
 
       // For paths solve <a|b>
-
       if (head_nptr.BTWC != null) {
         for (let centrality of head_nptr.BTWC) {
           let li = document.createElement("li");
@@ -414,7 +403,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function DoSeqPanel(obj) {
     let section = document.querySelector("main");
     let panel = document.createElement("div");
@@ -446,7 +434,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function DoPageMapPanel(obj) {
     let section = document.querySelector("main");
 
@@ -458,7 +445,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     DrawGrid(0, 0, 1);
 
     // Major header
-
     let title = document.createElement("h3");
     title.textContent = "* Chapter Notes: ";
     title.id = "chapter_notes_heading";
@@ -468,7 +454,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function DoTOCPanel(obj) {
     let section = document.querySelector("main");
 
@@ -512,7 +497,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
       );
 
       // First do the context groups or ambient parts
-
       if (chpblk.Context != null) {
         for (let ctx of chpblk.Context) {
           let link = document.createElement("a");
@@ -542,7 +526,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
       }
 
       //Spacer ?
-
       if (chpblk.Single != null) {
         for (let ctx of chpblk.Single) {
           let link = document.createElement("a");
@@ -603,7 +586,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function DoStatsPanel(obj) {
     let section = document.querySelector("main");
 
@@ -690,7 +672,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function DoArrowsPanel(obj) {
     let section = document.querySelector("main");
     let panel = document.createElement("span");
@@ -763,7 +744,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   /***********************************************************/
   //  Presentation helpers
   /***********************************************************/
-
   function PrintLink(
     parent,
     radius,
@@ -780,12 +760,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
     }
 
     // BEGIN column_radiusof3 i.e. 2of3 and 3of3 depending on radius variable
-
     let box = document.createElement("div");
     box.id = "radius-" + radius;
 
     // any arrow comes first
-
     let prefix = " . .  " + "╠═▹  ";
 
     for (let indent = 0; indent < radius; indent++) {
@@ -811,7 +789,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     if (str.includes("\n")) {
       // preformatted item -> <pre>
       // pre formatted text
-
       let text_link = document.createElement("a");
       text_link.onclick = function () {
         sendlinkData(nclass, ncptr);
@@ -838,7 +815,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
         box.appendChild(img);
       } else {
         // THIS IS WHERE WE WANT TO ADD TAB/ORBIT POPUP ON MOUSEOVER ??
-
         text_link.onclick = function () {
           sendlinkData(nclass, ncptr);
         };
@@ -846,7 +822,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
       spantext.textContent = str;
       // spantext.style.fontFamily = "Times"; // distinguish satellites
-
       if (str.length < 20) {
         text_link.style.fontSize = "200%";
         // text_link.style.paddingInline = "2ch";
@@ -870,7 +845,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function PrintPaths(parent, array) {
     if (array.length < 1) {
       return parent;
@@ -888,7 +862,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
       }
 
       // The WebPath protocol alternates node-arrow...
-
       for (let i = 0; i < array[path].length; i++) {
         if (i == 0) {
           newpath = document.createElement("div");
@@ -979,7 +952,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
           arrow_link.class = "tooltip";
           arrow_link.title = STINDICES[stindex];
           // arrow_link.style.fontFamily = "Verdana";
-
           newpath.appendChild(arrow_link);
         }
       }
@@ -989,7 +961,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz) {
     if (lastx != 0 || lasty != 0 || lastz != 0) {
       switch (lastarrow) {
@@ -1021,7 +992,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function PrintNotes(parent, array) {
     if (array == null || array.length < 1) {
       return parent;
@@ -1030,7 +1000,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     // The root panel is called "parent".
     // Each new Item will start a "child" card
     // Inside child cards, there will be sublines
-
     let lastx = 0;
     let lasty = 0;
     let lastz = 0;
@@ -1044,7 +1013,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     let lastchtxt;
 
     // Line by line
-
     for (let line = 0; line < array.length; line++) {
       if (array[line] == null) {
         continue;
@@ -1054,10 +1022,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
       // i = each item on a line gets added to child card,
       // but there can also be multiple lines inside a card, if referring
       // to the same node/item
-
       for (let i = 0; i < array[line].length; i++) {
         // even items are text, odd items are arrows
-
         if (i % 2 == 0) {
           let str = array[line][i].Name;
           let ncptr = array[line][i].NPtr.CPtr;
@@ -1070,7 +1036,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
           let thisz = xyz.Z;
 
           // Add graphic rendering
-
           if (i == 0 && line > 0) {
             // Connect lines in order
             let prx = array[lastline][0].XYZ.X;
@@ -1096,7 +1061,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
           }
 
           // if the last line starts with the same item, don't repeat it, use ditto
-
           if (i == 0 && str == last_line_start) {
             // repeated item, so ditto
             subline = document.createElement("div");
@@ -1111,7 +1075,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
             continue;
           } else if (i == 0) {
             // New line has possble new chap/context
-
             lastline = line;
 
             let line_no = document.createElement("span");
@@ -1143,9 +1106,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
           }
 
           // Subsequent items on same line inside a card
-
           // if pre-formatted
-
           if (str.includes("\n")) {
             let text_link = document.createElement("a");
             text_link.onclick = function () {
@@ -1207,7 +1168,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function ShowNodeEvent(
     panel,
     event,
@@ -1217,7 +1177,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     anchortag
   ) {
     // create a div panel for the orbit root node
-
     let child = document.createElement("div");
     child.className = "card-view";
     child.id = "orbit_column_1of3"; // col 1 spans all 3 columns, full width for full node text
@@ -1235,7 +1194,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     }
 
     // ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
-
     if (text.includes("\n")) {
       let from_link = document.createElement("a");
       from_link.onclick = function () {
@@ -1272,7 +1230,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     }
 
     // If this is the root node, we need to add some Nptr, context info in column_1of3
-
     if (counter == 0) {
       let setting = document.createElement("span");
       setting.id = "nptr-chapter-context-helpline";
@@ -1312,7 +1269,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     );
 
     // See what pathways we are part of and add notes
-
     CheckSingleCone(
       panel,
       child,
@@ -1355,7 +1311,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     );
 
     // END : column_1of3
-
     // Next we add the satellite nodes in column_2of3 and column_3of3
     // Each vector from Im3...Ie3, one by one
     AddLinkOrbits(panel, child, event, Im3, skiparrow);
@@ -1374,7 +1329,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function ShowSequenceItem(
     panel,
     event,
@@ -1384,7 +1338,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     anchortag
   ) {
     // create a div panel for the orbit root node
-
     let child = document.createElement("div");
     child.className = "card-view";
     panel.appendChild(child);
@@ -1397,7 +1350,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     let nptrtxt = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
 
     // ** BEGIN 1: Here we print the full text for column_1of3 either as pre or p
-
     if (text.includes("\n")) {
       let from_link = document.createElement("a");
       from_link.onclick = function () {
@@ -1434,7 +1386,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     );
 
     // See what pathways we are part of and add notes
-
     CheckSingleCone(
       panel,
       child,
@@ -1489,7 +1440,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function ProgressCheckBox(container, nclass, ncptr, chap, context) {
     // Create a label for the checkbox
     let label = document.createElement("label");
@@ -1519,11 +1469,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
   /***********************************************************/
   // Busy wheel of time...
   /***********************************************************/
-
   /***********************************************************/
   // Render line link list by STtype
   /***********************************************************/
-
   function AddLinkOrbits(panel, child, event, sttype, skiparrow) {
     if (event.Orbits[sttype] != null) {
       for (let ngh of event.Orbits[sttype]) {
@@ -1554,7 +1502,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   /***********************************************************/
   // Checks and tests
   /***********************************************************/
-
   function CheckCones(panel, docpart, name, bwd, fwd) {
     if (bwd[0] != null && fwd[0] != null) {
       // we are in the middle of a cone
@@ -1583,7 +1530,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function CheckSingleCone(
     panel,
     docpart,
@@ -1617,7 +1563,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function IsImage(str, arrow) {
     if (arrow == "has image" || arrow == "is an image for") {
       if (str.slice(0, 6) == "http:/" || str.slice(0, 7) == "https:/") {
@@ -1629,7 +1574,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function IsMath(str) {
     if (str.includes("(") && str.includes(")")) {
       return true;
@@ -1639,7 +1583,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function IsURL(str, arrow) {
     if (arrow == "has URL") {
       if (str.slice(0, 6) == "http:/" || str.slice(0, 7) == "https:/") {
@@ -1653,20 +1596,19 @@ document.addEventListener("DOMContentLoaded", (event) => {
   /***********************************************************/
   // handlers
   /***********************************************************
-   
-  // Disable ENTER submission
-   
-  window.addEventListener('keydown',function(event)
-  {
-  if (event.keyCode == 13)
-   {
-   event.preventDefault();
-   return false;
-   }
-  });
-  
-  /***********************************************************/
-
+     
+    // Disable ENTER submission
+     
+    window.addEventListener('keydown',function(event)
+    {
+    if (event.keyCode == 13)
+     {
+     event.preventDefault();
+     return false;
+     }
+    });
+    
+    /***********************************************************/
   function SearchHandler() {
     let form = document.querySelector("#search");
 
@@ -1768,7 +1710,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   async function sendlinkData(nclass, ncptr) {
     let formData = new FormData();
     formData.set("nclass", nclass);
@@ -1803,7 +1744,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   async function sendlastseen(name, nclass, ncptr, chapcontext) {
     let formData = new FormData();
     formData.set("nclass", nclass);
@@ -1832,7 +1772,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   async function sendLinkSearch(search) {
     let formData = new FormData();
     formData.set("name", search);
@@ -1897,7 +1836,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function CtxSplice(s) {
     let ret = s.replaceAll(" . ", ".");
     return ret;
@@ -1906,7 +1844,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   /***********************************************************/
   // Graphics Drawing
   /***********************************************************/
-
   function HeatColour(freq, pdelta, sat) {
     // pdelta is measured in seconds --> HSL
     const hottest = 100;
@@ -1936,7 +1873,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function PlotGraphics(event, lastevent) {
     let tx = event.XYZ.X;
     let ty = event.XYZ.Y;
@@ -1954,7 +1890,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     }
 
     // Now look at orbits
-
     for (let ngh of event.Orbits[Il1]) {
       Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       LeadsTo(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
@@ -2020,7 +1955,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function ArrowPair(angle, type, fwd, bwd) {
     x = 0.5 * Math.cos(angle);
     y = 0.5 * Math.sin(angle);
@@ -2057,7 +1991,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   /***********************************************************/
   /* GRAPHICS PANE                                           */
   /***********************************************************/
-
   function DrawWelcomeImage() {
     DrawGrid(0, 0, 1);
     return;
@@ -2081,7 +2014,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   /***********************************************************/
-
   function DrawGrid(x, z, length) {
     CTX.save();
 
@@ -2101,7 +2033,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // *************************************************
-
   function CreateCanvas() {
     let oldcanvas = document.getElementById("myCanvas");
 
@@ -2121,7 +2052,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // *************************************************
-
   function Label(x, y, z, text, size, colour) {
     CTX.save();
     let font = "bold " + size + "px Arial";
@@ -2142,7 +2072,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // *************************************************
-
   function Horizon(x, y, z) {
     return Math.sqrt(
       (x - OBS_X) * (x - OBS_X) +
@@ -2152,7 +2081,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // *************************************************
-
   function Alpha(x, y, z) {
     let alpha =
       1.5 /
@@ -2172,7 +2100,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // *************************************************
-
   function Tx(x, y, z) {
     let scale = (SCALE * WIDTH) / (1 + 1.2 * Horizon(x, y, z));
 
@@ -2181,7 +2108,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // *************************************************
-
   function Ty(x, y, z) {
     let scale = (SCALE * WIDTH) / (1 + 1.5 * Horizon(x, y, z));
     let yt =
@@ -2190,53 +2116,45 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // *************************************************
-
   function LeadsTo(x0, y0, z0, xp, yp, zp) {
     //Arrow(x0,y0,z0,xp,yp,zp,"rgba(0,250,0,1)",3);
     Arrow(x0, y0, z0, xp, yp, zp, "darkred", 3);
   }
 
   // *************************************************
-
   function Contains(x0, y0, z0, xp, yp, zp) {
     //Arrow(x0,y0,z0,xp,yp,zp,"rgba(60,60,60,1)",2);
     Arrow(x0, y0, z0, xp, yp, zp, "lightblue", 2);
   }
 
   // *************************************************
-
   function Expresses(x0, y0, z0, xp, yp, zp) {
     //Arrow(x0,y0,z0,xp,yp,zp,"rgba(106,236,255,1)",2);
     Arrow(x0, y0, z0, xp, yp, zp, "orange", 2);
   }
 
   // *************************************************
-
   function Near(x0, y0, z0, xp, yp, zp) {
     //Arrow(x0,y0,z0,xp,yp,zp,"rgba(20,20,20,1)",1);
     Arrow(x0, y0, z0, xp, yp, zp, "darkgrey", 1);
   }
 
   // *************************************************
-
   function Event(x, y, z) {
     Node(x, y, z, 6, "darkred", "red");
   }
 
   // *************************************************
-
   function Thing(x, y, z) {
     Node(x, y, z, 4, "darkgreen", "lightgreen");
   }
 
   // *************************************************
-
   function Concept(x, y, z) {
     Node(x, y, z, 4, "darkblue", "lightblue");
   }
 
   // *************************************************
-
   function Node(x, y, z, r, col1, col2) {
     CTX.save();
     CTX.beginPath();
@@ -2257,7 +2175,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // *************************************************
-
   function Arrow(x0, y0, z0, xp, yp, zp, colour, thickness) {
     CTX.save();
     SST_Line(x0, y0, z0, xp, yp, zp, colour, thickness);
@@ -2297,7 +2214,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // *************************************************
-
   function SST_Line(x0, y0, z0, xp, yp, zp, colour, thickness) {
     CTX.save();
     CTX.beginPath();
@@ -2318,7 +2234,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   // Waiting Effect functions *****************************************************************
-
   function startHipnotize() {
     const el = document.getElementById("wait");
     if (el) {
@@ -2367,12 +2282,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
         indicator.classList.remove("visible");
       }
     },
-    { once: true }
+    { once: false }
   );
   /***********************************************************/
   // Main program starts here
   /***********************************************************/
-
   function initializeApp() {
     populateCommandSuggestions();
     loadHistoryIntoDatalist();
