@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>SSTorytime Simple viewer</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+  <link rel="stylesheet" href="/style.css" />
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [
+          ["$", "$"],
+          ["\\(", "\\)"],
+        ],
+        displayMath: [
+          ["$$", "$$"],
+          ["\\[", "\\]"],
+        ],
+      },
+      startup: {
+        ready: function () {
+          console.log("MathJax is ready. Initializing application.");
+
+          if (window.initializeApp) {
+            window.initializeApp();
+          }
+
+          MathJax.startup.defaultReady();
+        },
+      },
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+</head>
+
+<body class="antialiased relative from-slate-200 via-sky-200 to-slate-200 bg-liniar-to-bl">
+  <span id="wait" class=""></span>
+  <page class="">
+    <header>
+      <h2>SSToryGraph</h2>
+      <a href="#main-section" id="scroll-indicator" class="scroll-indicator">
+        <span class="material-icons-sharp">arrow_downward</span>
+      </a>
+    </header>
+    <nav>
+      <form id="search">
+        <label for="name"><span class="material-icons-sharp"> question_mark </span></label>
+        <input type="text" autocomplete="on" id="name" name="name" value="" />
+        <input type="submit" id="gosubmit" value="Go!" />
+      </form>
+      <span id="scroll-indicator" class="scroll-indicator">
+        <span class="material-icons-sharp">arrow_downward</span>
+      </span>
+    </nav>
+    <!-- <datalist id="search-suggestions"></datalist> -->
+
+    <section id="canvas"></section>
+    <section class="pb-[14svh]">
+      <main></main>
+    </section>
+  </page>
+  <script type="module" src="/main.js"></script>
+</body>
+
+</html>
