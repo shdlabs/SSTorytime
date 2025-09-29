@@ -31,6 +31,24 @@ var content embed.FS
 var CTX SST.PoSST // just one persistent connection
 
 // *********************************************************************
+func enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set the Access-Control-Allow-Origin header to the origin of the request.
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		// Browsers send a pre-flight OPTIONS request for CORS. We need to handle it.
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Call the next handler in the chain.
+		next.ServeHTTP(w, r)
+	})
+}
 
 func main() {
 	CTX = SST.Open(true)
@@ -50,8 +68,8 @@ func main() {
 
 	// 3. Create an http.Server instance for graceful shutdown.
 	srv := &http.Server{
-		Addr:    ":8080",
-		Handler: mux,
+		Addr:    "0.0.0.0:8080",
+		Handler: enableCORS(mux),
 	}
 
 	// 4. Run the server in a goroutine so it doesn't block.
@@ -84,7 +102,6 @@ func main() {
 // *********************************************************************
 
 func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
-	GenHeader(w, r)
 
 	switch r.Method {
 
@@ -204,20 +221,8 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 		}
 	}
 
-	// fmt.Println("Your starting expression generated this set: ", line)
-	// fmt.Println(" - start set:", SL(search.Name))
-	// fmt.Println(" -      from:", SL(search.From))
-	// fmt.Println(" -        to:", SL(search.To))
-	// fmt.Println(" -   chapter:", search.Chapter)
-	// fmt.Println(" -   context:", SL(search.Context))
-	// fmt.Println(" -    arrows:", SL(search.Arrows))
-	// fmt.Println(" -    pagenr:", search.PageNr)
-	// fmt.Println(" - sequence/story:", search.Sequence)
-	// fmt.Println(" - limit/range/depth:", limit)
-	// fmt.Println(" - show stats:", search.Stats)
-	// fmt.Println()
 	fmt.Println()
-	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.AlignRight)
+	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', tabwriter.AlignRight)
 	fmt.Fprintln(tabWriter, "start set:\t", SL(search.Name))
 	fmt.Fprintln(tabWriter, "from:\t", SL(search.From))
 	fmt.Fprintln(tabWriter, "to:\t", SL(search.To))

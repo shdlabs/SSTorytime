@@ -5,48 +5,48 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"strings"
-	"os"
-	"os/signal"
-	"syscall"
-	"sort"
 	"context"
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"sort"
+	"strings"
+	"syscall"
 
-        SST "SSTorytime"
+	SST "SSTorytime"
 )
 
 // *********************************************************************
 
-var CTX SST.PoSST  // just one persistent connection
+var CTX SST.PoSST // just one persistent connection
 
 // *********************************************************************
 
 func main() {
-	
-	CTX = SST.Open(true)	
 
-	server := &http.Server{	Addr: ":8080", }
+	CTX = SST.Open(true)
+
+	server := &http.Server{Addr: ":8080"}
 
 	// The server structure in Go is weirdly opinionated ..
 
-	http.HandleFunc("/",PageHandler)
-	http.HandleFunc("/searchN4L",SearchN4LHandler)
+	http.HandleFunc("/", PageHandler)
+	http.HandleFunc("/searchN4L", SearchN4LHandler)
 
 	go func() {
 		fmt.Println("Listening at http://localhost:8080")
 		err := server.ListenAndServe()
-		fmt.Println("Stop serving connections",err)
+		fmt.Println("Stop serving connections", err)
 	}()
 
 	SignalHandler()
 
 	// We have to have this ugly context business...
-	halt, shutdownRelease := context.WithTimeout(context.Background(),10)
+	halt, shutdownRelease := context.WithTimeout(context.Background(), 10)
 	defer shutdownRelease()
-	
+
 	server.Shutdown(halt)
 
 	fmt.Println("http_server shutdown complete.")
@@ -58,30 +58,30 @@ func main() {
 
 func SignalHandler() {
 
-	signal_chan := make(chan os.Signal,1)
+	signal_chan := make(chan os.Signal, 1)
 
-	signal.Notify(signal_chan, 
+	signal.Notify(signal_chan,
 		syscall.SIGHUP,  // 1
 		syscall.SIGINT,  // 2 ctrl-c
 		syscall.SIGQUIT, // 3
-		syscall.SIGTERM) // 15, CTRL-c 
+		syscall.SIGTERM) // 15, CTRL-c
 
-	sig := <-signal_chan  // block until signal
-	
+	sig := <-signal_chan // block until signal
+
 	switch sig {
-		
+
 	case syscall.SIGHUP:
 		fmt.Println("hungup")
-		
+
 	case syscall.SIGINT:
 		fmt.Println("Warikomi, cutting in, sandoichi")
-		
+
 	case syscall.SIGTERM:
 		fmt.Println("force stop")
-		
+
 	case syscall.SIGQUIT:
 		fmt.Println("stop and core dump")
-		
+
 	default:
 		fmt.Println("Unknown signal.")
 	}
@@ -91,16 +91,16 @@ func SignalHandler() {
 
 func PageHandler(w http.ResponseWriter, r *http.Request) {
 
-	GenHeader(w,r)
+	GenHeader(w, r)
 
 	switch r.Method {
 	case "GET":
 		w.Header().Set("Content-Type", "text/html")
-		page,err := os.ReadFile("./page.html")
+		page, err := os.ReadFile("./page.html")
 
-		localAddr := r.Context().Value(http.LocalAddrContextKey) 
-		ipaddr := fmt.Sprintf("%s",localAddr)
-		page = []byte(strings.Replace(string(page),"localhost:8080",ipaddr,-1))
+		localAddr := r.Context().Value(http.LocalAddrContextKey)
+		ipaddr := fmt.Sprintf("%s", localAddr)
+		page = []byte(strings.Replace(string(page), "localhost:8080", ipaddr, -1))
 
 		if err != nil {
 			fmt.Println("Can't find ./page.html")
@@ -118,38 +118,38 @@ func PageHandler(w http.ResponseWriter, r *http.Request) {
 // *********************************************************************
 
 func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
-	
-	GenHeader(w,r)
+
+	GenHeader(w, r)
 
 	switch r.Method {
 
-	case "POST","GET":
+	case "POST", "GET":
 		name := r.FormValue("name")
 		nclass := r.FormValue("nclass")
 		ncptr := r.FormValue("ncptr")
 		chapcontext := r.FormValue("chapcontext")
-		
+
 		if name == "\\lastnptr" {
 			if chapcontext != "" && chapcontext != "any" {
-				UpdateLastSawSection(w,r,chapcontext)
+				UpdateLastSawSection(w, r, chapcontext)
 			}
-			UpdateLastSawNPtr(w,r,nclass,ncptr,chapcontext)
+			UpdateLastSawNPtr(w, r, nclass, ncptr, chapcontext)
 			return
 		}
 
 		if name == "" && len(nclass) > 0 && len(ncptr) > 0 {
 			// direct click on an item
-			var a,b int
-			fmt.Sscanf(nclass,"%d",&a)
-			fmt.Sscanf(ncptr,"%d",&b)
-			nstr := fmt.Sprintf("(%d,%d)",a,b)
+			var a, b int
+			fmt.Sscanf(nclass, "%d", &a)
+			fmt.Sscanf(ncptr, "%d", &b)
+			nstr := fmt.Sprintf("(%d,%d)", a, b)
 			name = name + nstr
 		}
-		
-		fmt.Println("\nReceived command:",name)
-		
-		ambient,key,_ := SST.GetTimeContext()
-		
+
+		fmt.Println("\nReceived command:", name)
+
+		ambient, key, _ := SST.GetTimeContext()
+
 		if len(name) == 0 || name == "\\remind" {
 			name = "any \\chapter reminders \\context " + key + " " + ambient
 		}
@@ -157,11 +157,11 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		if len(name) == 0 || name == "\\help" {
 			name = "\\notes \\chapter \"help and search\" \\limit 40"
 		}
-		
+
 		search := SST.DecodeSearchField(name)
 
-		HandleSearch(search,name,w,r)
-		
+		HandleSearch(search, name, w, r)
+
 	default:
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
@@ -169,43 +169,43 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 
 // *********************************************************************
 
-func UpdateLastSawSection(w http.ResponseWriter, r *http.Request,query string) {
+func UpdateLastSawSection(w http.ResponseWriter, r *http.Request, query string) {
 
 	// update lastseen db
 
-	fmt.Println("UPDATING STATS FOR section",query)
+	fmt.Println("UPDATING STATS FOR section", query)
 
-	SST.UpdateLastSawSection(CTX,query)
+	SST.UpdateLastSawSection(CTX, query)
 }
 
 // *********************************************************************
 
-func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request,class,cptr string,classifier string) {
+func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request, class, cptr string, classifier string) {
 
 	// update lastseen db
 
 	var nptr SST.NodePtr
 	var nclass int
 	var ncptr int
-	fmt.Sscanf(class,"%d",&nclass)
-	fmt.Sscanf(cptr,"%d",&ncptr)
+	fmt.Sscanf(class, "%d", &nclass)
+	fmt.Sscanf(cptr, "%d", &ncptr)
 	nptr.Class = nclass
 	nptr.CPtr = SST.ClassedNodePtr(ncptr)
 
-	SST.UpdateLastSawNPtr(CTX,nclass,ncptr,classifier)
+	SST.UpdateLastSawNPtr(CTX, nclass, ncptr, classifier)
 
-	fmt.Println("UPDATING STATS FOR",nclass,ncptr,"WITHIN",classifier)
+	fmt.Println("UPDATING STATS FOR", nclass, ncptr, "WITHIN", classifier)
 
-	SST.UpdateLastSawSection(CTX,classifier)
+	SST.UpdateLastSawSection(CTX, classifier)
 
-	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }",class,cptr)
+	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }", class, cptr)
 	w.Write([]byte(response))
 
 }
 
 // *********************************************************************
 
-func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter, r *http.Request) {
+func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWriter, r *http.Request) {
 
 	// This is analogous to searchN4L
 
@@ -221,7 +221,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// Now convert strings into NodePointers
 
-	arrowptrs,sttype := SST.ArrowPtrFromArrowsNames(CTX,search.Arrows)
+	arrowptrs, sttype := SST.ArrowPtrFromArrowsNames(CTX, search.Arrows)
 
 	arrows := arrowptrs != nil
 	sttypes := sttype != nil
@@ -243,27 +243,27 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 		}
 	}
 
-	fmt.Println("Your starting expression generated this set: ",line,"\n")
-	fmt.Println(" - start set:",SL(search.Name))
-	fmt.Println(" -      from:",SL(search.From))
-	fmt.Println(" -        to:",SL(search.To))
-	fmt.Println(" -   chapter:",search.Chapter)
-	fmt.Println(" -   context:",SL(search.Context))
-	fmt.Println(" -    arrows:",SL(search.Arrows))
-	fmt.Println(" -    pagenr:",search.PageNr)
-	fmt.Println(" - sequence/story:",search.Sequence)
-	fmt.Println(" - limit/range/depth:",limit)
-	fmt.Println(" - show stats:",search.Stats)
+	fmt.Println("Your starting expression generated this set: ", line, "\n")
+	fmt.Println(" - start set:", SL(search.Name))
+	fmt.Println(" -      from:", SL(search.From))
+	fmt.Println(" -        to:", SL(search.To))
+	fmt.Println(" -   chapter:", search.Chapter)
+	fmt.Println(" -   context:", SL(search.Context))
+	fmt.Println(" -    arrows:", SL(search.Arrows))
+	fmt.Println(" -    pagenr:", search.PageNr)
+	fmt.Println(" - sequence/story:", search.Sequence)
+	fmt.Println(" - limit/range/depth:", limit)
+	fmt.Println(" - show stats:", search.Stats)
 	fmt.Println()
 
-	var nodeptrs,leftptrs,rightptrs []SST.NodePtr
+	var nodeptrs, leftptrs, rightptrs []SST.NodePtr
 
 	if !pagenr && !sequence {
-		leftptrs = SST.SolveNodePtrs(CTX,search.From,search,arrowptrs,limit)
-		rightptrs = SST.SolveNodePtrs(CTX,search.To,search,arrowptrs,limit)
+		leftptrs = SST.SolveNodePtrs(CTX, search.From, search, arrowptrs, limit)
+		rightptrs = SST.SolveNodePtrs(CTX, search.To, search, arrowptrs, limit)
 	}
 
-	nodeptrs = SST.SolveNodePtrs(CTX,search.Name,search,arrowptrs,limit)
+	nodeptrs = SST.SolveNodePtrs(CTX, search.Name, search, arrowptrs, limit)
 
 	fmt.Println("Solved search nodes ...")
 
@@ -271,23 +271,23 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 	// Table of contents
 
-	if (search.Stats) {
-		ShowStats(w,r,CTX,search,nodeptrs)
+	if search.Stats {
+		ShowStats(w, r, CTX, search, nodeptrs)
 		return
 	}
 
 	if (context || chapter) && !name && !sequence && !pagenr && !(from || to) {
-		ShowChapterContexts(w,r,CTX,search,limit)
+		ShowChapterContexts(w, r, CTX, search, limit)
 		return
 	}
 
-	if name && ! sequence && !pagenr {
-		HandleOrbit(w,r,CTX,search,nodeptrs,limit)
+	if name && !sequence && !pagenr {
+		HandleOrbit(w, r, CTX, search, nodeptrs, limit)
 		return
 	}
 
 	if (name && from) || (name && to) {
-		fmt.Printf("\nSearch \"%s\" has conflicting parts <to|from> and match strings\n",line)
+		fmt.Printf("\nSearch \"%s\" has conflicting parts <to|from> and match strings\n", line)
 		os.Exit(-1)
 	}
 
@@ -295,7 +295,7 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	// if we have BOTH from/to (maybe with chapter/context) then we are looking for paths
 
 	if from && to {
-		HandlePathSolve(w,r,CTX,leftptrs,rightptrs,search,arrowptrs,sttype,limit)
+		HandlePathSolve(w, r, CTX, leftptrs, rightptrs, search, arrowptrs, sttype, limit)
 		return
 	}
 
@@ -304,15 +304,15 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 	if (name || from || to) && !pagenr && !sequence {
 
 		if nodeptrs != nil {
-			HandleCausalCones(w,r,CTX,nodeptrs,search,arrowptrs,sttype,limit)
+			HandleCausalCones(w, r, CTX, nodeptrs, search, arrowptrs, sttype, limit)
 			return
 		}
 		if leftptrs != nil {
-			HandleCausalCones(w,r,CTX,leftptrs,search,arrowptrs,sttype,limit)
+			HandleCausalCones(w, r, CTX, leftptrs, search, arrowptrs, sttype, limit)
 			return
 		}
 		if rightptrs != nil {
-			HandleCausalCones(w,r,CTX,rightptrs,search,arrowptrs,sttype,limit)
+			HandleCausalCones(w, r, CTX, rightptrs, search, arrowptrs, sttype, limit)
 			return
 		}
 	}
@@ -324,29 +324,29 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 		var notes []SST.PageMap
 
 		if chapter {
-			notes = SST.GetDBPageMap(CTX,search.Chapter,search.Context,search.PageNr)
-			HandlePageMap(w,r,CTX,search,notes)
+			notes = SST.GetDBPageMap(CTX, search.Chapter, search.Context, search.PageNr)
+			HandlePageMap(w, r, CTX, search, notes)
 			return
 		} else {
 			for n := range search.Name {
-				notes = SST.GetDBPageMap(CTX,search.Name[n],search.Context,search.PageNr)
-				HandlePageMap(w,r,CTX,search,notes)
+				notes = SST.GetDBPageMap(CTX, search.Name[n], search.Context, search.PageNr)
+				HandlePageMap(w, r, CTX, search, notes)
 			}
 			return
 		}
 	}
 
-	// Look for axial trails following a particular arrow, like _sequence_ 
+	// Look for axial trails following a particular arrow, like _sequence_
 
 	if sequence {
-		HandleStories(w,r,CTX,search,nodeptrs,arrowptrs,sttype,limit)
+		HandleStories(w, r, CTX, search, nodeptrs, arrowptrs, sttype, limit)
 		return
 	}
 
 	// if we have sequence with arrows, then we are looking for sequence context or stories
 
 	if arrows || sttypes {
-		HandleMatchingArrows(w,r,CTX,search,arrowptrs,sttype)
+		HandleMatchingArrows(w, r, CTX, search, arrowptrs, sttype)
 		return
 	}
 
@@ -355,12 +355,12 @@ func HandleSearch(search SST.SearchParameters,line string,w http.ResponseWriter,
 
 // *********************************************************************
 
-func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,nptrs []SST.NodePtr,limit int) {
+func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nptrs []SST.NodePtr, limit int) {
 
 	var count int
 	var array []SST.NodeEvent
 
-	origin := SST.Coords{X : 0.0, Y : 0.0, Z : 0.0}
+	origin := SST.Coords{X: 0.0, Y: 0.0, Z: 0.0}
 
 	for n := 0; n < len(nptrs); n++ {
 
@@ -370,21 +370,21 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST
 			break
 		}
 
-		fmt.Printf("Assembling Node Orbit(%v)\n",nptrs[n])
+		fmt.Printf("Assembling Node Orbit(%v)\n", nptrs[n])
 
-		orb := SST.GetNodeOrbit(CTX,nptrs[n],"",limit)
+		orb := SST.GetNodeOrbit(CTX, nptrs[n], "", limit)
 		// create a set of coords for len(nptrs) disconnected nodes
 
-		xyz := SST.RelativeOrbit(origin,SST.R0,n,len(nptrs))
-		orb = SST.SetOrbitCoords(xyz,orb)
+		xyz := SST.RelativeOrbit(origin, SST.R0, n, len(nptrs))
+		orb = SST.SetOrbitCoords(xyz, orb)
 
-		nodeevent := SST.JSONNodeEvent(CTX,nptrs[n],xyz,orb)
-		array = append(array,nodeevent)
+		nodeevent := SST.JSONNodeEvent(CTX, nptrs[n], xyz, orb)
+		array = append(array, nodeevent)
 	}
 
-	data,_ := json.Marshal(array)
-	response := PackageResponse(ctx,search,"Orbits",string(data))
-	
+	data, _ := json.Marshal(array)
+	response := PackageResponse(ctx, search, "Orbits", string(data))
+
 	//fmt.Println("REPLY:\n",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
@@ -394,16 +394,16 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST
 
 // *********************************************************************
 
-func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptrs []SST.NodePtr,search SST.SearchParameters,arrows []SST.ArrowPtr, sttype []int,limit int) {
+func HandleCausalCones(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, nptrs []SST.NodePtr, search SST.SearchParameters, arrows []SST.ArrowPtr, sttype []int, limit int) {
 
 	chap := search.Chapter
 	context := search.Context
 
-	fmt.Println("HandleCausalCones()",nptrs)
+	fmt.Println("HandleCausalCones()", nptrs)
 	var total int = 1
 
 	if len(sttype) == 0 {
-		sttype = []int{0,1,2,3}
+		sttype = []int{0, 1, 2, 3}
 	}
 
 	var cones []SST.WebConePaths
@@ -411,8 +411,8 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 	for n := range nptrs {
 		for st := range sttype {
 
-			subcone,count := PackageConeFromOrigin(ctx,nptrs[n],n,sttype[st],chap,context,len(nptrs),limit)
-			cones = append(cones,subcone)
+			subcone, count := PackageConeFromOrigin(ctx, nptrs[n], n, sttype[st], chap, context, len(nptrs), limit)
+			cones = append(cones, subcone)
 
 			total += count
 
@@ -426,9 +426,9 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 		}
 	}
 
-	array,_ := json.Marshal(cones)
+	array, _ := json.Marshal(cones)
 
-	response := PackageResponse(ctx,search,"ConePaths",string(array))
+	response := PackageResponse(ctx, search, "ConePaths", string(array))
 	//fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
@@ -438,66 +438,66 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,nptr
 
 //******************************************************************
 
-func PackageConeFromOrigin(ctx SST.PoSST,nptr SST.NodePtr,nth int,sttype int,chap string,context []string,dimnptr,limit int) (SST.WebConePaths,int) {
+func PackageConeFromOrigin(ctx SST.PoSST, nptr SST.NodePtr, nth int, sttype int, chap string, context []string, dimnptr, limit int) (SST.WebConePaths, int) {
 
 	// Package a JSON object for the nth/dimnptr causal cone , assigning each nth the same width
 
 	var wpaths [][]SST.WebPath
 
-	fcone,count := SST.GetFwdPathsAsLinks(CTX,nptr,sttype,limit,limit)
-	wpaths = append(wpaths,SST.LinkWebPaths(CTX,fcone,nth,chap,context,dimnptr,limit)...)
+	fcone, count := SST.GetFwdPathsAsLinks(CTX, nptr, sttype, limit, limit)
+	wpaths = append(wpaths, SST.LinkWebPaths(CTX, fcone, nth, chap, context, dimnptr, limit)...)
 
 	if sttype != 0 {
-		bcone,countb := SST.GetFwdPathsAsLinks(CTX,nptr,-sttype,limit,limit)
-		wpaths = append(wpaths,SST.LinkWebPaths(CTX,bcone,nth,chap,context,dimnptr,limit)...)
+		bcone, countb := SST.GetFwdPathsAsLinks(CTX, nptr, -sttype, limit, limit)
+		wpaths = append(wpaths, SST.LinkWebPaths(CTX, bcone, nth, chap, context, dimnptr, limit)...)
 		count += countb
 	}
 
 	var subcone SST.WebConePaths
 	subcone.RootNode = nptr
-	subcone.Title = SST.GetDBNodeByNodePtr(ctx,nptr).S
+	subcone.Title = SST.GetDBNodeByNodePtr(ctx, nptr).S
 	subcone.Paths = wpaths
 
-	return subcone,count
+	return subcone, count
 }
 
 //******************************************************************
 
-func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftptrs,rightptrs []SST.NodePtr,search SST.SearchParameters,arrowptrs []SST.ArrowPtr,sttype []int,maxdepth int) {
+func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, leftptrs, rightptrs []SST.NodePtr, search SST.SearchParameters, arrowptrs []SST.ArrowPtr, sttype []int, maxdepth int) {
 
 	chapter := search.Chapter
 	context := search.Context
 
-	fmt.Println("HandlePathSolve(",leftptrs,",",rightptrs,")")
+	fmt.Println("HandlePathSolve(", leftptrs, ",", rightptrs, ")")
 
-	var Lnum,Rnum int
+	var Lnum, Rnum int
 	var left_paths, right_paths [][]SST.Link
 
 	// Find the path matrix
 
 	var solutions [][]SST.Link
-	var ldepth,rdepth int = 2,2
+	var ldepth, rdepth int = 2, 2
 
 	for turn := 0; ldepth < maxdepth && rdepth < maxdepth; turn++ {
 
-		left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"fwd",leftptrs,ldepth,chapter,context,maxdepth)
-		right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"bwd",rightptrs,rdepth,chapter,context,maxdepth)
+		left_paths, Lnum = SST.GetEntireNCSuperConePathsAsLinks(CTX, "fwd", leftptrs, ldepth, chapter, context, maxdepth)
+		right_paths, Rnum = SST.GetEntireNCSuperConePathsAsLinks(CTX, "bwd", rightptrs, rdepth, chapter, context, maxdepth)
 
 		if Lnum == 0 || Rnum == 0 {
 			fmt.Println("Nothing, trying reverse")
-			left_paths,Lnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"bwd",leftptrs,ldepth,chapter,context,maxdepth)
-			right_paths,Rnum = SST.GetEntireNCSuperConePathsAsLinks(CTX,"fwd",rightptrs,rdepth,chapter,context,maxdepth)
+			left_paths, Lnum = SST.GetEntireNCSuperConePathsAsLinks(CTX, "bwd", leftptrs, ldepth, chapter, context, maxdepth)
+			right_paths, Rnum = SST.GetEntireNCSuperConePathsAsLinks(CTX, "fwd", rightptrs, rdepth, chapter, context, maxdepth)
 
 			if Lnum == 0 || Rnum == 0 {
 				fmt.Println("No paths")
-				response := PackageResponse(ctx,search,"PathSolve","")	
+				response := PackageResponse(ctx, search, "PathSolve", "")
 				w.Header().Set("Content-Type", "application/json")
 				w.Write(response)
 				return
 			}
 		}
 
-		solutions,_ = SST.WaveFrontsOverlap(CTX,left_paths,right_paths,Lnum,Rnum,ldepth,rdepth)
+		solutions, _ = SST.WaveFrontsOverlap(CTX, left_paths, right_paths, Lnum, Rnum, ldepth, rdepth)
 
 		if len(solutions) > 0 {
 			// format paths
@@ -507,24 +507,24 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 
 			soln.RootNode = solutions[0][0].Dst
 			soln.Title = "path solutions"
-			soln.BTWC = SST.BetweenNessCentrality(CTX,solutions)
-			soln.SuperNodes = SST.SuperNodes(CTX,solutions,maxdepth)
+			soln.BTWC = SST.BetweenNessCentrality(CTX, solutions)
+			soln.SuperNodes = SST.SuperNodes(CTX, solutions, maxdepth)
 
 			var wpaths [][]SST.WebPath
 			nth := 0
 			swimlanes := 1
 
-			wpaths = append(wpaths,SST.LinkWebPaths(CTX,solutions,nth,chapter,context,swimlanes,maxdepth)...)
+			wpaths = append(wpaths, SST.LinkWebPaths(CTX, solutions, nth, chapter, context, swimlanes, maxdepth)...)
 
 			if wpaths == nil {
 				break
 			}
 
 			soln.Paths = wpaths
-			pack = append(pack,soln)
-			array_pack,_ := json.Marshal(pack)
+			pack = append(pack, soln)
+			array_pack, _ := json.Marshal(pack)
 
-			response := PackageResponse(ctx,search,"PathSolve",string(array_pack))
+			response := PackageResponse(ctx, search, "PathSolve", string(array_pack))
 
 			//fmt.Println("PATH SOLVE:",string(response))
 
@@ -533,15 +533,15 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 			return
 		}
 
-		if turn % 2 == 0 {
+		if turn%2 == 0 {
 			ldepth++
 		} else {
 			rdepth++
 		}
 	}
-	
+
 	fmt.Println("No paths satisfy constraints")
-	response := PackageResponse(ctx,search,"PathSolve","[]")
+	response := PackageResponse(ctx, search, "PathSolve", "[]")
 
 	//fmt.Println("PATHSOLVE NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
@@ -551,15 +551,15 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,leftpt
 
 //******************************************************************
 
-func HandlePageMap(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,notes []SST.PageMap) {
+func HandlePageMap(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, notes []SST.PageMap) {
 
 	fmt.Println("Solver/handler: HandlePageMap()")
 
-	jstr := SST.JSONPage(CTX,notes)
-	response := PackageResponse(ctx,search,"PageMap",jstr)
+	jstr := SST.JSONPage(CTX, notes)
+	response := PackageResponse(ctx, search, "PageMap", jstr)
 
 	if notes != nil {
-		UpdateLastSawSection(w,r,notes[0].Chapter)
+		UpdateLastSawSection(w, r, notes[0].Chapter)
 	}
 
 	//fmt.Println("PAGEMAP NOTES",string(response))
@@ -570,15 +570,15 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 
 //******************************************************************
 
-func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,nodeptrs []SST.NodePtr,arrowptrs []SST.ArrowPtr,sttypes []int,limit int) {
+func HandleStories(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nodeptrs []SST.NodePtr, arrowptrs []SST.ArrowPtr, sttypes []int, limit int) {
 
 	if arrowptrs == nil {
-		arrowptrs,sttypes = SST.ArrowPtrFromArrowsNames(CTX,[]string{"!then!"})
+		arrowptrs, sttypes = SST.ArrowPtrFromArrowsNames(CTX, []string{"!then!"})
 	}
 
 	fmt.Println("Solver/handler: HandleStories()")
 
-	stories := SST.GetSequenceContainers(ctx,nodeptrs,arrowptrs,sttypes,limit)
+	stories := SST.GetSequenceContainers(ctx, nodeptrs, arrowptrs, sttypes, limit)
 
 	jarray := ""
 
@@ -588,16 +588,16 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 
 		for a := 0; a < len(stories[s].Axis); a++ {
 			jstr := JSONStoryNodeEvent(stories[s].Axis[a])
-			jstory += fmt.Sprintf("%s,",jstr)
+			jstory += fmt.Sprintf("%s,", jstr)
 		}
 
-		jstory = strings.Trim(jstory,",")
-		jarray = fmt.Sprintf("[%s],",jstory)
+		jstory = strings.Trim(jstory, ",")
+		jarray = fmt.Sprintf("[%s],", jstory)
 	}
 
-	jarray = strings.Trim(jarray,",")
+	jarray = strings.Trim(jarray, ",")
 
-	response := PackageResponse(ctx,search,"Sequence",jarray)
+	response := PackageResponse(ctx, search, "Sequence", jarray)
 
 	//fmt.Println("Sequence...",string(response))
 
@@ -609,45 +609,45 @@ func HandleStories(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search S
 
 // *********************************************************************
 
-func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,arrowptrs []SST.ArrowPtr,sttype []int) {
+func HandleMatchingArrows(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, arrowptrs []SST.ArrowPtr, sttype []int) {
 
 	fmt.Println("Solver/handler: HandleMatchingArrows()")
 
 	type ArrowList struct {
-		ArrPtr SST.ArrowPtr
+		ArrPtr  SST.ArrowPtr
 		ASTtype int
-		Short string
-		Long string
-		InvPtr SST.ArrowPtr
+		Short   string
+		Long    string
+		InvPtr  SST.ArrowPtr
 		ISTtype int
-		InvS string
-		InvL string
+		InvS    string
+		InvL    string
 	}
 
 	var arrows []ArrowList
 
 	for a := range arrowptrs {
-		adir := SST.GetDBArrowByPtr(ctx,arrowptrs[a])
-		inv := SST.GetDBArrowByPtr(ctx,SST.INVERSE_ARROWS[arrowptrs[a]])
+		adir := SST.GetDBArrowByPtr(ctx, arrowptrs[a])
+		inv := SST.GetDBArrowByPtr(ctx, SST.INVERSE_ARROWS[arrowptrs[a]])
 
-		var al ArrowList		
+		var al ArrowList
 		al.ArrPtr = arrowptrs[a]
 		al.ASTtype = SST.STIndexToSTType(adir.STAindex)
 		al.Short = adir.Short
 		al.Long = adir.Long
 		al.InvPtr = inv.Ptr
-		al. ISTtype = SST.STIndexToSTType(inv.STAindex)
+		al.ISTtype = SST.STIndexToSTType(inv.STAindex)
 		al.InvS = inv.Short
 		al.InvL = inv.Long
-		arrows = append(arrows,al)
+		arrows = append(arrows, al)
 	}
 
 	if arrowptrs == nil {
 		for st := range sttype {
-			adirs := SST.GetDBArrowBySTType(ctx,sttype[st])
+			adirs := SST.GetDBArrowBySTType(ctx, sttype[st])
 			for adir := range adirs {
-				inv := SST.GetDBArrowByPtr(ctx,SST.INVERSE_ARROWS[adirs[adir].Ptr])
-				
+				inv := SST.GetDBArrowByPtr(ctx, SST.INVERSE_ARROWS[adirs[adir].Ptr])
+
 				var al ArrowList
 				al.ArrPtr = adirs[adir].Ptr
 				al.ASTtype = SST.STIndexToSTType(adirs[adir].STAindex)
@@ -657,15 +657,15 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,s
 				al.ISTtype = SST.STIndexToSTType(inv.STAindex)
 				al.InvS = inv.Short
 				al.InvL = inv.Long
-				arrows = append(arrows,al)
+				arrows = append(arrows, al)
 			}
 		}
 	}
 
-	data,_ := json.Marshal(arrows)
-	response := PackageResponse(ctx,search,"Arrows",string(data))
+	data, _ := json.Marshal(arrows)
+	response := PackageResponse(ctx, search, "Arrows", string(data))
 
-	fmt.Println("Arrows...",string(response))
+	fmt.Println("Arrows...", string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -674,7 +674,7 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,s
 
 // *********************************************************************
 
-func ShowStats(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,nptrs []SST.NodePtr) {
+func ShowStats(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nptrs []SST.NodePtr) {
 
 	var retval []SST.LastSeen
 
@@ -682,15 +682,15 @@ func ShowStats(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.S
 		retval = SST.GetLastSawSection(ctx)
 	} else {
 
-		for  n := range nptrs {
-			nptr := SST.GetLastSawNPtr(ctx,nptrs[n])
-			retval = append(retval,nptr)
+		for n := range nptrs {
+			nptr := SST.GetLastSawNPtr(ctx, nptrs[n])
+			retval = append(retval, nptr)
 		}
 	}
 
-	data,_ := json.Marshal(retval)
+	data, _ := json.Marshal(retval)
 
-	response := PackageResponse(ctx,search,"STAT",string(data))
+	response := PackageResponse(ctx, search, "STAT", string(data))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -700,7 +700,7 @@ func ShowStats(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.S
 
 // *********************************************************************
 
-func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,search SST.SearchParameters,limit int) {
+func ShowChapterContexts(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, limit int) {
 
 	chap := search.Chapter
 	context := search.Context
@@ -710,10 +710,10 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,se
 	var chapters []SST.ChCtx
 	var chap_list []string
 
-	toc := SST.GetChaptersByChapContext(ctx,chap,context,limit)
+	toc := SST.GetChaptersByChapContext(ctx, chap, context, limit)
 
 	for chaps := range toc {
-		chap_list = append(chap_list,chaps)
+		chap_list = append(chap_list, chaps)
 	}
 
 	sort.Strings(chap_list)
@@ -721,27 +721,27 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,se
 	for c := 0; c < len(chap_list); c++ {
 
 		var chap_anchor SST.ChCtx
-		
+
 		chap_anchor.Chapter = chap_list[c]
-		chap_anchor.XYZ = SST.AssignChapterCoordinates(c,len(chap_list))
+		chap_anchor.XYZ = SST.AssignChapterCoordinates(c, len(chap_list))
 
 		// Fractionate the (chapter,context) information
 
-		dim,clist,adj := SST.IntersectContextParts(toc[chap_list[c]])
+		dim, clist, adj := SST.IntersectContextParts(toc[chap_list[c]])
 		spectrum := SST.GetContextTokenFrequencies(toc[chap_list[c]])
-		intent,ambient := SST.ContextIntentAnalysis(spectrum,toc[chap_list[c]])		
+		intent, ambient := SST.ContextIntentAnalysis(spectrum, toc[chap_list[c]])
 
-		chap_anchor.Context = GetContextSets(dim,clist,adj,chap_anchor.XYZ)
-		chap_anchor.Single = GetContextFragments(intent,chap_anchor.XYZ)
-		chap_anchor.Common = GetContextFragments(ambient,chap_anchor.XYZ)
+		chap_anchor.Context = GetContextSets(dim, clist, adj, chap_anchor.XYZ)
+		chap_anchor.Single = GetContextFragments(intent, chap_anchor.XYZ)
+		chap_anchor.Common = GetContextFragments(ambient, chap_anchor.XYZ)
 
-		chapters = append(chapters,chap_anchor)
+		chapters = append(chapters, chap_anchor)
 	}
 
-	data,_ := json.Marshal(chapters)
-	response := PackageResponse(ctx,search,"TOC",string(data))
+	data, _ := json.Marshal(chapters)
+	response := PackageResponse(ctx, search, "TOC", string(data))
 
-	fmt.Println("Chap/context...",string(response))
+	fmt.Println("Chap/context...", string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -750,7 +750,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request,ctx SST.PoSST,se
 
 //******************************************************************
 
-func GetContextSets(dim int,clist []string,adj [][]int, xyz SST.Coords) []SST.Loc {
+func GetContextSets(dim int, clist []string, adj [][]int, xyz SST.Coords) []SST.Loc {
 
 	var retvar []SST.Loc
 
@@ -762,13 +762,13 @@ func GetContextSets(dim int,clist []string,adj [][]int, xyz SST.Coords) []SST.Lo
 
 		for cp := 0; cp < len(adj[c]); cp++ {
 			if adj[c][cp] > 0 {
-				contextgroup.Reln = append(contextgroup.Reln,cp)
+				contextgroup.Reln = append(contextgroup.Reln, cp)
 			}
 		}
 
-		contextgroup.XYZ = SST.AssignContextSetCoordinates(xyz,c,len(adj))
+		contextgroup.XYZ = SST.AssignContextSetCoordinates(xyz, c, len(adj))
 
-		retvar = append(retvar,contextgroup)
+		retvar = append(retvar, contextgroup)
 	}
 	return retvar
 }
@@ -784,9 +784,9 @@ func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
 		var contextgroup SST.Loc
 
 		contextgroup.Text = clist[c]
-		contextgroup.XYZ = SST.AssignFragmentCoordinates(ooo,c,len(clist))
+		contextgroup.XYZ = SST.AssignFragmentCoordinates(ooo, c, len(clist))
 
-		retvar = append(retvar,contextgroup)
+		retvar = append(retvar, contextgroup)
 	}
 	return retvar
 }
@@ -799,48 +799,48 @@ func JSONStoryNodeEvent(en SST.NodeEvent) string {
 
 	var jstr string
 
-//	j,_ := json.Marshal(en)
+	//	j,_ := json.Marshal(en)
 
-//	jstr = string(j)
+	//	jstr = string(j)
 
 	if len(en.Text) == 0 {
 		return ""
 	}
 
-	t,_ := json.Marshal(en.Text)
+	t, _ := json.Marshal(en.Text)
 	text := SST.EscapeString(string(t))
 	text = SST.SQLEscape(text)
 
-	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n",text)
-	jstr += fmt.Sprintf("\"L\": \"%d\",\n",en.L)
+	jstr += fmt.Sprintf("{\"Text\": \"%s\",\n", text)
+	jstr += fmt.Sprintf("\"L\": \"%d\",\n", en.L)
 
-	c,_ := json.Marshal(en.Chap)
+	c, _ := json.Marshal(en.Chap)
 	chap := SST.EscapeString(string(c))
 	chap = SST.SQLEscape(chap)
 
-	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n",chap)
+	jstr += fmt.Sprintf("\"Chap\": \"%s\",\n", chap)
 
-	jstr += fmt.Sprintf("\"Context\": \"%s\",\n",SST.EscapeString(en.Context))
-	jstr += fmt.Sprintf("\"NPtr\": { \"Class\": \"%d\", \"CPtr\" : \"%d\"},\n",en.NPtr.Class,en.NPtr.CPtr)
-	jxyz,_ := json.Marshal(en.XYZ)
-	jstr += fmt.Sprintf("\"XYZ\": %s,\n",jxyz)
+	jstr += fmt.Sprintf("\"Context\": \"%s\",\n", SST.EscapeString(en.Context))
+	jstr += fmt.Sprintf("\"NPtr\": { \"Class\": \"%d\", \"CPtr\" : \"%d\"},\n", en.NPtr.Class, en.NPtr.CPtr)
+	jxyz, _ := json.Marshal(en.XYZ)
+	jstr += fmt.Sprintf("\"XYZ\": %s,\n", jxyz)
 
 	var arrays string
 
 	for sti := 0; sti < SST.ST_TOP; sti++ {
 		var arr string
 		if en.Orbits[sti] != nil {
-			js,_ := json.Marshal(en.Orbits[sti])
-			arr = fmt.Sprintf("%s,",string(js))
+			js, _ := json.Marshal(en.Orbits[sti])
+			arr = fmt.Sprintf("%s,", string(js))
 		} else {
 			arr = "[],"
 		}
 		arrays += arr
 	}
 
-	arrays = strings.Trim(arrays,",")
+	arrays = strings.Trim(arrays, ",")
 
-	jstr += fmt.Sprintf("\"Orbits\": [%s] }",arrays)
+	jstr += fmt.Sprintf("\"Orbits\": [%s] }", arrays)
 	return jstr
 }
 
@@ -858,22 +858,22 @@ func GenHeader(w http.ResponseWriter, r *http.Request) {
 
 func CleanText(c string) string {
 
-	c = strings.Replace(c,"{","",-1)
-	c = strings.Replace(c,"}","",-1)
-	c = strings.Replace(c,","," ",-1)
-	c = strings.Replace(c,"\"","\\\"",-1)
+	c = strings.Replace(c, "{", "", -1)
+	c = strings.Replace(c, "}", "", -1)
+	c = strings.Replace(c, ",", " ", -1)
+	c = strings.Replace(c, "\"", "\\\"", -1)
 	return c
 }
 
 // **********************************************************
 
-func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
+func ShowNode(ctx SST.PoSST, nptr []SST.NodePtr) string {
 
 	var ret string
 
 	for n := 0; n < len(nptr); n++ {
-		node := SST.GetDBNodeByNodePtr(ctx,nptr[n])
-		ret += fmt.Sprintf("%.30s",node.S)
+		node := SST.GetDBNodeByNodePtr(ctx, nptr[n])
+		ret += fmt.Sprintf("%.30s", node.S)
 		if n < len(nptr)-1 {
 			ret += ","
 		}
@@ -884,15 +884,15 @@ func ShowNode(ctx SST.PoSST,nptr []SST.NodePtr) string {
 
 // **********************************************************
 
-func PackageResponse(ctx SST.PoSST,search SST.SearchParameters,kind string, jstr string) []byte {
+func PackageResponse(ctx SST.PoSST, search SST.SearchParameters, kind string, jstr string) []byte {
 
-	ambien,key,now := SST.GetTimeContext()
-	now_ctx := SST.UpdateSTMContext(CTX,ambien,key,now,search)
+	ambien, key, now := SST.GetTimeContext()
+	now_ctx := SST.UpdateSTMContext(CTX, ambien, key, now, search)
 
-	intent,_ := json.Marshal(now_ctx)
-	ambient,_ := json.Marshal(ambien)
+	intent, _ := json.Marshal(now_ctx)
+	ambient, _ := json.Marshal(ambien)
 
-	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Intent\" : %s, \"Ambient\" : %s }",kind,jstr,key,intent,ambient)
+	response := fmt.Sprintf("{ \"Response\" : \"%s\",\n \"Content\" : %s,\n \"Time\" : \"%s\", \"Intent\" : %s, \"Ambient\" : %s }", kind, jstr, key, intent, ambient)
 
 	return []byte(response)
 }
@@ -905,24 +905,10 @@ func SL(list []string) string {
 
 	s += fmt.Sprint(" [")
 	for i := 0; i < len(list); i++ {
-		s += fmt.Sprint(list[i],", ")
+		s += fmt.Sprint(list[i], ", ")
 	}
 
 	s += fmt.Sprint(" ]")
 
 	return s
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

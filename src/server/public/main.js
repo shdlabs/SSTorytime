@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", function (event)
 {
-    var API_SERVER = "http://asus:8080";
 
     MathJax = {
         output: {
@@ -199,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 
     async function FetchPage()
     {
-        let requestURL = API_SERVER + "/searchN4L";
+        let requestURL = "/searchN4L";
         let request = new Request(requestURL);
 
         try
@@ -500,7 +499,7 @@ document.addEventListener("DOMContentLoaded", function (event)
     {
         let section = document.querySelector("main");
 
-        let panel = document.createElement("span");
+        let panel = document.createElement("div");
         panel.id = "main_content_panel";
         section.appendChild(panel);
 
@@ -532,14 +531,7 @@ document.addEventListener("DOMContentLoaded", function (event)
             chapter_section.appendChild(link);
 
             Event(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z);
-            Label(
-                chpblk.XYZ.X,
-                chpblk.XYZ.Y,
-                chpblk.XYZ.Z,
-                chpblk.Chapter,
-                12,
-                "gray"
-            );
+            Label(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, chpblk.Chapter, 12, "gray");
 
             // First do the context groups or ambient parts
             if (chpblk.Context != null)
@@ -562,14 +554,7 @@ document.addEventListener("DOMContentLoaded", function (event)
                     chapter_section.appendChild(link);
 
                     Concept(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
-                    Contains(
-                        chpblk.XYZ.X,
-                        chpblk.XYZ.Y,
-                        chpblk.XYZ.Z,
-                        ctx.XYZ.X,
-                        ctx.XYZ.Y,
-                        ctx.XYZ.Z
-                    );
+                    Contains(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
                 }
             }
 
@@ -1542,27 +1527,59 @@ document.addEventListener("DOMContentLoaded", function (event)
         }
     }
 
-
-    /***********************************************************/
-    function CheckSingleCone(panel, docpart, name, nclass, nptr, arrow, bwd, fwd)
+    function CheckCones(panel, docpart, name, bwd, fwd)
     {
         if (bwd[0] != null && fwd[0] != null)
         {
             // we are in the middle of a cone
+            let nptrs = "";
+
+            for (let b of bwd)
+            {
+                let np = "(" + b.Dst.Class + "," + b.Dst.CPtr + ") ";
+                nptrs = nptrs + np;
+            }
+
+            for (let f of fwd)
+            {
+                let np = "(" + f.Dst.Class + "," + f.Dst.CPtr + ") ";
+                nptrs = nptrs + np;
+            }
+
             let link = document.createElement("a");
             link.textContent = name;
             link.onclick = function ()
             {
-                sendLinkSearch("\\from " + "(" + nclass + "," + nptr + ") \\arrow " + arrow + " \\limit 30");
+                sendLinkSearch("\\from " + nptrs + " limit 30");
             };
+            docpart.id = "cone_button";
+            docpart.appendChild(link);
+        }
+
+        panel.appendChild(docpart);
+    }
+
+    /***********************************************************/
+    function CheckSingleCone(panel, docpart, name, nclass, nptr, arrow, bwd, fwd)
+    {
+        if (bwd == null || fwd == null)
+        {
+            return;
+        }
+
+        if (bwd[0] != null && fwd[0] != null) 
+        {
+            // we are in the middle of a cone
+            let link = document.createElement("a");
+            link.textContent = name;
+            link.onclick = function () { sendLinkSearch("\\from " + "(" + nclass + "," + nptr + ") \\arrow " + arrow + " \\limit 30",); };
 
             docpart.id = "cone_button";
             docpart.appendChild(link);
-        } else
-        {
-            DisplayError("CheckSingleCone - bwd[0] == 0 or fwd[0] == 0")
         }
     }
+
+
 
     /***********************************************************/
     function IsImage(str, arrow)
@@ -1611,49 +1628,34 @@ document.addEventListener("DOMContentLoaded", function (event)
       /***********************************************************/
     function SearchHandler()
     {
-        let form = document.querySelector("#search");
+        const form = document.querySelector("#search");
+        if (!form) return;
 
         async function sendsearchData()
         {
-            let formData = new FormData(form);
+            const formData = new FormData(form);
+            const searchQuery = formData.get('name');
+
+            saveSearchToHistory(searchQuery);
+            const state = { searchQuery: searchQuery };
+            const title = "Results for: " + searchQuery;
+            const url = window.location.pathname + "?search=" + encodeURIComponent(searchQuery);
+            pushStateSafe(state, title, url);
             startHipnotize();
 
-            fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData })
+            fetch("/searchN4L", { method: POST_METHOD, body: formData })
                 .then((response) =>
                 {
                     stopHipnotize();
-
                     if (!response.ok)
                     {
                         DisplayError("SearchHandler() - network returns error");
                         throw new Error("network returns error");
                     }
-
                     return response.json();
                 })
-
                 .then((resp) =>
                 {
-                    let prevh = document.getElementById("topmost_page_title");
-
-                    if (prevh != null)
-                    {
-                        prevh.remove();
-                    }
-
-                    let prevm = document.getElementById("main");
-
-                    if (prevm != null)
-                    {
-                        prevm.remove();
-                    }
-
-                    const searchQuery = new FormData(form).get("name");
-                    saveSearchToHistory(searchQuery); // SAVE
-                    const state = { searchQuery: searchQuery };
-                    const title = "Results for: " + searchQuery;
-                    const url = "?search=" + encodeURIComponent(searchQuery);
-                    history.pushState(state, title, url);
 
                     DoHeader(resp);
 
@@ -1690,31 +1692,26 @@ document.addEventListener("DOMContentLoaded", function (event)
                     {
                         indicator.classList.add("visible");
                     }
-
                     RerenderMath();
                 })
-
                 .catch((error) =>
                 {
                     console.log("error ", error);
-                    DisplayError("No results (perhaps no connection")
+                    DisplayError("No results (perhaps no connection)");
                 });
         }
 
         // Take over form submission
-        let button = "";
-        (button = document.getElementById("gosubmit")),
+        const button = document.getElementById("gosubmit");
+        if (button)
+        {
             button.addEventListener("click", (event) =>
             {
                 event.preventDefault();
                 sendsearchData();
-                topFunction();
-
-                const state = { searchQuery: search };
-                const title = "Results for: " + search;
-                const url = "?search=" + encodeURIComponent(search);
-                history.pushState(state, title, url);
+                topFunction(); // Assuming topFunction() scrolls to top
             });
+        }
     }
 
     /***********************************************************/
@@ -1727,10 +1724,9 @@ document.addEventListener("DOMContentLoaded", function (event)
         let searchfield = document.getElementById("name");
         searchfield.value = "(" + nclass + "," + ncptr + ")";
         topFunction();
-        topFunction();
         startHipnotize();
 
-        fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData })
+        fetch("/searchN4L", { method: POST_METHOD, body: formData })
             .then((response) =>
             {
                 stopHipnotize();
@@ -1767,7 +1763,7 @@ document.addEventListener("DOMContentLoaded", function (event)
         formData.set("name", name);
         formData.set("chapcontext", chapcontext);
 
-        fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData })
+        fetch("/searchN4L", { method: POST_METHOD, body: formData })
             .then((response) =>
             {
                 if (!response.ok)
@@ -1802,7 +1798,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 
         startHipnotize();
 
-        fetch(API_SERVER + "/searchN4L", { method: POST_METHOD, body: formData })
+        fetch("/searchN4L", { method: POST_METHOD, body: formData })
             .then((response) =>
             {
                 if (!response.ok)
@@ -1817,9 +1813,9 @@ document.addEventListener("DOMContentLoaded", function (event)
             {
                 const state = { searchQuery: search };
                 const title = "Results for: " + search;
-                const url = "?search=" + encodeURIComponent(search);
-                saveSearchToHistory();
-                history.pushState(state, title, url);
+                // We explicitly include the current path to be browser-compliant.
+                const url = window.location.pathname + "?search=" + encodeURIComponent(search);
+                pushStateSafe(state, title, url);
 
                 stopHipnotize();
 
@@ -2394,6 +2390,22 @@ document.addEventListener("DOMContentLoaded", function (event)
         },
         { once: false }
     );
+
+    /**
+ * A safe wrapper for history.pushState that prevents pushing a new state
+ * if the target URL is the same as the current one.
+ * @param {object} state - The state object to save.
+ * @param {string} title - The new document title.
+ * @param {string} url - The new URL to push.
+ */
+    function pushStateSafe(state, title, url)
+    {
+        // We compare the target URL with the browser's current URL.
+        if (window.location.pathname + window.location.search + window.location.hash !== url)
+        {
+            history.pushState(state, title, url);
+        }
+    }
     /***********************************************************/
     // Main program starts here
     /***********************************************************/
