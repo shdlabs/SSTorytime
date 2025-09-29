@@ -65,6 +65,7 @@ func main() {
 
 	mux.Handle("/", fileServer)
 	mux.HandleFunc("/searchN4L", SearchN4LHandler)
+	mux.HandleFunc("/status", StatusHandler)
 
 	// 3. Create an http.Server instance for graceful shutdown.
 	srv := &http.Server{
@@ -179,7 +180,9 @@ func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request, class, cptr strin
 	SST.UpdateLastSawSection(CTX, classifier)
 
 	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }", class, cptr)
-	w.Write([]byte(response))
+	if _, err := w.Write([]byte(response)); err != nil {
+		log.Println("UpdateLastSawNPtr write error: ", err)
+	}
 }
 
 // *********************************************************************
@@ -222,7 +225,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	}
 
 	fmt.Println()
-	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', tabwriter.AlignRight)
+	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)
 	fmt.Fprintln(tabWriter, "start set:\t", SL(search.Name))
 	fmt.Fprintln(tabWriter, "from:\t", SL(search.From))
 	fmt.Fprintln(tabWriter, "to:\t", SL(search.To))
@@ -891,4 +894,41 @@ func SL(list []string) string {
 	s += " ]"
 
 	return s
+}
+
+// StatusResponse defines the structure for our JSON response.
+type StatusResponse struct {
+	ServerStatus    string    `json:"server_status"`
+	DatabaseStatus  string    `json:"database_status"`
+	AvailableTopics []string  `json:"available_topics"`
+	Timestamp       time.Time `json:"timestamp"`
+}
+
+func StatusHandler(w http.ResponseWriter, r *http.Request) {
+	toc := SST.GetChaptersByChapContext(CTX, "", nil, 1000) // "" for chapter and nil for context should get all
+
+	var topics []string
+	for chapter := range toc {
+		topics = append(topics, chapter)
+	}
+	sort.Strings(topics)
+
+	// Create the response object.
+	status := StatusResponse{
+		ServerStatus:    "OK",
+		DatabaseStatus:  "OK",
+		AvailableTopics: topics,
+		Timestamp:       time.Now(),
+	}
+
+	// Marshal the struct into JSON.
+	responseJSON, err := json.Marshal(status)
+	if err != nil {
+		http.Error(w, "Failed to generate status response", http.StatusInternalServerError)
+		return
+	}
+
+	// Set the content type and send the response.
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseJSON)
 }
