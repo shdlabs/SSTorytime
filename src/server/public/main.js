@@ -111,9 +111,9 @@ document.addEventListener("DOMContentLoaded", function (event)
 
   let ORGX = WIDTH / 2;
   let ORGY = HEIGHT / 2;
-  let THETA = Math.PI / 8;
-  let PHI = Math.PI / 8;
-  let SCALE = 0.9;
+  let THETA = Math.PI / 9;
+  let PHI = Math.PI / 9;
+  let SCALE = 0.8 / mob;
   let OBS_X = 1;
   let OBS_Y = 0.5;
   let OBS_Z = -1;
@@ -542,14 +542,7 @@ document.addEventListener("DOMContentLoaded", function (event)
           chapter_section.appendChild(link);
 
           Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
-          Near(
-            chpblk.XYZ.X,
-            chpblk.XYZ.Y,
-            chpblk.XYZ.Z,
-            ctx.XYZ.X,
-            ctx.XYZ.Y,
-            ctx.XYZ.Z
-          );
+          Near(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
         }
       }
 
@@ -573,14 +566,7 @@ document.addEventListener("DOMContentLoaded", function (event)
           chapter_section.appendChild(link);
 
           Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
-          Near(
-            chpblk.XYZ.X,
-            chpblk.XYZ.Y,
-            chpblk.XYZ.Z,
-            ctx.XYZ.X,
-            ctx.XYZ.Y,
-            ctx.XYZ.Z
-          );
+          Near(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
         }
       }
 
@@ -758,17 +744,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   /***********************************************************/
   //  Presentation helpers
   /***********************************************************/
-  function PrintLink(
-    parent,
-    radius,
-    stindex,
-    arrow,
-    str,
-    nclass,
-    ncptr,
-    chap,
-    ctx
-  )
+  function PrintLink(parent, radius, stindex, arrow, str, nclass, ncptr, chap, ctx)
   {
     if (arrow == null)
     {
@@ -1800,13 +1776,11 @@ document.addEventListener("DOMContentLoaded", function (event)
             break;
         }
 
-        // MathJax.typeset();
         RerenderMath();
       })
 
       .catch((error) =>
       {
-        // Handle error
         console.log("error ", error);
       });
   }
@@ -1880,14 +1854,7 @@ document.addEventListener("DOMContentLoaded", function (event)
       for (let ngh of event.Orbits[Il1])
       {
         Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-        LeadsTo(
-          ngh.OOO.X,
-          ngh.OOO.Y,
-          ngh.OOO.Z,
-          ngh.XYZ.X,
-          ngh.XYZ.Y,
-          ngh.XYZ.Z
-        );
+        LeadsTo(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       }
     }
 
@@ -1896,14 +1863,7 @@ document.addEventListener("DOMContentLoaded", function (event)
       for (let ngh of event.Orbits[Im1])
       {
         Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-        LeadsTo(
-          ngh.XYZ.X,
-          ngh.XYZ.Y,
-          ngh.XYZ.Z,
-          ngh.OOO.X,
-          ngh.OOO.Y,
-          ngh.OOO.Z
-        );
+        LeadsTo(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z);
       }
     }
 
@@ -1912,14 +1872,7 @@ document.addEventListener("DOMContentLoaded", function (event)
       for (let ngh of event.Orbits[Ic2])
       {
         Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-        Contains(
-          ngh.OOO.X,
-          ngh.OOO.Y,
-          ngh.OOO.Z,
-          ngh.XYZ.X,
-          ngh.XYZ.Y,
-          ngh.XYZ.Z
-        );
+        Contains(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       }
     }
 
@@ -1928,14 +1881,7 @@ document.addEventListener("DOMContentLoaded", function (event)
       for (let ngh of event.Orbits[Im2])
       {
         Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-        Contains(
-          ngh.XYZ.X,
-          ngh.XYZ.Y,
-          ngh.XYZ.Z,
-          ngh.OOO.X,
-          ngh.OOO.Y,
-          ngh.OOO.Z
-        );
+        Contains(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z);
       }
     }
 
@@ -1944,14 +1890,7 @@ document.addEventListener("DOMContentLoaded", function (event)
       for (let ngh of event.Orbits[Ie3])
       {
         Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-        Expresses(
-          ngh.OOO.X,
-          ngh.OOO.Y,
-          ngh.OOO.Z,
-          ngh.XYZ.X,
-          ngh.XYZ.Y,
-          ngh.XYZ.Z
-        );
+        Expresses(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
       }
     }
 
@@ -1960,14 +1899,7 @@ document.addEventListener("DOMContentLoaded", function (event)
       for (let ngh of event.Orbits[Im3])
       {
         Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
-        Expresses(
-          ngh.XYZ.X,
-          ngh.XYZ.Y,
-          ngh.XYZ.Z,
-          ngh.OOO.X,
-          ngh.OOO.Y,
-          ngh.OOO.Z
-        );
+        Expresses(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z);
       }
     }
 
@@ -2081,7 +2013,7 @@ document.addEventListener("DOMContentLoaded", function (event)
     let canvas = document.createElement("canvas");
     canvas.id = "myCanvas";
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.height = window.innerWidth / 2 / mob;
     CTX = canvas.getContext("2d");
     parent.appendChild(canvas);
     CTX.beginPath();
@@ -2092,7 +2024,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   function Label(x, y, z, text, size, colour)
   {
     CTX.save();
-    let font = "bold " + size * mob + "px serif";
+    let font = "bold " + size * mob + "px sans-serif";
 
     let xr = Tx(x, y, z) + 30;
     let yr = Ty(x, y, z);
@@ -2102,10 +2034,10 @@ document.addEventListener("DOMContentLoaded", function (event)
     let w = CTX.measureText(text).width;
     let h = parseInt(font, size);
     CTX.fillStyle = "transparent";
-    // CTX.fillRect(xr, yr, w + 5, -h);
     CTX.font = font;
     CTX.fillStyle = colour;
     CTX.fillText(text, xr, yr);
+    RerenderMath();
     CTX.restore();
   }
 
