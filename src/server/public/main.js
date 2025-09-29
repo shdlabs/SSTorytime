@@ -1,33 +1,34 @@
+
+MathJax = {
+  output: {
+    scale: 1, // global scaling factor for all expressions
+    minScale: 0.4, // smallest scaling factor to use
+    mtextInheritFont: false, // true to make mtext elements use surrounding font
+    merrorInheritFont: false, // true to make merror text use surrounding font
+    mtextFont: "", // font to use for mtext, if not inheriting (empty means use MathJax fonts)
+    merrorFont: "", // font to use for merror, if not inheriting (empty means use MathJax fonts)
+    unknownFamily: "", // font to use for character that aren't in MathJax's fonts
+    mathmlSpacing: false, // true for MathML spacing rules, false for TeX rules
+    skipAttributes: {}, // RFDa and other attributes NOT to copy to the output
+    exFactor: 0.5, // default size of ex in em units
+    displayAlign: "auto", // default for indentalign when set to 'auto'
+    displayIndent: "0", // default for indentshift when set to 'auto'
+    displayOverflow: "scale", // default for overflow (scroll/scale/truncate/elide/linebreak/overflow)
+    linebreaks: {
+      // options for when overflow is linebreak
+      inline: true, // true for browser-based breaking of inline equations
+      width: "95%", // a fixed size or a percentage of the container width
+      lineleading: 0.1, // the default lineleading in em units
+    },
+    htmlHDW: "use", // 'use', 'force', or 'ignore' data-mjx-hdw attributes
+    preFilters: [], // A list of pre-filters to add to the output jax
+    postFilters: [], // A list of post-filters to add to the output jax
+  },
+};
+
+
 document.addEventListener("DOMContentLoaded", function (event)
 {
-
-  MathJax = {
-    output: {
-      scale: 1, // global scaling factor for all expressions
-      minScale: 0.4, // smallest scaling factor to use
-      mtextInheritFont: false, // true to make mtext elements use surrounding font
-      merrorInheritFont: false, // true to make merror text use surrounding font
-      mtextFont: "", // font to use for mtext, if not inheriting (empty means use MathJax fonts)
-      merrorFont: "", // font to use for merror, if not inheriting (empty means use MathJax fonts)
-      unknownFamily: "", // font to use for character that aren't in MathJax's fonts
-      mathmlSpacing: false, // true for MathML spacing rules, false for TeX rules
-      skipAttributes: {}, // RFDa and other attributes NOT to copy to the output
-      exFactor: 0.5, // default size of ex in em units
-      displayAlign: "auto", // default for indentalign when set to 'auto'
-      displayIndent: "0", // default for indentshift when set to 'auto'
-      displayOverflow: "scale", // default for overflow (scroll/scale/truncate/elide/linebreak/overflow)
-      linebreaks: {
-        // options for when overflow is linebreak
-        inline: true, // true for browser-based breaking of inline equations
-        width: "95%", // a fixed size or a percentage of the container width
-        lineleading: 0.1, // the default lineleading in em units
-      },
-      htmlHDW: "use", // 'use', 'force', or 'ignore' data-mjx-hdw attributes
-      preFilters: [], // A list of pre-filters to add to the output jax
-      postFilters: [], // A list of post-filters to add to the output jax
-    },
-  };
-
   var mob = 1
   if (window.innerWidth < 450)
   {
@@ -113,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   let ORGY = HEIGHT / 2;
   let THETA = Math.PI / 9;
   let PHI = Math.PI / 9;
-  let SCALE = 0.8 / mob;
+  let SCALE = 0.9;
   let OBS_X = 1;
   let OBS_Y = 0.5;
   let OBS_Z = -1;
@@ -167,9 +168,9 @@ document.addEventListener("DOMContentLoaded", function (event)
 
     try
     {
+      RerenderMath();
       let response = await fetch(request);
       startHipnotize();
-
       let mynote = await response.json();
       DoHeader(mynote);
       DoOrbitPanel(mynote); // Start in orbit
@@ -212,6 +213,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   /***********************************************************/
   function DoHeader(obj)
   {
+    RerenderMath();
     // Clear the main panel here, as it's common to all
     let clearscreen = document.querySelector("main");
     clearscreen.innerHTML = "";
@@ -289,6 +291,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   /***********************************************************/
   function DoOrbitPanel(obj)
   {
+    RerenderMath();
     let section = document.querySelector("main");
     let panel = document.createElement("i");
     panel.id = "main_content_panel";
@@ -325,6 +328,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   /***********************************************************/
   function DoEntireConePanel(obj)
   {
+    RerenderMath();
     let section = document.querySelector("main");
     let panel = document.createElement("span");
     panel.id = "main_content_panel";
@@ -461,6 +465,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   /***********************************************************/
   function DoTOCPanel(obj)
   {
+    RerenderMath();
     let section = document.querySelector("main");
 
     let panel = document.createElement("div");
@@ -484,6 +489,7 @@ document.addEventListener("DOMContentLoaded", function (event)
       chapter_section.setAttribute("class", "card-view");
       chapter_section.id = "toc-panel";
 
+      chapter_section.style.display = "inline-block"
       let link = document.createElement("a");
       let item = document.createElement("h3");
       link.onclick = function ()
@@ -577,6 +583,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   /***********************************************************/
   function DoStatsPanel(obj)
   {
+    RerenderMath();
     let section = document.querySelector("main");
 
     let panel = document.createElement("div");
@@ -777,7 +784,7 @@ document.addEventListener("DOMContentLoaded", function (event)
     arrow_link.id = "arrow-" + stindex;
     arrow_link.title = STINDICES[stindex];
     arrow_link.class = "tooltip";
-    // arrow_link.style.fontFamily = "Verdana";
+    arrow_link.style.fontFamily = "Verdana";
     box.appendChild(arrow_link);
 
     if (str.includes("\n"))
@@ -822,11 +829,10 @@ document.addEventListener("DOMContentLoaded", function (event)
       }
 
       spantext.textContent = str;
-      // spantext.style.fontFamily = "Times"; // distinguish satellites
+      spantext.style.fontFamily = "Times"; // distinguish satellites
       if (str.length < 20)
       {
         text_link.style.fontSize = "200%";
-        // text_link.style.paddingInline = "2ch";
       }
 
       text_link.appendChild(spantext);
@@ -1016,6 +1022,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   /***********************************************************/
   function PrintNotes(parent, array)
   {
+    RerenderMath();
     if (array == null || array.length < 1)
     {
       return parent;
@@ -1622,7 +1629,6 @@ document.addEventListener("DOMContentLoaded", function (event)
           {
             indicator.classList.add("visible");
           }
-          RerenderMath();
         })
         .catch((error) =>
         {
@@ -1674,7 +1680,6 @@ document.addEventListener("DOMContentLoaded", function (event)
       {
         DoHeader(resp);
         DoOrbitPanel(resp);
-        RerenderMath();
       })
 
       .catch((error) =>
@@ -1776,7 +1781,6 @@ document.addEventListener("DOMContentLoaded", function (event)
             break;
         }
 
-        RerenderMath();
       })
 
       .catch((error) =>
@@ -2037,7 +2041,6 @@ document.addEventListener("DOMContentLoaded", function (event)
     CTX.font = font;
     CTX.fillStyle = colour;
     CTX.fillText(text, xr, yr);
-    RerenderMath();
     CTX.restore();
   }
 
@@ -2350,8 +2353,9 @@ document.addEventListener("DOMContentLoaded", function (event)
   /***********************************************************/
   function initializeApp()
   {
-    checkStatus();
+    // checkStatus();
     // setInterval(checkStatus, 30000);
+
     loadHistoryIntoDatalist();
     SearchHandler();
     AppRouter();
