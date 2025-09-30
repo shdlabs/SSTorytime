@@ -157,6 +157,12 @@ h3 {
   align-items: baseline;
   box-shadow: var(--shadow-2);
 
+  & pre {
+    font-size: var(--font-size-fluid-0);
+    display: inline-flex;
+    text-wrap: wrap balance;
+  }
+
   & h3 {
     font-size: var(--font-size-fluid-0);
     min-width: fit-content;
@@ -174,6 +180,7 @@ h3 {
 
   & span {
     padding: 1ch;
+    display: inline-flex;
     width: fit-content;
     flex-basis: 100%;
     text-wrap: wrap balance;
@@ -194,6 +201,33 @@ h3 {
       text-shadow: 1px 2px 5px rgba(52, 58, 64, 0.3),
         -2px -1px 3px rgba(56, 217, 169, 0.2);
     }
+  }
+}
+.error-message {
+  background-color: rgba(255, 0, 0, 0.585);
+  backdrop-filter: blur(9px);
+  position: absolute;
+  bottom: 15%;
+  max-width: 45svw;
+  width: fit-content;
+  border-radius: var(--radius-3);
+  box-shadow: var(--shadow-5);
+  padding: 2ch 3ch;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  z-index: 1115;
+  gap: 3ch;
+  color: rgba(240, 204, 217, 0.85);
+  transition: transform 1s var(--ease-spring-3) 0.5s, opacity 1s ease 0.5s;
+
+  @starting-style {
+    opacity: 0;
+    transform: scale(0);
+  }
+  & p {
+    color: var(--stone-10);
+    font-weight: 500;
   }
 }
 

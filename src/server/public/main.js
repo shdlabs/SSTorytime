@@ -203,12 +203,7 @@ document.addEventListener("DOMContentLoaded", function (event)
   function DisplayError(message)
   {
     const main = document.querySelector("main");
-    main.innerHTML = `<div class="text-center absolute bottom-[15svh] z-20 p-8 bg-red-100 dark:bg-red-900/50
-                text-red-800 dark:text-red-300 rounded-lg shadow-xl flex flex-col gap-3 transition-all
-                border border-red-300 dark:border-red-700">
-                <h4 class="text-xl font-bold mb-2">An Error Occurred!</h2>
-            <h5 class="text-sky-800">${message}</h5>
-            </div>`;
+    main.innerHTML = `<div class="error-message"> <h5>An Error Occurred!</h5> <p>${message}</p> </div>`;
   }
   /***********************************************************/
   function DoHeader(obj)
