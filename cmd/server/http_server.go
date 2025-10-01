@@ -111,7 +111,8 @@ func SafeSolveNodePtrs(ctx SST.PoSST, names []string, search SST.SearchParameter
 	// Handle common problematic cases
 	if len(names) > 0 {
 		for _, name := range names {
-			if name == "any" || name == "%%" {
+			// Allow "any" when there are context constraints that make the search more specific
+			if (name == "any" || name == "%%") && len(search.Context) == 0 {
 				return nil, fmt.Errorf("'%s' is too broad a search term and causes database conflicts. Please use more specific terms or try \\help for search guidance", name)
 			}
 			if len(name) < 2 && name != "%%" {
@@ -872,6 +873,33 @@ func ShowStats(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST
 			nptr := SST.GetLastSawNPtr(ctx, nptrs[n])
 			retval = append(retval, nptr)
 		}
+	}
+
+	// Check if any progress tracking data exists
+	if len(retval) == 0 {
+		// No checkboxes have been checked yet - return friendly guidance
+		ambien, key, now := SST.GetTimeContext()
+		now_ctx := SST.UpdateSTMContext(CTX, ambien, key, now, search)
+
+		emptyResponse := map[string]interface{}{
+			"Response": "GUIDANCE",
+			"Content": "No progress tracking data found. Start exploring content and check the progress boxes on items you've reviewed to build your learning statistics.",
+			"Suggestions": []string{
+				"Browse chapters using \\notes or \\chapter commands",
+				"Check progress boxes on items you've read",
+				"Return to \\stats once you've marked some progress",
+				"Try \\help for more search guidance",
+			},
+			"Time":    key,
+			"Intent":  now_ctx,
+			"Ambient": ambien,
+		}
+
+		data, _ := json.Marshal(emptyResponse)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+		fmt.Println("Sent guidance for empty stats")
+		return
 	}
 
 	data, _ := json.Marshal(retval)

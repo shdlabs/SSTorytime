@@ -208,6 +208,10 @@ run_documentation_examples() {
     # Context searches
     test_api "Context restaurant" "\\context restaurant" "TOC" true
     
+    # New test cases for recently fixed issues
+    test_api "Any with context (fixed issue)" "any \\context water damage" "Orbits" '.Content | length > 0'
+    test_api "Stats with guidance (if empty)" "\\stats" "STAT|GUIDANCE" '.Response == "STAT" or .Response == "GUIDANCE"'
+    
     # Arrow searches with different formats
     test_api "Arrow ph,pe" "\\arrow \"ph,pe\"" "Arrows" true
     test_api "Arrow 125" "\\arrow 125" "Arrows" true

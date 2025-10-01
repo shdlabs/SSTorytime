@@ -118,6 +118,10 @@ document.addEventListener("DOMContentLoaded", function (event)
 	let OBS_Z = -1;
 	let VP_X = 0;
 	let VP_Y = 4;
+
+	// Interactive nodes tracking
+	var INTERACTIVE_NODES = [];
+	var HOVER_TOOLTIP = null;
 	let VP_Z = 8;
 
 	/************************************************************/
@@ -261,6 +265,12 @@ document.addEventListener("DOMContentLoaded", function (event)
 		// Clear the main panel here, as it's common to all
 		let clearscreen = document.querySelector("main");
 		clearscreen.innerHTML = "";
+
+		// Clear any existing guidance panel when displaying new content
+		let existingGuidance = document.getElementById("guidance-panel");
+		if (existingGuidance) {
+			existingGuidance.remove();
+		}
 
 		// Now manage the header
 		let header = document.querySelector("header");
@@ -602,7 +612,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 			// Add defensive check for XYZ coordinates
 			if (chpblk.XYZ && typeof chpblk.XYZ.X !== 'undefined')
 			{
-				Event(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z);
+				InteractiveEvent(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, chpblk.Chapter, '\\notes \\chapter "' + chpblk.Chapter + '"');
 				Label(chpblk.XYZ.X, chpblk.XYZ.Y, chpblk.XYZ.Z, chpblk.Chapter, 12, "gray");
 			} else
 			{
@@ -629,7 +639,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 
 					chapter_section.appendChild(link);
 
-					Concept(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
+					InteractiveConcept(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, ctx.Text, "any \\context " + CtxSplice(ctx.Text));
 					Contains(
 						chpblk.XYZ.X,
 						chpblk.XYZ.Y,
@@ -660,7 +670,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 
 					chapter_section.appendChild(link);
 
-					Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
+					InteractiveThing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, ctx.Text, "any \\context " + CtxSplice(ctx.Text));
 					Near(
 						chpblk.XYZ.X,
 						chpblk.XYZ.Y,
@@ -691,7 +701,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 					link.appendChild(sitem);
 					chapter_section.appendChild(link);
 
-					Thing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z);
+					InteractiveThing(ctx.XYZ.X, ctx.XYZ.Y, ctx.XYZ.Z, ctx.Text, "any \\context " + CtxSplice(ctx.Text));
 					Near(
 						chpblk.XYZ.X,
 						chpblk.XYZ.Y,
@@ -770,7 +780,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 				hmpanel = document.createElement("div");
 				card.appendChild(hmpanel);
 
-				Concept(ls.XYZ.X, ls.XYZ.Y, ls.XYZ.Z);
+				InteractiveConcept(ls.XYZ.X, ls.XYZ.Y, ls.XYZ.Z, ls.Section, "\\notes " + '"' + ls.Section + '"');
 				Label(ls.XYZ.X, ls.XYZ.Y, ls.XYZ.Z, ls.Section, 12, "gray");
 			} else
 			{
@@ -801,6 +811,88 @@ document.addEventListener("DOMContentLoaded", function (event)
 				hmpanel.appendChild(nlink);
 			}
 		}
+	}
+
+	/***********************************************************/
+	function DoGuidancePanel(obj)
+	{
+		// Clear any existing guidance
+		let existingGuidance = document.getElementById("guidance-panel");
+		if (existingGuidance) {
+			existingGuidance.remove();
+		}
+
+		// Insert guidance above the search form in nav section
+		let nav = document.querySelector("nav");
+		let searchForm = document.getElementById("search");
+		
+		// Create compact guidance panel
+		let guidancePanel = document.createElement("div");
+		guidancePanel.id = "guidance-panel";
+		guidancePanel.style.backgroundColor = "#f8f9fa";
+		guidancePanel.style.border = "1px solid #dee2e6";
+		guidancePanel.style.borderRadius = "8px";
+		guidancePanel.style.padding = "15px";
+		guidancePanel.style.margin = "10px 0";
+		guidancePanel.style.textAlign = "center";
+		guidancePanel.style.fontSize = "14px";
+		guidancePanel.style.color = "#495057";
+
+		// Add icon and title
+		let header = document.createElement("div");
+		header.style.marginBottom = "10px";
+		let icon = document.createElement("span");
+		icon.textContent = "💡 ";
+		icon.style.fontSize = "16px";
+		let title = document.createElement("strong");
+		title.textContent = "Getting Started";
+		title.style.color = "#007bff";
+		header.appendChild(icon);
+		header.appendChild(title);
+		guidancePanel.appendChild(header);
+
+		// Add compact message
+		let message = document.createElement("p");
+		message.textContent = obj.Content;
+		message.style.margin = "8px 0";
+		message.style.lineHeight = "1.4";
+		guidancePanel.appendChild(message);
+
+		// Add compact suggestions
+		if (obj.Suggestions && obj.Suggestions.length > 0) {
+			let suggestionText = obj.Suggestions.join(" • ");
+			let suggestions = document.createElement("div");
+			suggestions.textContent = suggestionText;
+			suggestions.style.fontSize = "12px";
+			suggestions.style.color = "#6c757d";
+			suggestions.style.marginTop = "8px";
+			suggestions.style.fontStyle = "italic";
+			guidancePanel.appendChild(suggestions);
+		}
+
+		// Add close button
+		let closeButton = document.createElement("button");
+		closeButton.textContent = "✕";
+		closeButton.style.position = "absolute";
+		closeButton.style.top = "5px";
+		closeButton.style.right = "10px";
+		closeButton.style.background = "none";
+		closeButton.style.border = "none";
+		closeButton.style.fontSize = "14px";
+		closeButton.style.cursor = "pointer";
+		closeButton.style.color = "#6c757d";
+		closeButton.onclick = function() {
+			guidancePanel.remove();
+		};
+		guidancePanel.style.position = "relative";
+		guidancePanel.appendChild(closeButton);
+
+		// Insert before the search form
+		nav.insertBefore(guidancePanel, searchForm);
+
+		// Also clear main content to show we're not displaying results
+		let section = document.querySelector("main");
+		section.innerHTML = "";
 	}
 
 	/***********************************************************/
@@ -1116,7 +1208,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 						lastz = 0;
 					}
 
-					Event(thisx, thisy, thisz);
+					InteractiveEvent(thisx, thisy, thisz, str, "any \\context " + CtxSplice(str));
 					Label(thisx, thisy, thisz, str.slice(0, 25), 12, "black");
 
 					if (array[path][i].NPtr != null)
@@ -1294,7 +1386,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 					lasty = thisy;
 					lastz = thisz;
 
-					Event(thisx, thisy, thisz);
+					InteractiveEvent(thisx, thisy, thisz, str, "any \\context " + CtxSplice(str));
 					Label(thisx, thisy, thisz, str.slice(0, 25), 12, "black");
 
 					if (array[line][i].NPtr != null)
@@ -1971,6 +2063,10 @@ document.addEventListener("DOMContentLoaded", function (event)
 								console.log("Calling DoStatsPanel");
 								DoStatsPanel(resp);
 								break;
+							case "GUIDANCE":
+								console.log("Showing guidance message");
+								DoGuidancePanel(resp);
+								break;
 							default:
 								console.error("Unknown response type:", resp.Response);
 								DisplayError("Unknown response type: " + resp.Response);
@@ -2253,7 +2349,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		let ty = event.XYZ.Y;
 		let tz = event.XYZ.Z;
 
-		Event(tx, ty, tz);
+		InteractiveEvent(tx, ty, tz, event.Text, "any \\context " + CtxSplice(event.Text));
 		Label(tx, ty, tz, event.Text.slice(0, 25), 12, "black");
 
 		if (lastevent != event)
@@ -2271,7 +2367,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		{
 			for (let ngh of event.Orbits[Il1])
 			{
-				Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+				InteractiveEvent(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text || "Related Event", "any \\context " + CtxSplice(ngh.Text || ""));
 				LeadsTo(
 					ngh.OOO.X,
 					ngh.OOO.Y,
@@ -2287,7 +2383,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		{
 			for (let ngh of event.Orbits[Im1])
 			{
-				Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+				InteractiveEvent(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text || "Related Event", "any \\context " + CtxSplice(ngh.Text || ""));
 				LeadsTo(
 					ngh.XYZ.X,
 					ngh.XYZ.Y,
@@ -2303,7 +2399,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		{
 			for (let ngh of event.Orbits[Ic2])
 			{
-				Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+				InteractiveThing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text || "Related Item", "any \\context " + CtxSplice(ngh.Text || ""));
 				Contains(
 					ngh.OOO.X,
 					ngh.OOO.Y,
@@ -2319,7 +2415,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		{
 			for (let ngh of event.Orbits[Im2])
 			{
-				Thing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+				InteractiveThing(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text || "Related Item", "any \\context " + CtxSplice(ngh.Text || ""));
 				Contains(
 					ngh.XYZ.X,
 					ngh.XYZ.Y,
@@ -2335,7 +2431,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		{
 			for (let ngh of event.Orbits[Ie3])
 			{
-				Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+				InteractiveConcept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text || "Related Concept", "any \\context " + CtxSplice(ngh.Text || ""));
 				Expresses(
 					ngh.OOO.X,
 					ngh.OOO.Y,
@@ -2351,7 +2447,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		{
 			for (let ngh of event.Orbits[Im3])
 			{
-				Concept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+				InteractiveConcept(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text || "Related Concept", "any \\context " + CtxSplice(ngh.Text || ""));
 				Expresses(
 					ngh.XYZ.X,
 					ngh.XYZ.Y,
@@ -2367,7 +2463,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		{
 			for (let ngh of event.Orbits[In0])
 			{
-				Event(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
+				InteractiveEvent(ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z, ngh.Text || "Related Event", "any \\context " + CtxSplice(ngh.Text || ""));
 				Near(ngh.OOO.X, ngh.OOO.Y, ngh.OOO.Z, ngh.XYZ.X, ngh.XYZ.Y, ngh.XYZ.Z);
 			}
 		}
@@ -2423,7 +2519,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		for (let z = 1; z > -1.0; z -= orbit)
 		{
 			LeadsTo(x0, y0, z, 0, 0, z + orbit);
-			Event(x0, y0, z, 10);
+			InteractiveEvent(x0, y0, z, "SST event " + z, "\\chapters");
 
 			Label(x0, y0, z, "SST event " + z, 16, "darkblue");
 
@@ -2431,7 +2527,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 			{
 				let x = orbit * Math.cos(a);
 				let y = orbit * Math.sin(a);
-				Concept(x, y, z, 6);
+				InteractiveConcept(x, y, z, "Demo concept", "\\chapters");
 				Expresses(0, 0, z, x, y, z);
 			}
 		}
@@ -2468,6 +2564,10 @@ document.addEventListener("DOMContentLoaded", function (event)
 		{
 			oldcanvas.remove();
 		}
+
+		// Clear interactive nodes when creating new canvas
+		clearInteractiveNodes();
+
 		let parent = document.getElementById("canvas");
 		let canvas = document.createElement("canvas");
 		canvas.id = "myCanvas";
@@ -2477,6 +2577,10 @@ document.addEventListener("DOMContentLoaded", function (event)
 		CTX.beginPath();
 
 		parent.appendChild(canvas);
+
+		// Set up mouse interactivity
+		setupCanvasInteractivity(canvas);
+
 		return canvas;
 	}
 
@@ -2626,6 +2730,175 @@ document.addEventListener("DOMContentLoaded", function (event)
 		CTX.fillStyle = grad;
 		CTX.fill();
 		CTX.restore();
+	}
+
+	// *************************************************
+	// Interactive node functions that track node data for mouse interactions
+	// *************************************************
+	function addInteractiveNode(x3d, y3d, z3d, text, type, searchQuery)
+	{
+		let x2d = Tx(x3d, y3d, z3d);
+		let y2d = Ty(x3d, y3d, z3d);
+		let radius = (4 * mob * 1.6) / Horizon(x3d, y3d, z3d);
+
+		INTERACTIVE_NODES.push({
+			x2d: x2d,
+			y2d: y2d,
+			radius: radius,
+			text: text,
+			type: type,
+			searchQuery: searchQuery,
+			x3d: x3d,
+			y3d: y3d,
+			z3d: z3d
+		});
+	}
+
+	function InteractiveEvent(x, y, z, text, searchQuery)
+	{
+		addInteractiveNode(x, y, z, text, "event", searchQuery);
+		Event(x, y, z);
+	}
+
+	function InteractiveConcept(x, y, z, text, searchQuery)
+	{
+		addInteractiveNode(x, y, z, text, "concept", searchQuery);
+		Concept(x, y, z);
+	}
+
+	function InteractiveThing(x, y, z, text, searchQuery)
+	{
+		addInteractiveNode(x, y, z, text, "thing", searchQuery);
+		Thing(x, y, z);
+	}
+
+	function clearInteractiveNodes()
+	{
+		INTERACTIVE_NODES = [];
+	}
+
+	// *************************************************
+	// Mouse interaction functions
+	// *************************************************
+	function getMousePos(canvas, evt)
+	{
+		let rect = canvas.getBoundingClientRect();
+		let scaleX = canvas.width / rect.width;
+		let scaleY = canvas.height / rect.height;
+
+		return {
+			x: (evt.clientX - rect.left) * scaleX,
+			y: (evt.clientY - rect.top) * scaleY
+		};
+	}
+
+	function findNodeAtPosition(mouseX, mouseY)
+	{
+		for (let i = INTERACTIVE_NODES.length - 1; i >= 0; i--)
+		{
+			let node = INTERACTIVE_NODES[i];
+			let dx = mouseX - node.x2d;
+			let dy = mouseY - node.y2d;
+			let distance = Math.sqrt(dx * dx + dy * dy);
+
+			if (distance <= node.radius)
+			{
+				return node;
+			}
+		}
+		return null;
+	}
+
+	function createTooltip()
+	{
+		if (HOVER_TOOLTIP) return HOVER_TOOLTIP;
+
+		let tooltip = document.createElement('div');
+		tooltip.style.position = 'absolute';
+		tooltip.style.background = 'rgba(0, 0, 0, 0.8)';
+		tooltip.style.color = 'white';
+		tooltip.style.padding = '5px 10px';
+		tooltip.style.borderRadius = '4px';
+		tooltip.style.fontSize = '12px';
+		tooltip.style.pointerEvents = 'none';
+		tooltip.style.zIndex = '1000';
+		tooltip.style.maxWidth = '300px';
+		tooltip.style.wordWrap = 'break-word';
+		tooltip.style.display = 'none';
+		document.body.appendChild(tooltip);
+
+		HOVER_TOOLTIP = tooltip;
+		return tooltip;
+	}
+
+	function showTooltip(text, x, y)
+	{
+		let tooltip = createTooltip();
+		tooltip.textContent = text;
+		tooltip.style.left = (x + 10) + 'px';
+		tooltip.style.top = (y - 5) + 'px';
+		tooltip.style.display = 'block';
+	}
+
+	function hideTooltip()
+	{
+		if (HOVER_TOOLTIP)
+		{
+			HOVER_TOOLTIP.style.display = 'none';
+		}
+	}
+
+	function setupCanvasInteractivity(canvas)
+	{
+		let hoveredNode = null;
+
+		canvas.addEventListener('mousemove', function (evt)
+		{
+			let mousePos = getMousePos(canvas, evt);
+			let node = findNodeAtPosition(mousePos.x, mousePos.y);
+
+			if (node !== hoveredNode)
+			{
+				if (hoveredNode)
+				{
+					// Mouse left previous node
+					hideTooltip();
+					canvas.style.cursor = 'default';
+				}
+
+				hoveredNode = node;
+
+				if (node)
+				{
+					// Mouse entered new node
+					showTooltip(node.text, evt.clientX, evt.clientY);
+					canvas.style.cursor = 'pointer';
+				}
+			} else if (node)
+			{
+				// Update tooltip position for same node
+				showTooltip(node.text, evt.clientX, evt.clientY);
+			}
+		});
+
+		canvas.addEventListener('mouseleave', function (evt)
+		{
+			hideTooltip();
+			canvas.style.cursor = 'default';
+			hoveredNode = null;
+		});
+
+		canvas.addEventListener('click', function (evt)
+		{
+			let mousePos = getMousePos(canvas, evt);
+			let node = findNodeAtPosition(mousePos.x, mousePos.y);
+
+			if (node && node.searchQuery)
+			{
+				// Trigger the same search functionality as text links
+				sendLinkSearch(node.searchQuery);
+			}
+		});
 	}
 
 	// *************************************************
