@@ -97,3 +97,13 @@ conceptualize
 # SHD ###########
 # `air`
 **/tmp
+
+# Elm UI frontend
+elm-ui/node_modules/
+elm-ui/elm-stuff/
+elm-ui/dist/
+
+# React/Vite frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/

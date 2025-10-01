@@ -1,0 +1,22 @@
+{
+	"name": "elm-ui",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"scripts": {
+		"postinstall": "elm-tooling install",
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview"
+	},
+	"devDependencies": {
+		"@tailwindcss/vite": "^4.1.12",
+		"elm-tooling": "^1.16.0",
+		"prettier": "^3.6.2",
+		"vite-plugin-elm-watch": "^1.4.4"
+	},
+	"dependencies": {
+		"tailwindcss": "^4.1.12",
+		"vite": "^7.1.2"
+	}
+}
