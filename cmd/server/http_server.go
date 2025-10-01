@@ -883,7 +883,7 @@ func ShowStats(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST
 
 		emptyResponse := map[string]interface{}{
 			"Response": "GUIDANCE",
-			"Content": "No progress tracking data found. Start exploring content and check the progress boxes on items you've reviewed to build your learning statistics.",
+			"Content":  "No progress tracking data found. Start exploring content and check the progress boxes on items you've reviewed to build your learning statistics.",
 			"Suggestions": []string{
 				"Browse chapters using \\notes or \\chapter commands",
 				"Check progress boxes on items you've read",

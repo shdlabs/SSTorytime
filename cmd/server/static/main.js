@@ -268,7 +268,8 @@ document.addEventListener("DOMContentLoaded", function (event)
 
 		// Clear any existing guidance panel when displaying new content
 		let existingGuidance = document.getElementById("guidance-panel");
-		if (existingGuidance) {
+		if (existingGuidance)
+		{
 			existingGuidance.remove();
 		}
 
@@ -818,14 +819,15 @@ document.addEventListener("DOMContentLoaded", function (event)
 	{
 		// Clear any existing guidance
 		let existingGuidance = document.getElementById("guidance-panel");
-		if (existingGuidance) {
+		if (existingGuidance)
+		{
 			existingGuidance.remove();
 		}
 
 		// Insert guidance above the search form in nav section
 		let nav = document.querySelector("nav");
 		let searchForm = document.getElementById("search");
-		
+
 		// Create compact guidance panel
 		let guidancePanel = document.createElement("div");
 		guidancePanel.id = "guidance-panel";
@@ -859,7 +861,8 @@ document.addEventListener("DOMContentLoaded", function (event)
 		guidancePanel.appendChild(message);
 
 		// Add compact suggestions
-		if (obj.Suggestions && obj.Suggestions.length > 0) {
+		if (obj.Suggestions && obj.Suggestions.length > 0)
+		{
 			let suggestionText = obj.Suggestions.join(" • ");
 			let suggestions = document.createElement("div");
 			suggestions.textContent = suggestionText;
@@ -881,7 +884,8 @@ document.addEventListener("DOMContentLoaded", function (event)
 		closeButton.style.fontSize = "14px";
 		closeButton.style.cursor = "pointer";
 		closeButton.style.color = "#6c757d";
-		closeButton.onclick = function() {
+		closeButton.onclick = function ()
+		{
 			guidancePanel.remove();
 		};
 		guidancePanel.style.position = "relative";

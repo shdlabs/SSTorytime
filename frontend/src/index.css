@@ -6,26 +6,26 @@
   body {
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
-  
+
   * {
     scrollbar-width: thin;
     scrollbar-color: #374151 #1f2937;
   }
-  
+
   *::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   *::-webkit-scrollbar-track {
     background: #1f2937;
   }
-  
+
   *::-webkit-scrollbar-thumb {
     background: #374151;
     border-radius: 3px;
   }
-  
+
   *::-webkit-scrollbar-thumb:hover {
     background: #4b5563;
   }
@@ -37,13 +37,13 @@
     backdrop-filter: blur(16px);
     border: 1px solid rgba(148, 163, 184, 0.1);
   }
-  
+
   .glass-light {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
+
   .btn-primary {
     @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800 
            text-white font-medium py-2 px-4 rounded-lg
@@ -51,7 +51,7 @@
            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-900
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
+
   .btn-secondary {
     @apply bg-gray-700 hover:bg-gray-600 active:bg-gray-800
            text-white font-medium py-2 px-4 rounded-lg
@@ -59,37 +59,37 @@
            focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
+
   .btn-ghost {
     @apply text-gray-300 hover:text-white hover:bg-gray-800
            font-medium py-2 px-4 rounded-lg
            transition-all duration-200 ease-in-out
            focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900;
   }
-  
+
   .input-field {
     @apply bg-gray-800 border border-gray-700 text-white placeholder-gray-400
            rounded-lg px-4 py-3 w-full
            focus:ring-2 focus:ring-primary-500 focus:border-transparent
            transition-all duration-200 ease-in-out;
   }
-  
+
   .search-suggestion {
     @apply flex items-center space-x-3 p-3 rounded-lg
            hover:bg-gray-700 cursor-pointer
            transition-colors duration-150 ease-in-out;
   }
-  
+
   .node-orbit {
     @apply rounded-full border-2 cursor-pointer
            transition-all duration-300 ease-in-out
            hover:scale-110 hover:shadow-lg;
   }
-  
+
   .loading-dots {
     @apply inline-flex space-x-1;
   }
-  
+
   .loading-dots > div {
     @apply w-2 h-2 bg-current rounded-full animate-pulse;
     animation-delay: calc(var(--i) * 0.1s);
@@ -100,31 +100,31 @@
   .text-shadow {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
-  
+
   .text-shadow-lg {
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
   }
-  
+
   .perspective-1000 {
     perspective: 1000px;
   }
-  
+
   .preserve-3d {
     transform-style: preserve-3d;
   }
-  
+
   .backface-hidden {
     backface-visibility: hidden;
   }
-  
+
   .animation-delay-200 {
     animation-delay: 200ms;
   }
-  
+
   .animation-delay-400 {
     animation-delay: 400ms;
   }
-  
+
   .animation-delay-600 {
     animation-delay: 600ms;
   }
@@ -135,7 +135,7 @@
   .glass {
     backdrop-filter: blur(8px);
   }
-  
+
   .touch-manipulation {
     touch-action: manipulation;
   }

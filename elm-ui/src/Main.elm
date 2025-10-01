@@ -1,13 +1,89 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, div, h1, input, button, text, pre, p)
-import Html.Attributes exposing (placeholder, value, style)
-import Html.Events exposing (onInput, onClick)
+import Html exposing (Html, button, div, h1, input, p, pre, text)
+import Html.Attributes exposing (placeholder, value)
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
+import SSTorytime.Types exposing (..)
+import SSTorytime.Visualization as Viz
+
+
+-- DEMO DATA
+
+createDemoData : SSToryTimeResponse
+createDemoData =
+    { intent = "Demo visualization of Promise Theory concepts"
+    , time = "2024-10-02T12:00:00Z"
+    , ambient = "Interactive 3D exploration environment"
+    , chapters = 
+        [ { title = "Promise Theory Demo"
+          , position = Position3D 0.0 0.0 0.0 2.0 0.0 0.0
+          , context = 
+              [ { text = "Central Agent"
+                , nodeType = "chapter"
+                , position = Position3D 0.0 0.0 0.0 1.0 0.0 0.0
+                , timeContext = Just 
+                    { duration = 365.0
+                    , startMoment = "2024-01-01"
+                    , endMoment = "2024-12-31"
+                    , continuity = "continuous"
+                    , contextType = "persistent"
+                    }
+                , connections = 
+                    [ { fromNode = "Central Agent"
+                      , toNode = "Knowledge Node"
+                      , arrowType = Causality
+                      , sphericalCoord = SphericalCoordinate 0.785 1.57 1.0
+                      , strength = 0.8
+                      }
+                    ]
+                }
+              ]
+          , single = 
+              [ { text = "Knowledge Node"
+                , nodeType = "single"
+                , position = Position3D 1.0 0.5 0.3 0.8 0.5 0.3
+                , timeContext = Just 
+                    { duration = 180.0
+                    , startMoment = "2024-06-01"
+                    , endMoment = "2024-12-01"
+                    , continuity = "periodic"
+                    , contextType = "learning"
+                    }
+                , connections = 
+                    [ { fromNode = "Knowledge Node"
+                      , toNode = "Research Node"
+                      , arrowType = Similarity
+                      , sphericalCoord = SphericalCoordinate 2.35 1.0 1.2
+                      , strength = 0.6
+                      }
+                    ]
+                }
+              ]
+          , common = Just 
+              [ { text = "Shared Context"
+                , nodeType = "common"
+                , position = Position3D 0.2 -1.0 0.8 0.6 -0.8 0.4
+                , timeContext = Just 
+                    { duration = 365.0
+                    , startMoment = "2024-01-01"
+                    , endMoment = "2024-12-31"
+                    , continuity = "background"
+                    , contextType = "ambient"
+                    }
+                , connections = []
+                }
+              ]
+          }
+        ]
+    }
+
+
 
 -- MAIN
+
 
 main =
     Browser.element
@@ -18,34 +94,43 @@ main =
         }
 
 
+
 -- MODEL
+
 
 type alias Model =
     { searchQuery : String
     , searchResult : String
     , status : String
+    , showDemo : Bool
+    , demoData : SSToryTimeResponse
     }
 
 
-init : () -> (Model, Cmd Msg)
+init : () -> ( Model, Cmd Msg )
 init _ =
     ( { searchQuery = ""
       , searchResult = ""
       , status = "Ready to explore Semantic SpaceTime"
+      , showDemo = True
+      , demoData = createDemoData
       }
     , Cmd.none
     )
 
 
+
 -- UPDATE
+
 
 type Msg
     = UpdateSearchQuery String
     | PerformSearch
     | GotSearchResult (Result Http.Error String)
+    | ToggleDemo
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateSearchQuery query ->
@@ -59,30 +144,37 @@ update msg model =
         GotSearchResult result ->
             case result of
                 Ok response ->
-                    ( { model 
+                    ( { model
                         | searchResult = response
                         , status = "Search completed - exploring semantic connections"
+                        , showDemo = False
                       }
                     , Cmd.none
                     )
 
                 Err error ->
-                    ( { model 
-                        | searchResult = "Error: " ++ (httpErrorString error)
+                    ( { model
+                        | searchResult = "Error: " ++ httpErrorString error
                         , status = "Error occurred"
                       }
                     , Cmd.none
                     )
 
+        ToggleDemo ->
+            ( { model | showDemo = not model.showDemo }, Cmd.none )
+
+
 
 -- HTTP
+
 
 searchSSTorytime : String -> Cmd Msg
 searchSSTorytime query =
     Http.post
         { url = "http://localhost:8080/searchN4L"
-        , body = Http.multipartBody 
-            [ Http.stringPart "name" query ]
+        , body =
+            Http.multipartBody
+                [ Http.stringPart "name" query ]
         , expect = Http.expectString GotSearchResult
         }
 
@@ -106,105 +198,54 @@ httpErrorString error =
             "Bad response body: " ++ body
 
 
+
 -- SUBSCRIPTIONS
 
+
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
+
 
 
 -- VIEW
 
+
 view : Model -> Html Msg
 view model =
-    div 
-        [ style "padding" "30px"
-        , style "font-family" "Inter, -apple-system, BlinkMacSystemFont, sans-serif"
-        , style "max-width" "1200px"
-        , style "margin" "0 auto"
-        , style "background" "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-        , style "min-height" "100vh"
-        , style "color" "white"
-        ]
-        [ div 
-            [ style "background" "rgba(255, 255, 255, 0.1)"
-            , style "padding" "25px"
-            , style "border-radius" "15px"
-            , style "backdrop-filter" "blur(10px)"
-            , style "margin-bottom" "30px"
-            , style "text-align" "center"
-            ]
-            [ h1 
-                [ style "font-size" "2.5rem"
-                , style "margin-bottom" "10px"
-                ] 
+    div []
+        [ div []
+            [ h1 []
                 [ text "SSTorytime - Semantic SpaceTime Explorer" ]
-            , p 
-                [ style "font-size" "1.2rem"
-                , style "margin-bottom" "20px"
-                , style "opacity" "0.9"
-                ]
+            , p []
                 [ text "Promise Theory Graph Visualization with Spherical Connections" ]
+            , button [ onClick ToggleDemo ]
+                [ text (if model.showDemo then "Hide Demo" else "Show Demo") ]
             ]
-        
-        , div 
-            [ style "background" "rgba(255, 255, 255, 0.1)"
-            , style "padding" "25px"
-            , style "border-radius" "15px"
-            , style "backdrop-filter" "blur(10px)"
-            , style "margin-bottom" "30px"
-            ]
-            [ div 
-                [ style "display" "flex"
-                , style "gap" "15px"
-                , style "align-items" "center"
-                , style "justify-content" "center"
-                , style "flex-wrap" "wrap"
-                ]
+        , div []
+            [ div []
                 [ input
                     [ placeholder "Enter search query (e.g., 'moon', 'reasoning', 'brains')"
                     , value model.searchQuery
                     , onInput UpdateSearchQuery
-                    , style "padding" "15px"
-                    , style "width" "400px"
-                    , style "border" "none"
-                    , style "border-radius" "10px"
-                    , style "font-size" "16px"
-                    , style "background" "rgba(255, 255, 255, 0.9)"
-                    , style "color" "#333"
                     ]
                     []
                 , button
                     [ onClick PerformSearch
-                    , style "padding" "15px 25px"
-                    , style "background" "rgba(255, 255, 255, 0.2)"
-                    , style "color" "white"
-                    , style "border" "2px solid rgba(255, 255, 255, 0.3)"
-                    , style "border-radius" "10px"
-                    , style "cursor" "pointer"
-                    , style "font-size" "16px"
-                    , style "font-weight" "600"
-                    , style "transition" "all 0.3s ease"
                     ]
                     [ text "Explore SpaceTime" ]
                 ]
             ]
-        
-        , div 
-            [ style "background" "rgba(255, 255, 255, 0.05)"
-            , style "padding" "20px"
-            , style "border-radius" "10px"
-            , style "margin-bottom" "20px"
-            ]
-            [ p 
-                [ style "margin" "0"
-                , style "font-size" "18px"
-                , style "font-weight" "500"
-                ]
+        , div []
+            [ p []
                 [ text ("Status: " ++ model.status) ]
             ]
-        
-        , if String.isEmpty model.searchResult then
+        , if model.showDemo then
+            div []
+                [ h1 [] [ text "3D Promise Theory Visualization" ]
+                , Viz.view3D model.demoData
+                ]
+          else if String.isEmpty model.searchResult then
             welcomeSection
           else
             resultsSection model.searchResult
@@ -213,32 +254,13 @@ view model =
 
 welcomeSection : Html Msg
 welcomeSection =
-    div 
-        [ style "background" "rgba(255, 255, 255, 0.1)"
-        , style "padding" "30px"
-        , style "border-radius" "15px"
-        , style "text-align" "center"
-        ]
-        [ h1 
-            [ style "font-size" "1.8rem"
-            , style "margin-bottom" "20px"
-            ]
+    div []
+        [ h1 []
             [ text "Welcome to Semantic SpaceTime" ]
-        , p 
-            [ style "font-size" "1.1rem"
-            , style "margin-bottom" "25px"
-            , style "line-height" "1.6"
-            ]
+        , p []
             [ text "Explore knowledge through Promise Theory with 3D nodes, spherical connections, and temporal dimensions." ]
-        , div 
-            [ style "text-align" "left"
-            , style "max-width" "600px"
-            , style "margin" "0 auto"
-            ]
-            [ h1 
-                [ style "font-size" "1.4rem"
-                , style "margin-bottom" "15px"
-                ]
+        , div []
+            [ h1 []
                 [ text "Features:" ]
             , div []
                 [ p [] [ text "• 3D nodes positioned in XYZ coordinates" ]
@@ -253,28 +275,9 @@ welcomeSection =
 
 resultsSection : String -> Html Msg
 resultsSection result =
-    div 
-        [ style "background" "rgba(255, 255, 255, 0.1)"
-        , style "padding" "25px"
-        , style "border-radius" "15px"
-        ]
-        [ h1 
-            [ style "font-size" "1.5rem"
-            , style "margin-bottom" "20px"
-            , style "color" "#fff"
-            ]
+    div []
+        [ h1 []
             [ text "Semantic SpaceTime Results:" ]
-        , pre 
-            [ style "background" "rgba(0, 0, 0, 0.3)"
-            , style "padding" "20px"
-            , style "border-radius" "10px"
-            , style "overflow" "auto"
-            , style "max-height" "600px"
-            , style "font-family" "Monaco, Consolas, monospace"
-            , style "font-size" "14px"
-            , style "line-height" "1.4"
-            , style "white-space" "pre-wrap"
-            , style "color" "#f8f9fa"
-            ]
+        , pre []
             [ text result ]
         ]
