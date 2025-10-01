@@ -243,8 +243,9 @@ document.addEventListener("DOMContentLoaded", function (event)
 			sendLinkSearch(searchQuery);
 		} else
 		{
-			console.log("Routing to default page.");
-			FetchPage();
+			console.log("Routing to default page - showing chapters");
+			// Show chapters overview as the default landing page
+			sendLinkSearch('\\chapters \\limit 25');
 		}
 	}
 
@@ -1912,86 +1913,106 @@ document.addEventListener("DOMContentLoaded", function (event)
 			startHipnotize();
 
 			fetch("/searchN4L", { method: POST_METHOD, body: formData })
-				.then((response) =>
+				.then(async (response) =>
 				{
 					stopHipnotize();
-					if (!response.ok)
-					{
-						DisplayError("SearchHandler() - network returns error");
-						throw new Error("network returns error");
-					}
-					return response.json();
-				})
-				.then((resp) =>
-				{
-					console.log("API Response:", resp);
-					console.log("Response type:", resp.Response);
-					console.log("Content length:", resp.Content ? resp.Content.length : "No Content");
 
-					try
+					// Try to parse JSON response even for error status codes
+					// Our backend sends structured error responses as JSON
+					try 
 					{
-						DoHeader(resp);
-						console.log("DoHeader completed successfully");
+						const resp = await response.json();
 
-						switch (resp.Response)
+						// If we got a structured response, process it normally
+						console.log("API Response:", resp);
+						console.log("Response type:", resp.Response);
+						console.log("Content length:", resp.Content ? resp.Content.length : "No Content");
+
+						try
 						{
-						case "ERROR":
-							console.log("Error response received:", resp);
-							DoErrorPanel(resp);
-							break;
-						case "Orbits":
-							console.log("Calling DoOrbitPanel");
-							DoOrbitPanel(resp);
-							break;
-						case "ConePaths":
-							console.log("Calling DoEntireConePanel for ConePaths");
-							DoEntireConePanel(resp);
-							break;
-						case "PathSolve":
-							console.log("Calling DoEntireConePanel for PathSolve");
-							DoEntireConePanel(resp);
-							break;
-						case "Sequence":
-							console.log("Calling DoSeqPanel");
-							DoSeqPanel(resp);
-							break;
-						case "PageMap":
-							console.log("Calling DoPageMapPanel");
-							DoPageMapPanel(resp);
-							break;
-						case "TOC":
-							console.log("Calling DoTOCPanel");
-							DoTOCPanel(resp);
-							break;
-						case "Arrows":
-							console.log("Calling DoArrowsPanel");
-							DoArrowsPanel(resp);
-							break;
-						case "STAT":
-							console.log("Calling DoStatsPanel");
-							DoStatsPanel(resp);
-							break;
-						default:
-							console.error("Unknown response type:", resp.Response);
-							DisplayError("Unknown response type: " + resp.Response);
-						}
-						console.log("Switch statement completed successfully");
-					} catch (error)
-					{
-						console.error("Error in response processing:", error);
-						DisplayError("Error processing response: " + error.message);
-					}
+							DoHeader(resp);
+							console.log("DoHeader completed successfully");
 
-					const indicator = document.getElementById("scroll-indicator");
-					if (indicator)
+							switch (resp.Response)
+							{
+							case "ERROR":
+								console.log("Error response received:", resp);
+								DoErrorPanel(resp);
+								break;
+							case "Orbits":
+								console.log("Calling DoOrbitPanel");
+								DoOrbitPanel(resp);
+								break;
+							case "ConePaths":
+								console.log("Calling DoEntireConePanel for ConePaths");
+								DoEntireConePanel(resp);
+								break;
+							case "PathSolve":
+								console.log("Calling DoEntireConePanel for PathSolve");
+								DoEntireConePanel(resp);
+								break;
+							case "Sequence":
+								console.log("Calling DoSeqPanel");
+								DoSeqPanel(resp);
+								break;
+							case "PageMap":
+								console.log("Calling DoPageMapPanel");
+								DoPageMapPanel(resp);
+								break;
+							case "TOC":
+								console.log("Calling DoTOCPanel");
+								DoTOCPanel(resp);
+								break;
+							case "Arrows":
+								console.log("Calling DoArrowsPanel");
+								DoArrowsPanel(resp);
+								break;
+							case "STAT":
+								console.log("Calling DoStatsPanel");
+								DoStatsPanel(resp);
+								break;
+							default:
+								console.error("Unknown response type:", resp.Response);
+								DisplayError("Unknown response type: " + resp.Response);
+							}
+							console.log("Switch statement completed successfully");
+						} catch (processingError)
+						{
+							console.error("Error in response processing:", processingError);
+							DisplayError("Error processing response: " + processingError.message);
+						}
+
+						const indicator = document.getElementById("scroll-indicator");
+						if (indicator)
+						{
+							indicator.classList.add("visible");
+						}
+					} catch (jsonError)
 					{
-						indicator.classList.add("visible");
+						// Failed to parse JSON - this is a real network/server error
+						console.error("Failed to parse JSON response:", jsonError);
+						if (!response.ok)
+						{
+							DisplayError(`Server error (${response.status}): Unable to process request. Check server connection.`);
+						} else 
+						{
+							DisplayError("Invalid response format from server.");
+						}
 					}
 				})
 				.catch((error) =>
 				{
-					console.log("error ", error);
-					DisplayError("No results (perhaps no connection)");
+					stopHipnotize();
+					console.error("Network/fetch error:", error);
+
+					// This catch handles true network failures (server down, no internet, etc.)
+					if (error.name === 'TypeError' && error.message.includes('fetch'))
+					{
+						DisplayError("Cannot connect to server. Please check:<br>• Server is running<br>• Network connection<br>• Firewall settings");
+					} else 
+					{
+						DisplayError(`Network error: ${error.message}`);
+					}
 				});
 		}
 
@@ -2021,28 +2042,47 @@ document.addEventListener("DOMContentLoaded", function (event)
 		startHipnotize();
 
 		fetch("/searchN4L", { method: POST_METHOD, body: formData })
-			.then((response) =>
+			.then(async (response) =>
 			{
 				stopHipnotize();
 
-				if (!response.ok)
+				try 
 				{
-					DisplayError("sendlinkData - Response Error");
-					throw new Error("network returns error");
-				}
+					const resp = await response.json();
 
-				return response.json();
-			})
-			.then((resp) =>
-			{
-				DoHeader(resp);
-				DoOrbitPanel(resp);
+					// Check if it's an error response
+					if (resp.Response === "ERROR") 
+					{
+						DoErrorPanel(resp);
+					} else 
+					{
+						DoHeader(resp);
+						DoOrbitPanel(resp);
+					}
+				} catch (jsonError)
+				{
+					console.error("Failed to parse JSON response:", jsonError);
+					if (!response.ok)
+					{
+						DisplayError(`Server error (${response.status}): Unable to process link request`);
+					} else 
+					{
+						DisplayError("Invalid response format from server");
+					}
+				}
 			})
 
 			.catch((error) =>
 			{
-				console.log("error ", error);
-				DisplayError("sendlinkData", err);
+				stopHipnotize();
+				console.error("sendlinkData network error:", error);
+				if (error.name === 'TypeError' && error.message.includes('fetch'))
+				{
+					DisplayError("Cannot connect to server for link data");
+				} else 
+				{
+					DisplayError(`Link data error: ${error.message}`);
+				}
 			});
 	}
 
@@ -2056,26 +2096,24 @@ document.addEventListener("DOMContentLoaded", function (event)
 		formData.set("chapcontext", chapcontext);
 
 		fetch("/searchN4L", { method: POST_METHOD, body: formData })
-			.then((response) =>
+			.then(async (response) =>
 			{
-				if (!response.ok)
+				try 
 				{
-					throw new Error("network returns error");
+					const resp = await response.json();
+					console.log("LASTSAW ACK", resp.Content);
+					return;
+				} catch (jsonError)
+				{
+					console.error("Failed to parse lastseen response:", jsonError);
+					// This is not critical, so just log the error
 				}
-
-				return response.json();
-			})
-
-			.then((resp) =>
-			{
-				console.log("LASTSAW ACK", resp.Content);
-				return;
 			})
 
 			.catch((error) =>
 			{
-				// Handle error
-				console.log("error ", error);
+				// Handle error for lastseen - not critical
+				console.error("Lastseen error:", error);
 			});
 	}
 
@@ -2091,61 +2129,77 @@ document.addEventListener("DOMContentLoaded", function (event)
 		startHipnotize();
 
 		fetch("/searchN4L", { method: POST_METHOD, body: formData })
-			.then((response) =>
+			.then(async (response) =>
 			{
-				if (!response.ok)
+				// Try to parse JSON response even for error status codes
+				try 
 				{
-					throw new Error("network returns error");
-				}
+					const resp = await response.json();
 
-				return response.json();
-			})
+					const state = { searchQuery: search };
+					const title = "Results for: " + search;
+					// We explicitly include the current path to be browser-compliant.
+					const url =
+						window.location.pathname + "?search=" + encodeURIComponent(search);
+					pushStateSafe(state, title, url);
 
-			.then((resp) =>
-			{
-				const state = { searchQuery: search };
-				const title = "Results for: " + search;
-				// We explicitly include the current path to be browser-compliant.
-				const url =
-					window.location.pathname + "?search=" + encodeURIComponent(search);
-				pushStateSafe(state, title, url);
+					stopHipnotize();
 
-				stopHipnotize();
+					DoHeader(resp);
 
-				DoHeader(resp);
-
-				switch (resp.Response)
+					switch (resp.Response)
+					{
+					case "ERROR":
+						DoErrorPanel(resp);
+						break;
+					case "Orbits":
+						DoOrbitPanel(resp);
+						break;
+					case "ConePaths":
+						DoEntireConePanel(resp);
+						break;
+					case "PathSolve":
+						DoEntireConePanel(resp);
+						break;
+					case "Sequence":
+						DoSeqPanel(resp);
+						break;
+					case "PageMap":
+						DoPageMapPanel(resp);
+						break;
+					case "TOC":
+						DoTOCPanel(resp);
+						break;
+					case "Arrows":
+						DoArrowsPanel(resp);
+						break;
+					}
+				} catch (jsonError)
 				{
-				case "ERROR":
-					DoErrorPanel(resp);
-					break;
-				case "Orbits":
-					DoOrbitPanel(resp);
-					break;
-				case "ConePaths":
-					DoEntireConePanel(resp);
-					break;
-				case "PathSolve":
-					DoEntireConePanel(resp);
-					break;
-				case "Sequence":
-					DoSeqPanel(resp);
-					break;
-				case "PageMap":
-					DoPageMapPanel(resp);
-					break;
-				case "TOC":
-					DoTOCPanel(resp);
-					break;
-				case "Arrows":
-					DoArrowsPanel(resp);
-					break;
+					stopHipnotize();
+					console.error("Failed to parse JSON response:", jsonError);
+					if (!response.ok)
+					{
+						DisplayError(`Server error (${response.status}): Unable to process request`);
+					} else 
+					{
+						DisplayError("Invalid response format from server");
+					}
 				}
 			})
 
 			.catch((error) =>
 			{
-				console.log("error ", error);
+				stopHipnotize();
+				console.error("Network/fetch error:", error);
+
+				if (error.name === 'TypeError' && error.message.includes('fetch'))
+				{
+					DisplayError("Cannot connect to server. Please check server connection.");
+				} else 
+				{
+					DisplayError(`Network error: ${error.message}`);
+				}
 			});
 	}
 
