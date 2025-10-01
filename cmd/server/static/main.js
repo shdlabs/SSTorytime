@@ -911,31 +911,32 @@ document.addEventListener("DOMContentLoaded", function (event)
 
 			let suggestionsList = document.createElement("ul");
 			suggestionsList.style.cssText = "background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb;";
-			
-			obj.Suggestions.forEach(suggestion => {
+
+			obj.Suggestions.forEach(suggestion =>
+			{
 				let listItem = document.createElement("li");
 				listItem.textContent = suggestion;
 				listItem.style.marginBottom = "5px";
 				suggestionsList.appendChild(listItem);
 			});
-			
+
 			panel.appendChild(suggestionsList);
 		}
 
 		// Quick action buttons
 		let actionsDiv = document.createElement("div");
 		actionsDiv.style.cssText = "margin-top: 20px; text-align: center;";
-		
+
 		let helpButton = document.createElement("button");
 		helpButton.textContent = "📚 Get Help";
 		helpButton.style.cssText = "background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer;";
 		helpButton.onclick = () => sendLinkSearch('\\help');
-		
+
 		let homeButton = document.createElement("button");
 		homeButton.textContent = "🏠 Go Home";
 		homeButton.style.cssText = "background: #28a745; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer;";
 		homeButton.onclick = () => window.location.href = '/';
-		
+
 		actionsDiv.appendChild(helpButton);
 		actionsDiv.appendChild(homeButton);
 		panel.appendChild(actionsDiv);

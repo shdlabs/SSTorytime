@@ -107,7 +107,7 @@ func SafeSolveNodePtrs(ctx SST.PoSST, names []string, search SST.SearchParameter
 			log.Printf("Recovered from panic in SolveNodePtrs: %v", r)
 		}
 	}()
-	
+
 	// Handle common problematic cases
 	if len(names) > 0 {
 		for _, name := range names {
@@ -119,10 +119,10 @@ func SafeSolveNodePtrs(ctx SST.PoSST, names []string, search SST.SearchParameter
 			}
 		}
 	}
-	
+
 	// Call the actual function with additional error recovery
 	var result []SST.NodePtr
-	
+
 	// Wrap the call with recovery for any internal panics
 	func() {
 		defer func() {
@@ -133,7 +133,7 @@ func SafeSolveNodePtrs(ctx SST.PoSST, names []string, search SST.SearchParameter
 		}()
 		result = SST.SolveNodePtrs(ctx, names, search, arrowptrs, limit)
 	}()
-	
+
 	return result, nil
 }
 
@@ -141,20 +141,20 @@ func SafeSolveNodePtrs(ctx SST.PoSST, names []string, search SST.SearchParameter
 func SendErrorResponse(w http.ResponseWriter, errorType, message, query string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusBadRequest)
-	
+
 	errorResponse := map[string]interface{}{
-		"Response": "ERROR",
+		"Response":  "ERROR",
 		"ErrorType": errorType,
-		"Message": message,
-		"Query": query,
+		"Message":   message,
+		"Query":     query,
 		"Suggestions": []string{
 			"Try using more specific search terms",
-			"Use \\help for search guidance", 
+			"Use \\help for search guidance",
 			"Check the documentation at \\notes \\chapter \"help and search\"",
 			"Avoid very common words like 'any', 'the', 'a'",
 		},
 	}
-	
+
 	json.NewEncoder(w).Encode(errorResponse)
 }
 

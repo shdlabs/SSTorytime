@@ -130,18 +130,37 @@ thinking, and how it all fits together.  In other words, remaining in
 control of what you see and ask, rather than handing over to a batch
 job summary by an LLM text tool in which you get an answer `take it or leave it'.*
 
-* [Getting started](docs/README.md)
-* [The Mission of SSTorytelling](docs/Storytelling.md)
-* [A quick tutorial](docs/Tutorial.md)
-* [An example / case study](docs/example.md)
-* [Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)
-* [How does context work?](docs/howdoescontextwork.md)
-* [N4L - Notes For Learning/Loading](docs/N4L.md)
-* [searchN4L - preliminary search/testing tool](docs/searchN4L.md)
-* [pathsolve - preliminary path solving tool](docs/pathsolve.md)
-* [Related work and links](docs/outreach.md)
-* [API](docs/API.md) - An overview of the golang programmers API.
-* [FAQ](docs/FAQ.md)
+## 🚀 Quick Start
+
+**Get up and running in minutes:**
+
+```bash
+# One-command installation (Ubuntu/Debian)
+curl -fsSL https://raw.githubusercontent.com/markburgess/SSTorytime/main/scripts/install-sstorytime.sh | bash
+
+# Or follow the step-by-step guide
+```
+
+**Installation guides:**
+* **[📦 Quick Installation Guide](docs/quick-install.md)** - Get started fast
+* **[🐘 PostgreSQL Setup](docs/postgresql-setup.md)** - Database installation made simple  
+* **[⚡ Go Setup](docs/go-setup.md)** - Go installation guide
+* **[📚 Tutorial](docs/Tutorial.md)** - Learn how to use SSTorytime
+* **[🔍 Search Examples](docs/search_examples.md)** - Example searches to try
+
+## 📖 Documentation
+
+* **[Getting started](docs/README.md)** - Detailed installation (traditional method)
+* **[The Mission of SSTorytelling](docs/Storytelling.md)** - Project philosophy
+* **[An example / case study](docs/example.md)** - Real-world usage
+* **[Basics of Knowledge Engineering](docs/KnowledgeAndLearning.md)** - Core concepts
+* **[How does context work?](docs/howdoescontextwork.md)** - Understanding context
+* **[N4L - Notes For Learning/Loading](docs/N4L.md)** - Data format reference
+* **[searchN4L - preliminary search/testing tool](docs/searchN4L.md)** - Command-line search
+* **[pathsolve - preliminary path solving tool](docs/pathsolve.md)** - Path finding
+* **[Related work and links](docs/outreach.md)** - Background and references
+* **[API](docs/API.md)** - Golang programmers API reference
+* **[FAQ](docs/FAQ.md)** - Frequently asked questions
 
 ## History
 
