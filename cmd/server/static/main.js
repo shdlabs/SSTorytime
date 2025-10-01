@@ -875,6 +875,73 @@ document.addEventListener("DOMContentLoaded", function (event)
 	}
 
 	/***********************************************************/
+	function DoErrorPanel(obj)
+	{
+		let section = document.querySelector("main");
+
+		let panel = document.createElement("div");
+		panel.id = "main_content_panel";
+		panel.className = "error-panel";
+		section.appendChild(panel);
+
+		// Error header
+		let title = document.createElement("h2");
+		title.textContent = "🚫 Search Error";
+		title.style.color = "#dc3545";
+		panel.appendChild(title);
+
+		// Error message
+		let message = document.createElement("div");
+		message.className = "error-message";
+		message.style.cssText = "background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 10px 0; border: 1px solid #f5c6cb;";
+		message.innerHTML = `
+			<strong>Error Type:</strong> ${obj.ErrorType || "Search Error"}<br>
+			<strong>Message:</strong> ${obj.Message || "An error occurred while processing your search."}<br>
+			<strong>Query:</strong> <code>${obj.Query || "Unknown"}</code>
+		`;
+		panel.appendChild(message);
+
+		// Suggestions
+		if (obj.Suggestions && obj.Suggestions.length > 0)
+		{
+			let suggestionsTitle = document.createElement("h3");
+			suggestionsTitle.textContent = "💡 Suggestions:";
+			suggestionsTitle.style.color = "#28a745";
+			panel.appendChild(suggestionsTitle);
+
+			let suggestionsList = document.createElement("ul");
+			suggestionsList.style.cssText = "background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; border: 1px solid #c3e6cb;";
+			
+			obj.Suggestions.forEach(suggestion => {
+				let listItem = document.createElement("li");
+				listItem.textContent = suggestion;
+				listItem.style.marginBottom = "5px";
+				suggestionsList.appendChild(listItem);
+			});
+			
+			panel.appendChild(suggestionsList);
+		}
+
+		// Quick action buttons
+		let actionsDiv = document.createElement("div");
+		actionsDiv.style.cssText = "margin-top: 20px; text-align: center;";
+		
+		let helpButton = document.createElement("button");
+		helpButton.textContent = "📚 Get Help";
+		helpButton.style.cssText = "background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer;";
+		helpButton.onclick = () => sendLinkSearch('\\help');
+		
+		let homeButton = document.createElement("button");
+		homeButton.textContent = "🏠 Go Home";
+		homeButton.style.cssText = "background: #28a745; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer;";
+		homeButton.onclick = () => window.location.href = '/';
+		
+		actionsDiv.appendChild(helpButton);
+		actionsDiv.appendChild(homeButton);
+		panel.appendChild(actionsDiv);
+	}
+
+	/***********************************************************/
 	//  Presentation helpers
 	/***********************************************************/
 	function PrintLink(
@@ -1867,6 +1934,10 @@ document.addEventListener("DOMContentLoaded", function (event)
 
 						switch (resp.Response)
 						{
+						case "ERROR":
+							console.log("Error response received:", resp);
+							DoErrorPanel(resp);
+							break;
 						case "Orbits":
 							console.log("Calling DoOrbitPanel");
 							DoOrbitPanel(resp);
@@ -2044,6 +2115,9 @@ document.addEventListener("DOMContentLoaded", function (event)
 
 				switch (resp.Response)
 				{
+				case "ERROR":
+					DoErrorPanel(resp);
+					break;
 				case "Orbits":
 					DoOrbitPanel(resp);
 					break;

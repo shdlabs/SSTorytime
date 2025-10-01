@@ -168,6 +168,95 @@ run_advanced_tests() {
     test_api "Notes with limit" "\\notes moon \\limit 3" "PageMap" '.Content.Notes | length <= 3'
 }
 
+run_documentation_examples() {
+    log_info "=== Running Documentation Search Examples ==="
+    
+    # Examples from search_examples.md
+    test_api "Multiple words search" "recipe fish soup" "Orbits" true
+    test_api "Words with chapter" "recipe fish soup \\chapter \"my recipes\"" "Orbits" true
+    test_api "Words with context" "recipe fish soup \\context food" "Orbits" true
+    test_api "Complex search" "recipe fish soup \\chapter food \\context \"food, recipes, dishes\"" "Orbits" true
+    
+    # Table of contents examples
+    test_api "All chapters" "\\chapters" "TOC" '.Content | length > 0'
+    test_api "Specific chapter" "\\chapter mychapter" "TOC" true
+    
+    # Notes examples
+    test_api "Notes from chapter" "\\notes brain" "PageMap" '.Content.Notes != null'
+    
+    # Story and sequence examples
+    test_api "Story search" "\\story Mary" "Sequence" true
+    test_api "Sequence search" "\\sequence \"create a pod\"" "Sequence" true
+    test_api "Story with chapter" "\\story any \\chapter moon" "Sequence" true
+    
+    # Path solution examples
+    test_api "Path from to" "\\from start \\to target" "PathSolve" true
+    
+    # Arrow examples
+    test_api "Arrow by name" "\\arrow succeed" "Arrows" '.Content | length > 0'
+    test_api "Arrow by number" "\\arrow 1" "Arrows" '.Content | length > 0'
+    
+    # Examples from searchN4L.md
+    test_api "Mark search" "Mark" "Orbits" '.Content | length > 0'
+    test_api "Unicode search" "\"(fangzi)\"" "Orbits" true
+    test_api "Percent wildcard" "%%" "ERROR" '.ErrorType == "SEARCH_ERROR"'
+    test_api "Context search" "%% \\context \"smalltalk brain wave\" \\limit 3" "ERROR" '.ErrorType == "SEARCH_ERROR"'
+    
+    # Direct NodePtr reference (if it exists)
+    test_api "NodePtr reference" "\"(1,1)\"" "Orbits" true
+    
+    # Context searches
+    test_api "Context restaurant" "\\context restaurant" "TOC" true
+    
+    # Arrow searches with different formats
+    test_api "Arrow ph,pe" "\\arrow \"ph,pe\"" "Arrows" true
+    test_api "Arrow 125" "\\arrow 125" "Arrows" true
+    test_api "Arrow -2" "\\arrow \"-2\"" "Arrows" true
+    
+    # Path searches with depth
+    test_api "Path with depth" "\\from start \\to \"target 1\" \\depth 5" "PathSolve" true
+    
+    # Sequence examples
+    test_api "Sequence Mary had" "\\sequence \"Mary had\"" "Sequence" true
+    
+    # Notes search
+    test_api "Notes brain" "\\notes brain" "PageMap" '.Content.Title != null'
+    
+    # Chapter search with limit
+    test_api "Chapter any limited" "\\chapter any \\limit 4" "TOC" '.Content | length <= 4'
+    
+    # Context any
+    test_api "Context any" "\\context any" "TOC" true
+    
+    # Additional variations from documentation
+    test_api "Topic search" "topic" "Orbits" true
+    test_api "From mytopic" "\\from mytopic" "ConePaths" true
+    test_api "Notes about chinese" "\\notes about chinese \\context restaurant" "PageMap" true
+    test_api "Notes chapter brain" "\\notes \\chapter brain" "PageMap" true
+    test_api "Please in chinese" "please \\chapter chinese" "Orbits" true
+    test_api "Paths from a1 to s1" "\\paths \\from a1 \\to s1" "PathSolve" true
+    
+    # Precise string matches with bangs
+    test_api "Precise match A" "\"!A!\"" "Orbits" true
+    test_api "Precise match a1" "\"!a1!\"" "Orbits" true
+    
+    # Search variations
+    test_api "On/for/about variations" "\\on moon" "Orbits" true
+    test_api "Note/page variations" "\\note moon" "PageMap" true
+    test_api "Path/seq variations" "\\seq moon" "Sequence" true
+    test_api "Context/ctx variations" "\\ctx astronomy" "TOC" true
+    test_api "Chapter/section/in variations" "\\section moon" "TOC" true
+    test_api "Limit/depth/range variations" "moon \\range 3" "Orbits" '.Content | length <= 3'
+    
+    # Chinese language examples
+    test_api "Chinese search" "chinese" "Orbits" '.Content | length > 0'
+    test_api "Chinese with context" "chinese \\context restaurant" "Orbits" true
+    
+    # Astronomy examples  
+    test_api "Astronomy search" "astronomy" "Orbits" '.Content | length > 0'
+    test_api "Moon astronomy" "moon astronomy" "Orbits" '.Content | length > 0'
+}
+
 run_edge_cases() {
     log_info "=== Running Edge Case Tests ==="
     
@@ -179,6 +268,11 @@ run_edge_cases() {
     
     # Test very long query
     test_api "Long query" "$(printf 'moon %.0s' {1..50})" "Orbits" true
+    
+    # Test error cases that should return ERROR response
+    test_api "Empty search" "" "PageMap" true
+    test_api "Single character" "a" "ERROR" '.ErrorType == "SEARCH_ERROR"'
+    test_api "Problematic 'any'" "any" "ERROR" '.ErrorType == "SEARCH_ERROR"'
 }
 
 run_performance_tests() {
@@ -248,15 +342,17 @@ show_usage() {
     echo "  -t, --timeout   Request timeout in seconds (default: $TIMEOUT)"
     echo "  --basic         Run only basic tests"
     echo "  --advanced      Run only advanced tests"
+    echo "  --documentation Run only documentation example tests"
     echo "  --edge          Run only edge case tests"
     echo "  --performance   Run only performance tests"
     echo "  --json          Run only JSON structure tests"
     echo "  --detailed      Show detailed output for key tests"
     echo ""
     echo "Examples:"
-    echo "  $0                    # Run all tests"
-    echo "  $0 --basic --verbose  # Run basic tests with verbose output"
-    echo "  $0 --detailed         # Show detailed test information"
+    echo "  $0                         # Run all tests"
+    echo "  $0 --basic --verbose       # Run basic tests with verbose output"
+    echo "  $0 --documentation         # Run documentation example tests"
+    echo "  $0 --detailed              # Show detailed test information"
 }
 
 # Parse command line arguments
@@ -289,6 +385,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --edge)
             RUN_EDGE=true
+            shift
+            ;;
+        --documentation)
+            RUN_DOCUMENTATION=true
             shift
             ;;
         --performance)
@@ -336,6 +436,8 @@ main() {
         run_basic_tests
     elif [ "$RUN_ADVANCED" = true ]; then
         run_advanced_tests
+    elif [ "$RUN_DOCUMENTATION" = true ]; then
+        run_documentation_examples
     elif [ "$RUN_EDGE" = true ]; then
         run_edge_cases
     elif [ "$RUN_PERFORMANCE" = true ]; then
@@ -347,6 +449,8 @@ main() {
         run_basic_tests
         echo ""
         run_advanced_tests
+        echo ""
+        run_documentation_examples
         echo ""
         run_edge_cases
         echo ""

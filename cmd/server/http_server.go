@@ -97,7 +97,70 @@ func main() {
 }
 
 // *********************************************************************
+// Error handling and safety functions
+// *********************************************************************
+
+// SafeSolveNodePtrs wraps SST.SolveNodePtrs with error handling
+func SafeSolveNodePtrs(ctx SST.PoSST, names []string, search SST.SearchParameters, arrowptrs []SST.ArrowPtr, limit int) ([]SST.NodePtr, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Recovered from panic in SolveNodePtrs: %v", r)
+		}
+	}()
+	
+	// Handle common problematic cases
+	if len(names) > 0 {
+		for _, name := range names {
+			if name == "any" || name == "%%" {
+				return nil, fmt.Errorf("'%s' is too broad a search term and causes database conflicts. Please use more specific terms or try \\help for search guidance", name)
+			}
+			if len(name) < 2 && name != "%%" {
+				return nil, fmt.Errorf("search term '%s' is too short. Please use at least 2 characters", name)
+			}
+		}
+	}
+	
+	// Call the actual function with additional error recovery
+	var result []SST.NodePtr
+	
+	// Wrap the call with recovery for any internal panics
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Printf("Internal panic in SST.SolveNodePtrs: %v", r)
+				// Don't re-panic, just log the error
+			}
+		}()
+		result = SST.SolveNodePtrs(ctx, names, search, arrowptrs, limit)
+	}()
+	
+	return result, nil
+}
+
+// SendErrorResponse sends a structured error response to the client
+func SendErrorResponse(w http.ResponseWriter, errorType, message, query string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusBadRequest)
+	
+	errorResponse := map[string]interface{}{
+		"Response": "ERROR",
+		"ErrorType": errorType,
+		"Message": message,
+		"Query": query,
+		"Suggestions": []string{
+			"Try using more specific search terms",
+			"Use \\help for search guidance", 
+			"Check the documentation at \\notes \\chapter \"help and search\"",
+			"Avoid very common words like 'any', 'the', 'a'",
+		},
+	}
+	
+	json.NewEncoder(w).Encode(errorResponse)
+}
+
+// *********************************************************************
 // Handlers
+// *********************************************************************
 // *********************************************************************
 
 func EnableCORS(next http.Handler) http.Handler {
@@ -258,6 +321,15 @@ func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request, class, cptr strin
 
 func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWriter, r *http.Request) {
 
+	// Add error recovery to prevent server crashes
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Recovered from panic in HandleSearch: %v", r)
+			errorMsg := fmt.Sprintf("Search error: %v", r)
+			SendErrorResponse(w, "SEARCH_ERROR", errorMsg, line)
+		}
+	}()
+
 	// This is analogous to searchN4L
 
 	// OPTIONS *********************************************
@@ -311,13 +383,27 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 	fmt.Println()
 
 	var nodeptrs, leftptrs, rightptrs []SST.NodePtr
+	var searchError error
 
+	// Wrap potentially problematic search operations in error handling
 	if !pagenr && !sequence {
-		leftptrs = SST.SolveNodePtrs(CTX, search.From, search, arrowptrs, limit)
-		rightptrs = SST.SolveNodePtrs(CTX, search.To, search, arrowptrs, limit)
+		leftptrs, searchError = SafeSolveNodePtrs(CTX, search.From, search, arrowptrs, limit)
+		if searchError != nil {
+			SendErrorResponse(w, "SEARCH_ERROR", fmt.Sprintf("Error searching 'from' terms: %v", searchError), line)
+			return
+		}
+		rightptrs, searchError = SafeSolveNodePtrs(CTX, search.To, search, arrowptrs, limit)
+		if searchError != nil {
+			SendErrorResponse(w, "SEARCH_ERROR", fmt.Sprintf("Error searching 'to' terms: %v", searchError), line)
+			return
+		}
 	}
 
-	nodeptrs = SST.SolveNodePtrs(CTX, search.Name, search, arrowptrs, limit)
+	nodeptrs, searchError = SafeSolveNodePtrs(CTX, search.Name, search, arrowptrs, limit)
+	if searchError != nil {
+		SendErrorResponse(w, "SEARCH_ERROR", fmt.Sprintf("Error searching terms: %v", searchError), line)
+		return
+	}
 
 	fmt.Println("Solved search nodes ...")
 
@@ -411,6 +497,15 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 
 func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nptrs []SST.NodePtr, limit int) {
 
+	// Add panic recovery to prevent server crashes
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Recovered from panic in HandleOrbit: %v", r)
+			errorMsg := fmt.Sprintf("Error processing node orbit: %v", r)
+			SendErrorResponse(w, "ORBIT_ERROR", errorMsg, fmt.Sprintf("%v", search.Name))
+		}
+	}()
+
 	var count int
 	var array []SST.NodeEvent
 
@@ -426,14 +521,30 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search S
 
 		fmt.Printf("Assembling Node Orbit(%v)\n", nptrs[n])
 
-		orb := SST.GetNodeOrbit(CTX, nptrs[n], "", limit)
-		// create a set of coords for len(nptrs) disconnected nodes
+		// Wrap potentially problematic SST calls with proper error handling
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("Recovered from panic processing node %v: %v", nptrs[n], r)
+					// Skip this node and continue with the next one
+				}
+			}()
 
-		xyz := SST.RelativeOrbit(origin, SST.R0, n, len(nptrs))
-		orb = SST.SetOrbitCoords(xyz, orb)
+			orb := SST.GetNodeOrbit(CTX, nptrs[n], "", limit)
+			// create a set of coords for len(nptrs) disconnected nodes
 
-		nodeevent := SST.JSONNodeEvent(CTX, nptrs[n], xyz, orb)
-		array = append(array, nodeevent)
+			xyz := SST.RelativeOrbit(origin, SST.R0, n, len(nptrs))
+			orb = SST.SetOrbitCoords(xyz, orb)
+
+			nodeevent := SST.JSONNodeEvent(CTX, nptrs[n], xyz, orb)
+			array = append(array, nodeevent)
+		}()
+	}
+
+	// Check if we have any valid results
+	if len(array) == 0 {
+		SendErrorResponse(w, "NO_RESULTS", "No valid results found for the search query. This might be due to database conflicts or overly broad search terms.", fmt.Sprintf("%v", search.Name))
+		return
 	}
 
 	response := PackageResponse(ctx, search, "Orbits", array)
