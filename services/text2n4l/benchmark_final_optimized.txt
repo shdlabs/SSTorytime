@@ -1,0 +1,15 @@
+Running benchmarks for text2n4l package...
+Output will be saved to: benchmark_20251002_130518.txt
+Running comprehensive benchmarks...
+Benchmarks completed. Results saved to: benchmark_20251002_130518.txt
+
+Quick Summary:
+==============
+ProcessFile (10% selection):
+  Time: 1049206551 | Memory: ns/op | Allocs: 551986208
+RunningIntent (10% selection):
+  Time: 335262332 | Memory: ns/op | Allocs: 182823098
+StaticIntent (10% selection):
+  Time: 341695916 | Memory: ns/op | Allocs: 182690394
+
+For detailed results, see: benchmark_20251002_130518.txt
