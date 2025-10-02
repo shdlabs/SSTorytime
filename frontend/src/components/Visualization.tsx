@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import * as d3 from 'd3';
-import { APIResponse, NodeOrbit, XYZ } from '../types/api';
+import { APIResponse, NodeOrbit } from '../types/api';
+import Canvas3D from './Canvas3D';
 
 interface VisualizationProps {
   data: APIResponse;
   className?: string;
+  mode?: 'svg' | 'canvas';
+  onNodeClick?: (searchQuery: string) => void;
 }
 
 interface VisualizationNode extends NodeOrbit {
@@ -18,11 +20,17 @@ interface VisualizationNode extends NodeOrbit {
   type: 'context' | 'single' | 'common' | 'chapter';
 }
 
-export const Visualization: React.FC<VisualizationProps> = ({ data, className = "" }) => {
+export const Visualization: React.FC<VisualizationProps> = ({ 
+  data, 
+  className = "", 
+  mode = 'svg',
+  onNodeClick 
+}) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [nodes, setNodes] = useState<VisualizationNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [visualizationMode, setVisualizationMode] = useState<'svg' | 'canvas'>(mode);
 
   // Update dimensions on resize
   useEffect(() => {
@@ -203,7 +211,40 @@ export const Visualization: React.FC<VisualizationProps> = ({ data, className = 
 
   return (
     <div className={`relative ${className}`}>
-      {/* SVG Visualization */}
+      {/* Mode Toggle */}
+      <div className="absolute top-4 left-4 z-10 flex space-x-2">
+        <button
+          onClick={() => setVisualizationMode('svg')}
+          className={`glass px-3 py-2 rounded-lg text-sm transition-colors ${
+            visualizationMode === 'svg' 
+              ? 'bg-blue-600/50 text-white' 
+              : 'text-gray-300 hover:bg-gray-700/50'
+          }`}
+        >
+          2D View
+        </button>
+        <button
+          onClick={() => setVisualizationMode('canvas')}
+          className={`glass px-3 py-2 rounded-lg text-sm transition-colors ${
+            visualizationMode === 'canvas' 
+              ? 'bg-blue-600/50 text-white' 
+              : 'text-gray-300 hover:bg-gray-700/50'
+          }`}
+        >
+          3D View
+        </button>
+      </div>
+
+      {visualizationMode === 'canvas' ? (
+        /* Canvas 3D Visualization */
+        <Canvas3D 
+          className="bg-gray-900/30 rounded-xl border border-gray-700/50"
+          width={dimensions.width}
+          height={400}
+          onNodeClick={onNodeClick}
+        />
+      ) : (
+        /* SVG Visualization */
       <motion.svg
         ref={svgRef}
         width="100%"
@@ -306,6 +347,7 @@ export const Visualization: React.FC<VisualizationProps> = ({ data, className = 
           ))}
         </g>
       </motion.svg>
+      )}
 
       {/* Node Details Panel */}
       {selectedNode && (

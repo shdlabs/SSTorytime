@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MagnifyingGlassIcon, XMarkIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 import { searchAPI, getSearchSuggestions } from '../services/api';
-import { APIResponse, SearchParams } from '../types/api';
+import { APIResponse } from '../types/api';
 
 interface SearchBarProps {
   onSearchResult: (result: APIResponse) => void;

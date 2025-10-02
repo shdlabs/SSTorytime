@@ -23,6 +23,7 @@ import (
 	"time"
 
 	SST "github.com/shdlabs/SSTorytime/services/sstorytime"
+	"github.com/shdlabs/SSTorytime/services/text2n4l"
 )
 
 // Ugly Go directive to embed text files into the binary
@@ -58,12 +59,13 @@ func main() {
 
 	mux.Handle("/", fileServer)
 	mux.HandleFunc("/searchN4L", SearchN4LHandler)
+	mux.HandleFunc("/api/text2n4l/process", Text2N4LHandler)
 	mux.HandleFunc("/status", StatusHandler)
 	mux.HandleFunc("/debug", DebugHandler) // Debug endpoint to test form parameters
 
 	// 3. Create an http.Server instance for graceful shutdown.
 
-	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: EnableCORS(mux)}
+	srv := &http.Server{Addr: "0.0.0.0:8081", Handler: EnableCORS(mux)}
 
 	// 4. Run the server in a goroutine so it doesn't block.
 
@@ -1132,6 +1134,98 @@ func SL(list []string) string {
 	}
 	// Use strings.Join for efficient concatenation and fmt.Sprintf for formatting.
 	return fmt.Sprintf(" [%s]", strings.Join(list, ", "))
+}
+
+// Text2N4LRequest defines the structure for text processing requests
+type Text2N4LRequest struct {
+	Text       string  `json:"text"`
+	Percentage float64 `json:"percentage"`
+}
+
+// Text2N4LResponse defines the structure for text processing responses
+type Text2N4LResponse struct {
+	N4LContent string `json:"n4l_content"`
+	Stats      struct {
+		TotalSentences    int     `json:"total_sentences"`
+		SelectedSentences int     `json:"selected_sentences"`
+		FinalFraction     float64 `json:"final_fraction"`
+		RequestedFraction float64 `json:"requested_fraction"`
+	} `json:"stats"`
+	Error string `json:"error,omitempty"`
+}
+
+// Text2N4LHandler processes text input and returns N4L formatted output
+func Text2N4LHandler(w http.ResponseWriter, r *http.Request) {
+	// Set CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	// Handle preflight requests
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Only allow POST requests
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse JSON request
+	var req Text2N4LRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response := Text2N4LResponse{
+			Error: "Invalid JSON request: " + err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	// Validate input
+	if strings.TrimSpace(req.Text) == "" {
+		response := Text2N4LResponse{
+			Error: "Text field is required and cannot be empty",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	// Set default percentage if not provided or invalid
+	if req.Percentage <= 0 || req.Percentage > 100 {
+		req.Percentage = 10.0
+	}
+
+	// Process the text
+	result, err := text2n4l.ProcessTextContent(req.Text, req.Percentage)
+	if err != nil {
+		response := Text2N4LResponse{
+			Error: "Failed to process text: " + err.Error(),
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	// Prepare successful response
+	response := Text2N4LResponse{
+		N4LContent: result.N4LContent,
+	}
+	response.Stats.TotalSentences = result.TotalSentences
+	response.Stats.SelectedSentences = result.SelectedSentences
+	response.Stats.FinalFraction = result.FinalFraction
+	response.Stats.RequestedFraction = result.RequestedFraction
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
 
 // StatusResponse defines the structure for our JSON response.

@@ -144,7 +144,6 @@ type RCtype struct {
 //**************************************************************
 
 func main() {
-
 	var ctx SST.PoSST
 
 	args := Init()
@@ -212,9 +211,7 @@ func main() {
 		}
 
 		if conflict && !FORCE_UPLOAD {
-
 			fmt.Println("\nUploading to a pre-existing chapter might corrupt the data. You can remove it first with removeN4L or force using -force. It's recommended to rebuilt everything unless replacing the last added chapter(s) for reminders.")
-
 		} else {
 			fmt.Println("\n\nUploading nodes..")
 			SST.GraphToDB(ctx, true)
@@ -227,7 +224,6 @@ func main() {
 //**************************************************************
 
 func Init() []string {
-
 	flag.Usage = Usage
 	verbosePtr := flag.Bool("v", false, "verbose")
 	diagPtr := flag.Bool("d", false, "diagnostic mode")
@@ -283,14 +279,12 @@ func Init() []string {
 //**************************************************************
 
 func NewFile(filename string) {
-
 	CURRENT_FILE = filename
 	TEST_DIAG_FILE = DiagnosticName(filename)
 
 	Box("Parsing new file", filename)
 
 	stat, err := os.Stat(filename)
-
 	if err != nil {
 		ParseError(ERR_NO_SUCH_FILE_FOUND + filename)
 		os.Exit(-1)
@@ -325,7 +319,6 @@ func NewFile(filename string) {
 //**************************************************************
 
 func ParseConfig(src []rune) {
-
 	var token string
 
 	for pos := 0; pos < len(src); {
@@ -340,7 +333,6 @@ func ParseConfig(src []rune) {
 //**************************************************************
 
 func GetConfigToken(src []rune, pos int) (string, int) {
-
 	// Handle concatenation of words/lines and separation of types
 
 	var token string
@@ -379,7 +371,6 @@ func GetConfigToken(src []rune, pos int) (string, int) {
 //**************************************************************
 
 func ClassifyConfigRole(token string) {
-
 	if len(token) == 0 {
 		return
 	}
@@ -505,9 +496,7 @@ func ClassifyConfigRole(token string) {
 //**************************************************************
 
 func CheckArrow(alias, name string) {
-
 	if !SST.WIPE_DB && UPLOAD {
-
 		// If we're not resetting, we should expect some defs already in place
 		return
 	}
@@ -516,31 +505,29 @@ func CheckArrow(alias, name string) {
 
 	if ok {
 		ParseError(ERR_ARR_REDEFINITION + "\"" + alias + "\" previous short name: " + SST.ARROW_DIRECTORY[prev].Short)
-		//os.Exit(-1)
+		// os.Exit(-1)
 	}
 
 	prev, ok = SST.ARROW_LONG_DIR[name]
 
 	if ok {
 		ParseError(ERR_ARR_REDEFINITION + "\"" + name + "\" previous long name: " + SST.ARROW_DIRECTORY[prev].Long)
-		//os.Exit(-1)
+		// os.Exit(-1)
 	}
 }
 
 //**************************************************************
 
 func ArrowCollision(arr SST.ArrowPtr, short, long string) {
-
 	if arr < 0 {
 		ParseError(ERR_ARR_REDEFINITION + "\"" + long + " or " + "\"" + short + "\" seems to be previously used somewhere")
-		//os.Exit(-1)
+		// os.Exit(-1)
 	}
 }
 
 //**************************************************************
 
 func GetLinkArrowByName(token string) SST.Link {
-
 	// Return a preregistered link/arrow ptr bythe name of a link
 
 	var reln []string
@@ -608,7 +595,6 @@ func GetLinkArrowByName(token string) SST.Link {
 //**************************************************************
 
 func LookupAlias(alias string, counter int) string {
-
 	value, ok := LINE_ITEM_CACHE[alias]
 
 	if !ok || counter > len(value) {
@@ -617,13 +603,11 @@ func LookupAlias(alias string, counter int) string {
 	}
 
 	return LINE_ITEM_CACHE[alias][counter-1]
-
 }
 
 //**************************************************************
 
 func ResolveAliasedItem(token string) string {
-
 	// split $alias.n into (alias string,n int)
 
 	if !strings.Contains(token, ".") {
@@ -665,7 +649,6 @@ func ResolveAliasedItem(token string) string {
 //**************************************************************
 
 func SummarizeAndTestConfig() {
-
 	Box("Raw Summary")
 	fmt.Println("..\n")
 	fmt.Println("ANNOTATION MARKS", ANNOTATION)
@@ -681,7 +664,6 @@ func SummarizeAndTestConfig() {
 //**************************************************************
 
 func SummarizeGraph() {
-
 	Box("SUMMARIZE GRAPH.....\n")
 
 	var count_nodes int = 0
@@ -747,7 +729,6 @@ func SummarizeGraph() {
 //**************************************************************
 
 func CreateAdjacencyMatrix(searchlist string) (int, []SST.NodePtr, [][]float32, [][]float32) {
-
 	search_list := ValidateLinkArgs(searchlist)
 
 	// the matrix is dim x dim
@@ -796,7 +777,6 @@ func CreateAdjacencyMatrix(searchlist string) (int, []SST.NodePtr, [][]float32, 
 //**************************************************************
 
 func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float32) {
-
 	s := fmt.Sprintln("\n", name, "...\n")
 	Verbose(s)
 
@@ -824,7 +804,6 @@ func PrintMatrix(name string, dim int, key []SST.NodePtr, matrix [][]float32) {
 //**************************************************************
 
 func PrintNZVector(name string, dim int, key []SST.NodePtr, vector []float32) {
-
 	s := fmt.Sprintln("\n", name, "...\n")
 
 	Verbose(s)
@@ -857,7 +836,6 @@ func PrintNZVector(name string, dim int, key []SST.NodePtr, vector []float32) {
 //**************************************************************
 
 func ComputeEVC(dim int, adj [][]float32) []float32 {
-
 	v := MakeInitVector(dim, 1.0)
 	vlast := v
 
@@ -882,8 +860,7 @@ func ComputeEVC(dim int, adj [][]float32) []float32 {
 //**************************************************************
 
 func MakeInitVector(dim int, init_value float32) []float32 {
-
-	var v = make([]float32, dim)
+	v := make([]float32, dim)
 
 	for r := 0; r < dim; r++ {
 		v[r] = init_value
@@ -895,8 +872,7 @@ func MakeInitVector(dim int, init_value float32) []float32 {
 //**************************************************************
 
 func MatrixOpVector(dim int, m [][]float32, v []float32) []float32 {
-
-	var vp = make([]float32, dim)
+	vp := make([]float32, dim)
 
 	for r := 0; r < dim; r++ {
 		for c := 0; c < dim; c++ {
@@ -911,7 +887,6 @@ func MatrixOpVector(dim int, m [][]float32, v []float32) []float32 {
 //**************************************************************
 
 func GetVecMax(v []float32) float32 {
-
 	var max float32 = -1
 
 	for r := range v {
@@ -926,7 +901,6 @@ func GetVecMax(v []float32) float32 {
 //**************************************************************
 
 func NormalizeVec(v []float32, div float32) []float32 {
-
 	for r := range v {
 		v[r] = v[r] / div
 	}
@@ -937,7 +911,6 @@ func NormalizeVec(v []float32, div float32) []float32 {
 //**************************************************************
 
 func CompareVec(v1, v2 []float32) float32 {
-
 	var max float32 = -1
 
 	for r := range v1 {
@@ -958,7 +931,6 @@ func CompareVec(v1, v2 []float32) float32 {
 //**************************************************************
 
 func FlatSTType(i int) int {
-
 	n := i - SST.ST_ZERO
 	if n < 0 {
 		n = -n
@@ -970,7 +942,6 @@ func FlatSTType(i int) int {
 //**************************************************************
 
 func ValidateLinkArgs(s string) []SST.ArrowPtr {
-
 	list := strings.Split(s, ",")
 	var search_list []SST.ArrowPtr
 
@@ -1010,12 +981,10 @@ func ValidateLinkArgs(s string) []SST.ArrowPtr {
 //**************************************************************
 
 func AssembleInvolvedNodes(search_list []SST.ArrowPtr) ([]SST.NodePtr, map[RCtype]float32) {
-
 	var node_list []SST.NodePtr
-	var weights = make(map[RCtype]float32)
+	weights := make(map[RCtype]float32)
 
 	for class := SST.N1GRAM; class <= SST.GT1024; class++ {
-
 		switch class {
 		case SST.N1GRAM:
 			for n := range SST.NODE_DIRECTORY.N1directory {
@@ -1050,8 +1019,7 @@ func AssembleInvolvedNodes(search_list []SST.ArrowPtr) ([]SST.NodePtr, map[RCtyp
 //**************************************************************
 
 func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr, node_list []SST.NodePtr, ret_weights map[RCtype]float32) []SST.NodePtr {
-
-	var row_nodes = make(map[SST.NodePtr]bool)
+	row_nodes := make(map[SST.NodePtr]bool)
 	var ret_nodes []SST.NodePtr
 
 	var rc, cr RCtype
@@ -1065,7 +1033,6 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr, node_lis
 	// Only sum over outgoing (+) links
 
 	for sttype := SST.ST_ZERO; sttype < len(node.I); sttype++ {
-
 		for lnk := range node.I[sttype] {
 			arrowptr := node.I[sttype][lnk].Arr
 
@@ -1121,7 +1088,6 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr, node_lis
 //**************************************************************
 
 func ParseN4L(src []rune) {
-
 	var token string
 
 	for pos := 0; pos < len(src); {
@@ -1140,13 +1106,10 @@ func ParseN4L(src []rune) {
 //**************************************************************
 
 func SkipWhiteSpace(src []rune, pos int) int {
-
 	for ; pos < len(src) && IsWhiteSpace(src[pos], src[pos]); pos++ {
-
 		if src[pos] == '\n' {
 			UpdateLastLineCache()
 		} else {
-
 			if src[pos] == '#' || (src[pos] == '/' && src[pos+1] == '/') {
 
 				for ; pos < len(src) && src[pos] != '\n'; pos++ {
@@ -1163,7 +1126,6 @@ func SkipWhiteSpace(src []rune, pos int) int {
 //**************************************************************
 
 func AddMandatory() {
-
 	SST.RegisterContext(nil, []string{"any"}) // Register and empty
 
 	// empty link for orphans to retain context
@@ -1203,13 +1165,11 @@ func AddMandatory() {
 	arr = SST.InsertArrowDirectory("properties", "img", "has image", "+")
 	inv = SST.InsertArrowDirectory("properties", "isimg", "is an image for", "-")
 	SST.InsertInverseArrowDirectory(arr, inv)
-
 }
 
 //**************************************************************
 
 func ReadConfig() []string {
-
 	files := []string{"arrows-LT-1.sst", "arrows-NR-0.sst", "arrows-CN-2.sst", "arrows-EP-3.sst", "annotations.sst"}
 	dir := os.Getenv("SST_CONFIG_PATH")
 
@@ -1245,7 +1205,6 @@ func ReadConfig() []string {
 //**************************************************************
 
 func GetToken(src []rune, pos int) (string, int) {
-
 	// Handle concatenation of words/lines and separation of types
 
 	var token string
@@ -1320,7 +1279,6 @@ func GetToken(src []rune, pos int) (string, int) {
 //**************************************************************
 
 func ClassifyTokenRole(token string) {
-
 	if len(token) == 0 {
 		return
 	}
@@ -1399,7 +1357,6 @@ func ClassifyTokenRole(token string) {
 //**************************************************************
 
 func AssessGrammarCompletions(token string, prior_state int) {
-
 	if len(token) == 0 {
 		return
 	}
@@ -1454,7 +1411,6 @@ func AssessGrammarCompletions(token string, prior_state int) {
 //**************************************************************
 
 func CheckLineAlias(token string) {
-
 	var contig string
 	fmt.Sscanf(token, "%s", &contig)
 
@@ -1467,7 +1423,6 @@ func CheckLineAlias(token string) {
 //**************************************************************
 
 func CheckChapter(name string) {
-
 	if name[0] == ':' {
 		ParseError(WARN_CHAPTER_CLASS_MIXUP + name)
 		os.Exit(-1)
@@ -1485,7 +1440,6 @@ func CheckChapter(name string) {
 //**************************************************************
 
 func StoreAlias(name string) {
-
 	if LINE_ALIAS != "" {
 		PVerbose("-- Storing alias", LINE_ITEM_CACHE[LINE_ALIAS], name, "as", LINE_ALIAS)
 		LINE_ITEM_CACHE[LINE_ALIAS] = append(LINE_ITEM_CACHE[LINE_ALIAS], name)
@@ -1497,7 +1451,6 @@ func StoreAlias(name string) {
 //**************************************************************
 
 func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link, to string, toptr SST.NodePtr) {
-
 	// Add a link index cache pointer directly to a from node
 
 	if from == to {
@@ -1529,13 +1482,11 @@ func IdempAddLink(from string, frptr SST.NodePtr, link SST.Link, to string, topt
 	invlink := GetLinkArrowByName(SST.ARROW_DIRECTORY[SST.INVERSE_ARROWS[link.Arr]].Short)
 
 	SST.AppendLinkToNode(toptr, invlink, frptr)
-
 }
 
 //**************************************************************
 
 func HandleNode(annotated string) SST.NodePtr {
-
 	clean_ptr, clean_version := IdempAddNode(annotated, SEQ_UNKNOWN)
 
 	PVerbose("Event/item/node:", clean_version, "in chapter", SECTION_STATE)
@@ -1559,7 +1510,6 @@ func HandleNode(annotated string) SST.NodePtr {
 //**************************************************************
 
 func IdempAddNode(s string, intended_sequence bool) (SST.NodePtr, string) {
-
 	clean_version := StripAnnotations(s)
 
 	l, c := SST.StorageClass(s)
@@ -1587,7 +1537,6 @@ func IdempAddNode(s string, intended_sequence bool) (SST.NodePtr, string) {
 //**************************************************************
 
 func IdempContextLink(ptr SST.NodePtr) {
-
 	// add a nullpotent link containing root node for
 	// context membership, in case it's a singleton
 
@@ -1604,7 +1553,6 @@ func IdempContextLink(ptr SST.NodePtr) {
 //**************************************************************
 
 func ReadFile(filename string) []rune {
-
 	text := ReadUTF8FileBuffered(filename)
 
 	// clean unicode nonsense
@@ -1622,10 +1570,9 @@ func ReadFile(filename string) []rune {
 //**************************************************************
 
 func ReadToLast(src []rune, pos int, stop rune) (string, int) {
-
 	var cpy []rune
 
-	var starting_at = LINE_NUM
+	starting_at := LINE_NUM
 
 	for ; Collect(src, pos, stop, cpy) && pos < len(src); pos++ {
 		cpy = append(cpy, src[pos])
@@ -1650,7 +1597,6 @@ func ReadToLast(src []rune, pos int, stop rune) (string, int) {
 //**************************************************************
 
 func Collect(src []rune, pos int, stop rune, cpy []rune) bool {
-
 	var collect bool = true
 
 	// Quoted strings are tricky
@@ -1710,7 +1656,6 @@ func Collect(src []rune, pos int, stop rune, cpy []rune) bool {
 //**************************************************************
 
 func IsGeneralString(src []rune, pos int) bool {
-
 	switch src[pos] {
 
 	case ')':
@@ -1735,7 +1680,6 @@ func IsGeneralString(src []rune, pos int) bool {
 //**************************************************************
 
 func IsQuote(r rune) bool {
-
 	switch r {
 	case '"', '\'', NON_ASCII_LQUOTE, NON_ASCII_RQUOTE:
 		return true
@@ -1747,7 +1691,6 @@ func IsQuote(r rune) bool {
 //**************************************************************
 
 func LastSpecialChar(src []rune, pos int, stop rune) bool {
-
 	if src[pos] == '\n' {
 		if stop != '"' {
 			return true
@@ -1770,7 +1713,6 @@ func LastSpecialChar(src []rune, pos int, stop rune) bool {
 //**************************************************************
 
 func UpdateLastLineCache() {
-
 	if Dangler() {
 		ParseError(ERR_MISSING_EVENT)
 	}
@@ -1807,7 +1749,6 @@ func UpdateLastLineCache() {
 //**************************************************************
 
 func PageMap(chapter string, ctxmap map[string]bool, path []SST.Link, line int, alias string) {
-
 	if len(path) == 0 {
 		return
 	}
@@ -1841,18 +1782,15 @@ func PageMap(chapter string, ctxmap map[string]bool, path []SST.Link, line int, 
 //**************************************************************
 
 func IsWhiteSpace(r, rn rune) bool {
-
 	return (unicode.IsSpace(r) || r == '#' || r == '/' && rn == '/')
 }
 
 //**************************************************************
 
 func IsBackReference(src []rune, pos int) bool {
-
 	// Any non-whitespace before \n or ( means it's not a back reference
 
 	for pos++; pos < len(src); pos++ {
-
 		if src[pos] == '(' || src[pos] == '\n' || src[pos] == '#' {
 			return true
 		} else {
@@ -1868,7 +1806,6 @@ func IsBackReference(src []rune, pos int) bool {
 //**************************************************************
 
 func Dangler() bool {
-
 	switch LINE_ITEM_STATE {
 
 	case ROLE_EVENT:
@@ -1895,7 +1832,6 @@ func Dangler() bool {
 //**************************************************************
 
 func ExtractContextExpression(token string) string {
-
 	var expression string
 
 	s := strings.Split(token, ":")
@@ -1913,9 +1849,7 @@ func ExtractContextExpression(token string) string {
 //**************************************************************
 
 func CheckSequenceMode(context string, mode rune) {
-
 	if strings.Contains(context, "_sequence_") {
-
 		switch mode {
 		case '+':
 			PVerbose("\nStart sequence mode for items")
@@ -1929,13 +1863,11 @@ func CheckSequenceMode(context string, mode rune) {
 			SEQUENCE_START = false
 		}
 	}
-
 }
 
 //**************************************************************
 
 func LinkUpStorySequence(this string) {
-
 	// Join together a sequence of nodes using default "(then)"
 
 	if SEQUENCE_MODE && this != LAST_IN_SEQUENCE {
@@ -1969,10 +1901,9 @@ func LinkUpStorySequence(this string) {
 //**************************************************************
 
 func StripAnnotations(fulltext string) string {
-
 	var protected bool = false
 	var deloused []rune
-	var preserve_unicode = []rune(fulltext)
+	preserve_unicode := []rune(fulltext)
 
 	for r := 0; r < len(preserve_unicode); r++ {
 
@@ -2000,14 +1931,12 @@ func StripAnnotations(fulltext string) string {
 //**************************************************************
 
 func AddBackAnnotations(cleantext string, cleanptr SST.NodePtr, annotated string) {
-
 	var protected bool = false
 
 	reminder := fmt.Sprintf("%.30s...", cleantext)
 	PVerbose("\n        Checking annotations from \"" + reminder + "\"")
 
 	for r := 0; r < len(annotated); r++ {
-
 		if annotated[r] == '"' {
 			protected = !protected
 		} else {
@@ -2036,7 +1965,6 @@ func AddBackAnnotations(cleantext string, cleanptr SST.NodePtr, annotated string
 //**************************************************************
 
 func EmbeddedSymbol(runetext []rune, offset int) (int, string) {
-
 	if offset >= len(runetext) {
 		return 0, "end of string"
 	}
@@ -2089,7 +2017,6 @@ func EmbeddedSymbol(runetext []rune, offset int) (int, string) {
 //**************************************************************
 
 func ExtractWord(fulltext string, offset int) string {
-
 	var protected bool = false
 
 	runetext := []rune(fulltext)
@@ -2125,8 +2052,7 @@ func ExtractWord(fulltext string, offset int) string {
 //**************************************************************
 
 func GetMemChapters() []string {
-
-	var chapters = make(map[string]int)
+	chapters := make(map[string]int)
 
 	for index := range SST.NODE_DIRECTORY.N1directory {
 		chap := SST.NODE_DIRECTORY.N1directory[index].Chap
@@ -2166,7 +2092,6 @@ func GetMemChapters() []string {
 //**************************************************************
 
 func ContextEval(s, op string) {
-
 	expr := CleanExpression(s)
 
 	or_parts := SplitWithParensIntact(expr, '|')
@@ -2190,7 +2115,6 @@ func ContextEval(s, op string) {
 //**************************************************************
 
 func CleanExpression(s string) string {
-
 	s = TrimParen(s)
 	r1 := regexp.MustCompile("[|,]+")
 	s = r1.ReplaceAllString(s, "|")
@@ -2205,14 +2129,12 @@ func CleanExpression(s string) string {
 // ***********************************************************************
 
 func SplitWithParensIntact(expr string, split_ch rune) []string {
-
 	var token string = ""
 	var set []string
 
 	unicode := []rune(expr)
 
 	for c := 0; c < len(unicode); c++ {
-
 		switch unicode[c] {
 
 		case split_ch:
@@ -2239,7 +2161,6 @@ func SplitWithParensIntact(expr string, split_ch rune) []string {
 // ***********************************************************************
 
 func Paren(s []rune, offset int) (string, int) {
-
 	var level int = 0
 
 	for c := offset; c < len(s); c++ {
@@ -2264,9 +2185,8 @@ func Paren(s []rune, offset int) (string, int) {
 // ***********************************************************************
 
 func TrimParen(s string) string {
-
 	var level int = 0
-	var trim = true
+	trim := true
 
 	if len(s) == 0 {
 		return s
@@ -2312,7 +2232,6 @@ func TrimParen(s string) string {
 //**************************************************************
 
 func ModContext(list []string, op string) {
-
 	for or_frag := range list {
 
 		frag := strings.TrimSpace(list[or_frag])
@@ -2330,7 +2249,6 @@ func ModContext(list []string, op string) {
 				and_parts := SplitWithParensIntact(cand, '.')
 
 				for part := range and_parts {
-
 					if strings.Contains(and_parts[part], frag) {
 						delete(CONTEXT_STATE, cand)
 					}
@@ -2344,7 +2262,6 @@ func ModContext(list []string, op string) {
 //**************************************************************
 
 func CheckNonNegative(i int) {
-
 	if i < 0 {
 		ParseError(ERR_MISSING_ITEM_SOMEWHERE)
 		os.Exit(-1)
@@ -2354,7 +2271,6 @@ func CheckNonNegative(i int) {
 //**************************************************************
 
 func CheckSection() {
-
 	if len(SECTION_STATE) == 0 {
 		ParseError(ERR_MISSING_SECTION)
 		os.Exit(-1)
@@ -2364,7 +2280,6 @@ func CheckSection() {
 //**************************************************************
 
 func AllCaps(s string) bool {
-
 	if len(s) <= 2*WORD_MISTAKE_LEN {
 		return false
 	}
@@ -2387,7 +2302,6 @@ func AllCaps(s string) bool {
 //**************************************************************
 
 func StripParen(token string) string {
-
 	token = strings.TrimSpace(token[1:])
 
 	if token[0] == '(' {
@@ -2406,7 +2320,6 @@ func StripParen(token string) string {
 //**************************************************************
 
 func PrintNodeSystem(n int, org SST.Node, count_links *[4]int) {
-
 	fmt.Println(n, "\t", org.S)
 
 	for sttype := range org.I {
@@ -2421,7 +2334,6 @@ func PrintNodeSystem(n int, org SST.Node, count_links *[4]int) {
 //**************************************************************
 
 func PrintLink(l SST.Link) {
-
 	to := SST.GetNodeTxtFromPtr(l.Dst)
 	arrow := SST.ARROW_DIRECTORY[l.Arr]
 	Verbose("\t ... --(", arrow.Long, ",", l.Wgt, ")->", to, l.Ctx, " \t . . .", SST.PrintSTAIndex(arrow.STAindex))
@@ -2430,22 +2342,18 @@ func PrintLink(l SST.Link) {
 // **************************************************************************
 
 func ParseError(message string) {
-
 	const red = "\033[31;1;1m"
 	const endred = "\033[0m"
 
 	fmt.Print("\n", LINE_NUM, ":", red)
 	fmt.Println("N4L", CURRENT_FILE, message, "at line", LINE_NUM, endred)
 	Diag("N4L", CURRENT_FILE, message, "at line", LINE_NUM)
-
 }
 
 //**************************************************************
 
 func ReadUTF8File(filename string) []rune {
-
 	content, err := ioutil.ReadFile(filename)
-
 	if err != nil {
 		ParseError(ERR_NO_SUCH_FILE_FOUND + filename)
 		os.Exit(-1)
@@ -2475,11 +2383,9 @@ func ReadUTF8File(filename string) []rune {
 //**************************************************************
 
 func ReadUTF8FileBuffered(filename string) []rune {
-
 	// Open a stream to the file instead of reading it all at once.
 
 	file, err := os.Open(filename)
-
 	if err != nil {
 		ParseError(ERR_NO_SUCH_FILE_FOUND + filename)
 		os.Exit(-1)
@@ -2538,7 +2444,6 @@ func ReadUTF8FileBuffered(filename string) []rune {
 //**************************************************************
 
 func Usage() {
-
 	fmt.Printf("usage: N4L [-v] [-u] [-s] [file].dat\n")
 	flag.PrintDefaults()
 	os.Exit(2)
@@ -2547,7 +2452,6 @@ func Usage() {
 //**************************************************************
 
 func Verbose(a ...interface{}) {
-
 	line := fmt.Sprintln(a...)
 
 	if DIAGNOSTIC {
@@ -2562,7 +2466,6 @@ func Verbose(a ...interface{}) {
 //**************************************************************
 
 func PVerbose(a ...interface{}) {
-
 	const green = "\x1b[36m"
 	const endgreen = "\x1b[0m"
 
@@ -2576,7 +2479,6 @@ func PVerbose(a ...interface{}) {
 //**************************************************************
 
 func Box(a ...interface{}) {
-
 	if VERBOSE {
 
 		fmt.Println("\n------------------------------------")
@@ -2588,15 +2490,12 @@ func Box(a ...interface{}) {
 //**************************************************************
 
 func DiagnosticName(filename string) string {
-
 	return "test_output/" + filename + "_test_log"
-
 }
 
 //**************************************************************
 
 func Diag(a ...interface{}) {
-
 	// Log diagnostic output for self-diagnostic tests
 
 	if DIAGNOSTIC {
@@ -2609,13 +2508,11 @@ func Diag(a ...interface{}) {
 //**************************************************************
 
 func AppendStringToFile(name string, s string) {
-
 	// strip out \r that mess up the file format but are useful for term
 
 	san := strings.Replace(s, "\r", "", -1)
 
-	f, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-
+	f, err := os.OpenFile(name, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		fmt.Println("Couldn't open for write/append to", name, err)
 		f.Close()
@@ -2623,7 +2520,6 @@ func AppendStringToFile(name string, s string) {
 	}
 
 	_, err = f.WriteString(san)
-
 	if err != nil {
 		fmt.Println("Couldn't write/append to", name, err)
 	}

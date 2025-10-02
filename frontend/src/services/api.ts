@@ -2,7 +2,7 @@ import axios from 'axios';
 import { APIResponse, SearchParams } from '../types/api';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.PROD ? '' : 'http://localhost:8080';
+const API_BASE_URL = (import.meta as any).env.PROD ? '' : 'http://localhost:8080';
 const SEARCH_ENDPOINT = '/searchN4L';
 
 // Create axios instance with default config

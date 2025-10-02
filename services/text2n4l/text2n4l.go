@@ -8,13 +8,18 @@
 package text2n4l
 
 import (
+	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
 
 	SST "github.com/shdlabs/SSTorytime/services/sstorytime"
 )
+
+// sanitizer is a reusable string replacer for cleaning text
+var sanitizer = strings.NewReplacer("(", "[", ")", "]")
 
 // ProcessFile analyzes a text file and extracts high-intentionality sentences
 // based on the specified percentage threshold.
@@ -44,23 +49,74 @@ func ProcessFile(filename string, percentage float64) error {
 	return WriteOutput(filename, selection, L, percentage, f, s, ff, ss)
 }
 
-// WriteOutput creates the N4L output file with the selected sentences and context
-func WriteOutput(filename string, selection []SST.TextRank, L int, percentage float64, anom_by_part [][]string, ambi_by_part [][]string, all_anom []string, all_ambi []string) error {
-	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
+// ProcessTextResult holds the result of processing text content
+type ProcessTextResult struct {
+	N4LContent        string         `json:"n4l_content"`
+	TotalSentences    int            `json:"total_sentences"`
+	SelectedSentences int            `json:"selected_sentences"`
+	FinalFraction     float64        `json:"final_fraction"`
+	RequestedFraction float64        `json:"requested_fraction"`
+	Selection         []SST.TextRank `json:"selection"`
+}
 
-	outputfile := filename + "_edit_me.n4l"
+// ProcessTextContent analyzes text content directly and returns the N4L result
+// without creating temporary files.
+func ProcessTextContent(content string, percentage float64) (*ProcessTextResult, error) {
+	SST.MemoryInit()
 
-	fp, err := os.Create(outputfile)
+	// Create a temporary file to use with the existing SST functions
+	tempFile, err := ioutil.TempFile("", "text2n4l_*.txt")
 	if err != nil {
-		return fmt.Errorf("failed to create output file %s: %w", outputfile, err)
+		return nil, fmt.Errorf("failed to create temporary file: %w", err)
 	}
-	defer fp.Close()
+	defer os.Remove(tempFile.Name()) // Clean up temp file
+	defer tempFile.Close()
 
-	fmt.Fprintf(fp, " - Samples from %s\n", filename)
-	fmt.Fprintf(fp, "\n# (begin) ************\n")
+	// Write content to temporary file
+	if _, err := tempFile.WriteString(content); err != nil {
+		return nil, fmt.Errorf("failed to write to temporary file: %w", err)
+	}
+	tempFile.Close() // Close before reading
+
+	// Process using existing functions
+	psf, L := SST.FractionateTextFile(tempFile.Name())
+
+	ranking1 := SelectByRunningIntent(psf, L, percentage)
+	ranking2 := SelectByStaticIntent(psf, L, percentage)
+	selection := MergeSelections(ranking1, ranking2)
+
+	const minN = 1 // >= N_GRAM_MIN
+	const maxN = 3 // <= N_GRAM_MAX
+
+	f, s, ff, ss := SST.ExtractIntentionalTokens(L, selection, minN, maxN)
+
+	// Generate N4L content as string instead of writing to file
+	n4lContent, err := GenerateN4LContent("text_input", selection, L, percentage, f, s, ff, ss)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate N4L content: %w", err)
+	}
+
+	finalFraction := float64(len(selection)*100) / float64(L)
+
+	return &ProcessTextResult{
+		N4LContent:        n4lContent,
+		TotalSentences:    L,
+		SelectedSentences: len(selection),
+		FinalFraction:     finalFraction,
+		RequestedFraction: percentage,
+		Selection:         selection,
+	}, nil
+}
+
+// GenerateN4LContent creates N4L formatted content as a string
+func GenerateN4LContent(filename string, selection []SST.TextRank, L int, percentage float64, anom_by_part [][]string, ambi_by_part [][]string, all_anom []string, all_ambi []string) (string, error) {
+	var builder strings.Builder
+
+	builder.WriteString(fmt.Sprintf(" - Samples from %s\n", filename))
+	builder.WriteString("\n# (begin) ************\n")
 
 	filealias := strings.Split(filename, ".")[0]
-	fmt.Fprintf(fp, "\n :: _sequence_ , %s::\n", filealias)
+	builder.WriteString(fmt.Sprintf("\n :: _sequence_ , %s::\n", filealias))
 
 	var partcheck = make(map[string]bool)
 	var parts []string
@@ -73,15 +129,18 @@ func WriteOutput(filename string, selection []SST.TextRank, L int, percentage fl
 		// Add context from n = 2,3 fractions
 		if part != lastpart {
 			if len(context) > 0 {
-				fmt.Fprintf(fp, "\n :: %s ::\n", context)
+				builder.WriteString(fmt.Sprintf("\n :: %s ::\n", context))
 				lastpart = part
 			}
 		}
 
-		fmt.Fprintf(fp, "\n@sen%d   %s\n", selection[i].Order, Sanitize(selection[i].Fragment))
-		fmt.Fprintf(fp, "              \" (%s) %s\n", SST.INV_CONT_FOUND_IN_L, part)
+		builder.WriteString(fmt.Sprintf("\n@sen%d   %s\n", selection[i].Order, Sanitize(selection[i].Fragment)))
+		builder.WriteString(fmt.Sprintf("              \" (%s) %s\n", SST.INV_CONT_FOUND_IN_L, part))
 
-		AddIntentionalContext(fp, anom_by_part[selection[i].Partition])
+		// Add intentional context
+		for j := range anom_by_part[selection[i].Partition] {
+			builder.WriteString(fmt.Sprintf("              \" (%s) %s\n", SST.NEAR_FRAG_L, anom_by_part[selection[i].Partition][j]))
+		}
 
 		if !partcheck[part] {
 			parts = append(parts, part)
@@ -89,39 +148,149 @@ func WriteOutput(filename string, selection []SST.TextRank, L int, percentage fl
 		}
 	}
 
-	fmt.Fprintf(fp, "\n# (end) ************\n")
+	builder.WriteString("\n# (end) ************\n")
 
 	// some stats
-	fmt.Fprintf(fp, "\n# Final fraction %.2f of requested %.2f\n", float64(len(selection)*100)/float64(L), percentage)
-	fmt.Fprintf(fp, "\n# Selected %d samples of %d: ", len(selection), L)
+	builder.WriteString(fmt.Sprintf("\n# Final fraction %.2f of requested %.2f\n", float64(len(selection)*100)/float64(L), percentage))
+	builder.WriteString(fmt.Sprintf("\n# Selected %d samples of %d: ", len(selection), L))
 
 	for i := range selection {
-		fmt.Fprintf(fp, "%d ", selection[i].Order)
+		builder.WriteString(fmt.Sprintf("%d ", selection[i].Order))
 	}
-	fmt.Fprintf(fp, "\n#\n")
+	builder.WriteString("\n#\n")
 
 	// document the parts
-	fmt.Fprintf(fp, "\n :: themes and topics you might want to annotate/replace ::\n")
-	fmt.Fprintf(fp, "\n :: parts, sections ::\n")
+	builder.WriteString("\n :: themes and topics you might want to annotate/replace ::\n")
+	builder.WriteString("\n :: parts, sections ::\n")
 
 	for p := range parts {
-		fmt.Fprintf(fp, "\n %s\n", parts[p])
+		builder.WriteString(fmt.Sprintf("\n %s\n", parts[p]))
 		for w := range ambi_by_part[p] {
-			fmt.Fprintf(fp, "  #AMBI %s\n", ambi_by_part[p][w])
+			builder.WriteString(fmt.Sprintf("  #AMBI %s\n", ambi_by_part[p][w]))
 		}
 
 		for w := range anom_by_part[p] {
-			fmt.Fprintf(fp, "   #INTENT %s\n", anom_by_part[p][w])
+			builder.WriteString(fmt.Sprintf("   #INTENT %s\n", anom_by_part[p][w]))
 		}
 	}
 
 	// whole document summary
 	for w := range all_ambi {
-		fmt.Fprintf(fp, " # %s\n", all_ambi[w])
+		builder.WriteString(fmt.Sprintf(" # %s\n", all_ambi[w]))
 	}
 
 	for w := range all_anom {
-		fmt.Fprintf(fp, "  # %s\n", all_anom[w])
+		builder.WriteString(fmt.Sprintf("  # %s\n", all_anom[w]))
+	}
+
+	return builder.String(), nil
+}
+
+// WriteOutput creates the N4L output file with the selected sentences and context
+func WriteOutput(filename string, selection []SST.TextRank, L int, percentage float64, anom_by_part [][]string, ambi_by_part [][]string, all_anom []string, all_ambi []string) error {
+	// See AddMandatory() in N4L.go for reserved names (TBD, collect these one day as const)
+
+	outputfile := filename + "_edit_me.n4l"
+
+	fp, err := os.Create(outputfile)
+	if err != nil {
+		return fmt.Errorf("failed to create output file %s: %w", outputfile, err)
+	}
+	defer fp.Close()
+
+	// Adaptive buffering based on expected output size
+	// Heuristic: Larger input files typically generate larger outputs
+	// Small files (< 50KB input): 4KB buffer or no buffer
+	// Medium files (50KB-500KB input): 16KB buffer
+	// Large files (> 500KB input): 64KB buffer
+	var writer interface {
+		Write([]byte) (int, error)
+	}
+
+	if inputInfo, err := os.Stat(filename); err == nil {
+		inputSize := inputInfo.Size()
+		if inputSize > 500*1024 { // > 500KB input
+			bufWriter := bufio.NewWriterSize(fp, 64*1024) // 64KB buffer for large files
+			defer bufWriter.Flush()
+			writer = bufWriter
+		} else if inputSize > 50*1024 { // 50KB-500KB input
+			bufWriter := bufio.NewWriterSize(fp, 16*1024) // 16KB buffer for medium files
+			defer bufWriter.Flush()
+			writer = bufWriter
+		} else { // < 50KB input
+			writer = fp // Direct writes for small files
+		}
+	} else {
+		// Fallback: use direct writes if we can't stat the file
+		writer = fp
+	}
+
+	fmt.Fprintf(writer, " - Samples from %s\n", filename)
+	fmt.Fprintf(writer, "\n# (begin) ************\n")
+
+	filealias := strings.Split(filename, ".")[0]
+	fmt.Fprintf(writer, "\n :: _sequence_ , %s::\n", filealias)
+
+	var partcheck = make(map[string]bool)
+	var parts []string
+	var lastpart string
+
+	for i := range selection {
+		context := SpliceSet(ambi_by_part[selection[i].Partition])
+		part := PartName(selection[i].Partition, filealias, context)
+
+		// Add context from n = 2,3 fractions
+		if part != lastpart {
+			if len(context) > 0 {
+				fmt.Fprintf(writer, "\n :: %s ::\n", context)
+				lastpart = part
+			}
+		}
+
+		fmt.Fprintf(writer, "\n@sen%d   %s\n", selection[i].Order, Sanitize(selection[i].Fragment))
+		fmt.Fprintf(writer, "              \" (%s) %s\n", SST.INV_CONT_FOUND_IN_L, part)
+
+		AddIntentionalContext(writer, anom_by_part[selection[i].Partition])
+
+		if !partcheck[part] {
+			parts = append(parts, part)
+			partcheck[part] = true
+		}
+	}
+
+	fmt.Fprintf(writer, "\n# (end) ************\n")
+
+	// some stats
+	fmt.Fprintf(writer, "\n# Final fraction %.2f of requested %.2f\n", float64(len(selection)*100)/float64(L), percentage)
+	fmt.Fprintf(writer, "\n# Selected %d samples of %d: ", len(selection), L)
+
+	for i := range selection {
+		fmt.Fprintf(writer, "%d ", selection[i].Order)
+	}
+	fmt.Fprintf(writer, "\n#\n")
+
+	// document the parts
+	fmt.Fprintf(writer, "\n :: themes and topics you might want to annotate/replace ::\n")
+	fmt.Fprintf(writer, "\n :: parts, sections ::\n")
+
+	for p := range parts {
+		fmt.Fprintf(writer, "\n %s\n", parts[p])
+		for w := range ambi_by_part[p] {
+			fmt.Fprintf(writer, "  #AMBI %s\n", ambi_by_part[p][w])
+		}
+
+		for w := range anom_by_part[p] {
+			fmt.Fprintf(writer, "   #INTENT %s\n", anom_by_part[p][w])
+		}
+	}
+
+	// whole document summary
+	for w := range all_ambi {
+		fmt.Fprintf(writer, " # %s\n", all_ambi[w])
+	}
+
+	for w := range all_anom {
+		fmt.Fprintf(writer, "  # %s\n", all_anom[w])
 	}
 
 	fmt.Println("Wrote file", outputfile)
@@ -138,30 +307,19 @@ func PartName(p int, file string, context string) string {
 
 // SpliceSet joins a slice of strings with commas
 func SpliceSet(ctx []string) string {
-	var context string = ""
-
-	for w := 0; w < len(ctx); w++ {
-		context += ctx[w]
-		if w < len(ctx)-1 {
-			context += ", "
-		}
-	}
-
-	return context
+	return strings.Join(ctx, ", ")
 }
 
 // AddIntentionalContext writes intentional context markers to the output file
-func AddIntentionalContext(fp *os.File, ctx []string) {
-	for w := 0; w < len(ctx); w++ {
-		fmt.Fprintf(fp, "              \" (%s) %s\n", SST.NEAR_FRAG_L, ctx[w])
+func AddIntentionalContext(writer interface{ Write([]byte) (int, error) }, ctx []string) {
+	for i := range ctx {
+		fmt.Fprintf(writer, "              \" (%s) %s\n", SST.NEAR_FRAG_L, ctx[i])
 	}
 }
 
 // Sanitize cleans up text by replacing problematic characters
 func Sanitize(s string) string {
-	s = strings.Replace(s, "(", "[", -1)
-	s = strings.Replace(s, ")", "]", -1)
-	return s
+	return sanitizer.Replace(s)
 }
 
 // SelectByRunningIntent analyzes text using dynamic running assessment
@@ -175,20 +333,24 @@ func SelectByRunningIntent(psf [][][]string, L int, percentage float64) []SST.Te
 	for p := range psf {
 		for s := range psf[p] {
 			score := 0.0
-			text := ""
+
+			// Use strings.Builder for efficient string concatenation
+			var builder strings.Builder
+			// Pre-allocate capacity (estimate average word length * number of fragments)
+			builder.Grow(len(psf[p][s]) * 10)
 
 			for f := 0; f < len(psf[p][s]); f++ {
 				score += SST.RunningIntentionality(sentence_counter, psf[p][s][f])
 
-				text += psf[p][s][f]
+				builder.WriteString(psf[p][s][f])
 
 				if f < len(psf[p][s])-1 {
-					text += ", "
+					builder.WriteString(", ")
 				}
 			}
 
 			var this SST.TextRank
-			this.Fragment = text
+			this.Fragment = builder.String()
 			this.Significance = score
 			this.Order = sentence_counter
 			this.Partition = sentence_counter / coherence_length
@@ -212,20 +374,24 @@ func SelectByStaticIntent(psf [][][]string, L int, percentage float64) []SST.Tex
 	for p := range psf {
 		for s := range psf[p] {
 			score := 0.0
-			text := ""
+
+			// Use strings.Builder for efficient string concatenation
+			var builder strings.Builder
+			// Pre-allocate capacity (estimate average word length * number of fragments)
+			builder.Grow(len(psf[p][s]) * 10)
 
 			for f := 0; f < len(psf[p][s]); f++ {
 				score += SST.AssessStaticIntent(psf[p][s][f], L, SST.STM_NGRAM_FREQ, 1)
 
-				text += psf[p][s][f]
+				builder.WriteString(psf[p][s][f])
 
 				if f < len(psf[p][s])-1 {
-					text += ", "
+					builder.WriteString(", ")
 				}
 			}
 
 			var this SST.TextRank
-			this.Fragment = text
+			this.Fragment = builder.String()
 			this.Significance = score
 			this.Order = sentence_counter
 			this.Partition = sentence_counter / coherence_length

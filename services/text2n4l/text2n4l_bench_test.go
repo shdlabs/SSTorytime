@@ -20,6 +20,7 @@ func BenchmarkProcessFile(b *testing.B) {
 		{"PromiseTheory_10pct", "testdata/promisetheory1.dat", 10.0},
 		{"PromiseTheory_25pct", "testdata/promisetheory1.dat", 25.0},
 		{"PromiseTheory_50pct", "testdata/promisetheory1.dat", 50.0},
+		{"MobyDick_10pct", "testdata/MobyDick.dat", 10.0},
 	}
 
 	for _, bm := range benchmarks {

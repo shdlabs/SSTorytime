@@ -8,9 +8,10 @@ N4L_TOOLS = N4L
 SEARCH_TOOLS = searchN4L removeN4L
 EXAMPLES = API_EXAMPLE_1 API_EXAMPLE_2 API_EXAMPLE_3 API_EXAMPLE_4
 SERVER = http_server
+TEXT2N4L_SERVER = text2n4l-server
 DEMO_POCS = dotest_entirecone dotest_getnodes search_coarse_grain search_coarse_grain2 search_coarse_grain_api
 
-ALL_TARGETS = $(TOOLS) $(N4L_TOOLS) $(SEARCH_TOOLS) $(EXAMPLES) $(SERVER) $(DEMO_POCS)
+ALL_TARGETS = $(TOOLS) $(N4L_TOOLS) $(SEARCH_TOOLS) $(EXAMPLES) $(SERVER) $(TEXT2N4L_SERVER) $(DEMO_POCS)
 
 # Default target
 all: $(ALL_TARGETS)
@@ -39,6 +40,11 @@ $(EXAMPLES):
 $(SERVER):
 	@echo "Building $@..."
 	cd cmd/server && go build -o ../../$@ .
+
+# Standalone Text2N4L Server (in cmd/text2n4l-server/)
+$(TEXT2N4L_SERVER):
+	@echo "Building $@..."
+	cd cmd/text2n4l-server && go build -o ../../$@ .
 
 # Demo POCs - DSL and DB connectivity tests (in cmd/demo_pocs/)
 $(DEMO_POCS):
@@ -112,6 +118,7 @@ help:
 	@echo "  Search:      $(SEARCH_TOOLS)"
 	@echo "  Examples:    $(EXAMPLES)"
 	@echo "  Server:      $(SERVER)"
+	@echo "  Text2N4L:    $(TEXT2N4L_SERVER)"
 	@echo "  DSL/DB tests:$(DEMO_POCS)"
 
 .PHONY: all dev test-dsl test-db load-examples test test-full clean deps help $(ALL_TARGETS)

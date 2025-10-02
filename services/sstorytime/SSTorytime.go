@@ -5,7 +5,7 @@
 //
 //**************************************************************
 
-package SSTorytime
+package sstorytime
 
 import (
 	"database/sql"
@@ -109,8 +109,10 @@ const (
 
 var BASE_DB_CHANNEL_STATE [7]ClassedNodePtr
 
-var CLASS_CHANNEL_DESCRIPTION = []string{"", "single word ngram", "two word ngram", "three word ngram",
-	"string less than 128 chars", "string less than 1024 chars", "string greater than 1024 chars"}
+var CLASS_CHANNEL_DESCRIPTION = []string{
+	"", "single word ngram", "two word ngram", "three word ngram",
+	"string less than 128 chars", "string less than 1024 chars", "string greater than 1024 chars",
+}
 
 //**************************************************************
 // Data structures
@@ -193,7 +195,6 @@ type PageMap struct { // Thereis additional intent in the layout
 //**************************************************************
 
 type Appointment struct {
-
 	// An appointed from node points to a collection of to nodes
 	// by the same arrow
 
@@ -208,7 +209,6 @@ type Appointment struct {
 //**************************************************************
 
 type NodeDirectory struct {
-
 	// Power law n-gram frequencies
 
 	N1grams     map[string]ClassedNodePtr
@@ -393,7 +393,6 @@ type WebPath struct {
 //******************************************************************
 
 type Story struct {
-
 	// The title of a story is a property of the sequence
 	// not a container for it. It belongs to the sequence context.
 
@@ -472,7 +471,6 @@ type LastSeen struct {
 //******************************************************************
 
 func Open(load_arrows bool) PoSST {
-
 	var ctx PoSST
 	var err error
 
@@ -489,14 +487,12 @@ func Open(load_arrows bool) PoSST {
 	connStr := "user=" + user + " dbname=" + dbname + " password=" + password + " sslmode=disable"
 
 	ctx.DB, err = sql.Open("postgres", connStr)
-
 	if err != nil {
 		fmt.Println("Error connecting to the database: ", err)
 		os.Exit(-1)
 	}
 
 	err = ctx.DB.Ping()
-
 	if err != nil {
 		fmt.Println("Error pinging the database: ", err)
 		os.Exit(-1)
@@ -514,7 +510,6 @@ func Open(load_arrows bool) PoSST {
 // **************************************************************************
 
 func OverrideCredentials(u, p, d string) (string, string, string) {
-
 	// Store database/postgres credentials in a system file instead of hardcoding
 
 	dirname, err := os.UserHomeDir()
@@ -526,7 +521,6 @@ func OverrideCredentials(u, p, d string) (string, string, string) {
 
 	filename := dirname + "/" + CREDENTIALS_FILE
 	content, err := ioutil.ReadFile(filename)
-
 	if err != nil {
 		return u, p, d
 	}
@@ -579,7 +573,6 @@ func OverrideCredentials(u, p, d string) (string, string, string) {
 // **************************************************************************
 
 func GetLine(s []byte, i int) (string, int) {
-
 	// For parsing the password credential file
 
 	var result []byte
@@ -602,7 +595,6 @@ func GetLine(s []byte, i int) (string, int) {
 // **************************************************************************
 
 func MemoryInit() {
-
 	if NODE_DIRECTORY.N1grams == nil {
 		NODE_DIRECTORY.N1grams = make(map[string]ClassedNodePtr)
 	}
@@ -626,7 +618,6 @@ func MemoryInit() {
 // **************************************************************************
 
 func Configure(ctx PoSST, load_arrows bool) {
-
 	// Tmp reset
 
 	if WIPE_DB {
@@ -752,7 +743,6 @@ func Close(ctx PoSST) {
 // **************************************************************************
 
 func GetContext(contextptr ContextPtr) string {
-
 	exists := int(contextptr) < len(CONTEXT_DIRECTORY)
 
 	if exists {
@@ -765,7 +755,6 @@ func GetContext(contextptr ContextPtr) string {
 // ****************************************************************************
 
 func RegisterContext(parse_state map[string]bool, context []string) ContextPtr {
-
 	ctxstr := NormalizeContextString(parse_state, context)
 
 	if len(ctxstr) == 0 {
@@ -790,7 +779,6 @@ func RegisterContext(parse_state map[string]bool, context []string) ContextPtr {
 // **************************************************************************
 
 func TryContext(ctx PoSST, context []string) ContextPtr {
-
 	ctxstr := CompileContextString(context)
 	str, ctxptr := GetDBContextByName(ctx, ctxstr)
 
@@ -805,10 +793,9 @@ func TryContext(ctx PoSST, context []string) ContextPtr {
 // **************************************************************************
 
 func CompileContextString(context []string) string {
-
 	// Ensure idempotence
 
-	var merge = make(map[string]int)
+	merge := make(map[string]int)
 
 	for c := range context {
 		merge[context[c]]++
@@ -820,10 +807,9 @@ func CompileContextString(context []string) string {
 // **************************************************************************
 
 func NormalizeContextString(contextmap map[string]bool, ctx []string) string {
-
 	// Mitigate combinatoric explosion
 
-	var merge = make(map[string]bool)
+	merge := make(map[string]bool)
 	var clist []string
 
 	// Merge sources into single map
@@ -854,7 +840,6 @@ func NormalizeContextString(contextmap map[string]bool, ctx []string) string {
 // **************************************************************************
 
 func GetNodeContext(ctx PoSST, node Node) []string {
-
 	str := GetNodeContextString(ctx, node)
 
 	if str != "" {
@@ -867,14 +852,12 @@ func GetNodeContext(ctx PoSST, node Node) []string {
 // **************************************************************************
 
 func GetNodeContextString(ctx PoSST, node Node) string {
-
 	// This reads the ghost link planted for the purpose of attaching
 	// a context to floating nodes
 
 	empty := GetDBArrowByName(ctx, "empty")
 
 	for _, lnk := range node.I[ST_ZERO+LEADSTO] {
-
 		if lnk.Arr == empty {
 			return GetContext(lnk.Ctx)
 		}
@@ -888,7 +871,6 @@ func GetNodeContextString(ctx PoSST, node Node) string {
 // **************************************************************************
 
 func GetNodeTxtFromPtr(frptr NodePtr) string {
-
 	class := frptr.Class
 	index := frptr.CPtr
 
@@ -915,7 +897,6 @@ func GetNodeTxtFromPtr(frptr NodePtr) string {
 // **************************************************************************
 
 func GetMemoryNodeFromPtr(frptr NodePtr) Node {
-
 	class := frptr.Class
 	index := frptr.CPtr
 
@@ -942,7 +923,6 @@ func GetMemoryNodeFromPtr(frptr NodePtr) Node {
 //**************************************************************
 
 func AppendTextToDirectory(event Node, ErrFunc func(string)) NodePtr {
-
 	var cnode_slot ClassedNodePtr = -1
 	var ok bool = false
 	var node_alloc_ptr NodePtr
@@ -1011,7 +991,6 @@ func AppendTextToDirectory(event Node, ErrFunc func(string)) NodePtr {
 //**************************************************************
 
 func CheckExistingOrAltCaps(event Node, ErrFunc func(string)) (ClassedNodePtr, bool) {
-
 	var cnode_slot ClassedNodePtr = -1
 	var ok bool = false
 	ignore_caps := false
@@ -1078,7 +1057,6 @@ func CheckExistingOrAltCaps(event Node, ErrFunc func(string)) (ClassedNodePtr, b
 //**************************************************************
 
 func IdempAddChapterSeqToNode(class int, cptr ClassedNodePtr, chap string, seq bool) {
-
 	/* In the DB version, we have handle chapter collisions
 	   we want all similar names to have a single node for lateral
 	   association, but we need to be able to search by chapter too,
@@ -1113,7 +1091,6 @@ func IdempAddChapterSeqToNode(class int, cptr ClassedNodePtr, chap string, seq b
 //**************************************************************
 
 func UpdateSeqStatus(class int, cptr ClassedNodePtr, seq bool) Node {
-
 	switch class {
 	case N1GRAM:
 		NODE_DIRECTORY.N1directory[cptr].Seq = NODE_DIRECTORY.N1directory[cptr].Seq || seq
@@ -1146,7 +1123,6 @@ func UpdateSeqStatus(class int, cptr ClassedNodePtr, seq bool) Node {
 //**************************************************************
 
 func AppendLinkToNode(frptr NodePtr, link Link, toptr NodePtr) {
-
 	frclass := frptr.Class
 	frm := frptr.CPtr
 	stindex := ARROW_DIRECTORY[link.Arr].STAindex
@@ -1176,7 +1152,6 @@ func AppendLinkToNode(frptr NodePtr, link Link, toptr NodePtr) {
 //**************************************************************
 
 func MergeLinkLists(linklist []Link, lnk Link) []Link {
-
 	// Ensure all arrows and contexts in lnk are in list for the appropriate arrows
 
 	new_ctxstr := GetContext(lnk.Ctx)
@@ -1205,8 +1180,7 @@ func MergeLinkLists(linklist []Link, lnk Link) []Link {
 //**************************************************************
 
 func MergeContextLists(one, two []string) ContextPtr {
-
-	var merging = make(map[string]bool)
+	merging := make(map[string]bool)
 	var merged []string
 
 	for s := range one {
@@ -1247,7 +1221,6 @@ func MergeContextLists(one, two []string) ContextPtr {
 //**************************************************************
 
 func LinearFindText(in []Node, event Node, ignore_caps bool) (ClassedNodePtr, bool) {
-
 	for i := 0; i < len(in); i++ {
 
 		if event.L != in[i].L {
@@ -1273,7 +1246,6 @@ func LinearFindText(in []Node, event Node, ignore_caps bool) (ClassedNodePtr, bo
 //**************************************************************
 
 func GetSTIndexByName(stname, pm string) int {
-
 	var encoding int
 	var sign int
 
@@ -1297,13 +1269,11 @@ func GetSTIndexByName(stname, pm string) int {
 	}
 
 	return encoding
-
 }
 
 //**************************************************************
 
 func PrintSTAIndex(stindex int) string {
-
 	sttype := stindex - ST_ZERO
 	var ty string
 
@@ -1337,7 +1307,6 @@ func PrintSTAIndex(stindex int) string {
 //**************************************************************
 
 func InsertArrowDirectory(stname, alias, name, pm string) ArrowPtr {
-
 	// Insert an arrow into the forward/backward indices
 
 	var newarrow ArrowDirectory
@@ -1364,7 +1333,6 @@ func InsertArrowDirectory(stname, alias, name, pm string) ArrowPtr {
 //**************************************************************
 
 func InsertInverseArrowDirectory(fwd, bwd ArrowPtr) {
-
 	if fwd == ArrowPtr(-1) || bwd == ArrowPtr(-1) {
 		return
 	}
@@ -1380,7 +1348,6 @@ func InsertInverseArrowDirectory(fwd, bwd ArrowPtr) {
 //**************************************************************
 
 func GraphToDB(ctx PoSST, wait_counter bool) {
-
 	total := len(NODE_DIRECTORY.N1directory) + len(NODE_DIRECTORY.N2directory) + len(NODE_DIRECTORY.N3directory) + len(NODE_DIRECTORY.LT128) + len(NODE_DIRECTORY.LT1024) + len(NODE_DIRECTORY.GT1024) + len(PAGE_MAP)
 
 	fmt.Println("\nStoring primary nodes ...\n")
@@ -1447,14 +1414,12 @@ func GraphToDB(ctx PoSST, wait_counter bool) {
 	}
 
 	for arrow := range ARROW_DIRECTORY {
-
 		UploadArrowToDB(ctx, ArrowPtr(arrow))
 	}
 
 	fmt.Println("Storing inverse Arrows...")
 
 	for arrow := range INVERSE_ARROWS {
-
 		UploadInverseArrowToDB(ctx, ArrowPtr(arrow))
 	}
 
@@ -1485,7 +1450,6 @@ func GraphToDB(ctx PoSST, wait_counter bool) {
 // **************************************************************************
 
 func Vertex(ctx PoSST, name, chap string) Node {
-
 	var n Node
 
 	n.S = name
@@ -1497,7 +1461,6 @@ func Vertex(ctx PoSST, name, chap string) Node {
 // **************************************************************************
 
 func Edge(ctx PoSST, from Node, arrow string, to Node, context []string, weight float32) (ArrowPtr, int) {
-
 	arrowptr, sttype := GetDBArrowsWithArrowName(ctx, arrow)
 
 	var link Link
@@ -1515,7 +1478,6 @@ func Edge(ctx PoSST, from Node, arrow string, to Node, context []string, weight 
 // **************************************************************************
 
 func HubJoin(ctx PoSST, name, chap string, nptrs []NodePtr, arrow string, context []string, weight []float32) Node {
-
 	// Create a container node joining several other nodes in a list, like a hyperlink
 
 	if nptrs == nil {
@@ -1534,7 +1496,7 @@ func HubJoin(ctx PoSST, name, chap string, nptrs []NodePtr, arrow string, contex
 		os.Exit(-1)
 	}
 
-	var chaps = make(map[string]int)
+	chaps := make(map[string]int)
 
 	if name == "" {
 		name = "hub_" + arrow + "_"
@@ -1580,7 +1542,6 @@ func HubJoin(ctx PoSST, name, chap string, nptrs []NodePtr, arrow string, contex
 // **************************************************************************
 
 func ForceDBNode(ctx PoSST, n Node) {
-
 	// Add node version setting explicit CPtr value, note different function call
 	// We use this function when we ARE managing/counting CPtr values ourselves
 
@@ -1602,7 +1563,6 @@ func ForceDBNode(ctx PoSST, n Node) {
 	qstr = fmt.Sprintf("SELECT InsertNode(%d,%d,%d,'%s','%s',%s)", n.L, n.NPtr.Class, cptr, es, ec, seqstr)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		s := fmt.Sprint("Failed to insert", err)
 
@@ -1621,7 +1581,6 @@ func ForceDBNode(ctx PoSST, n Node) {
 // **************************************************************************
 
 func CreateDBNode(ctx PoSST, n Node) Node {
-
 	// Add node version setting explicit CPtr value, note different function call
 	// We use this function when we ARE managing/counting CPtr values ourselves
 
@@ -1637,7 +1596,6 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 	qstr = fmt.Sprintf("SELECT IdempInsertNode(%d,%d,%d,'%s','%s')", n.L, n.NPtr.Class, cptr, es, ec)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		s := fmt.Sprint("Failed to insert", err)
 
@@ -1669,7 +1627,6 @@ func CreateDBNode(ctx PoSST, n Node) Node {
 // **************************************************************************
 
 func IdempDBAddNode(ctx PoSST, n Node) Node {
-
 	// We use this function when we aren't counting CPtr values
 	// This functon may be deprecated in future
 
@@ -1687,7 +1644,6 @@ func IdempDBAddNode(ctx PoSST, n Node) Node {
 	qstr = fmt.Sprintf("SELECT IdempAppendNode(%d,%d,'%s','%s')", n.L, n.NPtr.Class, es, ec)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		s := fmt.Sprint("Failed to add node", err)
 
@@ -1719,13 +1675,11 @@ func IdempDBAddNode(ctx PoSST, n Node) Node {
 // **************************************************************************
 
 func UploadNodeToDB(ctx PoSST, org Node) {
-
 	const nolink = 999
 
 	ForceDBNode(ctx, org)
 
 	for stindex := 0; stindex < len(org.I); stindex++ {
-
 		for lnk := range org.I[stindex] {
 
 			dstlnk := org.I[stindex][lnk]
@@ -1739,7 +1693,6 @@ func UploadNodeToDB(ctx PoSST, org Node) {
 // **************************************************************************
 
 func UploadArrowToDB(ctx PoSST, arrow ArrowPtr) {
-
 	staidx := ARROW_DIRECTORY[arrow].STAindex
 	long := SQLEscape(ARROW_DIRECTORY[arrow].Long)
 	short := SQLEscape(ARROW_DIRECTORY[arrow].Short)
@@ -1747,7 +1700,6 @@ func UploadArrowToDB(ctx PoSST, arrow ArrowPtr) {
 	qstr := fmt.Sprintf("INSERT INTO ArrowDirectory (STAindex,Long,Short,ArrPtr) SELECT %d,'%s','%s',%d WHERE NOT EXISTS (SELECT Long,Short,ArrPtr FROM ArrowDirectory WHERE lower(Long) = lower('%s') OR lower(Short) = lower('%s') OR ArrPtr = %d)", staidx, long, short, arrow, long, short, arrow)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		s := fmt.Sprint("Failed to insert", err)
 
@@ -1764,14 +1716,12 @@ func UploadArrowToDB(ctx PoSST, arrow ArrowPtr) {
 // **************************************************************************
 
 func UploadInverseArrowToDB(ctx PoSST, arrow ArrowPtr) {
-
 	plus := arrow
 	minus := INVERSE_ARROWS[arrow]
 
 	qstr := fmt.Sprintf("INSERT INTO ArrowInverses (Plus,Minus) SELECT %d,%d WHERE NOT EXISTS (SELECT Plus,Minus FROM ArrowInverses WHERE Plus = %d OR minus = %d)", plus, minus, plus, minus)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		s := fmt.Sprint("Failed to insert", err)
 
@@ -1788,7 +1738,6 @@ func UploadInverseArrowToDB(ctx PoSST, arrow ArrowPtr) {
 // **************************************************************************
 
 func UploadContextsToDB(ctx PoSST) {
-
 	for ctxdir := range CONTEXT_DIRECTORY {
 		UploadContextToDB(ctx, CONTEXT_DIRECTORY[ctxdir].Context, CONTEXT_DIRECTORY[ctxdir].Ptr)
 	}
@@ -1797,7 +1746,6 @@ func UploadContextsToDB(ctx PoSST) {
 // **************************************************************************
 
 func UploadContextToDB(ctx PoSST, contextstring string, ptr ContextPtr) ContextPtr {
-
 	a := SQLEscape(contextstring)
 	b := ptr
 
@@ -1806,7 +1754,6 @@ func UploadContextToDB(ctx PoSST, contextstring string, ptr ContextPtr) ContextP
 	qstr := fmt.Sprintf("SELECT IdempInsertContext('%s',%d)", a, b)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("FAILED \n", qstr, err)
 	}
@@ -1824,11 +1771,9 @@ func UploadContextToDB(ctx PoSST, contextstring string, ptr ContextPtr) ContextP
 //**************************************************************
 
 func UploadPageMapEvent(ctx PoSST, line PageMap) {
-
 	qstr := fmt.Sprintf("INSERT INTO PageMap (Chap,Alias,Ctx,Line) VALUES ('%s','%s',%d,%d)", line.Chapter, line.Alias, line.Context, line.Line)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		s := fmt.Sprint("Failed to insert pagemap event", err)
 
@@ -1851,7 +1796,6 @@ func UploadPageMapEvent(ctx PoSST, line PageMap) {
 		qstr := fmt.Sprintf("UPDATE PageMap SET Path=array_append(Path,%s) WHERE Chap = '%s' AND Line = '%d'", literal, line.Chapter, line.Line)
 
 		row, err := ctx.DB.Query(qstr)
-
 		if err != nil {
 			fmt.Println("Failed to append", err, qstr)
 		}
@@ -1863,7 +1807,6 @@ func UploadPageMapEvent(ctx PoSST, line PageMap) {
 //**************************************************************
 
 func IdempDBAddLink(ctx PoSST, from Node, link Link, to Node) {
-
 	// API Entry point for registering links
 
 	frptr := from.NPtr
@@ -1903,7 +1846,6 @@ func IdempDBAddLink(ctx PoSST, from Node, link Link, to Node) {
 // **************************************************************************
 
 func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
-
 	// Want to make this idempotent, because SQL is not (and not clause)
 
 	if sttype < -EXPRESS || sttype > EXPRESS {
@@ -1933,7 +1875,6 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 		link_table)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Failed to append", err, qstr)
 		return false
@@ -1948,9 +1889,7 @@ func AppendDBLinkToNode(ctx PoSST, n1ptr NodePtr, lnk Link, sttype int) bool {
 // **************************************************************************
 
 func CreateType(ctx PoSST, defn string) bool {
-
 	row, err := ctx.DB.Query(defn)
-
 	if err != nil {
 		s := fmt.Sprintln("Failed to create datatype PGLink ", err)
 
@@ -1968,9 +1907,7 @@ func CreateType(ctx PoSST, defn string) bool {
 // **************************************************************************
 
 func CreateTable(ctx PoSST, defn string) bool {
-
 	row, err := ctx.DB.Query(defn)
-
 	if err != nil {
 		s := fmt.Sprintln("Failed to create a table %.10 ...", defn, err)
 
@@ -1988,7 +1925,6 @@ func CreateTable(ctx PoSST, defn string) bool {
 // **************************************************************************
 
 func DefineStoredFunctions(ctx PoSST) {
-
 	// NB! these functions are in "plpgsql" language, NOT SQL. They look similar but they are DIFFERENT!
 
 	// Insert a node structure, also an anchor for and containing link arrays
@@ -2010,7 +1946,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;", cols)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2029,7 +1964,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;", cols)
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2058,7 +1992,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2089,7 +2022,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2191,7 +2123,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2213,7 +2144,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2233,7 +2163,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2261,7 +2190,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2301,7 +2229,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n")
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2338,7 +2265,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2399,7 +2325,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2459,7 +2384,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2489,7 +2413,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2556,7 +2479,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2588,7 +2510,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		// select AllPathsAsLinks('(4,1)',3)
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2680,7 +2601,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2700,7 +2620,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2823,7 +2742,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2846,7 +2764,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2873,7 +2790,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2900,7 +2816,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -2924,7 +2839,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("FAILED UnCmp definition\n", qstr, err)
 	}
@@ -2958,7 +2872,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		// select AllNCPathsAsLinks('(1,46)','chinese','{"food","example"}','fwd',4);
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -3062,7 +2975,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -3101,7 +3013,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -3143,7 +3054,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n")
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -3201,7 +3111,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -3302,7 +3211,6 @@ func DefineStoredFunctions(ctx PoSST) {
 	qstr += "$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -3399,7 +3307,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -3436,7 +3343,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -3472,7 +3378,6 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
@@ -3492,13 +3397,11 @@ func DefineStoredFunctions(ctx PoSST) {
 		"$fn$ LANGUAGE plpgsql IMMUTABLE;\n"
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("Error defining postgres function:", qstr, err)
 	}
 
 	row.Close()
-
 }
 
 // **************************************************************************
@@ -3506,14 +3409,12 @@ func DefineStoredFunctions(ctx PoSST) {
 // **************************************************************************
 
 func GetDBNodePtrMatchingName(ctx PoSST, name, chap string) []NodePtr {
-
 	return GetDBNodePtrMatchingNCCS(ctx, name, chap, nil, nil, false, CAUSAL_CONE_MAXLIMIT)
 }
 
 // **************************************************************************
 
 func GetDBNodePtrMatchingNCCS(ctx PoSST, nm, chap string, cn []string, arrow []ArrowPtr, seq bool, limit int) []NodePtr {
-
 	// Order by L to favour exact matches
 
 	nm = SQLEscape(nm)
@@ -3522,7 +3423,6 @@ func GetDBNodePtrMatchingNCCS(ctx PoSST, nm, chap string, cn []string, arrow []A
 	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L,NPtr LIMIT %d", NodeWhereString(nm, chap, cn, arrow, seq), limit)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetNodePtrMatchingNCC Failed", err, qstr)
 	}
@@ -3544,7 +3444,6 @@ func GetDBNodePtrMatchingNCCS(ctx PoSST, nm, chap string, cn []string, arrow []A
 // **************************************************************************
 
 func NodeWhereString(name, chap string, context []string, arrow []ArrowPtr, seq bool) string {
-
 	var chap_col, nm_col string
 	var ctx_col string
 	var qstr string
@@ -3615,7 +3514,6 @@ func NodeWhereString(name, chap string, context []string, arrow []ArrowPtr, seq 
 // **************************************************************************
 
 func GetDBChaptersMatchingName(ctx PoSST, src string) []string {
-
 	var qstr string
 
 	remove_accents, stripped := IsBracketedSearchTerm(src)
@@ -3629,13 +3527,12 @@ func GetDBChaptersMatchingName(ctx PoSST, src string) []string {
 	}
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetDBChaptersMatchingName", err)
 	}
 
 	var whole string
-	var chapters = make(map[string]int)
+	chapters := make(map[string]int)
 	var retval []string
 
 	for row.Next() {
@@ -3663,7 +3560,6 @@ func GetDBChaptersMatchingName(ctx PoSST, src string) []string {
 // **************************************************************************
 
 func GetDBContextByName(ctx PoSST, src string) (string, ContextPtr) {
-
 	var qstr string
 
 	remove_accents, stripped := IsBracketedSearchTerm(src)
@@ -3677,7 +3573,6 @@ func GetDBContextByName(ctx PoSST, src string) (string, ContextPtr) {
 	}
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetDBContextByName", err)
 	}
@@ -3693,17 +3588,14 @@ func GetDBContextByName(ctx PoSST, src string) (string, ContextPtr) {
 	row.Close()
 
 	return whole, ContextPtr(ptr)
-
 }
 
 // **************************************************************************
 
 func GetDBContextByPtr(ctx PoSST, ptr ContextPtr) (string, ContextPtr) {
-
 	qstr := fmt.Sprintf("SELECT DISTINCT Context,CtxPtr FROM ContextDirectory WHERE CtxPtr=%d", ptr)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetDBContextssByPtr", err)
 	}
@@ -3725,7 +3617,6 @@ func GetDBContextByPtr(ctx PoSST, ptr ContextPtr) (string, ContextPtr) {
 // **************************************************************************
 
 func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
-
 	var sttypes []int
 
 	for a := range arrows {
@@ -3740,7 +3631,6 @@ func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
 // **************************************************************************
 
 func GetDBNodeByNodePtr(ctx PoSST, db_nptr NodePtr) Node {
-
 	im_nptr, cached := NODE_CACHE[db_nptr]
 
 	if cached {
@@ -3793,11 +3683,10 @@ func GetDBNodeByNodePtr(ctx PoSST, db_nptr NodePtr) Node {
 // **************************************************************************
 
 func GetDBSingletonBySTType(ctx PoSST, sttypes []int, chap string, cn []string) ([]NodePtr, []NodePtr) {
-
 	// Used in graph report, analysis
 
 	var qstr, qwhere string
-	var dim = len(sttypes)
+	dim := len(sttypes)
 
 	context := FormatSQLStringArray(cn)
 	chapter := "%" + chap + "%"
@@ -3826,7 +3715,6 @@ func GetDBSingletonBySTType(ctx PoSST, sttypes []int, chap string, cn []string) 
 	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)", chapter, qwhere)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetDBSingletonBySTType Failed", err, "IN", qstr)
 		return nil, nil
@@ -3840,7 +3728,6 @@ func GetDBSingletonBySTType(ctx PoSST, sttypes []int, chap string, cn []string) 
 		var nstr string
 
 		err = row.Scan(&nstr)
-
 		if err != nil {
 			fmt.Println("Error scanning sql data case", dim, "gave error", err, qstr)
 			row.Close()
@@ -3871,7 +3758,6 @@ func GetDBSingletonBySTType(ctx PoSST, sttypes []int, chap string, cn []string) 
 	qstr = fmt.Sprintf("SELECT NPtr FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)", chapter, qwhere)
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetDBSingletonBySTType 2 Failed", err, "IN", qstr)
 		return nil, nil
@@ -3883,7 +3769,6 @@ func GetDBSingletonBySTType(ctx PoSST, sttypes []int, chap string, cn []string) 
 		var nstr string
 
 		err = row.Scan(&nstr)
-
 		if err != nil {
 			fmt.Println("Error scanning sql data case", dim, "gave error", err, qstr)
 			row.Close()
@@ -3897,13 +3782,11 @@ func GetDBSingletonBySTType(ctx PoSST, sttypes []int, chap string, cn []string) 
 	row.Close()
 
 	return src_nptrs, snk_nptrs
-
 }
 
 // **************************************************************************
 
 func SelectStoriesByArrow(ctx PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []NodePtr {
-
 	var matches []NodePtr
 
 	// Need to take each arrow type at a time. We can't possibly know if an
@@ -3933,7 +3816,6 @@ func SelectStoriesByArrow(ctx PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, s
 // **************************************************************************
 
 func GetDBArrowsWithArrowName(ctx PoSST, s string) (ArrowPtr, int) {
-
 	if ARROW_DIRECTORY_TOP == 0 {
 		DownloadArrowsFromDB(ctx)
 	}
@@ -3959,7 +3841,6 @@ func GetDBArrowsWithArrowName(ctx PoSST, s string) (ArrowPtr, int) {
 // **************************************************************************
 
 func GetDBArrowsMatchingArrowName(ctx PoSST, s string) []ArrowPtr {
-
 	var list []ArrowPtr
 
 	if ARROW_DIRECTORY_TOP == 0 {
@@ -3992,7 +3873,6 @@ func GetDBArrowsMatchingArrowName(ctx PoSST, s string) []ArrowPtr {
 // **************************************************************************
 
 func GetDBArrowByName(ctx PoSST, name string) ArrowPtr {
-
 	if ARROW_DIRECTORY_TOP == 0 {
 		DownloadArrowsFromDB(ctx)
 	}
@@ -4029,7 +3909,6 @@ func GetDBArrowByName(ctx PoSST, name string) ArrowPtr {
 // **************************************************************************
 
 func GetDBArrowByPtr(ctx PoSST, arrowptr ArrowPtr) ArrowDirectory {
-
 	if int(arrowptr) > len(ARROW_DIRECTORY) {
 		DownloadArrowsFromDB(ctx)
 	}
@@ -4042,13 +3921,11 @@ func GetDBArrowByPtr(ctx PoSST, arrowptr ArrowPtr) ArrowDirectory {
 	}
 
 	return ARROW_DIRECTORY[arrowptr]
-
 }
 
 // **************************************************************************
 
 func GetDBArrowBySTType(ctx PoSST, sttype int) []ArrowDirectory {
-
 	var retval []ArrowDirectory
 
 	DownloadArrowsFromDB(ctx)
@@ -4068,7 +3945,6 @@ func GetDBArrowBySTType(ctx PoSST, sttype int) []ArrowDirectory {
 //******************************************************************
 
 func ArrowPtrFromArrowsNames(ctx PoSST, arrows []string) ([]ArrowPtr, []int) {
-
 	// Parse input and discern arrow types, best guess
 
 	var arr []ArrowPtr
@@ -4111,7 +3987,6 @@ func ArrowPtrFromArrowsNames(ctx PoSST, arrows []string) ([]ArrowPtr, []int) {
 //******************************************************************
 
 func SolveNodePtrs(ctx PoSST, nodenames []string, search SearchParameters, arr []ArrowPtr, limit int) []NodePtr {
-
 	chap := search.Chapter
 	cntx := search.Context
 	seq := search.Sequence
@@ -4121,7 +3996,7 @@ func SolveNodePtrs(ctx PoSST, nodenames []string, search SearchParameters, arr [
 
 	nodeptrs, rest := ParseLiteralNodePtrs(nodenames)
 
-	var idempotence = make(map[NodePtr]bool)
+	idempotence := make(map[NodePtr]bool)
 	var result []NodePtr
 
 	// If we give a precise reference, then that was obviously intended
@@ -4154,7 +4029,6 @@ func SolveNodePtrs(ctx PoSST, nodenames []string, search SearchParameters, arr [
 //******************************************************************
 
 func ScoreContext(i, j int) bool {
-
 	// the more matching items the more relevant
 
 	return true
@@ -4163,7 +4037,6 @@ func ScoreContext(i, j int) bool {
 //******************************************************************
 
 func ParseLiteralNodePtrs(names []string) ([]NodePtr, []string) {
-
 	var current []rune
 	var rest []string
 	var nodeptrs []NodePtr
@@ -4221,7 +4094,6 @@ func ParseLiteralNodePtrs(names []string) ([]NodePtr, []string) {
 // **************************************************************************
 
 func GetDBPageMap(ctx PoSST, chap string, cn []string, page int) []PageMap {
-
 	var qstr string
 
 	chap = strings.Trim(chap, "\"")
@@ -4237,7 +4109,6 @@ func GetDBPageMap(ctx PoSST, chap string, cn []string, page int) []PageMap {
 		context, chapter, offset, hits_per_page)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("GetDBPageMap Failed:", err, qstr)
 	}
@@ -4251,7 +4122,6 @@ func GetDBPageMap(ctx PoSST, chap string, cn []string, page int) []PageMap {
 		var event PageMap
 
 		err = row.Scan(&chap, &ctxptr, &line, &path)
-
 		if err != nil {
 			fmt.Println("Error reading GetDBPageMap", err)
 		}
@@ -4274,11 +4144,9 @@ func GetDBPageMap(ctx PoSST, chap string, cn []string, page int) []PageMap {
 // **************************************************************************
 
 func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype, depth int, limit int) []NodePtr {
-
 	qstr := fmt.Sprintf("select unnest(fwdconeasnodes) from FwdConeAsNodes('(%d,%d)',%d,%d,%d);", start.Class, start.CPtr, sttype, depth, limit)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY to FwdConeAsNodes Failed", err)
 	}
@@ -4300,13 +4168,11 @@ func GetFwdConeAsNodes(ctx PoSST, start NodePtr, sttype, depth int, limit int) [
 // **************************************************************************
 
 func GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype, depth int) []Link {
-
 	// This function may be misleading as it doesn't respect paths, may be deprecated in future
 
 	qstr := fmt.Sprintf("select unnest(fwdconeaslinks) from FwdConeAsLinks('(%d,%d)',%d,%d);", start.Class, start.CPtr, sttype, depth)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY to FwdConeAsLinks Failed", err)
 	}
@@ -4328,11 +4194,9 @@ func GetFwdConeAsLinks(ctx PoSST, start NodePtr, sttype, depth int) []Link {
 // **************************************************************************
 
 func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype, depth int, maxlimit int) ([][]Link, int) {
-
 	qstr := fmt.Sprintf("SELECT FwdPathsAsLinks from FwdPathsAsLinks('(%d,%d)',%d,%d,%d);", start.Class, start.CPtr, sttype, depth, maxlimit)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY to FwdPathsAsLinks Failed", err)
 	}
@@ -4352,7 +4216,6 @@ func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype, depth int, maxlimit in
 // **************************************************************************
 
 func GetEntireConePathsAsLinks(ctx PoSST, orientation string, start NodePtr, depth int, limit int) ([][]Link, int) {
-
 	// orientation should be "fwd" or "bwd" else "both"
 
 	// Todo: how to limit path search? Usually solutions are small..?
@@ -4361,7 +4224,6 @@ func GetEntireConePathsAsLinks(ctx PoSST, orientation string, start NodePtr, dep
 		start.Class, start.CPtr, orientation, depth, limit)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY to AllPathsAsLinks Failed", err, qstr)
 	}
@@ -4386,7 +4248,6 @@ func GetEntireConePathsAsLinks(ctx PoSST, orientation string, start NodePtr, dep
 // **************************************************************************
 
 func GetEntireNCConePathsAsLinks(ctx PoSST, orientation string, start NodePtr, depth int, chapter string, context []string, limit int) ([][]Link, int) {
-
 	// orientation should be "fwd" or "bwd" else "both"
 
 	remove_accents, stripped := IsBracketedSearchTerm(chapter)
@@ -4401,7 +4262,6 @@ func GetEntireNCConePathsAsLinks(ctx PoSST, orientation string, start NodePtr, d
 		start.Class, start.CPtr, chapter, rm_acc, FormatSQLStringArray(context), orientation, depth, limit)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY to AllNCPathsAsLinks Failed", err, qstr)
 	}
@@ -4429,7 +4289,6 @@ func GetEntireNCConePathsAsLinks(ctx PoSST, orientation string, start NodePtr, d
 // **************************************************************************
 
 func GetEntireNCSuperConePathsAsLinks(ctx PoSST, orientation string, start []NodePtr, depth int, chapter string, context []string, limit int) ([][]Link, int) {
-
 	// orientation should be "fwd" or "bwd" else "both"
 
 	remove_accents, stripped := IsBracketedSearchTerm(chapter)
@@ -4443,7 +4302,6 @@ func GetEntireNCSuperConePathsAsLinks(ctx PoSST, orientation string, start []Nod
 	qstr := fmt.Sprintf("select AllSuperNCPathsAsLinks(%s,'%s',%s,%s,'%s',%d,%d);", FormatSQLNodePtrArray(start), chapter, rm_acc, FormatSQLStringArray(context), orientation, depth, limit)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY to AllSuperNCPathsAsLinks Failed", err, qstr)
 		os.Exit(-1)
@@ -4471,7 +4329,6 @@ var MUTEX sync.Mutex
 // **************************************************************************
 
 func CacheNode(n Node) {
-
 	_, already := NODE_CACHE[n.NPtr]
 
 	if !already {
@@ -4484,13 +4341,11 @@ func CacheNode(n Node) {
 // **************************************************************************
 
 func DownloadArrowsFromDB(ctx PoSST) {
-
 	// These must be ordered to match in-memory array
 
 	qstr := fmt.Sprintf("SELECT STAindex,Long,Short,ArrPtr FROM ArrowDirectory ORDER BY ArrPtr")
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY Download Arrows Failed", err)
 	}
@@ -4530,7 +4385,6 @@ func DownloadArrowsFromDB(ctx PoSST) {
 	qstr = fmt.Sprintf("SELECT Plus,Minus FROM ArrowInverses ORDER BY Plus")
 
 	row, err = ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY Download Inverses Failed", err)
 	}
@@ -4540,7 +4394,6 @@ func DownloadArrowsFromDB(ctx PoSST) {
 	for row.Next() {
 
 		err = row.Scan(&plus, &minus)
-
 		if err != nil {
 			fmt.Println("QUERY Download Arrows Failed", err)
 		}
@@ -4552,11 +4405,9 @@ func DownloadArrowsFromDB(ctx PoSST) {
 // **************************************************************************
 
 func DownloadContextsFromDB(ctx PoSST) {
-
 	qstr := fmt.Sprintf("SELECT Context,CtxPtr FROM ContextDirectory ORDER BY CtxPtr")
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY Download Arrows Failed", err)
 	}
@@ -4591,7 +4442,6 @@ func DownloadContextsFromDB(ctx PoSST) {
 // **************************************************************************
 
 func SynchronizeNPtrs(ctx PoSST) {
-
 	// If we're merging (not recommended) N4L into an existing db, we need to synch
 
 	for channel := N1GRAM; channel <= GT1024; channel++ {
@@ -4599,7 +4449,6 @@ func SynchronizeNPtrs(ctx PoSST) {
 		qstr := fmt.Sprintf("SELECT max((Nptr).CPtr) FROM Node WHERE (Nptr).Chan=%d", channel)
 
 		row, err := ctx.DB.Query(qstr)
-
 		if err != nil {
 			fmt.Println("QUERY Synchronizing nptrs", err)
 		}
@@ -4608,7 +4457,6 @@ func SynchronizeNPtrs(ctx PoSST) {
 
 		for row.Next() {
 			err = row.Scan(&cptr)
-
 			if err != nil {
 				continue // maybe not defined yet
 			}
@@ -4621,7 +4469,6 @@ func SynchronizeNPtrs(ctx PoSST) {
 				BASE_DB_CHANNEL_STATE[channel] = ClassedNodePtr(cptr)
 
 				for n := 0; n <= cptr; n++ {
-
 					switch channel {
 					case N1GRAM:
 						NODE_DIRECTORY.N1_top++
@@ -4646,21 +4493,21 @@ func SynchronizeNPtrs(ctx PoSST) {
 			}
 		}
 	}
-
 }
 
 // **************************************************************************
 // Graphical view, axial geometry
 // **************************************************************************
 
-const R0 = 0.4 // radii should not overlap
-const R1 = 0.3
-const R2 = 0.1
+const (
+	R0 = 0.4 // radii should not overlap
+	R1 = 0.3
+	R2 = 0.1
+)
 
 // **************************************************************************
 
 func RelativeOrbit(origin Coords, radius float64, n int, max int) Coords {
-
 	var xyz Coords
 	var offset float64
 
@@ -4684,13 +4531,11 @@ func RelativeOrbit(origin Coords, radius float64, n int, max int) Coords {
 // **************************************************************************
 
 func SetOrbitCoords(xyz Coords, orb [ST_TOP][]Orbit) [ST_TOP][]Orbit {
-
 	var r1max, r2max int
 
 	// Count all the orbital nodes at this location to calc space
 
 	for sti := 0; sti < ST_TOP; sti++ {
-
 		for o := range orb[sti] {
 			switch orb[sti][o].Radius {
 			case 1:
@@ -4706,7 +4551,6 @@ func SetOrbitCoords(xyz Coords, orb [ST_TOP][]Orbit) [ST_TOP][]Orbit {
 	var r1, r2 int
 
 	for sti := 0; sti < ST_TOP; sti++ {
-
 		for o := 0; o < len(orb[sti]); o++ {
 			if orb[sti][o].Radius == 1 {
 				anchor := RelativeOrbit(xyz, R1, r1, r1max)
@@ -4729,9 +4573,8 @@ func SetOrbitCoords(xyz Coords, orb [ST_TOP][]Orbit) [ST_TOP][]Orbit {
 // **************************************************************************
 
 func AssignConeCoordinates(cone [][]Link, nth, swimlanes int) map[NodePtr]Coords {
-
-	var unique = make([][]NodePtr, 0)
-	var already = make(map[NodePtr]bool)
+	unique := make([][]NodePtr, 0)
+	already := make(map[NodePtr]bool)
 	var maxlen_tz int
 
 	// If we have multiple cones, each needs a separate name/graph space in X
@@ -4755,7 +4598,7 @@ func AssignConeCoordinates(cone [][]Link, nth, swimlanes int) map[NodePtr]Coords
 	// Find the total number of parallel swimlanes
 
 	for tz := 0; tz < maxlen_tz; tz++ {
-		var unique_section = make([]NodePtr, 0)
+		unique_section := make([]NodePtr, 0)
 		for x := 0; x < len(cone); x++ {
 			if tz < len(cone[x]) {
 				if !already[cone[x][tz].Dst] {
@@ -4774,8 +4617,7 @@ func AssignConeCoordinates(cone [][]Link, nth, swimlanes int) map[NodePtr]Coords
 // **************************************************************************
 
 func AssignStoryCoordinates(axis []Link, nth, swimlanes int, limit int) map[NodePtr]Coords {
-
-	var unique = make([][]NodePtr, 0)
+	unique := make([][]NodePtr, 0)
 
 	// Nth is segment nth of swimlanes, which has range (width=1.0)/swimlanes * [nth-nth+1]
 
@@ -4794,7 +4636,7 @@ func AssignStoryCoordinates(axis []Link, nth, swimlanes int, limit int) map[Node
 
 	for tz := 0; tz < maxlen_tz; tz++ {
 
-		var unique_section = make([]NodePtr, 0)
+		unique_section := make([]NodePtr, 0)
 
 		if !already[axis[tz].Dst] {
 			unique_section = append(unique_section, axis[tz].Dst)
@@ -4811,13 +4653,12 @@ func AssignStoryCoordinates(axis []Link, nth, swimlanes int, limit int) map[Node
 // **************************************************************************
 
 func AssignPageCoordinates(maplines []PageMap) map[NodePtr]Coords {
-
 	// Make a quasi causal cone [width][depth] to span the geometry
 
-	var directory = make(map[NodePtr]Coords)
-	var already = make(map[NodePtr]bool)
+	directory := make(map[NodePtr]Coords)
+	already := make(map[NodePtr]bool)
 	var axis []NodePtr
-	var satellites = make(map[NodePtr][]NodePtr)
+	satellites := make(map[NodePtr][]NodePtr)
 	var allnotes int
 
 	// Order unique axial leads and satellite notes
@@ -4845,7 +4686,7 @@ func AssignPageCoordinates(maplines []PageMap) map[NodePtr]Coords {
 
 	const screen = 2.0
 	const z_start = -1.0
-	var zinc = screen / float64(allnotes)
+	zinc := screen / float64(allnotes)
 
 	for tz := 0; tz < len(axis); tz++ {
 
@@ -4882,7 +4723,6 @@ func AssignPageCoordinates(maplines []PageMap) map[NodePtr]Coords {
 // **************************************************************************
 
 func AssignChapterCoordinates(nth, swimlanes int) Coords {
-
 	// Place chapters uniformly over the surface of a sphere, using
 	// the Fibonacci lattice
 
@@ -4918,7 +4758,6 @@ func AssignChapterCoordinates(nth, swimlanes int) Coords {
 // **************************************************************************
 
 func AssignContextSetCoordinates(origin Coords, nth, swimlanes int) Coords {
-
 	N := float64(swimlanes)
 	n := float64(nth)
 	latitude := float64(origin.Lat)
@@ -4949,7 +4788,6 @@ func AssignContextSetCoordinates(origin Coords, nth, swimlanes int) Coords {
 // **************************************************************************
 
 func AssignFragmentCoordinates(origin Coords, nth, swimlanes int) Coords {
-
 	// These are much more crowded, so stagger radius
 
 	N := float64(swimlanes)
@@ -4983,8 +4821,7 @@ func AssignFragmentCoordinates(origin Coords, nth, swimlanes int) Coords {
 // **************************************************************************
 
 func MakeCoordinateDirectory(XChannels []float64, unique [][]NodePtr, maxzlen, nth, swimlanes int) map[NodePtr]Coords {
-
-	var directory = make(map[NodePtr]Coords)
+	directory := make(map[NodePtr]Coords)
 
 	const totwidth = 2.0 // This is the width dimenion of the paths -1 to +1
 	const totdepth = 2.0 // This is the depth dimenion of the paths -1 to +1
@@ -5027,7 +4864,6 @@ func MakeCoordinateDirectory(XChannels []float64, unique [][]NodePtr, maxzlen, n
 // **************************************************************************
 
 func GetPathsAndSymmetries(ctx PoSST, start_set, end_set []NodePtr, chapter string, context []string, maxdepth int) [][]Link {
-
 	var left_paths, right_paths [][]Link
 	var ldepth, rdepth int = 1, 1
 	var Lnum, Rnum int
@@ -5062,11 +4898,9 @@ func GetPathsAndSymmetries(ctx PoSST, start_set, end_set []NodePtr, chapter stri
 // **************************************************************************
 
 func GetPathTransverseSuperNodes(ctx PoSST, solutions [][]Link, maxdepth int) [][]NodePtr {
-
 	var supernodes [][]NodePtr
 
 	for depth := 0; depth < maxdepth; depth++ {
-
 		for p_i := 0; p_i < len(solutions); p_i++ {
 
 			if depth == len(solutions[p_i])-1 {
@@ -5099,7 +4933,6 @@ func GetPathTransverseSuperNodes(ctx PoSST, solutions [][]Link, maxdepth int) []
 // **********************************************************
 
 func WaveFrontsOverlap(ctx PoSST, left_paths, right_paths [][]Link, Lnum, Rnum, ldepth, rdepth int) ([][]Link, [][]Link) {
-
 	// The wave front consists of Lnum and Rnum points left_paths[len()-1].
 	// Any of the
 
@@ -5114,7 +4947,6 @@ func WaveFrontsOverlap(ctx PoSST, left_paths, right_paths [][]Link, Lnum, Rnum, 
 	incidence := NodesOverlap(ctx, leftfront, rightfront)
 
 	for lp := range incidence {
-
 		for alternative := range incidence[lp] {
 
 			rp := incidence[lp][alternative]
@@ -5139,7 +4971,6 @@ func WaveFrontsOverlap(ctx PoSST, left_paths, right_paths [][]Link, Lnum, Rnum, 
 // **********************************************************
 
 func WaveFront(path [][]Link, num int) []NodePtr {
-
 	// assemble the cross cutting nodeptrs of the wavefronts
 
 	var front []NodePtr
@@ -5154,8 +4985,7 @@ func WaveFront(path [][]Link, num int) []NodePtr {
 // **********************************************************
 
 func NodesOverlap(ctx PoSST, left, right []NodePtr) map[int][]int {
-
-	var LRsplice = make(map[int][]int)
+	LRsplice := make(map[int][]int)
 
 	// Return coordinate pairs of partial paths to splice
 
@@ -5173,9 +5003,7 @@ func NodesOverlap(ctx PoSST, left, right []NodePtr) map[int][]int {
 // **********************************************************
 
 func LeftJoin(LRsplice, seq []Link) []Link {
-
 	for i := 0; i < len(seq); i++ {
-
 		LRsplice = append(LRsplice, seq[i])
 	}
 
@@ -5185,7 +5013,6 @@ func LeftJoin(LRsplice, seq []Link) []Link {
 // **********************************************************
 
 func RightComplementJoin(LRsplice, adjoint []Link) []Link {
-
 	// len(seq)-1 matches the last node of right join
 	// when we invert, links and destinations are shifted
 
@@ -5199,8 +5026,7 @@ func RightComplementJoin(LRsplice, adjoint []Link) []Link {
 // **********************************************************
 
 func IsDAG(seq []Link) bool {
-
-	var freq = make(map[NodePtr]int)
+	freq := make(map[NodePtr]int)
 
 	for i := range seq {
 		freq[seq[i].Dst]++
@@ -5218,7 +5044,6 @@ func IsDAG(seq []Link) bool {
 // **********************************************************
 
 func Together(matroid [][]NodePtr, n1 NodePtr, n2 NodePtr) [][]NodePtr {
-
 	// matroid [snode][member]
 
 	if len(matroid) == 0 {
@@ -5251,7 +5076,6 @@ func Together(matroid [][]NodePtr, n1 NodePtr, n2 NodePtr) [][]NodePtr {
 // **********************************************************
 
 func IdempAddNodePtr(set []NodePtr, n NodePtr) []NodePtr {
-
 	if !InNodeSet(set, n) {
 		set = append(set, n)
 	}
@@ -5261,7 +5085,6 @@ func IdempAddNodePtr(set []NodePtr, n NodePtr) []NodePtr {
 // **********************************************************
 
 func InNodeSet(list []NodePtr, node NodePtr) bool {
-
 	for n := range list {
 		if list[n] == node {
 			return true
@@ -5277,13 +5100,12 @@ func InNodeSet(list []NodePtr, node NodePtr) bool {
 // **************************************************************************
 
 func GetDBAdjacentNodePtrBySTType(ctx PoSST, sttypes []int, chap string, cn []string, transpose bool) ([][]float32, []NodePtr) {
-
 	// Return a weighted adjacency matrix by nptr, and an index:nptr lookup table
 	// Returns a connected adjacency matrix for the subgraph and a lookup table
 	// A bit memory intensive, but possibly unavoidable
 
 	var qstr, qwhere, qsearch string
-	var dim = len(sttypes)
+	dim := len(sttypes)
 
 	context := FormatSQLStringArray(cn)
 	chapter := "%" + chap + "%"
@@ -5309,15 +5131,14 @@ func GetDBAdjacentNodePtrBySTType(ctx PoSST, sttypes []int, chap string, cn []st
 	qstr = fmt.Sprintf("SELECT NPtr%s FROM Node WHERE lower(Chap) LIKE lower('%s') AND (%s)", qsearch, chapter, qwhere)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetDBAdjacentNodePtrBySTType Failed", err)
 		return nil, nil
 	}
 
-	var linkstr = make([]string, dim+1)
-	var protoadj = make(map[int][]Link)
-	var lookup = make(map[NodePtr]int)
+	linkstr := make([]string, dim+1)
+	protoadj := make(map[int][]Link)
+	lookup := make(map[NodePtr]int)
 	var rowindex int
 	var nodekey []NodePtr
 	var counter int
@@ -5420,7 +5241,6 @@ func GetDBAdjacentNodePtrBySTType(ctx PoSST, sttypes []int, chap string, cn []st
 // **************************************************************************
 
 func SymbolMatrix(m [][]float32) [][]string {
-
 	var symbol [][]string
 	dim := len(m)
 
@@ -5445,7 +5265,6 @@ func SymbolMatrix(m [][]float32) [][]string {
 //**************************************************************
 
 func SymbolicMultiply(m1, m2 [][]float32, s1, s2 [][]string) ([][]float32, [][]string) {
-
 	// trace the elements in a multiplication for path mapping
 
 	var m [][]float32
@@ -5464,7 +5283,6 @@ func SymbolicMultiply(m1, m2 [][]float32, s1, s2 [][]string) ([][]float32, [][]s
 			var symbols string
 
 			for j := 0; j < dim; j++ {
-
 				if m1[r][j] != 0 && m2[j][c] != 0 {
 					value += m1[r][j] * m2[j][c]
 					symbols += fmt.Sprintf("%s*%s", s1[r][j], s2[j][c])
@@ -5484,8 +5302,7 @@ func SymbolicMultiply(m1, m2 [][]float32, s1, s2 [][]string) ([][]float32, [][]s
 //**************************************************************
 
 func GetSparseOccupancy(m [][]float32, dim int) []int {
-
-	var sparse_count = make([]int, dim)
+	sparse_count := make([]int, dim)
 
 	for r := 0; r < dim; r++ {
 		for c := 0; c < dim; c++ {
@@ -5499,7 +5316,6 @@ func GetSparseOccupancy(m [][]float32, dim int) []int {
 //**************************************************************
 
 func SymmetrizeMatrix(m [][]float32) [][]float32 {
-
 	// CAUTION! unless we make a copy, go actually changes the original m!!! :o
 	// There is some very weird pathological memory behaviour here .. but this
 	// workaround seems to be stable
@@ -5526,7 +5342,6 @@ func SymmetrizeMatrix(m [][]float32) [][]float32 {
 //**************************************************************
 
 func TransposeMatrix(m [][]float32) [][]float32 {
-
 	var dim int = len(m)
 	var mt [][]float32 = make([][]float32, dim)
 
@@ -5551,8 +5366,7 @@ func TransposeMatrix(m [][]float32) [][]float32 {
 //**************************************************************
 
 func MakeInitVector(dim int, init_value float32) []float32 {
-
-	var v = make([]float32, dim)
+	v := make([]float32, dim)
 
 	for r := 0; r < dim; r++ {
 		v[r] = init_value
@@ -5564,12 +5378,10 @@ func MakeInitVector(dim int, init_value float32) []float32 {
 //**************************************************************
 
 func MatrixOpVector(m [][]float32, v []float32) []float32 {
-
-	var vp = make([]float32, len(m))
+	vp := make([]float32, len(m))
 
 	for r := 0; r < len(m); r++ {
 		for c := 0; c < len(m); c++ {
-
 			if m[r][c] != 0 {
 				vp[r] += m[r][c] * v[c]
 			}
@@ -5581,7 +5393,6 @@ func MatrixOpVector(m [][]float32, v []float32) []float32 {
 //**************************************************************
 
 func ComputeEVC(adj [][]float32) []float32 {
-
 	v := MakeInitVector(len(adj), 1.0)
 	vlast := v
 
@@ -5605,7 +5416,6 @@ func ComputeEVC(adj [][]float32) []float32 {
 //**************************************************************
 
 func GetVecMax(v []float32) (float32, int) {
-
 	var max float32 = -1
 	var index int
 
@@ -5622,7 +5432,6 @@ func GetVecMax(v []float32) (float32, int) {
 //**************************************************************
 
 func NormalizeVec(v []float32, div float32) []float32 {
-
 	if div == 0 {
 		div = 1
 	}
@@ -5637,7 +5446,6 @@ func NormalizeVec(v []float32, div float32) []float32 {
 //**************************************************************
 
 func CompareVec(v1, v2 []float32) float32 {
-
 	var max float32 = -1
 
 	for r := range v1 {
@@ -5658,14 +5466,13 @@ func CompareVec(v1, v2 []float32) float32 {
 //**************************************************************
 
 func FindGradientFieldTop(sadj [][]float32, evc []float32) (map[int][]int, []int, [][]int) {
-
 	// Hill climbing gradient search
 
 	dim := len(evc)
 
 	var localtop []int
 	var paths [][]int
-	var regions = make(map[int][]int)
+	regions := make(map[int][]int)
 
 	for index := 0; index < dim; index++ {
 
@@ -5684,7 +5491,6 @@ func FindGradientFieldTop(sadj [][]float32, evc []float32) (map[int][]int, []int
 //**************************************************************
 
 func GetHillTop(index int, sadj [][]float32, evc []float32) (int, []int) {
-
 	topnode := index
 	visited := make(map[int]bool)
 	visited[index] = true
@@ -5700,7 +5506,6 @@ func GetHillTop(index int, sadj [][]float32, evc []float32) (int, []int) {
 		winner := topnode
 
 		for ngh := 0; ngh < dim; ngh++ {
-
 			if (sadj[topnode][ngh] > 0) && !visited[ngh] {
 				visited[ngh] = true
 
@@ -5726,7 +5531,6 @@ func GetHillTop(index int, sadj [][]float32, evc []float32) (int, []int) {
 // **************************************************************************
 
 func AdjointLinkPath(LL []Link) []Link {
-
 	var adjoint []Link
 
 	// len(seq)-1 matches the last node of right join
@@ -5748,11 +5552,9 @@ func AdjointLinkPath(LL []Link) []Link {
 // **************************************************************************
 
 func NextLinkArrow(ctx PoSST, path []Link, arrows []ArrowPtr) string {
-
 	var rstring string
 
 	if len(path) > 1 {
-
 		for l := 1; l < len(path); l++ {
 
 			if !MatchArrows(arrows, path[l].Arr) {
@@ -5777,7 +5579,6 @@ func NextLinkArrow(ctx PoSST, path []Link, arrows []ArrowPtr) string {
 // **************************************************************************
 
 func IdempAddNote(list []Orbit, item Orbit) []Orbit {
-
 	for o := range list {
 		if list[o].Dst == item.Dst && list[o].Arrow == item.Arrow &&
 			list[o].Text == item.Text {
@@ -5795,7 +5596,6 @@ func IdempAddNote(list []Orbit, item Orbit) []Orbit {
 // **************************************************************************
 
 func GetSequenceContainers(ctx PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, sttypes []int, limit int) []Story {
-
 	// Story search
 
 	var stories []Story
@@ -5860,7 +5660,6 @@ func GetSequenceContainers(ctx PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, 
 // **************************************************************************
 
 func GetNodeOrbit(ctx PoSST, nptr NodePtr, exclude_vector string, limit int) [ST_TOP][]Orbit {
-
 	// Find the orbiting linked nodes of NPtr, start with properties of node
 
 	const probe_radius = 3
@@ -5874,11 +5673,9 @@ func GetNodeOrbit(ctx PoSST, nptr NodePtr, exclude_vector string, limit int) [ST
 	// Organize by the leading nearest-neighbour by vector/link type
 
 	for stindex := 0; stindex < ST_TOP; stindex++ {
-
 		// Sweep different radial paths
 
 		for angle := 0; angle < len(sweep); angle++ {
-
 			// len(sweep[angle]) is the length of the probe path at angle
 
 			if sweep[angle] != nil && len(sweep[angle]) > 1 {
@@ -5942,7 +5739,6 @@ func GetNodeOrbit(ctx PoSST, nptr NodePtr, exclude_vector string, limit int) [ST
 // **************************************************************************
 
 func GetLongestAxialPath(ctx PoSST, nptr NodePtr, arrowptr ArrowPtr, limit int) []Link {
-
 	// Used in story search along extended STtype paths
 
 	var max int = 1
@@ -5971,9 +5767,7 @@ func GetLongestAxialPath(ctx PoSST, nptr NodePtr, arrowptr ArrowPtr, limit int) 
 // **************************************************************************
 
 func TruncatePathsByArrow(path []Link, arrow ArrowPtr) ([]Link, int) {
-
 	for hop := 1; hop < len(path); hop++ {
-
 		if path[hop].Arr != arrow {
 			return path[:hop], hop
 		}
@@ -5985,7 +5779,6 @@ func TruncatePathsByArrow(path []Link, arrow ArrowPtr) ([]Link, int) {
 //******************************************************************
 
 func ContextIntentAnalysis(spectrum map[string]int, clusters []string) ([]string, []string) {
-
 	var intentional []string
 	const intent_limit = 3 // policy from research
 
@@ -6015,7 +5808,7 @@ func ContextIntentAnalysis(spectrum map[string]int, clusters []string) ([]string
 	// Now we have a small set of largely separated major strings.
 	// One more round of diffs for a final separation
 
-	var ambient = make(map[string]int)
+	ambient := make(map[string]int)
 
 	context := Map2List(spectrum)
 
@@ -6039,7 +5832,6 @@ func ContextIntentAnalysis(spectrum map[string]int, clusters []string) ([]string
 // *********************************************************************
 
 func UpdateLastSawSection(ctx PoSST, name string) {
-
 	s := fmt.Sprintf("select LastSawSection('%s')", name)
 	ctx.DB.QueryRow(s)
 }
@@ -6047,7 +5839,6 @@ func UpdateLastSawSection(ctx PoSST, name string) {
 // *********************************************************************
 
 func UpdateLastSawNPtr(ctx PoSST, class, cptr int, name string) {
-
 	s := fmt.Sprintf("select LastSawNPtr('(%d,%d)','%s')", class, cptr, name)
 	ctx.DB.QueryRow(s)
 }
@@ -6055,11 +5846,9 @@ func UpdateLastSawNPtr(ctx PoSST, class, cptr int, name string) {
 //******************************************************************
 
 func GetLastSawSection(ctx PoSST) []LastSeen {
-
 	qstr := fmt.Sprintf("SELECT section,nptr,last,freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen ORDER BY section")
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("GetLastSawSection failed\n", qstr, err)
 		return nil
@@ -6089,20 +5878,17 @@ func GetLastSawSection(ctx PoSST) []LastSeen {
 //******************************************************************
 
 func GetLastSawNPtr(ctx PoSST, nptr NodePtr) LastSeen {
-
 	var ls LastSeen
 
 	qstr := fmt.Sprintf("SELECT section,last,freq,delta as pdelta,EXTRACT(EPOCH FROM NOW()-last) as ndelta from Lastseen WHERE NPTR='(%d,%d)'::NodePtr", nptr.Class, nptr.CPtr)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("GetLastSawNPtr failed\n", qstr, err)
 		return ls
 	}
 
 	for row.Next() {
-
 		err = row.Scan(&ls.Section, &ls.Last, &ls.Freq, &ls.Pdelta, &ls.Ndelta)
 	}
 
@@ -6111,7 +5897,6 @@ func GetLastSawNPtr(ctx PoSST, nptr NodePtr) LastSeen {
 	row.Close()
 
 	return ls
-
 }
 
 // *********************************************************************
@@ -6127,17 +5912,20 @@ type History struct {
 
 // *********************************************************************
 
-var STM_INT_FRAG = make(map[string]History)  // for intentional (exceptional) fragments
-var STM_AMB_FRAG = make(map[string]History)  // for ambient (repeated) fragments
-var STM_INV_GROUP = make(map[string]History) // look for invariants
+var (
+	STM_INT_FRAG  = make(map[string]History) // for intentional (exceptional) fragments
+	STM_AMB_FRAG  = make(map[string]History) // for ambient (repeated) fragments
+	STM_INV_GROUP = make(map[string]History) // look for invariants
+)
 
-const FORGOTTEN = 10800
-const TEXT_SIZE_LIMIT = 30
+const (
+	FORGOTTEN       = 10800
+	TEXT_SIZE_LIMIT = 30
+)
 
 // *********************************************************************
 
 func UpdateSTMContext(ctx PoSST, ambient, key string, now int64, params SearchParameters) string {
-
 	var context []string
 
 	if params.Sequence || params.From != nil || params.To != nil {
@@ -6169,7 +5957,6 @@ func UpdateSTMContext(ctx PoSST, ambient, key string, now int64, params SearchPa
 // *********************************************************************
 
 func AddContext(ctx PoSST, ambient, key string, now int64, tokens []string) string {
-
 	for t := range tokens {
 
 		token := tokens[t]
@@ -6198,7 +5985,7 @@ func AddContext(ctx PoSST, ambient, key string, now int64, tokens []string) stri
 		CommitContextToken(token, now, ambient)
 	}
 
-	var format = make(map[string]int)
+	format := make(map[string]int)
 
 	for fr := range STM_AMB_FRAG {
 
@@ -6228,7 +6015,6 @@ func AddContext(ctx PoSST, ambient, key string, now int64, tokens []string) stri
 // *********************************************************************
 
 func CommitContextToken(token string, now int64, key string) {
-
 	var last, obs History
 
 	// Check if already known ambient
@@ -6264,32 +6050,27 @@ func CommitContextToken(token string, now int64, key string) {
 // *********************************************************************
 
 func ContextInterferometry(now_ctx string) {
-
 	// deleted
-
 }
 
 // *********************************************************************
 
 func ShowContext(amb, intent, key string) {
-
 	fmt.Println()
 	fmt.Println("  .......................................................")
 	fmt.Printf("    Recurrent now: %s\n", key)
 	fmt.Printf("    Intentional  : %s\n", intent)
 	fmt.Printf("    Ambient      : %s\n", amb)
 	fmt.Println("  .......................................................")
-
 }
 
 // **************************************************************************
 
 func IntersectContextParts(context_clusters []string) (int, []string, [][]int) {
-
 	// return a weighted upper triangular matrix of overlaps between frags,
 	// and an idempotent list of fragments
 
-	var idemp = make(map[string]int)
+	idemp := make(map[string]int)
 	var cluster_list []string
 
 	for s := range context_clusters {
@@ -6326,7 +6107,6 @@ func IntersectContextParts(context_clusters []string) (int, []string, [][]int) {
 // **************************************************************************
 
 func DiffClusters(l1, l2 string) (string, string) {
-
 	// The fragments arrive as comma separated strings that are
 	// already composed or ordered n-grams
 
@@ -6346,9 +6126,8 @@ func DiffClusters(l1, l2 string) (string, string) {
 // **************************************************************************
 
 func OverlapMatrix(m1, m2 map[string]int) (string, string) {
-
-	var common = make(map[string]int)
-	var separate = make(map[string]int)
+	common := make(map[string]int)
+	separate := make(map[string]int)
 
 	// sieve shared / individual parts
 
@@ -6378,8 +6157,7 @@ func OverlapMatrix(m1, m2 map[string]int) (string, string) {
 // **************************************************************************
 
 func GetContextTokenFrequencies(fraglist []string) map[string]int {
-
-	var spectrum = make(map[string]int)
+	spectrum := make(map[string]int)
 
 	for l := range fraglist {
 		fragments := strings.Split(fraglist[l], ", ")
@@ -6400,7 +6178,6 @@ func GetContextTokenFrequencies(fraglist []string) map[string]int {
 // **************************************************************************
 
 func PrintNodeOrbit(ctx PoSST, nptr NodePtr, limit int) {
-
 	node := GetDBNodeByNodePtr(ctx, nptr)
 	fmt.Print("\"")
 	ShowText(node.S, SCREENWIDTH)
@@ -6423,7 +6200,6 @@ func PrintNodeOrbit(ctx PoSST, nptr NodePtr, limit int) {
 // **************************************************************************
 
 func PrintLinkOrbit(notes [ST_TOP][]Orbit, sttype int, indent_level int) {
-
 	t := STTypeToSTIndex(sttype)
 
 	for n := range notes[t] {
@@ -6441,20 +6217,17 @@ func PrintLinkOrbit(notes [ST_TOP][]Orbit, sttype int, indent_level int) {
 		}
 
 	}
-
 }
 
 // **************************************************************************
 
 func PrintLinkPath(ctx PoSST, cone [][]Link, p int, prefix string, chapter string, context []string) {
-
 	PrintSomeLinkPath(ctx, cone, p, prefix, chapter, context, 10000)
 }
 
 // **************************************************************************
 
 func PrintSomeLinkPath(ctx PoSST, cone [][]Link, p int, prefix string, chapter string, context []string, limit int) {
-
 	count := 0
 
 	if len(cone[p]) > 1 {
@@ -6531,7 +6304,6 @@ func PrintSomeLinkPath(ctx PoSST, cone [][]Link, p int, prefix string, chapter s
 // **************************************************************************
 
 func JSONNodeEvent(ctx PoSST, nptr NodePtr, xyz Coords, orbits [ST_TOP][]Orbit) NodeEvent {
-
 	node := GetDBNodeByNodePtr(ctx, nptr)
 
 	var event NodeEvent
@@ -6548,7 +6320,6 @@ func JSONNodeEvent(ctx PoSST, nptr NodePtr, xyz Coords, orbits [ST_TOP][]Orbit) 
 // **************************************************************************
 
 func LinkWebPaths(ctx PoSST, cone [][]Link, nth int, chapter string, context []string, swimlanes, limit int) [][]WebPath {
-
 	// This is dealing in good faith with one of swimlanes cones, assigning equal width to all
 	// The cone is a flattened array, we can assign spatial coordinates for visualization
 
@@ -6616,7 +6387,6 @@ func LinkWebPaths(ctx PoSST, cone [][]Link, nth int, chapter string, context []s
 // **************************************************************************
 
 func GetChaptersByChapContext(ctx PoSST, chap string, cn []string, limit int) map[string][]string {
-
 	qstr := ""
 	chap_col := ""
 
@@ -6645,14 +6415,13 @@ func GetChaptersByChapContext(ctx PoSST, chap string, cn []string, limit int) ma
 	qstr = fmt.Sprintf("SELECT DISTINCT chap,ctx FROM PageMap WHERE match_context(ctx,%s) %s ORDER BY Chap", context, chap_col)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetChaptersByChapContext Failed", err, qstr)
 	}
 
 	var rchap string
 	var rcontext ContextPtr
-	var toc = make(map[string][]string)
+	toc := make(map[string][]string)
 
 	for row.Next() {
 		err = row.Scan(&rchap, &rcontext)
@@ -6693,7 +6462,6 @@ func GetChaptersByChapContext(ctx PoSST, chap string, cn []string, limit int) ma
 // **************************************************************************
 
 func JSONPage(ctx PoSST, maplines []PageMap) string {
-
 	var webnotes PageView
 	var lastchap, lastctx string
 	var signalchap, signalctx, signalchange string
@@ -6779,7 +6547,6 @@ func JSONPage(ctx PoSST, maplines []PageMap) string {
 // **************************************************************************
 
 func GetAppointedNodesByArrow(ctx PoSST, arrow ArrowPtr, cn []string, chap string, size int) map[ArrowPtr][]Appointment {
-
 	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
 	// grouped by arrow
 
@@ -6806,17 +6573,16 @@ func GetAppointedNodesByArrow(ctx PoSST, arrow ArrowPtr, cn []string, chap strin
 	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))", int(reverse_arrow), sttype, size, chap_col, context, remove_chap_accents)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetAppointedNodesByArrow Failed", err, qstr)
 	}
 
 	var whole string
 
-	var retval = make(map[ArrowPtr][]Appointment)
+	retval := make(map[ArrowPtr][]Appointment)
 
 	for row.Next() {
-		err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
+		err = row.Scan(&whole) // arrint,&sttype,&rchap,&rctx,&apex,&arry)
 
 		next := ParseAppointedNodeCluster(whole)
 		retval[next.Arr] = append(retval[next.Arr], next)
@@ -6830,7 +6596,6 @@ func GetAppointedNodesByArrow(ctx PoSST, arrow ArrowPtr, cn []string, chap strin
 // **************************************************************************
 
 func GetAppointedNodesBySTType(ctx PoSST, sttype int, cn []string, chap string, size int) map[ArrowPtr][]Appointment {
-
 	// return a map of all the nodes in chap,context that are pointed to by the same type of arrow
 	// grouped by arrow
 
@@ -6853,17 +6618,16 @@ func GetAppointedNodesBySTType(ctx PoSST, sttype int, cn []string, chap string, 
 	qstr := fmt.Sprintf("SELECT unnest(GetAppointments(%d,%d,%d,'%s',%s,%v))", -1, sttype, size, chap_col, context, remove_chap_accents)
 
 	row, err := ctx.DB.Query(qstr)
-
 	if err != nil {
 		fmt.Println("QUERY GetAppointedNodesByArrow Failed", err, qstr)
 	}
 
 	var whole string
 
-	var retval = make(map[ArrowPtr][]Appointment)
+	retval := make(map[ArrowPtr][]Appointment)
 
 	for row.Next() {
-		err = row.Scan(&whole) //arrint,&sttype,&rchap,&rctx,&apex,&arry)
+		err = row.Scan(&whole) // arrint,&sttype,&rchap,&rctx,&apex,&arry)
 
 		next := ParseAppointedNodeCluster(whole)
 		retval[next.Arr] = append(retval[next.Arr], next)
@@ -6877,7 +6641,6 @@ func GetAppointedNodesBySTType(ctx PoSST, sttype int, cn []string, chap string, 
 // **************************************************************************
 
 func ParseAppointedNodeCluster(whole string) Appointment {
-
 	//  (13,-1,maze,{},"(1,3122)","{""(1,3121)"",""(1,3138)""}")
 
 	var next Appointment
@@ -6890,7 +6653,7 @@ func ParseAppointedNodeCluster(whole string) Appointment {
 
 	var items []string
 	var item []rune
-	var protected = false
+	protected := false
 
 	for u := range uni_array {
 
@@ -6946,7 +6709,6 @@ func ParseAppointedNodeCluster(whole string) Appointment {
 // **************************************************************************
 
 func TallyPath(ctx PoSST, path []Link, between map[string]int) map[string]int {
-
 	// count how often each node appears in the different path solutions
 
 	for leg := range path {
@@ -6960,14 +6722,13 @@ func TallyPath(ctx PoSST, path []Link, between map[string]int) map[string]int {
 // **************************************************************************
 
 func BetweenNessCentrality(ctx PoSST, solutions [][]Link) []string {
-
-	var betweenness = make(map[string]int)
+	betweenness := make(map[string]int)
 
 	for s := 0; s < len(solutions); s++ {
 		betweenness = TallyPath(ctx, solutions[s], betweenness)
 	}
 
-	var inv = make(map[int][]string)
+	inv := make(map[int][]string)
 	var order []int
 
 	for key := range betweenness {
@@ -7003,11 +6764,9 @@ func BetweenNessCentrality(ctx PoSST, solutions [][]Link) []string {
 // **************************************************************************
 
 func SuperNodesByConicPath(solutions [][]Link, maxdepth int) [][]NodePtr {
-
 	var supernodes [][]NodePtr
 
 	for depth := 0; depth < maxdepth*2; depth++ {
-
 		for p_i := 0; p_i < len(solutions); p_i++ {
 
 			if depth == len(solutions[p_i])-1 {
@@ -7040,7 +6799,6 @@ func SuperNodesByConicPath(solutions [][]Link, maxdepth int) [][]NodePtr {
 // **************************************************************************
 
 func SuperNodes(ctx PoSST, solutions [][]Link, maxdepth int) []string {
-
 	supernodes := SuperNodesByConicPath(solutions, maxdepth)
 
 	var retval []string
@@ -7131,8 +6889,7 @@ const (
 //******************************************************************
 
 func DecodeSearchField(cmd string) SearchParameters {
-
-	var keywords = []string{
+	keywords := []string{
 		CMD_NOTES, CMD_BROWSE, CMD_PATH,
 		CMD_PATH, CMD_FROM, CMD_TO,
 		CMD_SEQ1, CMD_SEQ2, CMD_STORY, CMD_STORIES,
@@ -7165,7 +6922,6 @@ func DecodeSearchField(cmd string) SearchParameters {
 		subparts := SplitQuotes(pts[p])
 
 		for w := 0; w < len(subparts); w++ {
-
 			if IsCommand(subparts[w], keywords) {
 				// special case for TO with implicit FROM, and USED AS
 				if p > 0 && subparts[w] == "to" {
@@ -7221,7 +6977,6 @@ func DecodeSearchField(cmd string) SearchParameters {
 //******************************************************************
 
 func FillInParameters(cmd_parts [][]string, keywords []string) SearchParameters {
-
 	var param SearchParameters
 
 	for c := 0; c < len(cmd_parts); c++ {
@@ -7431,7 +7186,6 @@ func FillInParameters(cmd_parts [][]string, keywords []string) SearchParameters 
 //******************************************************************
 
 func IsParam(i, lenp int, keys []string, keywords []string) bool {
-
 	// Make sure the next item is not the start of a new token
 
 	const min_sense = 4
@@ -7452,7 +7206,6 @@ func IsParam(i, lenp int, keys []string, keywords []string) bool {
 //******************************************************************
 
 func IsLiteralNptr(s string) bool {
-
 	var a, b int = -1, -1
 
 	s = strings.TrimSpace(s)
@@ -7469,7 +7222,6 @@ func IsLiteralNptr(s string) bool {
 //******************************************************************
 
 func SomethingLike(s string, keywords []string) string {
-
 	const min_sense = 4
 
 	for k := 0; k < len(keywords); k++ {
@@ -7490,7 +7242,6 @@ func SomethingLike(s string, keywords []string) string {
 //******************************************************************
 
 func IsCommand(s string, list []string) bool {
-
 	const min_sense = 5
 
 	for w := range list {
@@ -7510,7 +7261,6 @@ func IsCommand(s string, list []string) bool {
 //******************************************************************
 
 func AddOrphan(param SearchParameters, orphan string) SearchParameters {
-
 	// if a keyword isn't followed by the right param it was possibly
 	// intended as a search term not a command, so add back
 
@@ -7532,7 +7282,6 @@ func AddOrphan(param SearchParameters, orphan string) SearchParameters {
 //******************************************************************
 
 func SplitQuotes(s string) []string {
-
 	var items []string
 	var upto []rune
 	cmd := []rune(s)
@@ -7589,7 +7338,6 @@ func SplitQuotes(s string) []string {
 // **************************************************************************
 
 func DeQ(s string) string {
-
 	return strings.Trim(s, "\"")
 }
 
@@ -7637,28 +7385,31 @@ var GR_SHIFT_TEXT = []string{
 
 // For second resolution Unix time
 
-const CF_MONDAY_MORNING = 345200
-const CF_MEASURE_INTERVAL = 5 * 60
-const CF_SHIFT_INTERVAL = 6 * 3600
+const (
+	CF_MONDAY_MORNING   = 345200
+	CF_MEASURE_INTERVAL = 5 * 60
+	CF_SHIFT_INTERVAL   = 6 * 3600
+)
 
-const MINUTES_PER_HOUR = 60
-const SECONDS_PER_MINUTE = 60
-const SECONDS_PER_HOUR = (60 * SECONDS_PER_MINUTE)
-const SECONDS_PER_DAY = (24 * SECONDS_PER_HOUR)
-const SECONDS_PER_WEEK = (7 * SECONDS_PER_DAY)
-const SECONDS_PER_YEAR = (365 * SECONDS_PER_DAY)
-const HOURS_PER_SHIFT = 6
-const SECONDS_PER_SHIFT = (HOURS_PER_SHIFT * SECONDS_PER_HOUR)
-const SHIFTS_PER_DAY = 4
-const SHIFTS_PER_WEEK = (4 * 7)
+const (
+	MINUTES_PER_HOUR   = 60
+	SECONDS_PER_MINUTE = 60
+	SECONDS_PER_HOUR   = (60 * SECONDS_PER_MINUTE)
+	SECONDS_PER_DAY    = (24 * SECONDS_PER_HOUR)
+	SECONDS_PER_WEEK   = (7 * SECONDS_PER_DAY)
+	SECONDS_PER_YEAR   = (365 * SECONDS_PER_DAY)
+	HOURS_PER_SHIFT    = 6
+	SECONDS_PER_SHIFT  = (HOURS_PER_SHIFT * SECONDS_PER_HOUR)
+	SHIFTS_PER_DAY     = 4
+	SHIFTS_PER_WEEK    = (4 * 7)
+)
 
 // ****************************************************************************
 // Semantic spacetime timeslots
 // ****************************************************************************
 
 func DoNowt(then time.Time) (string, string) {
-
-	//then := given.UnixNano()
+	// then := given.UnixNano()
 
 	// Time on the torus (donut/doughnut) (CFEngine style)
 	// The argument is a Golang time unit e.g. then := time.Now()
@@ -7675,9 +7426,9 @@ func DoNowt(then time.Time) (string, string) {
 	quarter := fmt.Sprintf("Qu%d", then.Minute()/15+1)
 	shift := fmt.Sprintf("%s", GR_SHIFT_TEXT[then.Hour()/6])
 
-	//secs := then.Second()
-	//nano := then.Nanosecond()
-	//mins := fmt.Sprintf("Min%02d",then.Minute())
+	// secs := then.Second()
+	// nano := then.Nanosecond()
+	// mins := fmt.Sprintf("Min%02d",then.Minute())
 
 	n_season, s_season := Season(month)
 
@@ -7701,7 +7452,6 @@ func DoNowt(then time.Time) (string, string) {
 // ****************************************************************************
 
 func GetTimeContext() (string, string, int64) {
-
 	now := time.Now()
 	context, keyslot := DoNowt(now)
 
@@ -7711,7 +7461,6 @@ func GetTimeContext() (string, string, int64) {
 // ****************************************************************************
 
 func GetUnixTimeKey(now int64) string {
-
 	// Time on the torus (donut/doughnut) (CFEngine style)
 	// The argument is in traditional UNIX "time_t" unit e.g. then := time.Unix()
 	// This is a simple wrapper to DoNowt() returning only a db-suitable keyname
@@ -7725,7 +7474,6 @@ func GetUnixTimeKey(now int64) string {
 // ****************************************************************************
 
 func Season(month string) (string, string) {
-
 	switch month {
 
 	case "December", "January", "February":
@@ -7746,13 +7494,11 @@ func Season(month string) (string, string) {
 //*****************************************************************
 
 func ReadFile(filename string) string {
-
 	// Read a string and strip out characters that can't be used in kenames
 	// to yield a "pure" text for n-gram classification, with fewer special chars
 	// The text marks end of sentence with a # for later splitting
 
 	content, err := ioutil.ReadFile(filename)
-
 	if err != nil {
 		fmt.Println("Couldn't find or open", filename)
 		os.Exit(-1)
@@ -7770,21 +7516,27 @@ func ReadFile(filename string) string {
 // Text Fractionation (alphabetic language)
 //**************************************************************
 
-const N_GRAM_MAX = 6
-const N_GRAM_MIN = 2 // fragments that are too small are exponentially large in number and meaningless
+const (
+	N_GRAM_MAX = 6
+	N_GRAM_MIN = 2 // fragments that are too small are exponentially large in number and meaningless
+)
 
-const DUNBAR_5 = 5
-const DUNBAR_15 = 15
-const DUNBAR_30 = 45
-const DUNBAR_150 = 150
+const (
+	DUNBAR_5   = 5
+	DUNBAR_15  = 15
+	DUNBAR_30  = 45
+	DUNBAR_150 = 150
+)
 
 // **************************************************************
 
 var EXCLUSIONS []string
 
-var STM_NGRAM_FREQ [N_GRAM_MAX]map[string]float64
-var STM_NGRAM_LOCA [N_GRAM_MAX]map[string][]int
-var STM_NGRAM_LAST [N_GRAM_MAX]map[string]int
+var (
+	STM_NGRAM_FREQ [N_GRAM_MAX]map[string]float64
+	STM_NGRAM_LOCA [N_GRAM_MAX]map[string][]int
+	STM_NGRAM_LAST [N_GRAM_MAX]map[string]int
+)
 
 type TextRank struct {
 	Significance float64
@@ -7796,7 +7548,6 @@ type TextRank struct {
 //**************************************************************
 
 func NewNgramMap() [N_GRAM_MAX]map[string]float64 {
-
 	var thismap [N_GRAM_MAX]map[string]float64
 
 	for i := 1; i < N_GRAM_MAX; i++ {
@@ -7809,7 +7560,6 @@ func NewNgramMap() [N_GRAM_MAX]map[string]float64 {
 //**************************************************************
 
 func CleanText(s string) string {
-
 	// Start by stripping HTML / XML tags before para-split
 	// if they haven't been removed already
 
@@ -7849,7 +7599,6 @@ func CleanText(s string) string {
 //******************************************************************
 
 func FractionateTextFile(name string) ([][][]string, int) {
-
 	file := ReadFile(name)
 	proto_text := CleanText(file)
 	pbsf := SplitIntoParaSentences(proto_text)
@@ -7883,7 +7632,6 @@ func FractionateTextFile(name string) ([][][]string, int) {
 //**************************************************************
 
 func SplitIntoParaSentences(text string) [][][]string {
-
 	// Take arbitrary text (preprocessed by clean text) and return coherent
 	// semantic fragments as separate elements
 
@@ -7925,21 +7673,18 @@ func SplitIntoParaSentences(text string) [][][]string {
 //**************************************************************
 
 func SplitCommandText(s string) []string {
-
 	return SplitPunctuationTextWork(s, true)
 }
 
 //**************************************************************
 
 func SplitPunctuationText(s string) []string {
-
 	return SplitPunctuationTextWork(s, false)
 }
 
 //**************************************************************
 
 func SplitPunctuationTextWork(s string, allow_small bool) []string {
-
 	// first split sentence on intentional separators
 
 	var subfrags []string
@@ -7982,7 +7727,6 @@ func SplitPunctuationTextWork(s string, allow_small bool) []string {
 //**************************************************************
 
 func UnParen(s string) (string, bool) {
-
 	var counter byte = ' '
 
 	switch s[0] {
@@ -8006,17 +7750,15 @@ func UnParen(s string) (string, bool) {
 //**************************************************************
 
 func CountParens(s string) []string {
-
-	var text = []rune(strings.TrimSpace(s))
+	text := []rune(strings.TrimSpace(s))
 
 	var match rune = ' '
-	var count = make(map[rune]int)
+	count := make(map[rune]int)
 
 	var subfrags []string
 	var fragstart int = 0
 
 	for i := 0; i < len(text); i++ {
-
 		switch text[i] {
 		case '(':
 			count[')']++
@@ -8059,10 +7801,9 @@ func CountParens(s string) []string {
 				subfrags = append(subfrags, string(frag))
 			}
 		}
-
 	}
 
-	lastfrag := strings.TrimSpace(string(text[fragstart:len(text)]))
+	lastfrag := strings.TrimSpace(string(text[fragstart:]))
 
 	if len(lastfrag) > 0 {
 		subfrags = append(subfrags, string(lastfrag))
@@ -8076,7 +7817,6 @@ func CountParens(s string) []string {
 //**************************************************************
 
 func Fractionate(frag string, L int, frequency [N_GRAM_MAX]map[string]float64, min int) [N_GRAM_MAX][]string {
-
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
 
@@ -8095,7 +7835,6 @@ func Fractionate(frag string, L int, frequency [N_GRAM_MAX]map[string]float64, m
 //**************************************************************
 
 func AssessStaticIntent(frag string, L int, frequency [N_GRAM_MAX]map[string]float64, min int) float64 {
-
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
 
@@ -8123,7 +7862,6 @@ func AssessStaticIntent(frag string, L int, frequency [N_GRAM_MAX]map[string]flo
 //**************************************************************
 
 func AssessStaticTextAnomalies(L int, frequencies [N_GRAM_MAX]map[string]float64, locations [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]TextRank, [N_GRAM_MAX][]TextRank) {
-
 	// Try to split a text into anomalous/ambient i.e. intentional + contextual  parts
 
 	const coherence_length = DUNBAR_30 // approx narrative range or #sentences before new point/topic
@@ -8157,7 +7895,7 @@ func AssessStaticTextAnomalies(L int, frequencies [N_GRAM_MAX]map[string]float64
 
 	var intent [N_GRAM_MAX][]TextRank
 	var context [N_GRAM_MAX][]TextRank
-	var max_intentional = [N_GRAM_MAX]int{0, 0, DUNBAR_150, DUNBAR_150, DUNBAR_30, DUNBAR_15}
+	max_intentional := [N_GRAM_MAX]int{0, 0, DUNBAR_150, DUNBAR_150, DUNBAR_30, DUNBAR_15}
 
 	for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
 
@@ -8176,7 +7914,6 @@ func AssessStaticTextAnomalies(L int, frequencies [N_GRAM_MAX]map[string]float64
 //**************************************************************
 
 func IntentionalNgram(n int, ngram string, L int, coherence_length int) bool {
-
 	// If short file, everything is probably significant
 
 	if n == 1 {
@@ -8203,7 +7940,6 @@ func IntentionalNgram(n int, ngram string, L int, coherence_length int) bool {
 //**************************************************************
 
 func IntervalRadius(n int, ngram string) (int, int, int) {
-
 	// find minimax distances between n-grams (in sentences)
 
 	occurrences := len(STM_NGRAM_LOCA[n][ngram])
@@ -8238,7 +7974,6 @@ func IntervalRadius(n int, ngram string) (int, int, int) {
 //**************************************************************
 
 func AssessTextCoherentCoactivation(L int, ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX]map[string]int, [N_GRAM_MAX]map[string]int, int) {
-
 	// In this global assessment of coherence intervals, we separate each into text that is unique (intentional)
 	// and fragments that are repeated in any other interval, so this is an extreme view. Compare to fast/slow method
 	// below
@@ -8289,7 +8024,6 @@ func AssessTextCoherentCoactivation(L int, ngram_loc [N_GRAM_MAX]map[string][]in
 //**************************************************************
 
 func AssessTextFastSlow(L int, ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_MAX][]map[string]int, [N_GRAM_MAX][]map[string]int, int) {
-
 	// Use a running evaluation of context intervals to separate ngrams that are varying quickly (intentional)
 	// from those changing slowly (context). For each region, what if different from the last in fast and what
 	// remains the same as last is slow. This is remarkably effective and quick to calculate.
@@ -8328,7 +8062,6 @@ func AssessTextFastSlow(L int, ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_
 				fast[n][p-1] = make(map[string]int)
 
 				for ngram := range C[n][p-1] {
-
 					if C[n][p][ngram] > 0 && C[n][p-1][ngram] > 0 {
 						// ambients
 						slow[n][p-1][ngram]++
@@ -8347,7 +8080,6 @@ func AssessTextFastSlow(L int, ngram_loc [N_GRAM_MAX]map[string][]int) ([N_GRAM_
 //**************************************************************
 
 func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L, coherence_length int) ([N_GRAM_MAX][]map[string]int, int) {
-
 	var C [N_GRAM_MAX][]map[string]int
 
 	partitions := L/coherence_length + 1
@@ -8360,7 +8092,6 @@ func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L, coherence_length in
 		}
 
 		for ngram := range ngram_loc[n] {
-
 			// commute indices and expand to a sparse representation for simplicity
 
 			for s := range ngram_loc[n][ngram] {
@@ -8376,7 +8107,6 @@ func CoherenceSet(ngram_loc [N_GRAM_MAX]map[string][]int, L, coherence_length in
 //**************************************************************
 
 func NextWord(frag string, rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string, [N_GRAM_MAX][]string) {
-
 	// Word by word, we form a superposition of scores from n-grams of different lengths
 	// as a simple sum. This means lower lengths will dominate as there are more of them
 	// so we define intentionality proportional to the length also as compensation
@@ -8430,7 +8160,6 @@ func NextWord(frag string, rrbuffer [N_GRAM_MAX][]string) ([N_GRAM_MAX][]string,
 //**************************************************************
 
 func CleanNgram(s string) string {
-
 	re := regexp.MustCompile("[-][-][-].*")
 	s = re.ReplaceAllString(s, "")
 	re = regexp.MustCompile("[\"—“”!?`,.:;—()_]+")
@@ -8445,7 +8174,6 @@ func CleanNgram(s string) string {
 //**************************************************************
 
 func ExtractIntentionalTokens(L int, selected []TextRank, Nmin, Nmax int) ([][]string, [][]string, []string, []string) {
-
 	// This function examines a fractionation of text for fractions, only for
 	// sentences that are selected, and extracts some shared context
 
@@ -8460,8 +8188,8 @@ func ExtractIntentionalTokens(L int, selected []TextRank, Nmin, Nmax int) ([][]s
 
 	// returns
 
-	var fastparts = make([][]string, doc_parts)
-	var slowparts = make([][]string, doc_parts)
+	fastparts := make([][]string, doc_parts)
+	slowparts := make([][]string, doc_parts)
 	var fastwhole []string
 	var slowwhole []string
 
@@ -8471,7 +8199,6 @@ func ExtractIntentionalTokens(L int, selected []TextRank, Nmin, Nmax int) ([][]s
 	}
 
 	for p := 0; p < doc_parts; p++ {
-
 		for n := Nmin; n < Nmax; n++ {
 
 			var amb []string
@@ -8586,7 +8313,6 @@ func ExtractIntentionalTokens(L int, selected []TextRank, Nmin, Nmax int) ([][]s
 //**************************************************************
 
 func ExcludedByBindings(firstword, lastword string) bool {
-
 	// A standalone fragment can't start/end with these words, because they
 	// Promise to bind to something else...
 	// Rather than looking for semantics, look at spacetime promises only - words that bind strongly
@@ -8594,9 +8320,9 @@ func ExcludedByBindings(firstword, lastword string) bool {
 
 	// Promise bindings in English. This domain knowledge saves us a lot of training analysis
 
-	var forbidden_ending = []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "was", "has", "be", "with", "using", "that", "who", "to", "no", "because", "at", "but", "yes", "no", "yeah", "yay", "in", "which", "what", "as", "he", "she", "they", "all", "I", "they", "from", "for", "then"}
+	forbidden_ending := []string{"but", "and", "the", "or", "a", "an", "its", "it's", "their", "your", "my", "of", "as", "are", "is", "was", "has", "be", "with", "using", "that", "who", "to", "no", "because", "at", "but", "yes", "no", "yeah", "yay", "in", "which", "what", "as", "he", "she", "they", "all", "I", "they", "from", "for", "then"}
 
-	var forbidden_starter = []string{"and", "or", "of", "the", "it", "because", "in", "that", "these", "those", "is", "are", "was", "were", "but", "yes", "no", "yeah", "yay", "also", "me", "them", "him", "but"}
+	forbidden_starter := []string{"and", "or", "of", "the", "it", "because", "in", "that", "these", "those", "is", "are", "was", "were", "but", "yes", "no", "yeah", "yay", "also", "me", "them", "him", "but"}
 
 	if (len(firstword) <= 2) || len(lastword) <= 2 {
 		return true
@@ -8620,7 +8346,6 @@ func ExcludedByBindings(firstword, lastword string) bool {
 //**************************************************************
 
 func RunningIntentionality(t int, frag string) float64 {
-
 	// A round robin cyclic buffer for taking fragments and extracting
 	// n-ngrams of 1,2,3,4,5,6 words separateed by whitespace, passing
 
@@ -8636,7 +8361,6 @@ func RunningIntentionality(t int, frag string) float64 {
 		rrbuffer, change_set = NextWord(words[w], rrbuffer)
 
 		for n := N_GRAM_MIN; n < N_GRAM_MAX; n++ {
-
 			for ng := range change_set[n] {
 				ngram := change_set[n][ng]
 				work := float64(len(ngram))
@@ -8654,13 +8378,11 @@ func RunningIntentionality(t int, frag string) float64 {
 	}
 
 	return score
-
 }
 
 //**************************************************************
 
 func StaticIntentionality(L int, s string, freq float64) float64 {
-
 	// Compute the effective significance of a string s
 	// within a document of many sentences. The weighting due to
 	// inband learning uses an exponential deprecation based on
@@ -8700,7 +8422,6 @@ func StaticIntentionality(L int, s string, freq float64) float64 {
 // **************************************************************************
 
 func SplitChapters(str string) []string {
-
 	run := []rune(str)
 
 	var part []rune
@@ -8723,8 +8444,7 @@ func SplitChapters(str string) []string {
 // **************************************************************************
 
 func List2Map(l []string) map[string]int {
-
-	var retvar = make(map[string]int)
+	retvar := make(map[string]int)
 
 	for s := range l {
 		retvar[strings.TrimSpace(l[s])]++
@@ -8736,7 +8456,6 @@ func List2Map(l []string) map[string]int {
 // **************************************************************************
 
 func Map2List(m map[string]int) []string {
-
 	var retvar []string
 
 	for s := range m {
@@ -8750,7 +8469,6 @@ func Map2List(m map[string]int) []string {
 // **************************************************************************
 
 func List2String(list []string) string {
-
 	var s string
 
 	sort.Strings(list)
@@ -8768,14 +8486,12 @@ func List2String(list []string) string {
 // **************************************************************************
 
 func SQLEscape(s string) string {
-
 	return strings.Replace(s, `'`, `''`, -1)
 }
 
 // **************************************************************************
 
 func Array2Str(arr []string) string {
-
 	var s string
 
 	for a := 0; a < len(arr); a++ {
@@ -8791,7 +8507,6 @@ func Array2Str(arr []string) string {
 // **************************************************************************
 
 func Str2Array(s string) ([]string, int) {
-
 	var non_zero int
 	s = strings.Replace(s, "{", "", -1)
 	s = strings.Replace(s, "}", "", -1)
@@ -8812,7 +8527,6 @@ func Str2Array(s string) ([]string, int) {
 // **************************************************************************
 
 func ParseSQLNPtrArray(s string) []NodePtr {
-
 	stringify := ParseSQLArrayString(s)
 
 	var retval []NodePtr
@@ -8829,7 +8543,6 @@ func ParseSQLNPtrArray(s string) []NodePtr {
 // **************************************************************************
 
 func ParseSQLArrayString(whole_array string) []string {
-
 	// array as {"(1,2,3)","(4,5,6)",spacelessstring}
 
 	var l []string
@@ -8841,7 +8554,7 @@ func ParseSQLArrayString(whole_array string) []string {
 
 	var items []string
 	var item []rune
-	var protected = false
+	protected := false
 
 	for u := range uni_array {
 
@@ -8876,7 +8589,6 @@ func ParseSQLArrayString(whole_array string) []string {
 // **************************************************************************
 
 func FormatSQLIntArray(array []int) string {
-
 	if len(array) == 0 {
 		return "'{ }'"
 	}
@@ -8902,7 +8614,6 @@ func FormatSQLIntArray(array []int) string {
 // **************************************************************************
 
 func FormatSQLStringArray(array []string) string {
-
 	if len(array) == 0 {
 		return "'{ }'"
 	}
@@ -8931,7 +8642,6 @@ func FormatSQLStringArray(array []string) string {
 // **************************************************************************
 
 func FormatSQLNodePtrArray(array []NodePtr) string {
-
 	if len(array) == 0 {
 		return "'{ }'"
 	}
@@ -8953,7 +8663,6 @@ func FormatSQLNodePtrArray(array []NodePtr) string {
 // **************************************************************************
 
 func ParseSQLLinkString(s string) Link {
-
 	// e.g. (77,0.34,334,"(4,2)")
 
 	var l Link
@@ -8989,7 +8698,6 @@ func ParseSQLLinkString(s string) Link {
 //**************************************************************
 
 func ParseLinkArray(s string) []Link {
-
 	var array []Link
 
 	s = strings.TrimSpace(s)
@@ -9012,7 +8720,6 @@ func ParseLinkArray(s string) []Link {
 //**************************************************************
 
 func ParseMapLinkArray(s string) []Link {
-
 	var array []Link
 
 	s = strings.TrimSpace(s)
@@ -9034,7 +8741,6 @@ func ParseMapLinkArray(s string) []Link {
 //**************************************************************
 
 func ParseLinkPath(s string) [][]Link {
-
 	// Each path will start on a new line, with comma sep Link encodings
 
 	var array [][]Link
@@ -9044,7 +8750,6 @@ func ParseLinkPath(s string) [][]Link {
 	lines := strings.Split(s, "\n")
 
 	for line := range lines {
-
 		if len(lines[line]) > 0 {
 
 			links := strings.Split(lines[line], ";")
@@ -9072,10 +8777,9 @@ func ParseLinkPath(s string) [][]Link {
 //**************************************************************
 
 func StorageClass(s string) (int, int) {
-
 	var spaces int = 0
 
-	var l = len(s)
+	l := len(s)
 
 	for i := 0; i < l; i++ {
 
@@ -9118,7 +8822,6 @@ func StorageClass(s string) (int, int) {
 // **************************************************************************
 
 func DiracNotation(s string) (bool, string, string, string) {
-
 	var begin, end, context string
 
 	if s == "" {
@@ -9154,7 +8857,6 @@ func DiracNotation(s string) (bool, string, string, string) {
 // **************************************************************************
 
 func STTypeDBChannel(sttype int) string {
-
 	// This expects the range for sttype to be unshifted 0,+/-
 
 	var link_channel string
@@ -9185,7 +8887,6 @@ func STTypeDBChannel(sttype int) string {
 // **************************************************************************
 
 func STIndexToSTType(stindex int) int {
-
 	// Convert shifted array index to symmetrical type
 
 	return stindex - ST_ZERO
@@ -9194,7 +8895,6 @@ func STIndexToSTType(stindex int) int {
 // **************************************************************************
 
 func STTypeToSTIndex(stindex int) int {
-
 	// Convert shifted array index to symmetrical type
 
 	return stindex + ST_ZERO
@@ -9203,7 +8903,6 @@ func STTypeToSTIndex(stindex int) int {
 // **************************************************************************
 
 func STTypeName(sttype int) string {
-
 	switch sttype {
 	case -EXPRESS:
 		return "-is property of"
@@ -9229,7 +8928,6 @@ func STTypeName(sttype int) string {
 // **************************************************************************
 
 func SimilarString(full, like string) bool {
-
 	// Placeholder
 	// Need to handle pluralisation patterns etc... multi-language
 
@@ -9251,7 +8949,6 @@ func SimilarString(full, like string) bool {
 //****************************************************************************
 
 func MatchArrows(arrows []ArrowPtr, arr ArrowPtr) bool {
-
 	for a := range arrows {
 		if arrows[a] == arr {
 			return true
@@ -9264,7 +8961,6 @@ func MatchArrows(arrows []ArrowPtr, arr ArrowPtr) bool {
 //****************************************************************************
 
 func MatchContexts(context1 []string, context2ptr ContextPtr) bool {
-
 	if context1 == nil || context2ptr == 0 {
 		return true
 	}
@@ -9272,7 +8968,6 @@ func MatchContexts(context1 []string, context2ptr ContextPtr) bool {
 	context2 := strings.Split(GetContext(context2ptr), ",")
 
 	for c := range context1 {
-
 		if MatchesInContext(context1[c], context2) {
 			return true
 		}
@@ -9284,7 +8979,6 @@ func MatchContexts(context1 []string, context2ptr ContextPtr) bool {
 //****************************************************************************
 
 func MatchesInContext(s string, context []string) bool {
-
 	for c := range context {
 		if SimilarString(s, context[c]) {
 			return true
@@ -9298,7 +8992,6 @@ func MatchesInContext(s string, context []string) bool {
 // **************************************************************************
 
 func SearchTermLen(names []string) int {
-
 	var maxlen int
 
 	for _, s := range names {
@@ -9313,7 +9006,6 @@ func SearchTermLen(names []string) int {
 // **************************************************************************
 
 func IsNPtrStr(s string) bool {
-
 	s = strings.TrimSpace(s)
 
 	if s[0] == '(' && s[len(s)-1] == ')' {
@@ -9329,18 +9021,15 @@ func IsNPtrStr(s string) bool {
 // **************************************************************************
 
 func RunErr(message string) {
-
 	const red = "\033[31;1;1m"
 	const endred = "\033[0m"
 
 	fmt.Println("SSTorytime", message, endred)
-
 }
 
 // **************************************************************************
 
 func EscapeString(s string) string {
-
 	run := []rune(s)
 	var res []rune
 
@@ -9361,11 +9050,9 @@ func EscapeString(s string) string {
 //******************************************************************
 
 func ContextString(context []string) string {
-
 	var s string
 
 	for c := 0; c < len(context); c++ {
-
 		s += context[c] + " "
 	}
 
@@ -9375,7 +9062,6 @@ func ContextString(context []string) string {
 //****************************************************************************
 
 func ShowText(s string, width int) {
-
 	var spacecounter int
 	var linecounter int
 	var indent string = Indent(LEFTMARGIN)
@@ -9441,7 +9127,6 @@ func ShowText(s string, width int) {
 //****************************************************************************
 
 func Indent(indent int) string {
-
 	spc := ""
 
 	for i := 0; i < indent; i++ {
@@ -9454,7 +9139,6 @@ func Indent(indent int) string {
 //****************************************************************************
 
 func NewLine(n int) {
-
 	if n%6 == 0 {
 		fmt.Print("\n    ")
 	}
@@ -9463,7 +9147,6 @@ func NewLine(n int) {
 // **************************************************************************
 
 func Waiting(output bool, total int) {
-
 	if !output {
 		return
 	}
@@ -9503,7 +9186,6 @@ func Waiting(output bool, total int) {
 // **************************************************************************
 
 func Already(s string, cone map[int][]string) bool {
-
 	for l := range cone {
 		for n := 0; n < len(cone[l]); n++ {
 			if s == cone[l][n] {
@@ -9518,7 +9200,6 @@ func Already(s string, cone map[int][]string) bool {
 //****************************************************************************
 
 func Arrow2Int(arr []ArrowPtr) []int {
-
 	var ret []int
 
 	for a := range arr {
@@ -9540,7 +9221,6 @@ const (
 //****************************************************************************
 
 func IsBracketedSearchList(list []string) (bool, []string) {
-
 	var stripped_list []string
 	retval := false
 
@@ -9563,7 +9243,6 @@ func IsBracketedSearchList(list []string) (bool, []string) {
 //****************************************************************************
 
 func IsBracketedSearchTerm(src string) (bool, string) {
-
 	retval := false
 	stripped := src
 
@@ -9585,7 +9264,6 @@ func IsBracketedSearchTerm(src string) (bool, string) {
 //****************************************************************************
 
 func IsExactMatch(org string) (bool, string) {
-
 	org = strings.TrimSpace(org)
 
 	if len(org) == 0 {
@@ -9593,7 +9271,6 @@ func IsExactMatch(org string) (bool, string) {
 	}
 
 	if org[0] == '!' && org[len(org)-1] == '!' {
-
 		return true, strings.Trim(org, "!")
 	}
 
@@ -9603,7 +9280,6 @@ func IsExactMatch(org string) (bool, string) {
 //****************************************************************************
 
 func IsQuote(r rune) bool {
-
 	switch r {
 	case '"', '\'', NON_ASCII_LQUOTE, NON_ASCII_RQUOTE:
 		return true
@@ -9615,7 +9291,6 @@ func IsQuote(r rune) bool {
 //****************************************************************************
 
 func ReadToNext(array []rune, pos int, r rune) (string, int) {
-
 	var buff []rune
 
 	for i := pos; i < len(array); i++ {

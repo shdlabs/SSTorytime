@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Toaster } from 'react-hot-toast';
+import { PencilSquareIcon, HomeIcon } from '@heroicons/react/24/outline';
 import SearchBar from './components/SearchBar';
 import Navigation from './components/Navigation';
 import Visualization from './components/Visualization';
+import Text2N4L from './components/Text2N4L';
 import { APIResponse } from './types/api';
 import { searchAPI } from './services/api';
 import './index.css';
+
+type ViewType = 'search' | 'text2n4l';
 
 function App() {
   const [searchResult, setSearchResult] = useState<APIResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [currentView, setCurrentView] = useState<ViewType>('search');
 
   // Check if device is mobile
   useEffect(() => {
@@ -64,7 +69,10 @@ function App() {
       case 'Orbits':
         return (
           <div className="space-y-6">
-            <Visualization data={searchResult} />
+            <Visualization 
+              data={searchResult} 
+              onNodeClick={(searchQuery) => handleQuickSearch(searchQuery)}
+            />
             <details className="glass rounded-xl p-4 border border-gray-700/50">
               <summary className="text-primary-400 font-medium cursor-pointer">
                 Raw Data ({searchResult.Content?.length || 0} items)
@@ -192,25 +200,58 @@ function App() {
               <div className="w-24"> {/* Spacer for balance */}</div>
             </div>
 
-            {/* Search Bar */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            >
-              <SearchBar
-                onSearchResult={handleSearchResult}
-                onError={handleSearchError}
-                placeholder={isMobile ? "Search..." : "Search knowledge, ask questions, explore connections..."}
-              />
-            </motion.div>
+            {/* Search Bar - only show in search view */}
+            {currentView === 'search' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              >
+                <SearchBar
+                  onSearchResult={handleSearchResult}
+                  onError={handleSearchError}
+                  placeholder={isMobile ? "Search..." : "Search knowledge, ask questions, explore connections..."}
+                />
+              </motion.div>
+            )}
+
+            {/* Text2N4L Button - show when not in text2n4l view */}
+            {currentView !== 'text2n4l' && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setCurrentView('text2n4l')}
+                  className="glass px-6 py-3 rounded-xl border border-primary-500/50 text-primary-300 hover:bg-primary-900/30 transition-all duration-200 flex items-center space-x-2"
+                >
+                  <PencilSquareIcon className="w-5 h-5" />
+                  <span>Convert Text to N4L</span>
+                </button>
+              </div>
+            )}
+
+            {/* Back to Search Button - show in text2n4l view */}
+            {currentView === 'text2n4l' && (
+              <div className="flex justify-center mb-4">
+                <button
+                  onClick={() => setCurrentView('search')}
+                  className="glass px-6 py-3 rounded-xl border border-gray-700/50 text-white hover:bg-gray-700/50 transition-all duration-200 flex items-center space-x-2"
+                >
+                  <HomeIcon className="w-5 h-5" />
+                  <span>Back to Search</span>
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
         {/* Results Area */}
         <main className="px-4 pb-8">
           <div className="max-w-7xl mx-auto">
-            <AnimatePresence mode="wait">
+            {currentView === 'text2n4l' ? (
+              /* Show Text2N4L Component */
+              <Text2N4L />
+            ) : (
+              /* Show Search Results */
+              <AnimatePresence mode="wait">
               {error && (
                 <motion.div
                   key="error"
@@ -300,6 +341,7 @@ function App() {
                 </motion.div>
               )}
             </AnimatePresence>
+            )}
           </div>
         </main>
       </div>
