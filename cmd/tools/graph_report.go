@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	SST "github.com/shdlabs/SSTorytime/internal/sstorytime"
+	SST "github.com/shdlabs/SSTorytime/services/sstorytime"
 )
 
 var CHAPTER string

@@ -15,7 +15,7 @@ import (
 	"fmt"
 	"os"
 
-	SST "github.com/shdlabs/SSTorytime/internal/sstorytime"
+	SST "github.com/shdlabs/SSTorytime/services/sstorytime"
 )
 
 var path [8][]string

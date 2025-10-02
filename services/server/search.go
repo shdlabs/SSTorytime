@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	SST "github.com/shdlabs/SSTorytime/internal/sstorytime"
+	SST "github.com/shdlabs/SSTorytime/services/sstorytime"
 )
 
 // SearchHandler handles N4L search requests

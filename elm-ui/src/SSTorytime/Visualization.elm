@@ -1,153 +1,178 @@
-module SSTorytime.Visualization exposing (view3D, nodeToMesh, sphericalConnection)
+module SSTorytime.Visualization exposing (nodeToMesh, sphericalConnection, view3D)
 
 import Html exposing (Html)
 import Html.Attributes
-import Scene3d
-import Scene3d.Material as Material
-import Camera3d
-import Viewpoint3d
-import Point3d
-import Direction3d
-import Length
-import Angle
-import Color
-import Sphere3d
-import Cylinder3d
 import SSTorytime.Types exposing (..)
-import Math.Vector3 as Vec3
 
 
--- Convert Node to 3D Mesh
-nodeToMesh : Node -> Scene3d.Entity coordinates
+
+-- Create a 3D CSS-based visualization using CSS transforms
+
+
+nodeToMesh : Node -> Html msg
 nodeToMesh node =
     let
-        position = Point3d.fromMeters 
-            { x = node.position.x
-            , y = node.position.y  
-            , z = node.position.z
-            }
-        
-        -- Different colors and sizes based on node type
-        (nodeColor, nodeRadius) = case node.nodeType of
-            "chapter" -> (Color.blue, 0.1)
-            "context" -> (Color.green, 0.08)
-            "single" -> (Color.orange, 0.06)
-            "common" -> (Color.purple, 0.06)
-            _ -> (Color.gray, 0.05)
-        
-        sphere = Sphere3d.atPoint position (Length.meters nodeRadius)
-        material = Material.color nodeColor
+        -- Convert position to CSS transform
+        transform =
+            "translate3d("
+                ++ String.fromFloat (node.position.x * 100)
+                ++ "px, "
+                ++ String.fromFloat (node.position.y * 100)
+                ++ "px, "
+                ++ String.fromFloat (node.position.z * 100)
+                ++ "px)"
+
+        nodeColor =
+            case node.nodeType of
+                "chapter" ->
+                    "#3b82f6"
+
+                -- blue
+                "context" ->
+                    "#10b981"
+
+                -- green
+                "single" ->
+                    "#f59e0b"
+
+                -- orange
+                "common" ->
+                    "#8b5cf6"
+
+                -- purple
+                _ ->
+                    "#6b7280"
+
+        -- gray
     in
-    Scene3d.sphere material sphere
+    Html.div
+        [ Html.Attributes.class "node-3d"
+        , Html.Attributes.style "transform" transform
+        , Html.Attributes.style "background-color" nodeColor
+        , Html.Attributes.attribute "data-node-type" node.nodeType
+        ]
+        [ Html.div [ Html.Attributes.class "node-label" ]
+            [ Html.text node.text ]
+        ]
 
 
--- Create spherical connection visualization
-sphericalConnection : Node -> Connection -> List (Scene3d.Entity coordinates)
+sphericalConnection : Node -> Connection -> List (Html msg)
 sphericalConnection fromNode connection =
     let
-        fromPos = Point3d.fromMeters 
-            { x = fromNode.position.x
-            , y = fromNode.position.y
-            , z = fromNode.position.z
-            }
-        
-        -- Calculate position on sphere wall using spherical coordinates
-        sphereRadius = fromNode.position.r
-        lon = connection.sphericalCoord.longitude
-        lat = connection.sphericalCoord.latitude
-        
-        -- Convert spherical to cartesian coordinates
-        toX = fromNode.position.x + sphereRadius * cos(lat) * cos(lon)
-        toY = fromNode.position.y + sphereRadius * cos(lat) * sin(lon)
-        toZ = fromNode.position.z + sphereRadius * sin(lat)
-        
-        toPos = Point3d.fromMeters { x = toX, y = toY, z = toZ }
-        
-        -- Arrow color based on type
-        arrowColor = case connection.arrowType of
-            Causality -> Color.red
-            Dependency -> Color.blue
-            Similarity -> Color.green
-            Hierarchy -> Color.yellow
-            Association -> Color.gray
-        
-        -- Create cylinder connecting the points
-        cylinder = Cylinder3d.from fromPos toPos (Length.meters 0.02)
-        material = Material.color arrowColor
-        
-        -- Create arrow head (small cone at destination)
-        arrowHead = Sphere3d.atPoint toPos (Length.meters 0.03)
+        -- Calculate spherical connection endpoint
+        sphereRadius =
+            fromNode.position.r
+
+        lon =
+            connection.sphericalCoord.longitude
+
+        lat =
+            connection.sphericalCoord.latitude
+
+        -- Convert to cartesian
+        toX =
+            fromNode.position.x + sphereRadius * cos lat * cos lon
+
+        toY =
+            fromNode.position.y + sphereRadius * cos lat * sin lon
+
+        toZ =
+            fromNode.position.z + sphereRadius * sin lat
+
+        -- Create CSS line between points
+        fromTransform =
+            "translate3d("
+                ++ String.fromFloat (fromNode.position.x * 100)
+                ++ "px, "
+                ++ String.fromFloat (fromNode.position.y * 100)
+                ++ "px, "
+                ++ String.fromFloat (fromNode.position.z * 100)
+                ++ "px)"
+
+        toTransform =
+            "translate3d("
+                ++ String.fromFloat (toX * 100)
+                ++ "px, "
+                ++ String.fromFloat (toY * 100)
+                ++ "px, "
+                ++ String.fromFloat (toZ * 100)
+                ++ "px)"
+
+        arrowColor =
+            case connection.arrowType of
+                Causality ->
+                    "#ef4444"
+
+                -- red
+                Dependency ->
+                    "#3b82f6"
+
+                -- blue
+                Similarity ->
+                    "#10b981"
+
+                -- green
+                Hierarchy ->
+                    "#eab308"
+
+                -- yellow
+                Association ->
+                    "#6b7280"
+
+        -- gray
     in
-    [ Scene3d.cylinder material cylinder
-    , Scene3d.sphere material arrowHead
+    [ Html.div
+        [ Html.Attributes.class "connection-3d"
+        , Html.Attributes.style "transform" fromTransform
+        , Html.Attributes.style "background-color" arrowColor
+        , Html.Attributes.attribute "data-arrow-type" (arrowTypeToString connection.arrowType)
+        ]
+        []
+    , Html.div
+        [ Html.Attributes.class "connection-endpoint"
+        , Html.Attributes.style "transform" toTransform
+        , Html.Attributes.style "background-color" arrowColor
+        ]
+        []
     ]
 
 
--- Create sphere visualization around node
-nodeSphere : Node -> Scene3d.Entity coordinates
-nodeSphere node =
-    let
-        position = Point3d.fromMeters 
-            { x = node.position.x
-            , y = node.position.y
-            , z = node.position.z
-            }
-        
-        sphereRadius = node.position.r
-        sphere = Sphere3d.atPoint position (Length.meters sphereRadius)
-        
-        -- Transparent sphere material
-        material = Material.color (Color.rgba 0.5 0.5 0.5 0.1)
-    in
-    Scene3d.sphere material sphere
-
-
--- Main 3D Scene
 view3D : SSToryTimeResponse -> Html msg
 view3D response =
     let
-        -- Camera setup
-        camera = Camera3d.perspective
-            { viewpoint = Viewpoint3d.lookAt
-                { focalPoint = Point3d.origin
-                , eyePoint = Point3d.fromMeters { x = 3, y = 3, z = 2 }
-                , upDirection = Direction3d.positiveZ
-                }
-            , verticalFieldOfView = Angle.degrees 45
-            }
-        
         -- Collect all nodes from all chapters
-        allNodes = List.concatMap 
-            (\chapter -> 
-                chapter.context 
-                ++ chapter.single 
-                ++ (Maybe.withDefault [] chapter.common)
-            ) 
-            response.chapters
-        
-        -- Create node meshes
-        nodeMeshes = List.map nodeToMesh allNodes
-        
-        -- Create sphere visualizations
-        sphereMeshes = List.map nodeSphere allNodes
-        
+        allNodes =
+            List.concatMap
+                (\chapter ->
+                    chapter.context
+                        ++ chapter.single
+                        ++ Maybe.withDefault [] chapter.common
+                )
+                response.chapters
+
+        -- Create 3D node visualizations
+        nodeViews =
+            List.map nodeToMesh allNodes
+
         -- Create connection visualizations
-        connectionMeshes = List.concatMap 
-            (\node -> 
-                List.concatMap (sphericalConnection node) node.connections
-            ) 
-            allNodes
-        
-        -- Combine all entities
-        allEntities = nodeMeshes ++ sphereMeshes ++ connectionMeshes
+        connectionViews =
+            List.concatMap
+                (\node ->
+                    List.concatMap (sphericalConnection node) node.connections
+                )
+                allNodes
+
+        -- Combine all 3D elements
+        allElements =
+            nodeViews ++ connectionViews
     in
-    Scene3d.sunny
-        { camera = camera
-        , clipDepth = Length.meters 0.1
-        , dimensions = ( 800, 600 )
-        , background = Scene3d.backgroundColor Color.black
-        , entities = allEntities
-        , upDirection = Direction3d.positiveZ
-        , sunlightDirection = Direction3d.xyZ (Angle.degrees 45) (Angle.degrees 45)
-        , shadows = False
-        }
+    Html.div
+        [ Html.Attributes.class "scene-3d" ]
+        [ Html.div
+            [ Html.Attributes.class "viewport-3d" ]
+            [ Html.h2 [] [ Html.text "3D Promise Theory Visualization" ]
+            , Html.div
+                [ Html.Attributes.class "world-3d" ]
+                allElements
+            ]
+        ]

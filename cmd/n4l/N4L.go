@@ -19,7 +19,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	SST "github.com/shdlabs/SSTorytime/internal/sstorytime"
+	SST "github.com/shdlabs/SSTorytime/services/sstorytime"
 )
 
 //**************************************************************

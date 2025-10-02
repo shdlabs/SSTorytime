@@ -12,7 +12,7 @@ package main
 import (
 	"fmt"
 
-	SST "github.com/shdlabs/SSTorytime/internal/sstorytime"
+	SST "github.com/shdlabs/SSTorytime/services/sstorytime"
 )
 
 //******************************************************************

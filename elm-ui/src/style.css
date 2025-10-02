@@ -1,18 +1,21 @@
-/* Semantic SpaceTime Visualization Styles */
+@import "https://unpkg.com/open-props";
+@import "https://unpkg.com/open-props/normalize.min.css";
+@import "https://unpkg.com/open-props/buttons.min.css";
 @import "tailwindcss";
 
 body {
   margin: 0;
   padding: 0;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: grid;
+  align-items: stretch;
+  justify-items: center;
+  gap: 1rem;
   min-height: 100vh;
 }
 
 #elm-app {
-  width: 100%;
-  height: 100vh;
+  min-width: 100svw;
+  height: 100svh;
 }
 
 .app {
@@ -20,9 +23,6 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  color: white;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
 }
 
 .header {
@@ -258,5 +258,237 @@ body {
 
   .welcome h2 {
     font-size: 2rem;
+  }
+}
+
+/* 3D Promise Theory Visualization Styles */
+
+.scene-3d {
+  width: 100%;
+  height: 600px;
+  perspective: 1000px;
+  perspective-origin: center center;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(20, 20, 40, 0.9) 0%,
+    rgba(5, 5, 15, 1) 100%
+  );
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.viewport-3d {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  position: relative;
+  padding: 2rem;
+}
+
+.viewport-3d h2 {
+  position: absolute;
+  top: 1rem;
+  left: 2rem;
+  z-index: 100;
+  color: #a78bfa;
+  font-size: 1.5rem;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(167, 139, 250, 0.5);
+}
+
+.world-3d {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  position: relative;
+  transform: rotateX(15deg) rotateY(25deg);
+  animation: slowRotate 30s infinite linear;
+}
+
+@keyframes slowRotate {
+  from {
+    transform: rotateX(15deg) rotateY(25deg);
+  }
+  to {
+    transform: rotateX(15deg) rotateY(385deg);
+  }
+}
+
+.world-3d:hover {
+  animation-play-state: paused;
+}
+
+/* 3D Nodes */
+.node-3d {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow:
+    0 0 20px rgba(255, 255, 255, 0.3),
+    inset 0 0 10px rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.node-3d:hover {
+  transform: scale(1.5) !important;
+  box-shadow:
+    0 0 30px currentColor,
+    inset 0 0 15px rgba(255, 255, 255, 0.4);
+  z-index: 10;
+}
+
+.node-3d[data-node-type="chapter"] {
+  width: 25px;
+  height: 25px;
+  box-shadow:
+    0 0 25px rgba(59, 130, 246, 0.6),
+    inset 0 0 12px rgba(255, 255, 255, 0.3);
+}
+
+.node-3d[data-node-type="context"] {
+  width: 20px;
+  height: 20px;
+  box-shadow:
+    0 0 20px rgba(16, 185, 129, 0.6),
+    inset 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.node-3d[data-node-type="single"] {
+  width: 18px;
+  height: 18px;
+  box-shadow:
+    0 0 18px rgba(245, 158, 11, 0.6),
+    inset 0 0 9px rgba(255, 255, 255, 0.3);
+}
+
+.node-3d[data-node-type="common"] {
+  width: 22px;
+  height: 22px;
+  box-shadow:
+    0 0 22px rgba(139, 92, 246, 0.6),
+    inset 0 0 11px rgba(255, 255, 255, 0.3);
+}
+
+.node-label {
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 500;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 8px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.node-3d:hover .node-label {
+  opacity: 1;
+}
+
+/* 3D Connections */
+.connection-3d {
+  position: absolute;
+  width: 2px;
+  height: 100px;
+  transform-origin: 0 0;
+  border-radius: 1px;
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.connection-3d:hover {
+  opacity: 1;
+  transform: scale(1.2) !important;
+}
+
+.connection-3d[data-arrow-type="Causality"] {
+  background: linear-gradient(to bottom, #ef4444, rgba(239, 68, 68, 0.3));
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.connection-3d[data-arrow-type="Dependency"] {
+  background: linear-gradient(to bottom, #3b82f6, rgba(59, 130, 246, 0.3));
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+.connection-3d[data-arrow-type="Similarity"] {
+  background: linear-gradient(to bottom, #10b981, rgba(16, 185, 129, 0.3));
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.connection-3d[data-arrow-type="Hierarchy"] {
+  background: linear-gradient(to bottom, #eab308, rgba(234, 179, 8, 0.3));
+  box-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
+}
+
+.connection-3d[data-arrow-type="Association"] {
+  background: linear-gradient(to bottom, #6b7280, rgba(107, 114, 128, 0.3));
+  box-shadow: 0 0 10px rgba(107, 114, 128, 0.5);
+}
+
+.connection-endpoint {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transform-style: preserve-3d;
+  box-shadow: 0 0 15px currentColor;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Promise Theory Legend */
+.scene-3d::before {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  right: 2rem;
+  width: 200px;
+  height: 150px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 50;
+}
+
+.scene-3d::after {
+  content: "Promise Theory\A🔴 Causality\A🔵 Dependency\A🟢 Similarity\A🟡 Hierarchy\A⚪ Association";
+  position: absolute;
+  top: 1.5rem;
+  right: 2.5rem;
+  white-space: pre-line;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 11px;
+  line-height: 1.4;
+  z-index: 51;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .scene-3d {
+    height: 400px;
+  }
+
+  .world-3d {
+    transform: rotateX(10deg) rotateY(15deg) scale(0.8);
+  }
+
+  .viewport-3d h2 {
+    font-size: 1.2rem;
+  }
+
+  .scene-3d::before,
+  .scene-3d::after {
+    display: none;
   }
 }

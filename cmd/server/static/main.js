@@ -990,7 +990,7 @@ document.addEventListener("DOMContentLoaded", function (event)
 		// Error message
 		let message = document.createElement("div");
 		message.className = "error-message";
-		message.style.cssText = "background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 10px 0; border: 1px solid #f5c6cb;";
+		// message.style.cssText = "";
 		message.innerHTML = `
 			<strong>Error Type:</strong> ${obj.ErrorType || "Search Error"}<br>
 			<strong>Message:</strong> ${obj.Message || "An error occurred while processing your search."}<br>

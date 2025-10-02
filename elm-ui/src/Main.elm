@@ -1,81 +1,86 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, h1, input, p, pre, text)
+import Html exposing (..)
 import Html.Attributes exposing (placeholder, value)
 import Html.Events exposing (onClick, onInput)
 import Http
-import Json.Decode as Decode
 import SSTorytime.Types exposing (..)
 import SSTorytime.Visualization as Viz
 
 
+
 -- DEMO DATA
+
 
 createDemoData : SSToryTimeResponse
 createDemoData =
     { intent = "Demo visualization of Promise Theory concepts"
     , time = "2024-10-02T12:00:00Z"
     , ambient = "Interactive 3D exploration environment"
-    , chapters = 
+    , chapters =
         [ { title = "Promise Theory Demo"
           , position = Position3D 0.0 0.0 0.0 2.0 0.0 0.0
-          , context = 
-              [ { text = "Central Agent"
-                , nodeType = "chapter"
-                , position = Position3D 0.0 0.0 0.0 1.0 0.0 0.0
-                , timeContext = Just 
-                    { duration = 365.0
-                    , startMoment = "2024-01-01"
-                    , endMoment = "2024-12-31"
-                    , continuity = "continuous"
-                    , contextType = "persistent"
-                    }
-                , connections = 
-                    [ { fromNode = "Central Agent"
-                      , toNode = "Knowledge Node"
-                      , arrowType = Causality
-                      , sphericalCoord = SphericalCoordinate 0.785 1.57 1.0
-                      , strength = 0.8
+          , context =
+                [ { text = "Central Agent"
+                  , nodeType = "chapter"
+                  , position = Position3D 0.0 0.0 0.0 1.0 0.0 0.0
+                  , timeContext =
+                        Just
+                            { duration = 365.0
+                            , startMoment = "2024-01-01"
+                            , endMoment = "2024-12-31"
+                            , continuity = "continuous"
+                            , contextType = "persistent"
+                            }
+                  , connections =
+                        [ { fromNode = "Central Agent"
+                          , toNode = "Knowledge Node"
+                          , arrowType = Causality
+                          , sphericalCoord = SphericalCoordinate 0.785 1.57 1.0
+                          , strength = 0.8
+                          }
+                        ]
+                  }
+                ]
+          , single =
+                [ { text = "Knowledge Node"
+                  , nodeType = "single"
+                  , position = Position3D 1.0 0.5 0.3 0.8 0.5 0.3
+                  , timeContext =
+                        Just
+                            { duration = 180.0
+                            , startMoment = "2024-06-01"
+                            , endMoment = "2024-12-01"
+                            , continuity = "periodic"
+                            , contextType = "learning"
+                            }
+                  , connections =
+                        [ { fromNode = "Knowledge Node"
+                          , toNode = "Research Node"
+                          , arrowType = Similarity
+                          , sphericalCoord = SphericalCoordinate 2.35 1.0 1.2
+                          , strength = 0.6
+                          }
+                        ]
+                  }
+                ]
+          , common =
+                Just
+                    [ { text = "Shared Context"
+                      , nodeType = "common"
+                      , position = Position3D 0.2 -1.0 0.8 0.6 -0.8 0.4
+                      , timeContext =
+                            Just
+                                { duration = 365.0
+                                , startMoment = "2024-01-01"
+                                , endMoment = "2024-12-31"
+                                , continuity = "background"
+                                , contextType = "ambient"
+                                }
+                      , connections = []
                       }
                     ]
-                }
-              ]
-          , single = 
-              [ { text = "Knowledge Node"
-                , nodeType = "single"
-                , position = Position3D 1.0 0.5 0.3 0.8 0.5 0.3
-                , timeContext = Just 
-                    { duration = 180.0
-                    , startMoment = "2024-06-01"
-                    , endMoment = "2024-12-01"
-                    , continuity = "periodic"
-                    , contextType = "learning"
-                    }
-                , connections = 
-                    [ { fromNode = "Knowledge Node"
-                      , toNode = "Research Node"
-                      , arrowType = Similarity
-                      , sphericalCoord = SphericalCoordinate 2.35 1.0 1.2
-                      , strength = 0.6
-                      }
-                    ]
-                }
-              ]
-          , common = Just 
-              [ { text = "Shared Context"
-                , nodeType = "common"
-                , position = Position3D 0.2 -1.0 0.8 0.6 -0.8 0.4
-                , timeContext = Just 
-                    { duration = 365.0
-                    , startMoment = "2024-01-01"
-                    , endMoment = "2024-12-31"
-                    , continuity = "background"
-                    , contextType = "ambient"
-                    }
-                , connections = []
-                }
-              ]
           }
         ]
     }
@@ -85,6 +90,7 @@ createDemoData =
 -- MAIN
 
 
+main : Program () Model Msg
 main =
     Browser.element
         { init = init
@@ -215,12 +221,19 @@ view : Model -> Html Msg
 view model =
     div []
         [ div []
-            [ h1 []
+            [ h2 []
                 [ text "SSTorytime - Semantic SpaceTime Explorer" ]
             , p []
                 [ text "Promise Theory Graph Visualization with Spherical Connections" ]
             , button [ onClick ToggleDemo ]
-                [ text (if model.showDemo then "Hide Demo" else "Show Demo") ]
+                [ text
+                    (if model.showDemo then
+                        "Hide Demo"
+
+                     else
+                        "Show Demo"
+                    )
+                ]
             ]
         , div []
             [ div []
@@ -242,11 +255,13 @@ view model =
             ]
         , if model.showDemo then
             div []
-                [ h1 [] [ text "3D Promise Theory Visualization" ]
+                [ h3 [] [ text "3D Promise Theory Visualization" ]
                 , Viz.view3D model.demoData
                 ]
+
           else if String.isEmpty model.searchResult then
             welcomeSection
+
           else
             resultsSection model.searchResult
         ]
@@ -276,7 +291,7 @@ welcomeSection =
 resultsSection : String -> Html Msg
 resultsSection result =
     div []
-        [ h1 []
+        [ h3 []
             [ text "Semantic SpaceTime Results:" ]
         , pre []
             [ text result ]

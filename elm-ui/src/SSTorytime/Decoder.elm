@@ -1,11 +1,14 @@
-module SSTorytime.Decoder exposing (responseDecoder, nodeDecoder, chapterDecoder)
+module SSTorytime.Decoder exposing (chapterDecoder, nodeDecoder, responseDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as Pipeline
 import SSTorytime.Types exposing (..)
 
 
+
 -- Decoder for 3D Position
+
+
 position3DDecoder : Decoder Position3D
 position3DDecoder =
     Decode.succeed Position3D
@@ -17,18 +20,33 @@ position3DDecoder =
         |> Pipeline.required "Lon" Decode.float
 
 
+
 -- Decoder for Arrow Types
+
+
 arrowTypeDecoder : String -> ArrowType
 arrowTypeDecoder str =
     case str of
-        "causality" -> Causality
-        "dependency" -> Dependency
-        "similarity" -> Similarity
-        "hierarchy" -> Hierarchy
-        _ -> Association
+        "causality" ->
+            Causality
+
+        "dependency" ->
+            Dependency
+
+        "similarity" ->
+            Similarity
+
+        "hierarchy" ->
+            Hierarchy
+
+        _ ->
+            Association
+
 
 
 -- Decoder for Spherical Coordinates
+
+
 sphericalCoordinateDecoder : Decoder SphericalCoordinate
 sphericalCoordinateDecoder =
     Decode.succeed SphericalCoordinate
@@ -37,7 +55,10 @@ sphericalCoordinateDecoder =
         |> Pipeline.required "radius" Decode.float
 
 
+
 -- Decoder for Connections
+
+
 connectionDecoder : Decoder Connection
 connectionDecoder =
     Decode.succeed Connection
@@ -48,7 +69,10 @@ connectionDecoder =
         |> Pipeline.required "strength" Decode.float
 
 
+
 -- Decoder for Time Context
+
+
 timeContextDecoder : Decoder TimeContext
 timeContextDecoder =
     Decode.succeed TimeContext
@@ -59,7 +83,10 @@ timeContextDecoder =
         |> Pipeline.required "contextType" Decode.string
 
 
+
 -- Decoder for Nodes
+
+
 nodeDecoder : Decoder Node
 nodeDecoder =
     Decode.succeed Node
@@ -67,10 +94,14 @@ nodeDecoder =
         |> Pipeline.required "XYZ" position3DDecoder
         |> Pipeline.optional "Reln" (Decode.list connectionDecoder) []
         |> Pipeline.optional "TimeContext" (Decode.maybe timeContextDecoder) Nothing
-        |> Pipeline.hardcoded "node"  -- Default node type
+        |> Pipeline.hardcoded "node"
 
 
+
+-- Default node type
 -- Decoder for Chapter
+
+
 chapterDecoder : Decoder Chapter
 chapterDecoder =
     Decode.succeed Chapter
@@ -81,7 +112,10 @@ chapterDecoder =
         |> Pipeline.optional "Common" (Decode.maybe (Decode.list nodeDecoder)) Nothing
 
 
+
 -- Main Response Decoder
+
+
 responseDecoder : Decoder SSToryTimeResponse
 responseDecoder =
     Decode.field "Response" <|

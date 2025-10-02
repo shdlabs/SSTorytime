@@ -22,7 +22,7 @@ import (
 	"text/tabwriter"
 	"time"
 
-	SST "github.com/shdlabs/SSTorytime/internal/sstorytime"
+	SST "github.com/shdlabs/SSTorytime/services/sstorytime"
 )
 
 // Ugly Go directive to embed text files into the binary

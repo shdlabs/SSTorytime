@@ -1,0 +1,21 @@
+Fractionating file... testdata/promisetheory1.dat
+Analyzing longitudinal patterns
+Analyzing statistical patterns
+Merging selections
+Extracting ambient phrases for context
+Wrote file testdata/promisetheory1.dat_edit_me.n4l
+Final fraction 16.25 of requested 10.00 sampled
+goos: linux
+goarch: amd64
+pkg: github.com/shdlabs/SSTorytime/services/text2n4l
+cpu: Intel(R) Core(TM) i7-6500U CPU @ 2.50GHz
+BenchmarkSelectByRunningIntent/10pct-4         	       1	 457188442 ns/op	183160928 B/op	 2595355 allocs/op
+BenchmarkSelectByRunningIntent/25pct-4         	       1	 376754101 ns/op	182844112 B/op	 2595265 allocs/op
+BenchmarkSelectByRunningIntent/50pct-4         	       1	 335700136 ns/op	183227952 B/op	 2595319 allocs/op
+BenchmarkSelectByRunningIntent/90pct-4         	       1	 338921105 ns/op	182882024 B/op	 2595276 allocs/op
+BenchmarkSelectByStaticIntent/10pct-4          	       1	 331170472 ns/op	183165216 B/op	 2595295 allocs/op
+BenchmarkSelectByStaticIntent/25pct-4          	       1	 348768765 ns/op	182692856 B/op	 2595241 allocs/op
+BenchmarkSelectByStaticIntent/50pct-4          	       1	 330157082 ns/op	183075608 B/op	 2595281 allocs/op
+BenchmarkSelectByStaticIntent/90pct-4          	       1	 332162625 ns/op	183025328 B/op	 2595268 allocs/op
+PASS
+ok  	github.com/shdlabs/SSTorytime/services/text2n4l	4.503s

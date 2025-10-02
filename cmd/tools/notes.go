@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"os"
 
-	SST "github.com/shdlabs/SSTorytime/internal/sstorytime"
+	SST "github.com/shdlabs/SSTorytime/services/sstorytime"
 )
 
 var PAGENR int = 1

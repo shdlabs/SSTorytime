@@ -1,0 +1,18 @@
+{
+  "tailwindCSS.includeLanguages": {
+    "elm": "html"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["class\\s+\"([^\"]*)", 1],
+    ["classList\\s+\\[([^\\]]*)", 1]
+  ],
+  "tailwindCSS.emmetCompletions": true,
+  "tailwindCSS.suggestions": true,
+  "files.associations": {
+    "*.elm": "elm"
+  },
+  "cSpell.enabled": false,
+  "editor.quickSuggestions": {
+    "strings": false
+  }
+}

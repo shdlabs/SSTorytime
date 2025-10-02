@@ -1,0 +1,37 @@
+Fractionating file... testdata/promisetheory1.dat
+Analyzing longitudinal patterns
+Analyzing statistical patterns
+Merging selections
+Extracting ambient phrases for context
+Wrote file testdata/promisetheory1.dat_edit_me.n4l
+Final fraction 16.25 of requested 10.00 sampled
+Fractionating file... testdata/promisetheory1.dat
+Analyzing longitudinal patterns
+Analyzing statistical patterns
+Merging selections
+Extracting ambient phrases for context
+Wrote file testdata/promisetheory1.dat_edit_me.n4l
+Final fraction 16.25 of requested 10.00 sampled
+goos: linux
+goarch: amd64
+pkg: github.com/shdlabs/SSTorytime/services/text2n4l
+cpu: Intel(R) Core(TM) i7-6500U CPU @ 2.50GHz
+BenchmarkProcessFile/PromiseTheory_10pct-4         	       1	1025594073 ns/op	551573872 B/op	 7803447 allocs/op
+Fractionating file... testdata/promisetheory1.dat
+Analyzing longitudinal patterns
+Analyzing statistical patterns
+Merging selections
+Extracting ambient phrases for context
+Wrote file testdata/promisetheory1.dat_edit_me.n4l
+Final fraction 41.74 of requested 25.00 sampled
+BenchmarkProcessFile/PromiseTheory_25pct-4         	       1	1009075366 ns/op	551559144 B/op	 7805147 allocs/op
+Fractionating file... testdata/promisetheory1.dat
+Analyzing longitudinal patterns
+Analyzing statistical patterns
+Merging selections
+Extracting ambient phrases for context
+Wrote file testdata/promisetheory1.dat_edit_me.n4l
+Final fraction 72.83 of requested 50.00 sampled
+BenchmarkProcessFile/PromiseTheory_50pct-4         	       1	1061690315 ns/op	551199344 B/op	 7807285 allocs/op
+PASS
+ok  	github.com/shdlabs/SSTorytime/services/text2n4l	4.093s
