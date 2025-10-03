@@ -1,0 +1,554 @@
+{
+  "description": "SearchN4L API Test Configuration",
+  "version": "1.0.0",
+  "api_endpoint": "/searchN4L",
+  "test_categories": [
+    {
+      "id": "basic_searches",
+      "name": "Basic Search Tests",
+      "description": "Test fundamental search functionality",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "basic_word_search",
+          "name": "Basic word search",
+          "description": "Search for a simple word",
+          "parameters": {
+            "name": "test"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 100
+          }
+        },
+        {
+          "id": "concept_search",
+          "name": "Concept search",
+          "description": "Search for a multi-word concept",
+          "parameters": {
+            "name": "sperm whale"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 100
+          }
+        },
+        {
+          "id": "chapter_specific_search",
+          "name": "Chapter-specific search",
+          "description": "Search within a specific chapter",
+          "parameters": {
+            "name": "kubernetes \\\\chapter \"Kubernetes notes\""
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 100
+          }
+        },
+        {
+          "id": "empty_search_reminders",
+          "name": "Empty search (reminders)",
+          "description": "Empty search should default to reminders",
+          "parameters": {
+            "name": ""
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "help_query",
+          "name": "Help query",
+          "description": "Request help information",
+          "parameters": {
+            "name": "\\\\help"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 100
+          }
+        },
+        {
+          "id": "direct_node_access",
+          "name": "Direct node access",
+          "description": "Access specific node by pointer",
+          "parameters": {
+            "name": "",
+            "nclass": "5",
+            "ncptr": "1957",
+            "chapcontext": ""
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "search_modifiers",
+      "name": "Search Modifier Tests",
+      "description": "Test search with various modifiers",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "limited_search",
+          "name": "Limited search results",
+          "description": "Search with result limit",
+          "parameters": {
+            "name": "test \\\\limit 3"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "range_modifier",
+          "name": "Range modifier",
+          "description": "Search with range/depth modifier",
+          "parameters": {
+            "name": "whale \\\\range 5"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "context_search",
+          "name": "Context search",
+          "description": "Search with context modifier",
+          "parameters": {
+            "name": "whale \\\\context \"sperm whale\""
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "chapter_contents",
+          "name": "Chapter contents",
+          "description": "Get contents of a chapter",
+          "parameters": {
+            "name": "\\\\chapter \"Kubernetes notes\" \\\\contents"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 100
+          }
+        },
+        {
+          "id": "table_of_contents",
+          "name": "Table of contents",
+          "description": "Get table of contents",
+          "parameters": {
+            "name": "\\\\toc"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "statistics_query",
+          "name": "Statistics query",
+          "description": "Get statistics for search term",
+          "parameters": {
+            "name": "test \\\\stats"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "path_solving",
+      "name": "Path Solving Tests",
+      "description": "Test path finding functionality",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "path_from_to",
+          "name": "Path from-to",
+          "description": "Basic path solving between two concepts",
+          "parameters": {
+            "name": "\\\\from testing \\\\to deployment"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "path_with_chapter",
+          "name": "Path with chapter",
+          "description": "Path solving within specific chapter",
+          "parameters": {
+            "name": "\\\\from API \\\\to server \\\\chapter \"Kubernetes notes\""
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "path_with_arrows",
+          "name": "Path with arrows",
+          "description": "Path solving with arrow constraints",
+          "parameters": {
+            "name": "\\\\from whale \\\\to testing \\\\arrow \"follows on from\""
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "path_with_depth",
+          "name": "Path with depth",
+          "description": "Path solving with depth limit",
+          "parameters": {
+            "name": "\\\\from test \\\\to whale \\\\depth 3"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "sequential_search",
+      "name": "Sequential Search Tests",
+      "description": "Test sequential search patterns",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "sequential_and",
+          "name": "Sequential AND search",
+          "description": "Search with sequential AND operator",
+          "parameters": {
+            "name": "test \\\\and deployment"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "sequential_or",
+          "name": "Sequential OR search",
+          "description": "Search with sequential OR operator",
+          "parameters": {
+            "name": "whale \\\\or testing"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "sequential_not",
+          "name": "Sequential NOT search",
+          "description": "Search with sequential NOT operator",
+          "parameters": {
+            "name": "test \\\\not deployment"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "browsing",
+      "name": "Browsing Tests",
+      "description": "Test browsing functionality",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "browse_forward",
+          "name": "Browse forward",
+          "description": "Browse forward through nodes",
+          "parameters": {
+            "name": "test \\\\next"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "browse_backward",
+          "name": "Browse backward",
+          "description": "Browse backward through nodes",
+          "parameters": {
+            "name": "test \\\\prev"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "browse_up",
+          "name": "Browse up",
+          "description": "Browse up in hierarchy",
+          "parameters": {
+            "name": "whale \\\\up"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "special_queries",
+      "name": "Special Queries",
+      "description": "Test special query types",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "wildcard_search",
+          "name": "Wildcard search",
+          "description": "Search with wildcard characters",
+          "parameters": {
+            "name": "test*"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "regex_search",
+          "name": "Regex search",
+          "description": "Search with regex pattern",
+          "parameters": {
+            "name": "\\\\regex \"test.*\""
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 30
+          }
+        },
+        {
+          "id": "fuzzy_search",
+          "name": "Fuzzy search",
+          "description": "Fuzzy/approximate search",
+          "parameters": {
+            "name": "tets \\\\fuzzy"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "http_methods",
+      "name": "HTTP Method Tests",
+      "description": "Test different HTTP methods",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "post_request",
+          "name": "POST request",
+          "description": "Test POST method support",
+          "method": "POST",
+          "parameters": {
+            "name": "test"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "options_request",
+          "name": "OPTIONS request",
+          "description": "Test OPTIONS method for CORS",
+          "method": "OPTIONS",
+          "parameters": {},
+          "expected_status": 200,
+          "validation": {
+            "has_cors_headers": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "last_seen",
+      "name": "Last Seen Tests",
+      "description": "Test last seen functionality",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "last_seen_query",
+          "name": "Last seen query",
+          "description": "Get last seen items",
+          "parameters": {
+            "name": "\\\\last"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "error_handling",
+      "name": "Error Handling Tests",
+      "description": "Test error conditions and edge cases",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "malformed_query",
+          "name": "Malformed query",
+          "description": "Test handling of malformed query syntax",
+          "parameters": {
+            "name": "\\\\from test \\\\to"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 30
+          }
+        },
+        {
+          "id": "invalid_chapter",
+          "name": "Invalid chapter",
+          "description": "Test search in non-existent chapter",
+          "parameters": {
+            "name": "test \\\\chapter \"NonExistentChapter\""
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 30
+          }
+        },
+        {
+          "id": "extremely_long_query",
+          "name": "Extremely long query",
+          "description": "Test handling of very long search queries",
+          "parameters": {
+            "name": "test very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long query"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 30
+          }
+        },
+        {
+          "id": "special_characters",
+          "name": "Special characters",
+          "description": "Test handling of special characters",
+          "parameters": {
+            "name": "test @#$%^&*()_+-=[]{}|;:'\",.<>?/~`"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 30
+          }
+        },
+        {
+          "id": "unicode_search",
+          "name": "Unicode search",
+          "description": "Test handling of unicode characters",
+          "parameters": {
+            "name": "测试 中文 검색 🔍 émoji"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "contains_text": true,
+            "min_response_size": 30
+          }
+        }
+      ]
+    }
+  ],
+  "quick_test_categories": ["basic_searches", "search_modifiers"],
+  "comprehensive_test_categories": [
+    "basic_searches",
+    "search_modifiers",
+    "path_solving",
+    "sequential_search",
+    "browsing",
+    "special_queries",
+    "http_methods",
+    "last_seen",
+    "error_handling"
+  ]
+}

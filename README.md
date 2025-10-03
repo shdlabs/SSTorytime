@@ -209,5 +209,7 @@ The tool-set consistent of several components, starting with:
 
 * [SSTorytime.py](src/SSTorytime.py) - Includable Python interface for SSTorytime, basic functions (TBD)
 
+* [API Tests](API_TEST/) - Comprehensive API test suite for the HTTP server endpoints ([see API_TESTING.md](API_TESTING.md))
+
 
 

@@ -11,11 +11,11 @@
 package main
 
 import (
-	"os"
-	"fmt"
 	"flag"
+	"fmt"
+	"os"
 
-        SST "SSTorytime"
+	SST "SSTorytime"
 )
 
 var path [8][]string
@@ -23,22 +23,21 @@ var path [8][]string
 //******************************************************************
 
 func main() {
-
 	load_arrows := false
 	ctx := SST.Open(load_arrows)
 
-	dbchapters := SST.GetDBChaptersMatchingName(ctx,"")
+	dbchapters := SST.GetDBChaptersMatchingName(ctx, "")
 
 	fmt.Println("\nThe database currently caches the following chapters:\n")
 	for c := range dbchapters {
-		fmt.Printf("%d. - chapter: \"%s\"\n",c+1,dbchapters[c])
+		fmt.Printf("%d. - chapter: \"%s\"\n", c+1, dbchapters[c])
 	}
 	fmt.Println()
 
 	args := Init()
 	chapter := args[0]
 
-	DeleteChapter(ctx,chapter)
+	DeleteChapter(ctx, chapter)
 
 	SST.Close(ctx)
 }
@@ -46,10 +45,9 @@ func main() {
 //**************************************************************
 
 func Init() []string {
-
 	flag.Usage = Usage
 
-	forcePtr := flag.Bool("force", false,"force remove")
+	forcePtr := flag.Bool("force", false, "force remove")
 
 	flag.Parse()
 
@@ -57,12 +55,12 @@ func Init() []string {
 
 	if len(args) < 1 {
 		Usage()
-		os.Exit(1);
+		os.Exit(1)
 	}
 
 	if !*forcePtr {
 		fmt.Println("Are you sure you want to remove a chapter? Use -force to confirm.")
-		os.Exit(1);
+		os.Exit(1)
 	}
 
 	SST.MemoryInit()
@@ -73,7 +71,6 @@ func Init() []string {
 //**************************************************************
 
 func Usage() {
-	
 	fmt.Printf("\n\nusage: removeN4L \"chapter name\"\n")
 	flag.PrintDefaults()
 	os.Exit(2)
@@ -81,27 +78,16 @@ func Usage() {
 
 //******************************************************************
 
-func DeleteChapter(ctx SST.PoSST,chapter string) {
+func DeleteChapter(ctx SST.PoSST, chapter string) {
+	qstr := fmt.Sprintf("select DeleteChapter('%s')", chapter)
 
-	qstr := fmt.Sprintf("select DeleteChapter('%s')",chapter)
+	row, err := ctx.DB.Query(qstr)
 
-	row,err := ctx.DB.Query(qstr)
-	
 	if err != nil {
-		fmt.Println("Error running deletechapter function:",qstr,err)
+		fmt.Println("Error running deletechapter function:", qstr, err)
 	} else {
-		fmt.Println("Deleted",chapter)
+		fmt.Println("Deleted", chapter)
 	}
 
 	row.Close()
-
 }
-
-
-
-
-
-
-
-
-

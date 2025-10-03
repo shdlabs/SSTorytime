@@ -39,13 +39,11 @@ var CTX SST.PoSST // just one persistent connection
 // *********************************************************************
 
 func main() {
-
 	CTX = SST.Open(true)
 
 	// 1. Create the filesystem view rooted inside the "public" directory.
 
 	publicFS, err := fs.Sub(content, "public")
-
 	if err != nil {
 		log.Fatal("failed to create sub-filesystem:", err)
 	}
@@ -62,7 +60,7 @@ func main() {
 
 	// 3. Create an http.Server instance for graceful shutdown.
 
-	srv := &http.Server{Addr:    "0.0.0.0:8080", Handler: EnableCORS(mux), }
+	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: EnableCORS(mux)}
 
 	// 4. Run the server in a goroutine so it doesn't block.
 
@@ -100,9 +98,7 @@ func main() {
 // *********************************************************************
 
 func EnableCORS(next http.Handler) http.Handler {
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		// Set the Access-Control-Allow-Origin header to the origin of the request.
 
 		origin := r.Header.Get("Origin")
@@ -127,7 +123,6 @@ func EnableCORS(next http.Handler) http.Handler {
 // *********************************************************************
 
 func SignalHandler() {
-
 	signal_chan := make(chan os.Signal, 1)
 
 	signal.Notify(signal_chan,
@@ -162,7 +157,6 @@ func SignalHandler() {
 // *********************************************************************
 
 func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
-
 	switch r.Method {
 
 	case "POST", "GET":
@@ -212,7 +206,6 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 // *********************************************************************
 
 func UpdateLastSawSection(w http.ResponseWriter, r *http.Request, query string) {
-
 	// update lastseen db
 
 	fmt.Println("UPDATING STATS FOR section", query)
@@ -223,7 +216,6 @@ func UpdateLastSawSection(w http.ResponseWriter, r *http.Request, query string) 
 // *********************************************************************
 
 func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request, class, cptr string, classifier string) {
-
 	// update lastseen db
 
 	var nptr SST.NodePtr
@@ -242,13 +234,11 @@ func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request, class, cptr strin
 
 	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }", class, cptr)
 	w.Write([]byte(response))
-
 }
 
 // *********************************************************************
 
 func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWriter, r *http.Request) {
-
 	// This is analogous to searchN4L
 
 	// OPTIONS *********************************************
@@ -401,7 +391,6 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 // *********************************************************************
 
 func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nptrs []SST.NodePtr, limit int) {
-
 	var count int
 	var array []SST.NodeEvent
 
@@ -430,7 +419,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search S
 	data, _ := json.Marshal(array)
 	response := PackageResponse(ctx, search, "Orbits", string(data))
 
-	//fmt.Println("REPLY:\n",string(response))
+	// fmt.Println("REPLY:\n",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -440,7 +429,6 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search S
 // *********************************************************************
 
 func HandleCausalCones(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, nptrs []SST.NodePtr, search SST.SearchParameters, arrows []SST.ArrowPtr, sttype []int, limit int) {
-
 	chap := search.Chapter
 	context := search.Context
 
@@ -474,7 +462,7 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, np
 	array, _ := json.Marshal(cones)
 
 	response := PackageResponse(ctx, search, "ConePaths", string(array))
-	//fmt.Println("CasualConePath reponse",string(response))
+	// fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -484,7 +472,6 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, np
 //******************************************************************
 
 func PackageConeFromOrigin(ctx SST.PoSST, nptr SST.NodePtr, nth int, sttype int, chap string, context []string, dimnptr, limit int) (SST.WebConePaths, int) {
-
 	// Package a JSON object for the nth/dimnptr causal cone , assigning each nth the same width
 
 	var wpaths [][]SST.WebPath
@@ -509,7 +496,6 @@ func PackageConeFromOrigin(ctx SST.PoSST, nptr SST.NodePtr, nth int, sttype int,
 //******************************************************************
 
 func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, leftptrs, rightptrs []SST.NodePtr, search SST.SearchParameters, arrowptrs []SST.ArrowPtr, sttype []int, maxdepth int) {
-
 	chapter := search.Chapter
 	context := search.Context
 
@@ -571,7 +557,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, left
 
 			response := PackageResponse(ctx, search, "PathSolve", string(array_pack))
 
-			//fmt.Println("PATH SOLVE:",string(response))
+			// fmt.Println("PATH SOLVE:",string(response))
 
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(response)
@@ -588,7 +574,7 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, left
 	fmt.Println("No paths satisfy constraints")
 	response := PackageResponse(ctx, search, "PathSolve", "[]")
 
-	//fmt.Println("PATHSOLVE NOTES",string(response))
+	// fmt.Println("PATHSOLVE NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Done/sent path solve")
@@ -597,7 +583,6 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, left
 //******************************************************************
 
 func HandlePageMap(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, notes []SST.PageMap) {
-
 	fmt.Println("Solver/handler: HandlePageMap()")
 
 	jstr := SST.JSONPage(CTX, notes)
@@ -607,7 +592,7 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search
 		UpdateLastSawSection(w, r, notes[0].Chapter)
 	}
 
-	//fmt.Println("PAGEMAP NOTES",string(response))
+	// fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Done/sent pagemap")
@@ -616,7 +601,6 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search
 //******************************************************************
 
 func HandleStories(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nodeptrs []SST.NodePtr, arrowptrs []SST.ArrowPtr, sttypes []int, limit int) {
-
 	if arrowptrs == nil {
 		arrowptrs, sttypes = SST.ArrowPtrFromArrowsNames(CTX, []string{"!then!"})
 	}
@@ -644,18 +628,16 @@ func HandleStories(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search
 
 	response := PackageResponse(ctx, search, "Sequence", jarray)
 
-	//fmt.Println("Sequence...",string(response))
+	// fmt.Println("Sequence...",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Done/sent sequence")
-
 }
 
 // *********************************************************************
 
 func HandleMatchingArrows(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, arrowptrs []SST.ArrowPtr, sttype []int) {
-
 	fmt.Println("Solver/handler: HandleMatchingArrows()")
 
 	type ArrowList struct {
@@ -720,13 +702,11 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request, ctx SST.PoSST,
 // *********************************************************************
 
 func ShowStats(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nptrs []SST.NodePtr) {
-
 	var retval []SST.LastSeen
 
 	if nptrs == nil {
 		retval = SST.GetLastSawSection(ctx)
 	} else {
-
 		for n := range nptrs {
 			nptr := SST.GetLastSawNPtr(ctx, nptrs[n])
 			retval = append(retval, nptr)
@@ -740,13 +720,11 @@ func ShowStats(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 	fmt.Println("Done/sent stat")
-
 }
 
 // *********************************************************************
 
 func ShowChapterContexts(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, limit int) {
-
 	chap := search.Chapter
 	context := search.Context
 
@@ -786,7 +764,7 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, 
 	data, _ := json.Marshal(chapters)
 	response := PackageResponse(ctx, search, "TOC", string(data))
 
-	//fmt.Println("Chap/context...", string(response))
+	// fmt.Println("Chap/context...", string(response))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
@@ -796,7 +774,6 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, 
 //******************************************************************
 
 func GetContextSets(dim int, clist []string, adj [][]int, xyz SST.Coords) []SST.Loc {
-
 	var retvar []SST.Loc
 
 	for c := 0; c < len(adj); c++ {
@@ -821,7 +798,6 @@ func GetContextSets(dim int, clist []string, adj [][]int, xyz SST.Coords) []SST.
 //******************************************************************
 
 func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
-
 	var retvar []SST.Loc
 
 	for c := 0; c < len(clist); c++ {
@@ -841,7 +817,6 @@ func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
 // *********************************************************************
 
 func JSONStoryNodeEvent(en SST.NodeEvent) string {
-
 	var jstr string
 
 	//	j,_ := json.Marshal(en)
@@ -902,18 +877,18 @@ func GenHeader(w http.ResponseWriter, r *http.Request) {
 // *********************************************************************
 
 func CleanText(c string) string {
-
-	c = strings.Replace(c, "{", "", -1)
-	c = strings.Replace(c, "}", "", -1)
-	c = strings.Replace(c, ",", " ", -1)
-	c = strings.Replace(c, "\"", "\\\"", -1)
-	return c
+	replacer := strings.NewReplacer(
+		"{", "",
+		"}", "",
+		",", " ",
+		"\"", "\\\"",
+	)
+	return replacer.Replace(c)
 }
 
 // **********************************************************
 
 func ShowNode(ctx SST.PoSST, nptr []SST.NodePtr) string {
-
 	var ret string
 
 	for n := 0; n < len(nptr); n++ {
@@ -930,7 +905,6 @@ func ShowNode(ctx SST.PoSST, nptr []SST.NodePtr) string {
 // **********************************************************
 
 func PackageResponse(ctx SST.PoSST, search SST.SearchParameters, kind string, jstr string) []byte {
-
 	ambien, key, now := SST.GetTimeContext()
 	now_ctx := SST.UpdateSTMContext(CTX, ambien, key, now, search)
 
@@ -945,7 +919,6 @@ func PackageResponse(ctx SST.PoSST, search SST.SearchParameters, kind string, js
 //******************************************************************
 
 func SL(list []string) string {
-
 	var s string
 
 	s += fmt.Sprint(" [")

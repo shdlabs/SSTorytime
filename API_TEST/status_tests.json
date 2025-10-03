@@ -1,0 +1,356 @@
+{
+  "description": "Status API Test Configuration",
+  "version": "1.0.0",
+  "api_endpoint": "/status",
+  "test_categories": [
+    {
+      "id": "status_endpoint",
+      "name": "Status Endpoint Tests",
+      "description": "Test status endpoint functionality",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "basic_status_request",
+          "name": "Basic status request",
+          "description": "Basic status endpoint request",
+          "url": "/status",
+          "method": "GET",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "required_fields": [
+              "server_status",
+              "database_status",
+              "available_topics",
+              "timestamp"
+            ],
+            "field_validations": {
+              "available_topics": {
+                "type": "array",
+                "description": "Should be list of available chapters"
+              }
+            }
+          }
+        },
+        {
+          "id": "status_post_request",
+          "name": "Status POST request",
+          "description": "Test POST method on status endpoint",
+          "url": "/status",
+          "method": "POST",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json"
+          }
+        },
+        {
+          "id": "status_options_request",
+          "name": "Status OPTIONS request",
+          "description": "Test OPTIONS method for CORS",
+          "url": "/status",
+          "method": "OPTIONS",
+          "expected_status": 200,
+          "validation": {
+            "has_cors_headers": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "static_files",
+      "name": "Static File Tests",
+      "description": "Test static file serving",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "main_html_page",
+          "name": "Main HTML page",
+          "description": "Test main HTML page serving",
+          "url": "/",
+          "method": "GET",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "text/html",
+            "contains_text": true,
+            "min_response_size": 100
+          }
+        },
+        {
+          "id": "main_javascript_file",
+          "name": "Main JavaScript file",
+          "description": "Test main.js file serving",
+          "url": "/main.js",
+          "method": "GET",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "text/javascript",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "css_stylesheet",
+          "name": "CSS stylesheet",
+          "description": "Test style.css file serving",
+          "url": "/style.css",
+          "method": "GET",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "text/css",
+            "contains_text": true,
+            "min_response_size": 50
+          }
+        },
+        {
+          "id": "nonexistent_file_404",
+          "name": "Non-existent file (404 test)",
+          "description": "Test proper 404 handling for non-existent files",
+          "url": "/nonexistent.js",
+          "method": "GET",
+          "expected_status": 404,
+          "validation": {
+            "should_fail": true,
+            "expected_error": "404 Not Found"
+          }
+        }
+      ]
+    },
+    {
+      "id": "cors_headers",
+      "name": "CORS Header Tests",
+      "description": "Test CORS headers validation",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "cors_preflight_request",
+          "name": "CORS preflight request",
+          "description": "Test CORS preflight OPTIONS request",
+          "url": "/searchN4L",
+          "method": "OPTIONS",
+          "headers": {
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "Content-Type"
+          },
+          "expected_status": 200,
+          "validation": {
+            "has_cors_headers": true,
+            "required_cors_headers": [
+              "Access-Control-Allow-Origin",
+              "Access-Control-Allow-Methods",
+              "Access-Control-Allow-Headers"
+            ]
+          }
+        },
+        {
+          "id": "cross_origin_request",
+          "name": "Cross-origin request",
+          "description": "Simulate cross-origin request",
+          "url": "/status",
+          "method": "GET",
+          "headers": {
+            "Origin": "http://example.com"
+          },
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "has_cors_headers": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "error_endpoints",
+      "name": "Error Endpoint Tests",
+      "description": "Test error handling for non-existent endpoints",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "nonexistent_api_endpoint",
+          "name": "Non-existent API endpoint",
+          "description": "Test 404 for non-existent API endpoint",
+          "url": "/nonexistent",
+          "method": "GET",
+          "expected_status": 404,
+          "validation": {
+            "should_fail": true,
+            "expected_error": "404 Not Found"
+          }
+        },
+        {
+          "id": "malformed_endpoint",
+          "name": "Malformed endpoint",
+          "description": "Test handling of malformed URLs",
+          "url": "//double//slash",
+          "method": "GET",
+          "expected_status": 404,
+          "validation": {
+            "should_fail": true,
+            "expected_error": "404 Not Found"
+          }
+        },
+        {
+          "id": "very_long_url",
+          "name": "Very long URL",
+          "description": "Test handling of extremely long URLs",
+          "url": "/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path/very/long/path",
+          "method": "GET",
+          "expected_status": 404,
+          "validation": {
+            "should_fail": true,
+            "expected_error": "404 Not Found"
+          }
+        }
+      ]
+    },
+    {
+      "id": "server_capabilities",
+      "name": "Server Capability Tests",
+      "description": "Test server capabilities and response format",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "json_content_type_validation",
+          "name": "JSON Content-Type validation",
+          "description": "Validate JSON Content-Type headers",
+          "url": "/status",
+          "method": "GET",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "content_type_validation": {
+              "expected": "application/json",
+              "strict": false
+            }
+          }
+        },
+        {
+          "id": "server_response_time",
+          "name": "Server response time",
+          "description": "Test server response performance",
+          "url": "/status",
+          "method": "GET",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "max_response_time": 5.0,
+            "performance_test": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "performance_tests",
+      "name": "Performance Tests",
+      "description": "Test server performance characteristics",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "concurrent_status_requests",
+          "name": "Concurrent status requests",
+          "description": "Test handling of multiple concurrent requests",
+          "url": "/status",
+          "method": "GET",
+          "concurrent_requests": 5,
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "max_response_time": 10.0,
+            "performance_test": true
+          }
+        },
+        {
+          "id": "rapid_sequential_requests",
+          "name": "Rapid sequential requests",
+          "description": "Test rapid sequential requests",
+          "url": "/status",
+          "method": "GET",
+          "repeat_count": 10,
+          "repeat_delay": 0.1,
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "performance_test": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "data_validation",
+      "name": "Data Validation Tests",
+      "description": "Test response data validation",
+      "icon": "📁",
+      "tests": [
+        {
+          "id": "status_data_structure",
+          "name": "Status data structure",
+          "description": "Validate status response data structure",
+          "url": "/status",
+          "method": "GET",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "schema_validation": {
+              "type": "object",
+              "required_properties": [
+                "server_status",
+                "database_status",
+                "available_topics",
+                "timestamp"
+              ],
+              "property_types": {
+                "server_status": "string",
+                "database_status": "string",
+                "available_topics": "array",
+                "timestamp": "string"
+              }
+            }
+          }
+        },
+        {
+          "id": "status_timestamp_format",
+          "name": "Status timestamp format",
+          "description": "Validate timestamp format in status response",
+          "url": "/status",
+          "method": "GET",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "timestamp_validation": {
+              "field": "timestamp",
+              "format": "ISO8601",
+              "required": true
+            }
+          }
+        },
+        {
+          "id": "available_topics_validation",
+          "name": "Available topics validation",
+          "description": "Validate available_topics array structure",
+          "url": "/status",
+          "method": "GET",
+          "expected_status": 200,
+          "validation": {
+            "response_type": "application/json",
+            "array_validation": {
+              "field": "available_topics",
+              "min_length": 0,
+              "element_type": "string",
+              "unique_elements": true
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "quick_test_categories": ["status_endpoint", "static_files"],
+  "comprehensive_test_categories": [
+    "status_endpoint",
+    "static_files",
+    "cors_headers",
+    "error_endpoints",
+    "server_capabilities",
+    "performance_tests",
+    "data_validation"
+  ]
+}
