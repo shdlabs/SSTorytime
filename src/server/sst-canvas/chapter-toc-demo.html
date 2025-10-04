@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://unpkg.com/open-props" />
+
+    <!-- optional imports that use the props -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/open-props/normalize.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/open-props/buttons.min.css"
+    />
+    <title>SSTorytime Chapter TOC Visualization</title>
+    <style>
+      body {
+        /* min-height: 100svh; */
+        /* max-width: 100svw; */
+        display: grid;
+        /* justify-items: center; */
+        /* jjustify-content: center; */
+        gap: 1em;
+      }
+
+      .container {
+        min-height: 100svh;
+        max-width: 100svw;
+        display: grid;
+        justify-items: center;
+        justify-content: center;
+        gap: 1em;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        font-size: 2.8em;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .header p {
+        font-size: 1.3em;
+        opacity: 0.9;
+        margin-bottom: 5px;
+      }
+
+      .header .subtitle {
+        font-size: 1em;
+        opacity: 0.7;
+        font-style: italic;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+      }
+
+      .control-group {
+        padding: 12px 18px;
+        border-radius: 12px;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .control-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        font-size: 0.95em;
+        color: #ffd700;
+      }
+
+      .control-group input,
+      .control-group button,
+      .control-group select {
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        color: #333;
+        font-size: 0.9em;
+        transition: all 0.3s ease;
+      }
+
+      .control-group button {
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .control-group button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      #canvasContainer {
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+        display: flex;
+        align-items: stretch;
+        align-content: center;
+        flex-wrap: wrap;
+        padding-bottom: 1em;
+      }
+
+      #sstCanvas3D {
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+        flex-basis: 100%;
+        /* height: 80svh; */
+        width: fit-content;
+      }
+
+      .info-panel {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 25px;
+      }
+
+      .info-section {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 15px;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .info-section h3 {
+        margin-top: 0;
+        color: #ffd700;
+        font-size: 1.3em;
+        border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+        padding-bottom: 10px;
+      }
+
+      .info-item {
+        margin-bottom: 12px;
+        line-height: 1.6;
+      }
+
+      .info-item strong {
+        color: #ffa500;
+        font-weight: bold;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .stat-box {
+        background: rgba(255, 255, 255, 0.12);
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s ease;
+      }
+
+      .stat-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .stat-box .number {
+        font-size: 2em;
+        font-weight: bold;
+        background: linear-gradient(45deg, #ffd700, #ffa500);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .stat-box .label {
+        font-size: 0.9em;
+        opacity: 0.9;
+        margin-top: 5px;
+      }
+
+      .chapter-list {
+        max-height: 300px;
+        overflow-y: auto;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+      }
+
+      .chapter-item {
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        border-left: 4px solid #3498db;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .chapter-item:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-left-color: #ffd700;
+        transform: translateX(5px);
+      }
+
+      .chapter-item .title {
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 4px;
+      }
+
+      .chapter-item .coords {
+        font-size: 0.85em;
+        opacity: 0.7;
+        font-family: monospace;
+      }
+
+      .legend {
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 15px;
+      }
+
+      .legend h4 {
+        margin-top: 0;
+        color: #ffd700;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 2.2em;
+        }
+
+        .controls {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .control-group {
+          min-width: 250px;
+        }
+
+        .info-panel {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        font-size: 1.2em;
+        color: #ffd700;
+      }
+
+      .error {
+        background: rgba(231, 76, 60, 0.2);
+        border: 1px solid rgba(231, 76, 60, 0.4);
+        color: #ff6b6b;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <p>3D Table of Contents Visualization</p>
+        <p class="subtitle">
+          Exploring semantic chapters in spacetime coordinates
+        </p>
+      </div>
+
+      <div class="controls">
+        <div class="control-group">
+          <label for="dataSource">📊 Data Source:</label>
+          <select id="dataSource">
+            <option value="chapter-data-0.json" selected>
+              Real TOC Data (\chapter \limit 25)
+            </option>
+            <option value="chapter-data.json">Fallback Data</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="rotationSpeed">🔄 Rotation Speed:</label>
+          <input
+            type="range"
+            id="rotationSpeed"
+            min="0"
+            max="0.05"
+            step="0.005"
+            value="0.01"
+          />
+          <span id="speedValue">0.01</span>
+        </div>
+
+        <div class="control-group">
+          <label for="viewAngle">👁️ View Angle:</label>
+          <input
+            type="range"
+            id="viewAngle"
+            min="0"
+            max="6.28"
+            step="0.1"
+            value="0.35"
+          />
+          <span id="angleValue">0.35</span>
+        </div>
+
+        <div class="control-group">
+          <label for="showContext">🔍 Show Context:</label>
+          <input type="checkbox" id="showContext" checked />
+        </div>
+
+        <div class="control-group">
+          <button id="toggleAnimation">⏸️ Pause</button>
+          <button id="resetView">🔄 Reset</button>
+          <button id="focusChapter">🎯 Focus</button>
+        </div>
+      </div>
+
+      <div id="canvasContainer"></div>
+
+      <div class="info-panel">
+        <div class="info-section">
+          <h3>📈 Current Session</h3>
+          <div class="info-item">
+            <strong>Time:</strong> <span id="currentTime">Loading...</span>
+          </div>
+          <div class="info-item">
+            <strong>Intent:</strong> <span id="intentInfo">Loading...</span>
+          </div>
+          <div class="info-item">
+            <strong>Ambient:</strong> <span id="ambientInfo">Loading...</span>
+          </div>
+
+          <div class="stats">
+            <div class="stat-box">
+              <div class="number" id="chapterCount">0</div>
+              <div class="label">Chapters</div>
+            </div>
+            <div class="stat-box">
+              <div class="number" id="contextCount">0</div>
+              <div class="label">Context Items</div>
+            </div>
+            <div class="stat-box">
+              <div class="number" id="fragmentCount">0</div>
+              <div class="label">Fragments</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>📋 Chapter Catalog</h3>
+          <div class="chapter-list" id="chapterList">
+            <div class="loading">Loading chapters...</div>
+          </div>
+
+          <div class="legend">
+            <h4>🎨 Visual Legend</h4>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: linear-gradient(45deg, #e74c3c, #c0392b)"
+              ></div>
+              <span>Chapter Nodes</span>
+            </div>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: linear-gradient(45deg, #3498db, #2980b9)"
+              ></div>
+              <span>Context Fragments</span>
+            </div>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: linear-gradient(45deg, #f39c12, #e67e22)"
+              ></div>
+              <span>Single Contexts</span>
+            </div>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: linear-gradient(45deg, #27ae60, #229954)"
+              ></div>
+              <span>Common Contexts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="sstcanvas3d.js"></script>
+    <script>
+      class ChapterTOCVisualization {
+        constructor() {
+          this.canvas3d = null;
+          this.tocData = null;
+          this.animationId = null;
+          this.isAnimating = true;
+          this.rotationSpeed = 0.01;
+          this.currentAngle = 0;
+          this.showContext = true;
+          this.selectedChapter = null;
+
+          this.init();
+        }
+
+        async init() {
+          try {
+            console.log("🚀 Initializing Chapter TOC Visualization...");
+
+            // Initialize the 3D canvas
+            this.canvas3d = new SSTCanvas3D("canvasContainer", {
+              width: window.innerWidth,
+              height: window.innerHeight,
+              mobile: window.innerWidth < 450 ? 0.5 : 1,
+            });
+
+            // Load initial data
+            await this.loadData("chapter-data-0.json");
+
+            // Set up controls
+            this.setupControls();
+
+            // Start animation
+            this.startAnimation();
+
+            console.log(
+              "✅ Chapter TOC visualization initialized successfully"
+            );
+          } catch (error) {
+            console.error("❌ Failed to initialize visualization:", error);
+            this.showError("Failed to load visualization: " + error.message);
+          }
+        }
+
+        async loadData(filename) {
+          try {
+            console.log(`📡 Loading data from ${filename}...`);
+            const response = await fetch(filename);
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            this.tocData = await response.json();
+            this.updateInfoPanel();
+            this.updateChapterList();
+            this.renderVisualization();
+
+            console.log("✅ TOC data loaded:", this.tocData);
+          } catch (error) {
+            console.error("❌ Error loading data:", error);
+            throw error;
+          }
+        }
+
+        renderVisualization() {
+          if (!this.tocData || !this.tocData.Content) {
+            console.warn("⚠️ No TOC data to render");
+            return;
+          }
+
+          // Clear canvas
+          this.canvas3d.clear();
+
+          // Draw coordinate grid
+          this.canvas3d.drawGrid(0, 0, 1);
+
+          // Render each chapter
+          this.tocData.Content.forEach((chapter, index) => {
+            this.renderChapter(chapter, index);
+          });
+
+          // Draw connections between chapters (optional)
+          this.drawChapterConnections();
+        }
+
+        renderChapter(chapter, index) {
+          const x = chapter.XYZ.X;
+          const y = chapter.XYZ.Y;
+          const z = chapter.XYZ.Z;
+
+          // Draw main chapter node (larger, red)
+          this.canvas3d.drawNode(
+            x,
+            y,
+            z,
+            8 * this.canvas3d.mob,
+            "#c0392b",
+            "#e74c3c"
+          );
+
+          // Draw chapter title (handle empty chapter names)
+          const chapterTitle = chapter.Chapter || `Chapter ${index + 1}`;
+          this.canvas3d.drawLabel(
+            x,
+            y + 0.15,
+            z,
+            chapterTitle.slice(0, 40),
+            12,
+            "white"
+          );
+
+          // Draw chapter coordinates info
+          this.canvas3d.drawLabel(
+            x,
+            y - 0.1,
+            z,
+            `[${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}]`,
+            9,
+            "lightgray"
+          );
+
+          // Render context fragments if enabled
+          if (this.showContext) {
+            this.renderContextFragments(chapter, x, y, z);
+          }
+
+          // Highlight selected chapter
+          if (this.selectedChapter === index) {
+            this.canvas3d.drawNode(
+              x,
+              y,
+              z,
+              12 * this.canvas3d.mob,
+              "transparent",
+              "#FFD700"
+            );
+          }
+        }
+
+        renderContextFragments(chapter, centerX, centerY, centerZ) {
+          // Render Context fragments (blue)
+          if (chapter.Context && chapter.Context.length > 0) {
+            chapter.Context.forEach((context, i) => {
+              if (context && context.XYZ) {
+                const cx = context.XYZ.X;
+                const cy = context.XYZ.Y;
+                const cz = context.XYZ.Z;
+
+                // Draw context node
+                this.canvas3d.drawNode(
+                  cx,
+                  cy,
+                  cz,
+                  4 * this.canvas3d.mob,
+                  "#2980b9",
+                  "#3498db"
+                );
+
+                // Draw context text if available
+                if (context.Text) {
+                  this.canvas3d.drawLabel(
+                    cx,
+                    cy,
+                    cz,
+                    context.Text.slice(0, 15),
+                    8,
+                    "lightblue"
+                  );
+                }
+
+                // Connect to main chapter
+                this.canvas3d.drawLine3D(
+                  centerX,
+                  centerY,
+                  centerZ,
+                  cx,
+                  cy,
+                  cz,
+                  "#3498db",
+                  1
+                );
+              }
+            });
+          }
+
+          // Render Single contexts (orange)
+          if (chapter.Single && chapter.Single.length > 0) {
+            chapter.Single.forEach((single, i) => {
+              if (single && single.XYZ) {
+                const sx = single.XYZ.X;
+                const sy = single.XYZ.Y;
+                const sz = single.XYZ.Z;
+
+                // Draw single context node
+                this.canvas3d.drawNode(
+                  sx,
+                  sy,
+                  sz,
+                  3 * this.canvas3d.mob,
+                  "#e67e22",
+                  "#f39c12"
+                );
+
+                // Draw single context text if available
+                if (single.Text) {
+                  this.canvas3d.drawLabel(
+                    sx,
+                    sy,
+                    sz,
+                    single.Text.slice(0, 12),
+                    7,
+                    "orange"
+                  );
+                }
+
+                // Connect to main chapter with dashed line effect
+                this.canvas3d.drawLine3D(
+                  centerX,
+                  centerY,
+                  centerZ,
+                  sx,
+                  sy,
+                  sz,
+                  "#f39c12",
+                  0.5
+                );
+              }
+            });
+          }
+
+          // Render Common contexts (green)
+          if (chapter.Common && chapter.Common.length > 0) {
+            chapter.Common.forEach((common, i) => {
+              if (common && common.XYZ) {
+                const gx = common.XYZ.X;
+                const gy = common.XYZ.Y;
+                const gz = common.XYZ.Z;
+
+                // Draw common context node
+                this.canvas3d.drawNode(
+                  gx,
+                  gy,
+                  gz,
+                  3 * this.canvas3d.mob,
+                  "#229954",
+                  "#27ae60"
+                );
+
+                // Draw common context text if available
+                if (common.Text) {
+                  this.canvas3d.drawLabel(
+                    gx,
+                    gy,
+                    gz,
+                    common.Text.slice(0, 12),
+                    7,
+                    "lightgreen"
+                  );
+                }
+
+                // Connect to main chapter
+                this.canvas3d.drawLine3D(
+                  centerX,
+                  centerY,
+                  centerZ,
+                  gx,
+                  gy,
+                  gz,
+                  "#27ae60",
+                  0.5
+                );
+              }
+            });
+          }
+        }
+
+        drawChapterConnections() {
+          // Draw connections between chapters based on proximity or shared context
+          const chapters = this.tocData.Content;
+
+          for (let i = 0; i < chapters.length - 1; i++) {
+            const chapter1 = chapters[i];
+            const chapter2 = chapters[i + 1];
+
+            if (chapter1 && chapter2 && chapter1.XYZ && chapter2.XYZ) {
+              // Calculate distance
+              const dx = chapter2.XYZ.X - chapter1.XYZ.X;
+              const dy = chapter2.XYZ.Y - chapter1.XYZ.Y;
+              const dz = chapter2.XYZ.Z - chapter1.XYZ.Z;
+              const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+              // Draw connection if chapters are reasonably close
+              if (distance < 1.0) {
+                this.canvas3d.drawLine3D(
+                  chapter1.XYZ.X,
+                  chapter1.XYZ.Y,
+                  chapter1.XYZ.Z,
+                  chapter2.XYZ.X,
+                  chapter2.XYZ.Y,
+                  chapter2.XYZ.Z,
+                  "rgba(255,255,255,0.3)",
+                  1
+                );
+              }
+            }
+          }
+        }
+
+        updateInfoPanel() {
+          if (!this.tocData) return;
+
+          document.getElementById("currentTime").textContent =
+            this.tocData.Time || "Unknown";
+          document.getElementById("intentInfo").textContent =
+            this.tocData.Intent || "None";
+          document.getElementById("ambientInfo").textContent =
+            this.tocData.Ambient || "None";
+
+          // Calculate statistics
+          const chapters = this.tocData.Content || [];
+          let totalContexts = 0;
+          let totalFragments = 0;
+
+          chapters.forEach((chapter) => {
+            if (chapter.Context) totalContexts += chapter.Context.length;
+            if (chapter.Single) totalFragments += chapter.Single.length;
+            if (chapter.Common) totalFragments += chapter.Common.length;
+          });
+
+          document.getElementById("chapterCount").textContent = chapters.length;
+          document.getElementById("contextCount").textContent = totalContexts;
+          document.getElementById("fragmentCount").textContent = totalFragments;
+        }
+
+        updateChapterList() {
+          const chapterList = document.getElementById("chapterList");
+          if (!this.tocData || !this.tocData.Content) {
+            chapterList.innerHTML =
+              '<div class="loading">No chapters found</div>';
+            return;
+          }
+
+          chapterList.innerHTML = "";
+
+          this.tocData.Content.forEach((chapter, index) => {
+            const chapterItem = document.createElement("div");
+            chapterItem.className = "chapter-item";
+            chapterItem.dataset.index = index;
+
+            const title = chapter.Chapter || `Unnamed Chapter ${index + 1}`;
+            const coords = `(${chapter.XYZ.X.toFixed(
+              2
+            )}, ${chapter.XYZ.Y.toFixed(2)}, ${chapter.XYZ.Z.toFixed(2)})`;
+
+            chapterItem.innerHTML = `
+                        <div class="title">${title}</div>
+                        <div class="coords">${coords}</div>
+                    `;
+
+            chapterItem.addEventListener("click", () => {
+              this.selectChapter(index);
+            });
+
+            chapterList.appendChild(chapterItem);
+          });
+        }
+
+        selectChapter(index) {
+          this.selectedChapter = index;
+
+          // Update visual selection in list
+          document.querySelectorAll(".chapter-item").forEach((item, i) => {
+            item.style.background =
+              i === index ? "rgba(255,215,0,0.3)" : "rgba(255,255,255,0.1)";
+            item.style.borderLeftColor = i === index ? "#FFD700" : "#3498db";
+          });
+
+          // Focus on selected chapter
+          if (this.tocData.Content[index]) {
+            const chapter = this.tocData.Content[index];
+            this.canvas3d.setObserverPosition(
+              chapter.XYZ.X + 0.5,
+              chapter.XYZ.Y + 0.3,
+              chapter.XYZ.Z - 1
+            );
+          }
+
+          // Re-render to highlight selection
+          if (!this.isAnimating) {
+            this.renderVisualization();
+          }
+        }
+
+        setupControls() {
+          // Data source selector
+          document
+            .getElementById("dataSource")
+            .addEventListener("change", async (e) => {
+              try {
+                await this.loadData(e.target.value);
+              } catch (error) {
+                console.error("Failed to load data:", error);
+                alert("Failed to load data: " + error.message);
+              }
+            });
+
+          // Rotation speed control
+          document
+            .getElementById("rotationSpeed")
+            .addEventListener("input", (e) => {
+              this.rotationSpeed = parseFloat(e.target.value);
+              document.getElementById("speedValue").textContent =
+                e.target.value;
+            });
+
+          // View angle control
+          document
+            .getElementById("viewAngle")
+            .addEventListener("input", (e) => {
+              const angle = parseFloat(e.target.value);
+              this.canvas3d.setViewingAngle(angle, this.canvas3d.phi);
+              document.getElementById("angleValue").textContent =
+                e.target.value;
+              if (!this.isAnimating) {
+                this.renderVisualization();
+              }
+            });
+
+          // Show context toggle
+          document
+            .getElementById("showContext")
+            .addEventListener("change", (e) => {
+              this.showContext = e.target.checked;
+              if (!this.isAnimating) {
+                this.renderVisualization();
+              }
+            });
+
+          // Animation toggle
+          document
+            .getElementById("toggleAnimation")
+            .addEventListener("click", () => {
+              if (this.isAnimating) {
+                this.stopAnimation();
+                document.getElementById("toggleAnimation").textContent =
+                  "▶️ Play";
+              } else {
+                this.startAnimation();
+                document.getElementById("toggleAnimation").textContent =
+                  "⏸️ Pause";
+              }
+            });
+
+          // Reset view
+          document.getElementById("resetView").addEventListener("click", () => {
+            this.currentAngle = 0;
+            this.canvas3d.setViewingAngle(Math.PI / 9, Math.PI / 9);
+            this.canvas3d.setObserverPosition(1, 0.5, -1);
+            document.getElementById("viewAngle").value = Math.PI / 9;
+            document.getElementById("angleValue").textContent = (
+              Math.PI / 9
+            ).toFixed(2);
+            this.selectedChapter = null;
+            this.updateChapterList();
+            if (!this.isAnimating) {
+              this.renderVisualization();
+            }
+          });
+
+          // Focus chapter
+          document
+            .getElementById("focusChapter")
+            .addEventListener("click", () => {
+              if (this.selectedChapter !== null) {
+                const chapter = this.tocData.Content[this.selectedChapter];
+                if (chapter) {
+                  this.canvas3d.setObserverPosition(
+                    chapter.XYZ.X,
+                    chapter.XYZ.Y,
+                    chapter.XYZ.Z - 0.8
+                  );
+                  if (!this.isAnimating) {
+                    this.renderVisualization();
+                  }
+                }
+              } else {
+                alert("Please select a chapter from the list first");
+              }
+            });
+
+          // Window resize handler
+          window.addEventListener("resize", () => {
+            this.canvas3d.resizeCanvas(
+              Math.min(window.innerWidth, 1200),
+              Math.min(window.innerHeight, 700)
+            );
+            if (!this.isAnimating) {
+              this.renderVisualization();
+            }
+          });
+        }
+
+        startAnimation() {
+          this.isAnimating = true;
+
+          const animate = () => {
+            if (!this.isAnimating) return;
+
+            // Update rotation
+            this.currentAngle += this.rotationSpeed;
+            this.canvas3d.setViewingAngle(this.currentAngle, this.canvas3d.phi);
+
+            // Re-render
+            this.renderVisualization();
+
+            // Continue animation
+            this.animationId = requestAnimationFrame(animate);
+          };
+
+          animate();
+        }
+
+        stopAnimation() {
+          this.isAnimating = false;
+          if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+            this.animationId = null;
+          }
+        }
+
+        showError(message) {
+          const container = document.getElementById("canvasContainer");
+          container.innerHTML = `
+                    <div class="error">
+                        <h3>⚠️ Error</h3>
+                        <p>${message}</p>
+                        <button onclick="location.reload()" style="padding: 10px 20px; margin-top: 15px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            🔄 Reload Page
+                        </button>
+                    </div>
+                `;
+        }
+      }
+
+      // Initialize when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        new ChapterTOCVisualization();
+      });
+    </script>
+  </body>
+</html>

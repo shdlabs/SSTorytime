@@ -1,0 +1,35 @@
+{
+  "Response": "Orbits",
+  "Content": [
+    {
+      "Text": "Friday's child is loving and giving...",
+      "L": 38,
+      "Chap": "reminders",
+      "Context": "Friday",
+      "NPtr": {
+        "Class": 4,
+        "CPtr": 541
+      },
+      "XYZ": {
+        "X": 0.4,
+        "Y": 0,
+        "Z": 0,
+        "R": 0,
+        "Lat": 0,
+        "Lon": 0
+      },
+      "Orbits": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  ],
+  "Time": "Fri:Hr23:Qu1-Min05_10",
+  "Intent": "Chapter:TableOfContents,Chapter:reminders,day3,evening,fri:hr22:qu4-min55_00,fri:hr23:qu1-min00_05,fri:hr23:qu1-min05_10,friday,hr22,hr23,n_autumn,october,qu1,qu4,s_spring,yr2025",
+  "Ambient": "N_Autumn, S_Spring, Evening, Friday, Day3, October, Yr2025, Hr23, Qu1"
+}

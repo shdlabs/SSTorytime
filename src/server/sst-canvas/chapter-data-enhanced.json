@@ -1,0 +1,203 @@
+{
+  "Response": "Orbits",
+  "Content": [
+    {
+      "Text": "Friday's child is loving and giving...",
+      "L": 38,
+      "Chap": "reminders",
+      "Context": "Friday",
+      "NPtr": {
+        "Class": 4,
+        "CPtr": 541
+      },
+      "XYZ": {
+        "X": 0.4,
+        "Y": 0,
+        "Z": 0,
+        "R": 0,
+        "Lat": 0,
+        "Lon": 0
+      },
+      "Orbits": [
+        [
+          {
+            "Text": "Morning routine brings peace",
+            "XYZ": { "X": -0.5, "Y": 0.3, "Z": 0.2 },
+            "OOO": { "X": 0.4, "Y": 0, "Z": 0 }
+          }
+        ],
+        [
+          {
+            "Text": "Weekly planning session",
+            "XYZ": { "X": 0.1, "Y": -0.4, "Z": 0.1 },
+            "OOO": { "X": 0.4, "Y": 0, "Z": 0 }
+          }
+        ],
+        [
+          {
+            "Text": "Childhood memories surface",
+            "XYZ": { "X": -0.3, "Y": -0.2, "Z": -0.3 },
+            "OOO": { "X": 0.4, "Y": 0, "Z": 0 }
+          }
+        ],
+        [
+          {
+            "Text": "Similar reminders exist",
+            "XYZ": { "X": 0.6, "Y": 0.1, "Z": -0.1 },
+            "OOO": { "X": 0.4, "Y": 0, "Z": 0 }
+          }
+        ],
+        [
+          {
+            "Text": "Weekend activities planned",
+            "XYZ": { "X": 0.8, "Y": 0.2, "Z": 0.3 },
+            "OOO": { "X": 0.4, "Y": 0, "Z": 0 }
+          }
+        ],
+        [
+          {
+            "Text": "Family gathering context",
+            "XYZ": { "X": 0.2, "Y": 0.5, "Z": 0.4 },
+            "OOO": { "X": 0.4, "Y": 0, "Z": 0 }
+          }
+        ],
+        [
+          {
+            "Text": "Expresses kindness value",
+            "XYZ": { "X": 0.0, "Y": 0.7, "Z": 0.2 },
+            "OOO": { "X": 0.4, "Y": 0, "Z": 0 }
+          }
+        ]
+      ]
+    },
+    {
+      "Text": "Building meaningful connections through stories",
+      "L": 45,
+      "Chap": "storytelling",
+      "Context": "narrative",
+      "NPtr": {
+        "Class": 4,
+        "CPtr": 612
+      },
+      "XYZ": {
+        "X": -0.6,
+        "Y": 0.3,
+        "Z": 0.5,
+        "R": 0,
+        "Lat": 0,
+        "Lon": 0
+      },
+      "Orbits": [
+        null,
+        [
+          {
+            "Text": "Narrative framework",
+            "XYZ": { "X": -0.8, "Y": 0.1, "Z": 0.3 },
+            "OOO": { "X": -0.6, "Y": 0.3, "Z": 0.5 }
+          }
+        ],
+        [
+          {
+            "Text": "Ancient storytelling traditions",
+            "XYZ": { "X": -1.0, "Y": 0.0, "Z": 0.2 },
+            "OOO": { "X": -0.6, "Y": 0.3, "Z": 0.5 }
+          }
+        ],
+        [
+          {
+            "Text": "Similar narrative patterns",
+            "XYZ": { "X": -0.4, "Y": 0.5, "Z": 0.6 },
+            "OOO": { "X": -0.6, "Y": 0.3, "Z": 0.5 }
+          }
+        ],
+        [
+          {
+            "Text": "Future story developments",
+            "XYZ": { "X": -0.2, "Y": 0.6, "Z": 0.8 },
+            "OOO": { "X": -0.6, "Y": 0.3, "Z": 0.5 }
+          }
+        ],
+        null,
+        [
+          {
+            "Text": "Conveys human connection",
+            "XYZ": { "X": -0.3, "Y": 0.8, "Z": 0.4 },
+            "OOO": { "X": -0.6, "Y": 0.3, "Z": 0.5 }
+          }
+        ]
+      ]
+    },
+    {
+      "Text": "Knowledge emerges from connected insights",
+      "L": 52,
+      "Chap": "learning",
+      "Context": "discovery",
+      "NPtr": {
+        "Class": 4,
+        "CPtr": 723
+      },
+      "XYZ": {
+        "X": 0.8,
+        "Y": -0.4,
+        "Z": -0.2,
+        "R": 0,
+        "Lat": 0,
+        "Lon": 0
+      },
+      "Orbits": [
+        [
+          {
+            "Text": "Pattern recognition ability",
+            "XYZ": { "X": 0.6, "Y": -0.6, "Z": -0.4 },
+            "OOO": { "X": 0.8, "Y": -0.4, "Z": -0.2 }
+          }
+        ],
+        [
+          {
+            "Text": "Educational framework",
+            "XYZ": { "X": 1.0, "Y": -0.2, "Z": -0.1 },
+            "OOO": { "X": 0.8, "Y": -0.4, "Z": -0.2 }
+          }
+        ],
+        [
+          {
+            "Text": "Historical understanding",
+            "XYZ": { "X": 0.5, "Y": -0.8, "Z": -0.5 },
+            "OOO": { "X": 0.8, "Y": -0.4, "Z": -0.2 }
+          }
+        ],
+        [
+          {
+            "Text": "Related concepts cluster",
+            "XYZ": { "X": 1.1, "Y": -0.3, "Z": 0.0 },
+            "OOO": { "X": 0.8, "Y": -0.4, "Z": -0.2 }
+          }
+        ],
+        [
+          {
+            "Text": "Innovation opportunities",
+            "XYZ": { "X": 1.2, "Y": -0.1, "Z": 0.1 },
+            "OOO": { "X": 0.8, "Y": -0.4, "Z": -0.2 }
+          }
+        ],
+        [
+          {
+            "Text": "Learning community",
+            "XYZ": { "X": 0.9, "Y": -0.1, "Z": -0.3 },
+            "OOO": { "X": 0.8, "Y": -0.4, "Z": -0.2 }
+          }
+        ],
+        [
+          {
+            "Text": "Represents wisdom growth",
+            "XYZ": { "X": 0.7, "Y": 0.0, "Z": -0.1 },
+            "OOO": { "X": 0.8, "Y": -0.4, "Z": -0.2 }
+          }
+        ]
+      ]
+    }
+  ],
+  "Time": "Fri:Hr18:Qu2-Min25_30",
+  "Intent": "Chapter:reminders,storytelling,learning,narrative,discovery,friday,hr18,autumn,october",
+  "Ambient": "N_Autumn, S_Spring, Evening, Friday, Day3, October, Yr2025, Hr18, Qu2"
+}
