@@ -24,7 +24,7 @@ class SSTCanvas3D
         this.options = {
             width: options.width || window.innerWidth,
             height: options.height || window.innerHeight,
-            mobile: options.mobile || (window.innerWidth < 450 ? 0.5 : 1),
+            mobile: options.mobile || (window.innerWidth < 650 ? 0.4 : 1),
             ...options
         };
 
@@ -251,20 +251,20 @@ class SSTCanvas3D
             this.drawLine3D(
                 centerX - length / 2, 0, centerZ + i,
                 centerX + length / 2, 0, centerZ + i,
-                "lightgrey", 0.3 * this.mob
+                "oklch(27.1% 0.000 0.0)", 0.1 * this.mob
             );
             // Parallel to Z axis
             this.drawLine3D(
                 centerX + i, 0, centerZ - length / 2,
                 centerX + i, 0, centerZ + length / 2,
-                "lightgrey", 0.3 * this.mob
+                "oklch(25.1% 0.009 0.0)", 0.1 * this.mob
             );
         }
 
         // Draw coordinate axes
-        this.drawLine3D(-length / 2, 0, 0, length / 2, 0, 0, "red", 1 * this.mob);
-        this.drawLine3D(0, 0, -length / 2, 0, 0, length / 2, "blue", 1 * this.mob);
-        this.drawLine3D(0, -length / 2, 0, 0, length / 2, 0, "green", 1 * this.mob);
+        this.drawLine3D(-length / 2, 0, 0, length / 2, 0, 0, "oklch(59.1% 0.293 322.896)", 3 * this.mob);
+        this.drawLine3D(0, 0, -length / 2, 0, 0, length / 2, "oklch(58.8% 0.158 241.966)", 3 * this.mob);
+        this.drawLine3D(0, -length / 2, 0, 0, length / 2, 0, "oklch(69.6% 0.17 162.48)", 3 * this.mob);
 
         this.ctx.restore();
     }
