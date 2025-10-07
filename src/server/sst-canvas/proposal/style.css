@@ -1,0 +1,449 @@
+/* Modern CSS using Tailwind v4 classes - Clean implementation */
+/* the props */
+@import "https://unpkg.com/open-props";
+
+/* optional imports that use the props */
+@import "https://unpkg.com/open-props/normalize.min.css";
+@import "https://unpkg.com/open-props/buttons.min.css";
+@import "tailwindcss";
+/* Custom Properties for consistency */
+:root {
+  --brand-blue: #3b82f6;
+  --brand-blue-dark: #1e40af;
+  --brand-slate: #334155;
+  --brand-slate-light: #64748b;
+}
+
+/* Global Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Component Styles - using standard CSS */
+.section-heading {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 4px solid #3b82f6;
+}
+
+.subsection-heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #334155;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.toc-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: #475569;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.toc-link:hover {
+  color: #2563eb;
+  background-color: #dbeafe;
+  transform: translateX(0.25rem);
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  margin: 1.5rem 0;
+}
+
+.comparison-table th {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  padding: 1.5rem;
+  text-align: left;
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+.comparison-table td {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+.comparison-table tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.comparison-table tr:hover {
+  background-color: #dbeafe;
+  transform: scale(1.01);
+  transition: all 0.3s ease;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.feature-card {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  border-color: #93c5fd;
+  transform: translateY(-0.5rem);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.metric-card {
+  background: linear-gradient(135deg, white, #f8fafc);
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-0.5rem);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.metric-number {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #2563eb;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.metric-label {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.metric-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 0.75rem;
+}
+
+.highlight-box {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 2px solid #a7f3d0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 6px solid #10b981;
+}
+
+.warning-box {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 2px solid #fde68a;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 6px solid #f59e0b;
+}
+
+.cost-comparison {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.cost-traditional,
+.cost-sst {
+  display: inline-block;
+  margin: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+}
+
+.savings {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-top: 1.5rem;
+}
+
+.roadmap {
+  background: linear-gradient(135deg, #f8fafc, #dbeafe);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.roadmap-phase {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.phase-completed {
+  border-left: 6px solid #10b981;
+}
+
+.phase-current {
+  border-left: 6px solid #f97316;
+}
+
+.phase-planned {
+  border-left: 6px solid #6b7280;
+}
+
+.code-block {
+  background: #0f172a;
+  color: #22c55e;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  font-family: "Courier New", monospace;
+  font-size: 0.875rem;
+  border-left: 6px solid #2563eb;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    font-size: 1.75rem;
+  }
+}
+
+/* Focus styles for accessibility */
+.toc-link:focus,
+button:focus,
+a:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.metric-card {
+  background: linear-gradient(135deg, white, #f8fafc);
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-0.5rem);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.metric-number {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #2563eb;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.metric-label {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.metric-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 0.75rem;
+}
+
+.highlight-box {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border: 2px solid #a7f3d0;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 6px solid #10b981;
+}
+
+.warning-box {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 2px solid #fde68a;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 6px solid #f59e0b;
+}
+
+.cost-comparison {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.cost-traditional,
+.cost-sst {
+  display: inline-block;
+  margin: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+}
+
+.savings {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-top: 1.5rem;
+}
+
+.roadmap {
+  background: linear-gradient(135deg, #f8fafc, #dbeafe);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.roadmap-phase {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.phase-completed {
+  border-left: 6px solid #10b981;
+}
+
+.phase-current {
+  border-left: 6px solid #f97316;
+}
+
+.phase-planned {
+  border-left: 6px solid #6b7280;
+}
+
+.code-block {
+  background: #0f172a;
+  color: #22c55e;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  font-family: "Courier New", monospace;
+  font-size: 0.875rem;
+  border-left: 6px solid #2563eb;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: white !important;
+  }
+
+  .shadow-lg,
+  .shadow-xl {
+    box-shadow: none !important;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-heading {
+    font-size: 1.75rem;
+  }
+}
+
+/* Focus styles for accessibility */
+.toc-link:focus,
+button:focus,
+a:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
