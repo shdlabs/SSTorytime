@@ -566,28 +566,48 @@ class GenericAPIVisualization
       optimalDistance = 1.0;
     }
 
-    // For proper centering and zoom-in:
-    // - Focus on the MAIN focused node (not the center of all connections)
-    // - Position camera close to the focused node for zoom-in effect
+    // For proper centering and zoom-in: adjust the viewpoint to center on the focused node
+    // Keep objects in their original positions, move the viewpoint instead
+
     const focusX = focusedNode.XYZ.X;
     const focusY = focusedNode.XYZ.Y;
     const focusZ = focusedNode.XYZ.Z;
 
-    // Position observer close to the focused node (zoom in effect)
-    const observerX = focusX;
-    const observerY = focusY; 
-    const observerZ = focusZ - optimalDistance; // Move camera CLOSER (subtract distance)
+    // Store original origin and scale to restore later
+    if (this.originalScale === undefined)
+    {
+      this.originalScale = this.canvas3d.scale;
+      this.originalOrgX = this.canvas3d.orgX;
+      this.originalOrgY = this.canvas3d.orgY;
+    }
 
-    // Update viewport to center on focused node
-    this.canvas3d.vpX = focusX;
-    this.canvas3d.vpY = focusY;
-    this.canvas3d.vpZ = focusZ;
-    
-    // Set observer position close to the focused node (this controls the actual view)
-    this.canvas3d.setObserverPosition(observerX, observerY, observerZ);
+    // Calculate where the focused node appears on screen with current settings
+    const currentScreenX = this.canvas3d.transformX(focusX, focusY, focusZ);
+    const currentScreenY = this.canvas3d.transformY(focusX, focusY, focusZ);
 
-    console.log(`📷 Enhanced focus: Focused node(${focusX.toFixed(2)}, ${focusY.toFixed(2)}, ${focusZ.toFixed(2)}), Zoom distance: ${optimalDistance.toFixed(2)}, Connected nodes: ${this.connectedNodes.size}`);
-    console.log(`🎥 Observer positioned at: (${observerX.toFixed(2)}, ${observerY.toFixed(2)}, ${observerZ.toFixed(2)}) - ZOOMED IN!`);
+    // Calculate offset needed to center the focused node
+    const screenCenterX = this.canvas3d.width / 2;
+    const screenCenterY = this.canvas3d.height / 2;
+    const offsetX = screenCenterX - currentScreenX;
+    const offsetY = screenCenterY - currentScreenY;
+
+    // Adjust the screen origin to center the focused node
+    this.canvas3d.orgX = this.originalOrgX + offsetX;
+    this.canvas3d.orgY = this.originalOrgY + offsetY;
+
+    // Zoom in by increasing the scale factor  
+    if (this.connectedNodes.size > 0)
+    {
+      // Medium zoom for connected nodes
+      this.canvas3d.scale = this.originalScale * 2.5;
+    } else
+    {
+      // Close zoom for isolated nodes  
+      this.canvas3d.scale = this.originalScale * 4.0;
+    }
+
+    console.log(`📷 Enhanced focus: Focused node(${focusX.toFixed(2)}, ${focusY.toFixed(2)}, ${focusZ.toFixed(2)}), Scale: ${this.canvas3d.scale.toFixed(2)}, Connected nodes: ${this.connectedNodes.size}`);
+    console.log(`🎥 Viewpoint adjusted: orgX offset ${offsetX.toFixed(1)}, orgY offset ${offsetY.toFixed(1)}`);
   }
 
   /**
@@ -633,6 +653,20 @@ class GenericAPIVisualization
     this.selectedItem = null;
     this.connectedNodes.clear();
     this.connectedArrows.clear();
+
+    // Restore original scale and screen origin
+    if (this.originalScale !== undefined)
+    {
+      this.canvas3d.scale = this.originalScale;
+    }
+    if (this.originalOrgX !== undefined)
+    {
+      this.canvas3d.orgX = this.originalOrgX;
+    }
+    if (this.originalOrgY !== undefined)
+    {
+      this.canvas3d.orgY = this.originalOrgY;
+    }
 
     // Restore animation if it was running before
     if (this.animationBeforeFocus && !this.isAnimating)
