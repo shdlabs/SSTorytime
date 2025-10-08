@@ -49,12 +49,7 @@
   </head>
   <body class="bg-slate-950">
     <div class="container">
-      <div class="header">
-        <p>SSTorytime API Visualization</p>
-        <p class="subtitle">
-          Exploring semantic data in spacetime coordinates with equations
-        </p>
-      </div>
+      <div class="header"></div>
 
       <div class="controls">
         <!-- Collapsible Control Panel -->
@@ -83,7 +78,7 @@
               </div>
 
               <div class="control-row">
-                <label for="viewAngle">�️ View Angle:</label>
+                <label for="viewAngle">🔍 View Angle:</label>
                 <div class="range-group">
                   <input
                     type="range"
@@ -97,7 +92,7 @@
               </div>
 
               <div class="control-row">
-                <label for="rotationSpeed">� Rotation:</label>
+                <label for="rotationSpeed">🔄 Rotation:</label>
                 <div class="range-group">
                   <input
                     type="range"
@@ -107,6 +102,20 @@
                     step="0.005"
                     value="0.01" />
                   <span id="speedValue" class="value-display">0.01</span>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label for="zoomLevel">🔍 Zoom:</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="zoomLevel"
+                    min="0.5"
+                    max="3.0"
+                    step="0.1"
+                    value="1.0" />
+                  <span id="zoomValue" class="value-display">1.0</span>
                 </div>
               </div>
             </div>
@@ -149,7 +158,6 @@
           </div>
         </div>
       </div>
-
       <div id="canvasContainer"></div>
 
       <div class="info-panel">

@@ -53,10 +53,10 @@ body {
   background: rgba(15, 23, 42, 0.95);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(51, 65, 85, 0.3);
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-  min-width: 320px;
-  max-width: 400px;
+  min-width: 280px;
+  max-width: 340px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -64,20 +64,20 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 12px 16px;
   border-bottom: 1px solid rgba(51, 65, 85, 0.2);
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
-  border-radius: 16px 16px 0 0;
+  border-radius: 12px 12px 0 0;
 }
 
 .control-header h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: rgba(248, 250, 252, 0.95);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .toggle-btn {
@@ -103,8 +103,9 @@ body {
 }
 
 .control-content {
-  padding: 20px;
-  max-height: 70vh;
+  padding: 16px;
+  max-height: 80svh;
+  max-width: 50svw;
   overflow-y: auto;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 1;
@@ -112,13 +113,13 @@ body {
 
 .control-content.collapsed {
   max-height: 0;
-  padding: 0 20px;
+  padding: 0 1ch;
   overflow: hidden;
   opacity: 0;
 }
 
 .control-section {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .control-section:last-child {
@@ -126,15 +127,15 @@ body {
 }
 
 .control-section h4 {
-  margin: 0 0 12px 0;
-  font-size: 0.9rem;
+  margin: 0 0 10px 0;
+  font-size: 0.85rem;
   font-weight: 600;
   color: rgba(168, 162, 158, 0.9);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .control-row {
@@ -319,15 +320,26 @@ body {
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .controls {
-    top: 10px;
-    right: 10px;
-    left: 10px;
+    top: 1ch;
+    left: 1ch;
+    font-size: var(--font-size-fluid-0);
+    transform: scale(0.4);
   }
 
-  .control-panel {
-    min-width: auto;
-    max-width: none;
-    width: 100%;
+  .control-header {
+    padding: 1ch;
+  }
+
+  .control-content {
+    padding: 1ch;
+  }
+
+  .control-header h3 {
+    font-size: var(--font-size-fluid-1);
+  }
+
+  .control-section h4 {
+    font-size: var(--font-size-fluid-0);
   }
 
   .button-grid {
@@ -344,24 +356,6 @@ body {
   }
 }
 
-@media (max-width: 480px) {
-  .control-header {
-    padding: 12px 16px;
-  }
-
-  .control-content {
-    padding: 16px;
-  }
-
-  .control-section h4 {
-    font-size: 0.8rem;
-  }
-
-  .control-row label {
-    font-size: 0.8rem;
-  }
-}
-
 #canvasContainer {
   position: relative;
   background-repeat: no-repeat;
@@ -373,7 +367,7 @@ body {
   flex-wrap: wrap;
   padding-bottom: 1em;
 
-  #sstCanvas3D {
+  & #sstCanvas3D {
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;

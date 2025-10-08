@@ -2314,6 +2314,21 @@ class GenericAPIVisualization
           e.target.value;
       });
 
+    // Zoom level control
+    document
+      .getElementById("zoomLevel")
+      .addEventListener("input", (e) =>
+      {
+        const zoomValue = parseFloat(e.target.value);
+        this.canvas3d.scale = zoomValue;
+        document.getElementById("zoomValue").textContent = e.target.value;
+
+        if (!this.isAnimating)
+        {
+          this.renderVisualization();
+        }
+      });
+
     // View angle control
     document
       .getElementById("viewAngle")
@@ -2534,16 +2549,10 @@ class GenericAPIVisualization
 
     if (this.focusedNode !== null && this.connectedNodes.size > 0)
     {
-      // In focus mode: only process connected nodes + the focused node
-      console.log(`🎯 Heat map in focus mode: processing ${this.connectedNodes.size + 1} connected nodes`);
+      // In focus mode: only process connected nodes (exclude the focused node itself)
+      console.log(`🎯 Heat map in focus mode: processing ${this.connectedNodes.size} connected nodes (focused node will be red)`);
 
-      // Add the focused node
-      nodesToProcess.push({
-        item: this.processedData.items[this.focusedNode],
-        index: this.focusedNode
-      });
-
-      // Add all connected nodes
+      // Add all connected nodes (but NOT the focused node)
       this.connectedNodes.forEach(nodeIndex =>
       {
         if (nodeIndex < this.processedData.items.length)
@@ -2603,6 +2612,23 @@ class GenericAPIVisualization
    */
   getNodeHeatMapColor(nodeId)
   {
+    // Special handling for focused node - always return red
+    if (this.focusedNode !== null && this.useHeatMap)
+    {
+      const focusedItem = this.processedData.items[this.focusedNode];
+      const focusedId = focusedItem.id || this.focusedNode.toString();
+
+      if (nodeId === focusedId || nodeId === this.focusedNode.toString())
+      {
+        // Return bright red for the focused node
+        return {
+          inner: "#FF0000",  // Bright red
+          outer: "#CC0000"   // Darker red border
+        };
+      }
+    }
+
+    // For all other nodes, use heat map colors if available
     if (!this.useHeatMap || !this.heatMapColors.has(nodeId))
     {
       return null;
