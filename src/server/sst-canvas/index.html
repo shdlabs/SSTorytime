@@ -57,53 +57,96 @@
       </div>
 
       <div class="controls">
-        <div class="control-group">
-          <label for="dataSource">📊 </label>
-          <select id="dataSource" class="">
-            <option value="chapter-data-0.json" selected>
-              Real TOC Data (\chapter \limit 25)
-            </option>
-            <option value="chapter-data-chinese-notes.json">
-              Real TOC Data (\chapter "notes on chinese")
-            </option>
-            <option value="chapter-data-chinese.json">Real TOC Data</option>
-            <option value="orbit-data-0.json">Real Orbit Data</option>
-          </select>
-        </div>
+        <!-- Collapsible Control Panel -->
+        <div class="control-panel">
+          <div class="control-header">
+            <h3>🎛️ Controls</h3>
+            <button id="toggleControls" class="toggle-btn">−</button>
+          </div>
 
-        <div class="control-group">
-          <label for="rotationSpeed">🔄 Rotation Speed:</label>
-          <input
-            type="range"
-            id="rotationSpeed"
-            min="0"
-            max="0.05"
-            step="0.005"
-            value="0.01" />
-          <span id="speedValue">0.01</span>
-        </div>
+          <div class="control-content" id="controlContent">
+            <!-- Data & View Controls -->
+            <div class="control-section">
+              <h4>📊 Data & View</h4>
+              <div class="control-row">
+                <label for="dataSource">Dataset:</label>
+                <select id="dataSource" class="control-select">
+                  <option value="chapter-data-0.json" selected>
+                    TOC Data (25 chapters)
+                  </option>
+                  <option value="chapter-data-chinese-notes.json">
+                    TOC Data (Chinese Notes)
+                  </option>
+                  <option value="chapter-data-chinese.json">TOC Data (Chinese)</option>
+                  <option value="orbit-data-0.json">Orbit Data</option>
+                </select>
+              </div>
 
-        <div class="control-group">
-          <label for="viewAngle">👁️ View Angle:</label>
-          <input type="range" id="viewAngle" min="0" max="6.28" step="0.1" value="0.35" />
-          <span id="angleValue">0.35</span>
-        </div>
+              <div class="control-row">
+                <label for="viewAngle">�️ View Angle:</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="viewAngle"
+                    min="0"
+                    max="6.28"
+                    step="0.1"
+                    value="0.35" />
+                  <span id="angleValue" class="value-display">0.35</span>
+                </div>
+              </div>
 
-        <div class="control-group">
-          <label for="showContext">🔍 Show Context:</label>
-          <input type="checkbox" id="showContext" checked />
-        </div>
+              <div class="control-row">
+                <label for="rotationSpeed">� Rotation:</label>
+                <div class="range-group">
+                  <input
+                    type="range"
+                    id="rotationSpeed"
+                    min="0"
+                    max="0.05"
+                    step="0.005"
+                    value="0.01" />
+                  <span id="speedValue" class="value-display">0.01</span>
+                </div>
+              </div>
+            </div>
 
-        <div class="control-group">
-          <label for="smartLabels">🏷️ Smart Labels:</label>
-          <input type="checkbox" id="smartLabels" checked />
-          <small class="text-xs text-gray-400">Distance-based label visibility</small>
-        </div>
+            <!-- Display Options -->
+            <div class="control-section">
+              <h4>🎨 Display Options</h4>
+              <div class="toggle-grid">
+                <div class="toggle-item">
+                  <input type="checkbox" id="smartLabels" checked />
+                  <label for="smartLabels">🏷️ Smart Labels</label>
+                </div>
+                <div class="toggle-item">
+                  <input type="checkbox" id="heatMapToggle" />
+                  <label for="heatMapToggle">🌡️ Heat Map</label>
+                </div>
+              </div>
 
-        <div class="control-group">
-          <button id="toggleAnimation">⏸️ Pause</button>
-          <button id="resetView">🔄 Reset</button>
-          <button id="focusChapter">🎯 Focus/Clear</button>
+              <div
+                class="control-row heat-map-controls"
+                id="heatMapControls"
+                style="display: none">
+                <label for="heatMapCenter">🎯 Heat Center:</label>
+                <select id="heatMapCenter" class="control-select">
+                  <option value="">Select center node...</option>
+                </select>
+                <small class="help-text">Red = close, Blue = far</small>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="control-section">
+              <h4>⚡ Actions</h4>
+              <div class="button-grid">
+                <button id="toggleAnimation" class="action-btn primary">⏸️ Pause</button>
+                <button id="resetView" class="action-btn secondary">🔄 Reset</button>
+                <button id="focusChapter" class="action-btn accent">🎯 Focus</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -173,6 +216,60 @@
                 class="legend-color"
                 style="background: linear-gradient(45deg, #27ae60, #229954)"></div>
               <span>Common Contexts</span>
+            </div>
+          </div>
+
+          <div class="legend">
+            <h4>🔗 Arrow Types</h4>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: #ff3366; height: 4px; border-radius: 2px"></div>
+              <span>Leads To (Flow/Sequence)</span>
+            </div>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: #3366ff; height: 3px; border-radius: 2px"></div>
+              <span>Contains (Hierarchy)</span>
+            </div>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: #ff8800; height: 3px; border-radius: 2px"></div>
+              <span>Expresses (Meaning)</span>
+            </div>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="background: #22aa22; height: 2px; border-radius: 2px"></div>
+              <span>Near (Similarity)</span>
+            </div>
+          </div>
+
+          <div class="legend">
+            <h4>🌡️ Heat Map Scale</h4>
+            <div class="legend-item">
+              <div
+                class="legend-color"
+                style="
+                  background: linear-gradient(
+                    90deg,
+                    #ff0000,
+                    #ff8800,
+                    #ffff00,
+                    #00ff00,
+                    #0000ff
+                  );
+                  height: 8px;
+                  border-radius: 4px;
+                  width: 120px;
+                "></div>
+              <span style="font-size: 0.75em; color: #ccc">Red (close) → Blue (far)</span>
+            </div>
+            <div
+              style="font-size: 0.65em; color: #999; margin-top: 4px; padding-left: 8px">
+              Distance-based coloring from selected center node
             </div>
           </div>
         </div>

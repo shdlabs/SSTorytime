@@ -27,6 +27,12 @@ class GenericAPIVisualization
     this.connectedArrows = new Set();
     this.animationBeforeFocus = true;
 
+    // Heat map system
+    this.useHeatMap = false;
+    this.heatMapCenter = null; // Node ID for the center of heat map
+    this.maxDistance = 0; // Maximum distance for normalization
+    this.heatMapColors = new Map(); // Cache for calculated colors
+
     this.init();
   }
 
@@ -399,6 +405,7 @@ class GenericAPIVisualization
 
       this.updateInfoPanel();
       this.updateItemList();
+      this.updateHeatMapOptions(); // Update heat map center options
       this.renderVisualization();
 
       console.log("✅ API data loaded and processed:", this.processedData);
@@ -500,6 +507,9 @@ class GenericAPIVisualization
 
     // Find and highlight connected nodes and arrows
     this.highlightConnections(nodeIndex);
+
+    // Activate heat map with focused node as center (after connections are established)
+    this.activateHeatMapForFocus(nodeIndex);
 
     // Enhanced focus: calculate optimal view for connected nodes
     this.calculateOptimalFocusView(nodeIndex);
@@ -718,7 +728,7 @@ class GenericAPIVisualization
       focusPanel.style.cssText = `
         position: fixed;
         top: 10px;
-        right: 10px;
+        left: 10px;
         background: rgba(0, 0, 0, 0.9);
         color: white;
         padding: 15px;
@@ -745,6 +755,12 @@ class GenericAPIVisualization
       <div><strong>Index:</strong> ${nodeIndex}</div>
       <div><strong>Connected Nodes:</strong> ${connections}</div>
       <div><strong>Connected Arrows:</strong> ${this.connectedArrows.size}</div>
+      <div style="margin-top: 8px; padding: 6px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 4px; font-size: 11px;">
+        🌡️ <strong>Heat Map Active:</strong><br>
+        • Connected nodes colored by distance<br>
+        • Red = close to focus, Blue = far<br>
+        • Only connected cluster shown
+      </div>
       <div style="margin-top: 8px; padding: 6px; background: rgba(255, 215, 0, 0.1); border-radius: 4px; font-size: 11px;">
         📱 <strong>Enhanced Focus:</strong><br>
         • Only connected nodes visible<br>
@@ -1381,23 +1397,27 @@ class GenericAPIVisualization
     const y = chapter.XYZ.Y;
     const z = chapter.XYZ.Z;
 
+    // Get heat map color if enabled
+    const itemId = chapter.id || index.toString();
+    const heatMapColor = this.getNodeHeatMapColor(itemId);
+
     // Use specialized rendering based on item type
     if (chapter.type === 'chapter')
     {
       // Main chapters - use event rendering (large red nodes)
-      this.canvas3d.drawEvent(x, y, z);
+      this.canvas3d.drawEvent(x, y, z, heatMapColor);
     } else if (chapter.type === 'context')
     {
       // Context items - use concept rendering (blue nodes)
-      this.canvas3d.drawConcept(x, y, z);
+      this.canvas3d.drawConcept(x, y, z, heatMapColor);
     } else if (chapter.type === 'fragment')
     {
       // Fragment items - use thing rendering (green nodes)
-      this.canvas3d.drawThing(x, y, z);
+      this.canvas3d.drawThing(x, y, z, heatMapColor);
     } else
     {
       // Fallback for original chapter structure
-      this.canvas3d.drawEvent(x, y, z);
+      this.canvas3d.drawEvent(x, y, z, heatMapColor);
     }
 
     // Draw title with type-appropriate handling
@@ -1460,41 +1480,70 @@ class GenericAPIVisualization
 
     let nodeSize = 4; // Default size
 
+    // Get heat map color if enabled
+    const itemId = item.id || index.toString();
+    const heatMapColor = this.getNodeHeatMapColor(itemId);
+
     // Use specialized node drawing methods from SSTCanvas3D when available
     switch (item.type)
     {
     case 'event':
-      this.canvas3d.drawEvent(x, y, z);
+      this.canvas3d.drawEvent(x, y, z, heatMapColor);
       nodeSize = 6; // Events are larger
       break;
     case 'thing':
-      this.canvas3d.drawThing(x, y, z);
+      this.canvas3d.drawThing(x, y, z, heatMapColor);
       nodeSize = 4; // Things are medium
       break;
     case 'concept':
-      this.canvas3d.drawConcept(x, y, z);
+      this.canvas3d.drawConcept(x, y, z, heatMapColor);
       nodeSize = 4; // Concepts are medium
       break;
     case 'agent':
       // Agent nodes - use orange color similar to 'thing' but different
       nodeSize = 3;
-      this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#f39c12", "#e67e22");
+      if (heatMapColor)
+      {
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, heatMapColor.inner, heatMapColor.outer);
+      } else
+      {
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#f39c12", "#e67e22");
+      }
       break;
     case 'expression':
       // Expression nodes - use purple color
       nodeSize = 2.5;
-      this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#9b59b6", "#8e44ad");
+      if (heatMapColor)
+      {
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, heatMapColor.inner, heatMapColor.outer);
+      } else
+      {
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#9b59b6", "#8e44ad");
+      }
       break;
     case 'relation':
       // Relation nodes - use gray color, smaller size
       nodeSize = 2;
-      this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#95a5a6", "#7f8c8d");
+      if (heatMapColor)
+      {
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, heatMapColor.inner, heatMapColor.outer);
+      } else
+      {
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#95a5a6", "#7f8c8d");
+      }
       break;
     default:
       // Fallback to generic rendering
-      const colors = this.getNodeColors(item.type);
-      nodeSize = this.getNodeSize(item.type);
-      this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, colors.fill, colors.stroke);
+      if (heatMapColor)
+      {
+        nodeSize = this.getNodeSize(item.type);
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, heatMapColor.inner, heatMapColor.outer);
+      } else
+      {
+        const colors = this.getNodeColors(item.type);
+        nodeSize = this.getNodeSize(item.type);
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, colors.fill, colors.stroke);
+      }
     }
 
     // Draw label (smart truncation) - only if close enough
@@ -1568,44 +1617,78 @@ class GenericAPIVisualization
 
     let nodeSize = 4; // Default size
 
+    // Get heat map color if enabled
+    const itemId = item.id || index.toString();
+    const heatMapColor = this.getNodeHeatMapColor(itemId);
+
     // Use specialized node drawing methods based on type if available
     if (item.type)
     {
       switch (item.type)
       {
       case 'event':
-        this.canvas3d.drawEvent(x, y, z);
+        this.canvas3d.drawEvent(x, y, z, heatMapColor);
         nodeSize = 6;
         break;
       case 'thing':
-        this.canvas3d.drawThing(x, y, z);
+        this.canvas3d.drawThing(x, y, z, heatMapColor);
         nodeSize = 4;
         break;
       case 'concept':
-        this.canvas3d.drawConcept(x, y, z);
+        this.canvas3d.drawConcept(x, y, z, heatMapColor);
         nodeSize = 4;
         break;
       case 'agent':
         nodeSize = 3;
-        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#f39c12", "#e67e22");
+        if (heatMapColor)
+        {
+          this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, heatMapColor.inner, heatMapColor.outer);
+        } else
+        {
+          this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#f39c12", "#e67e22");
+        }
         break;
       case 'expression':
         nodeSize = 2.5;
-        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#9b59b6", "#8e44ad");
+        if (heatMapColor)
+        {
+          this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, heatMapColor.inner, heatMapColor.outer);
+        } else
+        {
+          this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#9b59b6", "#8e44ad");
+        }
         break;
       case 'relation':
         nodeSize = 2;
-        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#95a5a6", "#7f8c8d");
+        if (heatMapColor)
+        {
+          this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, heatMapColor.inner, heatMapColor.outer);
+        } else
+        {
+          this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#95a5a6", "#7f8c8d");
+        }
         break;
       default:
         // Default generic rendering
-        this.canvas3d.drawNode(x, y, z, 4 * this.canvas3d.mob, "#3498db", "#2980b9");
+        if (heatMapColor)
+        {
+          this.canvas3d.drawNode(x, y, z, 4 * this.canvas3d.mob, heatMapColor.inner, heatMapColor.outer);
+        } else
+        {
+          this.canvas3d.drawNode(x, y, z, 4 * this.canvas3d.mob, "#3498db", "#2980b9");
+        }
       }
     }
     else
     {
       // Default generic rendering when no type is specified
-      this.canvas3d.drawNode(x, y, z, 4 * this.canvas3d.mob, "#3498db", "#2980b9");
+      if (heatMapColor)
+      {
+        this.canvas3d.drawNode(x, y, z, 4 * this.canvas3d.mob, heatMapColor.inner, heatMapColor.outer);
+      } else
+      {
+        this.canvas3d.drawNode(x, y, z, 4 * this.canvas3d.mob, "#3498db", "#2980b9");
+      }
     }
 
     // Use smart label system for title
@@ -1681,7 +1764,8 @@ class GenericAPIVisualization
 
   renderArrow(arrow, highlight = null)
   {
-    // Render arrow between two nodes using the 4 SSTCanvas3D arrow types
+    // Render arrow between two nodes using the SSTCanvas3D arrow system
+    // (7 semantic relationship types mapped to 4 visual arrow styles)
     if (arrow.from < this.processedData.items.length && arrow.to < this.processedData.items.length)
     {
       const fromItem = this.processedData.items[arrow.from];
@@ -1755,7 +1839,35 @@ class GenericAPIVisualization
 
   convertArrowType(arrowValue)
   {
-    // Convert from SSTorytime arrow values to the 4 SSTCanvas3D arrow types
+    // Convert from SSTorytime arrow values to SSTCanvas3D arrow system
+    // (7 semantic relationship types mapped to 4 visual arrow styles)
+
+    if (typeof arrowValue === 'string')
+    {
+      // Handle string-based arrow types
+      switch (arrowValue.toLowerCase())
+      {
+      case 'leadsto':
+      case 'leads_to':
+      case 'sequence':
+      case 'flow':
+        return 'leadsTo';
+      case 'contains':
+      case 'containment':
+      case 'hierarchy':
+        return 'contains';
+      case 'expresses':
+      case 'expression':
+      case 'meaning':
+        return 'expresses';
+      case 'near':
+      case 'similarity':
+      case 'proximity':
+        return 'near';
+      default:
+        return 'leadsTo';
+      }
+    }
 
     if (arrowValue >= 298)
     {
@@ -1774,14 +1886,16 @@ class GenericAPIVisualization
       }
     } else if (arrowValue >= 0 && arrowValue <= 10)
     {
-      // Direct semantic types (0-10 range)
+      // Direct semantic types (0-10 range) - map to 7 semantic types then to 4 visual types
       switch (arrowValue)
       {
-      case 0:
-      case 1: return 'leadsTo';
-      case 2: return 'contains';
-      case 3: return 'expresses';
-      case 4: return 'near';
+      case 0: return 'expresses';    // Im3: "is a property expressed by"
+      case 1: return 'contains';     // Im2: "is contained by"
+      case 2: return 'leadsTo';      // Im1: "comes from"
+      case 3: return 'near';         // In0: "is near/similar to"
+      case 4: return 'leadsTo';      // Il1: "leads to"
+      case 5: return 'contains';     // Ic2: "contains"
+      case 6: return 'expresses';    // Ie3: "expresses property"
       default: return 'leadsTo';
       }
     } else
@@ -1789,21 +1903,6 @@ class GenericAPIVisualization
       // Default fallback
       return 'leadsTo';
     }
-  }
-
-  getArrowColor(arrowType)
-  {
-    const arrowColors = {
-      298: '#e74c3c',  // has value - red
-      299: '#3498db',  // is a - blue  
-      300: '#27ae60',  // contains - green
-      301: '#f39c12',  // follows - orange
-      302: '#9b59b6',  // expresses - purple
-      303: '#1abc9c',  // promises - teal
-      304: '#34495e'   // near - dark gray
-    };
-
-    return arrowColors[arrowType] || '#95a5a6';
   }
 
   drawArrows()
@@ -2229,18 +2328,6 @@ class GenericAPIVisualization
         }
       });
 
-    // Show context toggle
-    document
-      .getElementById("showContext")
-      .addEventListener("change", (e) =>
-      {
-        this.showContext = e.target.checked;
-        if (!this.isAnimating)
-        {
-          this.renderVisualization();
-        }
-      });
-
     // Smart labels toggle
     document
       .getElementById("smartLabels")
@@ -2311,6 +2398,66 @@ class GenericAPIVisualization
         }
       });
 
+    // Heat map toggle
+    document
+      .getElementById("heatMapToggle")
+      .addEventListener("change", (e) =>
+      {
+        this.useHeatMap = e.target.checked;
+
+        // Show/hide heat map controls
+        const heatMapControls = document.getElementById("heatMapControls");
+        if (e.target.checked)
+        {
+          heatMapControls.style.display = "flex";
+          this.calculateHeatMap();
+        } else
+        {
+          heatMapControls.style.display = "none";
+          this.heatMapColors.clear();
+        }
+
+        if (!this.isAnimating)
+        {
+          this.renderVisualization();
+        }
+      });
+
+    // Heat map center selector
+    document
+      .getElementById("heatMapCenter")
+      .addEventListener("change", (e) =>
+      {
+        this.heatMapCenter = e.target.value;
+        if (this.useHeatMap)
+        {
+          this.calculateHeatMap();
+          if (!this.isAnimating)
+          {
+            this.renderVisualization();
+          }
+        }
+      });
+
+    // Control panel toggle
+    document
+      .getElementById("toggleControls")
+      .addEventListener("click", () =>
+      {
+        const content = document.getElementById("controlContent");
+        const button = document.getElementById("toggleControls");
+
+        if (content.classList.contains("collapsed"))
+        {
+          content.classList.remove("collapsed");
+          button.textContent = "−";
+        } else
+        {
+          content.classList.add("collapsed");
+          button.textContent = "+";
+        }
+      });
+
     // Window resize handler
     window.addEventListener("resize", () =>
     {
@@ -2354,6 +2501,172 @@ class GenericAPIVisualization
     {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
+    }
+  }
+
+  // === HEAT MAP SYSTEM ===
+
+  /**
+   * Calculate heat map colors for all nodes based on distance from center
+   */
+  calculateHeatMap()
+  {
+    if (!this.processedData || !this.processedData.items || !this.heatMapCenter)
+    {
+      console.log("📊 Heat map: No data or center node selected");
+      return;
+    }
+
+    console.log(`📊 Calculating heat map from center: ${this.heatMapCenter}`);
+
+    // Find the center node
+    const centerNode = this.processedData.items.find((item, index) =>
+      (item.id && item.id === this.heatMapCenter) || index.toString() === this.heatMapCenter
+    );
+    if (!centerNode)
+    {
+      console.warn("❌ Heat map center node not found:", this.heatMapCenter);
+      return;
+    }
+
+    // Determine which nodes to process
+    let nodesToProcess = [];
+
+    if (this.focusedNode !== null && this.connectedNodes.size > 0)
+    {
+      // In focus mode: only process connected nodes + the focused node
+      console.log(`🎯 Heat map in focus mode: processing ${this.connectedNodes.size + 1} connected nodes`);
+
+      // Add the focused node
+      nodesToProcess.push({
+        item: this.processedData.items[this.focusedNode],
+        index: this.focusedNode
+      });
+
+      // Add all connected nodes
+      this.connectedNodes.forEach(nodeIndex =>
+      {
+        if (nodeIndex < this.processedData.items.length)
+        {
+          nodesToProcess.push({
+            item: this.processedData.items[nodeIndex],
+            index: nodeIndex
+          });
+        }
+      });
+    }
+    else
+    {
+      // Normal mode: process all nodes
+      console.log(`📊 Heat map in normal mode: processing all ${this.processedData.items.length} nodes`);
+      nodesToProcess = this.processedData.items.map((item, index) => ({ item, index }));
+    }
+
+    // Calculate all distances and find maximum
+    const distances = new Map();
+    this.maxDistance = 0;
+
+    nodesToProcess.forEach(({ item, index }) =>
+    {
+      const itemId = item.id || index.toString();
+
+      if (itemId === this.heatMapCenter)
+      {
+        distances.set(itemId, 0);
+        return;
+      }
+
+      const distance = this.canvas3d.calculate3DDistance(
+        centerNode.XYZ.X, centerNode.XYZ.Y, centerNode.XYZ.Z,
+        item.XYZ.X, item.XYZ.Y, item.XYZ.Z
+      );
+
+      distances.set(itemId, distance);
+      this.maxDistance = Math.max(this.maxDistance, distance);
+    });
+
+    // Calculate normalized distances and colors
+    this.heatMapColors.clear();
+    distances.forEach((distance, nodeId) =>
+    {
+      const normalizedDistance = this.maxDistance > 0 ? distance / this.maxDistance : 0;
+      const color = this.canvas3d.getHeatMapColor(normalizedDistance);
+      this.heatMapColors.set(nodeId, color);
+    });
+
+    const mode = this.focusedNode !== null && this.connectedNodes.size > 0 ? "focus" : "normal";
+    console.log(`📊 Heat map calculated (${mode} mode): ${this.heatMapColors.size} nodes, max distance: ${this.maxDistance.toFixed(2)}`);
+  }
+
+  /**
+   * Get heat map color for a node (if heat map is enabled)
+   */
+  getNodeHeatMapColor(nodeId)
+  {
+    if (!this.useHeatMap || !this.heatMapColors.has(nodeId))
+    {
+      return null;
+    }
+    return this.heatMapColors.get(nodeId);
+  }
+
+  /**
+   * Activate heat map with focused node as center
+   */
+  activateHeatMapForFocus(nodeIndex)
+  {
+    if (!this.processedData || !this.processedData.items[nodeIndex]) return;
+
+    console.log(`🌡️ Activating heat map for focused node ${nodeIndex}`);
+
+    // Get the focused item
+    const focusedItem = this.processedData.items[nodeIndex];
+    const itemId = focusedItem.id || nodeIndex.toString();
+
+    // Enable heat map
+    this.useHeatMap = true;
+    this.heatMapCenter = itemId;
+
+    // Update UI controls
+    const heatMapToggle = document.getElementById("heatMapToggle");
+    const heatMapCenter = document.getElementById("heatMapCenter");
+    const heatMapControls = document.getElementById("heatMapControls");
+
+    if (heatMapToggle) heatMapToggle.checked = true;
+    if (heatMapCenter) heatMapCenter.value = itemId;
+    if (heatMapControls) heatMapControls.style.display = "flex";
+
+    // Calculate heat map
+    this.calculateHeatMap();
+
+    console.log(`🎯 Heat map activated with center: ${itemId}`);
+  }
+
+  /**
+   * Update heat map center options based on current data
+   */
+  updateHeatMapOptions()
+  {
+    const selector = document.getElementById("heatMapCenter");
+    if (!selector || !this.processedData || !this.processedData.items) return;
+
+    // Clear existing options
+    selector.innerHTML = '<option value="">Select center node...</option>';
+
+    // Add all nodes as options
+    this.processedData.items.forEach((item, index) =>
+    {
+      const option = document.createElement("option");
+      option.value = item.id || index.toString();
+      option.textContent = `${item.title || item.Chapter || item.id || `Node ${index}`} (${item.type || 'node'})`;
+      selector.appendChild(option);
+    });
+
+    // Auto-select first node if none selected
+    if (!this.heatMapCenter && this.processedData.items.length > 0)
+    {
+      this.heatMapCenter = this.processedData.items[0].id || "0";
+      selector.value = this.heatMapCenter;
     }
   }
 

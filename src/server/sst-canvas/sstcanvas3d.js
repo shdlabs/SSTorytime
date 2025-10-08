@@ -374,19 +374,106 @@ class SSTCanvas3D
   /**
    * Node type renderers
    */
-  drawEvent(x, y, z)
+  drawEvent(x, y, z, heatMapColor = null)
   {
-    this.drawNode(x, y, z, 6 * this.mob, "darkred", "red");
+    if (heatMapColor)
+    {
+      this.drawNode(x, y, z, 6 * this.mob, heatMapColor.inner, heatMapColor.outer);
+    } else
+    {
+      this.drawNode(x, y, z, 6 * this.mob, "darkred", "red");
+    }
   }
 
-  drawThing(x, y, z)
+  drawThing(x, y, z, heatMapColor = null)
   {
-    this.drawNode(x, y, z, 4 * this.mob, "darkgreen", "lightgreen");
+    if (heatMapColor)
+    {
+      this.drawNode(x, y, z, 4 * this.mob, heatMapColor.inner, heatMapColor.outer);
+    } else
+    {
+      this.drawNode(x, y, z, 4 * this.mob, "darkgreen", "lightgreen");
+    }
   }
 
-  drawConcept(x, y, z)
+  drawConcept(x, y, z, heatMapColor = null)
   {
-    this.drawNode(x, y, z, 4 * this.mob, "darkblue", "lightblue");
+    if (heatMapColor)
+    {
+      this.drawNode(x, y, z, 4 * this.mob, heatMapColor.inner, heatMapColor.outer);
+    } else
+    {
+      this.drawNode(x, y, z, 4 * this.mob, "darkblue", "lightblue");
+    }
+  }
+
+  /**
+   * Calculate heat map color based on distance from focal point
+   * @param {number} distance - Distance from focal point (0-1 normalized)
+   * @returns {object} Color object with inner and outer colors
+   */
+  getHeatMapColor(distance)
+  {
+    // Clamp distance to 0-1 range
+    distance = Math.max(0, Math.min(1, distance));
+
+    // Heat map color progression: Red (0) → Orange → Yellow → Green → Blue (1)
+    let r, g, b;
+
+    if (distance < 0.25)
+    {
+      // Red to Orange (0-0.25)
+      const t = distance / 0.25;
+      r = 255;
+      g = Math.floor(165 * t); // 0 to 165 (orange)
+      b = 0;
+    } else if (distance < 0.5)
+    {
+      // Orange to Yellow (0.25-0.5)
+      const t = (distance - 0.25) / 0.25;
+      r = 255;
+      g = Math.floor(165 + (255 - 165) * t); // 165 to 255
+      b = 0;
+    } else if (distance < 0.75)
+    {
+      // Yellow to Green (0.5-0.75)
+      const t = (distance - 0.5) / 0.25;
+      r = Math.floor(255 * (1 - t)); // 255 to 0
+      g = 255;
+      b = 0;
+    } else
+    {
+      // Green to Blue (0.75-1.0)
+      const t = (distance - 0.75) / 0.25;
+      r = 0;
+      g = Math.floor(255 * (1 - t)); // 255 to 0
+      b = Math.floor(255 * t); // 0 to 255
+    }
+
+    const outerColor = `rgb(${r}, ${g}, ${b})`;
+    // Inner color is darker version
+    const innerColor = `rgb(${Math.floor(r * 0.6)}, ${Math.floor(g * 0.6)}, ${Math.floor(b * 0.6)})`;
+
+    return {
+      outer: outerColor,
+      inner: innerColor,
+      distance: distance
+    };
+  }
+
+  /**
+   * Calculate 3D distance between two points
+   * @param {number} x1, y1, z1 - First point
+   * @param {number} x2, y2, z2 - Second point  
+   * @returns {number} 3D distance
+   */
+  calculate3DDistance(x1, y1, z1, x2, y2, z2)
+  {
+    return Math.sqrt(
+      Math.pow(x2 - x1, 2) +
+      Math.pow(y2 - y1, 2) +
+      Math.pow(z2 - z1, 2)
+    );
   }
 
   /**
@@ -394,22 +481,22 @@ class SSTCanvas3D
    */
   drawLeadsToArrow(x0, y0, z0, x1, y1, z1)
   {
-    this.drawArrow(x0, y0, z0, x1, y1, z1, "darkred", 3 * this.mob);
+    this.drawArrow(x0, y0, z0, x1, y1, z1, "#FF3366", 3 * this.mob); // Bright red - flow/sequence
   }
 
   drawContainsArrow(x0, y0, z0, x1, y1, z1)
   {
-    this.drawArrow(x0, y0, z0, x1, y1, z1, "lightblue", 2 * this.mob);
+    this.drawArrow(x0, y0, z0, x1, y1, z1, "#3366FF", 2 * this.mob); // Bright blue - hierarchy/containment
   }
 
   drawExpressesArrow(x0, y0, z0, x1, y1, z1)
   {
-    this.drawArrow(x0, y0, z0, x1, y1, z1, "orange", 2 * this.mob);
+    this.drawArrow(x0, y0, z0, x1, y1, z1, "#FF8800", 2 * this.mob); // Bright orange - meaning/expression
   }
 
   drawNearArrow(x0, y0, z0, x1, y1, z1)
   {
-    this.drawArrow(x0, y0, z0, x1, y1, z1, "darkgrey", 1 * this.mob);
+    this.drawArrow(x0, y0, z0, x1, y1, z1, "#22AA22", 1 * this.mob); // Green - similarity/proximity
   }
 
   /**
