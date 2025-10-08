@@ -498,11 +498,11 @@ class GenericAPIVisualization
     this.focusedNode = nodeIndex;
     this.selectedItem = nodeIndex; // Also set as selected for highlighting
 
-    // Center the camera on the focused node
-    this.centerCameraOnNode(nodeIndex);
-
     // Find and highlight connected nodes and arrows
     this.highlightConnections(nodeIndex);
+
+    // Enhanced focus: calculate optimal view for connected nodes
+    this.calculateOptimalFocusView(nodeIndex);
 
     // Force re-render
     this.renderVisualization();
@@ -512,19 +512,82 @@ class GenericAPIVisualization
   }
 
   /**
-   * Center the camera on a specific node
+   * Calculate optimal camera position and zoom to frame the focused node and all connections
    */
-  centerCameraOnNode(nodeIndex)
+  calculateOptimalFocusView(nodeIndex)
   {
-    const node = this.processedData.items[nodeIndex];
-    if (!node || !node.XYZ) return;
+    const focusedNode = this.processedData.items[nodeIndex];
+    if (!focusedNode || !focusedNode.XYZ) return;
 
-    // Move the viewport to center on the node
-    this.canvas3d.vpX = node.XYZ.X;
-    this.canvas3d.vpY = node.XYZ.Y;
-    this.canvas3d.vpZ = node.XYZ.Z + 3; // Move camera back a bit to see the node
+    // Start with the focused node coordinates
+    let minX = focusedNode.XYZ.X;
+    let maxX = focusedNode.XYZ.X;
+    let minY = focusedNode.XYZ.Y;
+    let maxY = focusedNode.XYZ.Y;
+    let minZ = focusedNode.XYZ.Z;
+    let maxZ = focusedNode.XYZ.Z;
 
-    console.log(`📷 Camera centered on (${node.XYZ.X}, ${node.XYZ.Y}, ${node.XYZ.Z})`);
+    // Include all connected nodes in the bounding calculation
+    this.connectedNodes.forEach(connectedIndex =>
+    {
+      const connectedNode = this.processedData.items[connectedIndex];
+      if (connectedNode && connectedNode.XYZ)
+      {
+        minX = Math.min(minX, connectedNode.XYZ.X);
+        maxX = Math.max(maxX, connectedNode.XYZ.X);
+        minY = Math.min(minY, connectedNode.XYZ.Y);
+        maxY = Math.max(maxY, connectedNode.XYZ.Y);
+        minZ = Math.min(minZ, connectedNode.XYZ.Z);
+        maxZ = Math.max(maxZ, connectedNode.XYZ.Z);
+      }
+    });
+
+    // Calculate the center point of all connected nodes
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const centerZ = (minZ + maxZ) / 2;
+
+    // Calculate the span of connected nodes
+    const spanX = maxX - minX;
+    const spanY = maxY - minY;
+    const spanZ = maxZ - minZ;
+    const maxSpan = Math.max(spanX, spanY, spanZ);
+
+    // Calculate optimal zoom distance
+    // For focus mode, we want to zoom IN (closer) to the focused node
+    let optimalDistance;
+    if (this.connectedNodes.size > 0)
+    {
+      // Even with connections, zoom in closer than the span to focus on the center
+      optimalDistance = Math.max(maxSpan * 0.8, 1.5); // Much closer, minimum distance of 1.5
+    } else
+    {
+      // Single node focus - zoom in very close
+      optimalDistance = 1.0;
+    }
+
+    // For proper centering and zoom-in:
+    // - Focus on the MAIN focused node (not the center of all connections)
+    // - Position camera close to the focused node for zoom-in effect
+    const focusX = focusedNode.XYZ.X;
+    const focusY = focusedNode.XYZ.Y;
+    const focusZ = focusedNode.XYZ.Z;
+
+    // Position observer close to the focused node (zoom in effect)
+    const observerX = focusX;
+    const observerY = focusY; 
+    const observerZ = focusZ - optimalDistance; // Move camera CLOSER (subtract distance)
+
+    // Update viewport to center on focused node
+    this.canvas3d.vpX = focusX;
+    this.canvas3d.vpY = focusY;
+    this.canvas3d.vpZ = focusZ;
+    
+    // Set observer position close to the focused node (this controls the actual view)
+    this.canvas3d.setObserverPosition(observerX, observerY, observerZ);
+
+    console.log(`📷 Enhanced focus: Focused node(${focusX.toFixed(2)}, ${focusY.toFixed(2)}, ${focusZ.toFixed(2)}), Zoom distance: ${optimalDistance.toFixed(2)}, Connected nodes: ${this.connectedNodes.size}`);
+    console.log(`🎥 Observer positioned at: (${observerX.toFixed(2)}, ${observerY.toFixed(2)}, ${observerZ.toFixed(2)}) - ZOOMED IN!`);
   }
 
   /**
@@ -593,9 +656,13 @@ class GenericAPIVisualization
    */
   resetCameraPosition()
   {
+    // Reset viewport
     this.canvas3d.vpX = 0;
     this.canvas3d.vpY = 4;
     this.canvas3d.vpZ = 8;
+
+    // Reset observer position (this is what actually controls the view)
+    this.canvas3d.setObserverPosition(1, 0.5, -1);
 
     console.log("📷 Camera reset to default position");
   }
@@ -636,15 +703,19 @@ class GenericAPIVisualization
 
     focusPanel.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <strong style="color: #FFD700;">🎯 FOCUSED NODE</strong>
+        <strong style="color: #FFD700;">🎯 ENHANCED FOCUS MODE</strong>
         <button onclick="window.visualization.clearFocus()" style="background: #666; border: none; color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer;">✕</button>
       </div>
-      <div><strong>Title:</strong> ${title}</div>
+      <div><strong>Focused Node:</strong> ${title}</div>
       <div><strong>Type:</strong> ${node.type || 'unknown'}</div>
       <div><strong>Index:</strong> ${nodeIndex}</div>
-      <div><strong>Connections:</strong> ${connections} nodes</div>
-      <div style="margin-top: 8px; font-size: 11px; color: #aaa;">
-        Click elsewhere to clear focus
+      <div><strong>Connected Nodes:</strong> ${connections}</div>
+      <div><strong>Connected Arrows:</strong> ${this.connectedArrows.size}</div>
+      <div style="margin-top: 8px; padding: 6px; background: rgba(255, 215, 0, 0.1); border-radius: 4px; font-size: 11px;">
+        📱 <strong>Enhanced Focus:</strong><br>
+        • Only connected nodes visible<br>
+        • Optimal zoom and centering<br>
+        • Click elsewhere to exit
       </div>
     `;
   }
@@ -1197,9 +1268,18 @@ class GenericAPIVisualization
 
   renderTOCVisualization()
   {
-    // Original TOC rendering logic
+    // Original TOC rendering logic with focus mode filtering
     this.processedData.items.forEach((chapter, index) =>
     {
+      // In focus mode, only render focused node and connected nodes
+      if (this.focusedNode !== null)
+      {
+        if (index !== this.focusedNode && !this.connectedNodes.has(index))
+        {
+          return; // Skip unconnected nodes
+        }
+      }
+
       this.renderTOCChapter(chapter, index);
     });
     this.drawTOCConnections();
@@ -1207,19 +1287,37 @@ class GenericAPIVisualization
 
   renderOrbitVisualization()
   {
-    // New orbit rendering logic
+    // New orbit rendering logic with focus mode filtering
     console.log(`🌍 Rendering ${this.processedData.items.length} orbit nodes...`);
 
     this.processedData.items.forEach((item, index) =>
     {
+      // In focus mode, only render focused node and connected nodes
+      if (this.focusedNode !== null)
+      {
+        if (index !== this.focusedNode && !this.connectedNodes.has(index))
+        {
+          return; // Skip unconnected nodes
+        }
+      }
+
       this.renderOrbitNode(item, index);
     });
 
-    // Draw arrows between nodes
+    // Draw arrows between nodes with focus filtering
     if (this.processedData.arrows)
     {
-      this.processedData.arrows.forEach(arrow =>
+      this.processedData.arrows.forEach((arrow, arrowIndex) =>
       {
+        // In focus mode, only render connected arrows
+        if (this.focusedNode !== null)
+        {
+          if (!this.connectedArrows.has(arrowIndex))
+          {
+            return; // Skip unconnected arrows
+          }
+        }
+
         this.renderArrow(arrow);
       });
     }
@@ -1227,9 +1325,18 @@ class GenericAPIVisualization
 
   renderGenericVisualization()
   {
-    // Generic rendering for unknown data types
+    // Generic rendering for unknown data types with focus mode filtering
     this.processedData.items.forEach((item, index) =>
     {
+      // In focus mode, only render focused node and connected nodes
+      if (this.focusedNode !== null)
+      {
+        if (index !== this.focusedNode && !this.connectedNodes.has(index))
+        {
+          return; // Skip unconnected nodes
+        }
+      }
+
       this.renderGenericNode(item, index);
     });
   }
