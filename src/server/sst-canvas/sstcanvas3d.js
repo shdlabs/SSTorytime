@@ -202,6 +202,21 @@ class SSTCanvas3D
   }
 
   /**
+   * Project 3D coordinates to 2D screen coordinates
+   * @param {number} x - 3D X coordinate
+   * @param {number} y - 3D Y coordinate  
+   * @param {number} z - 3D Z coordinate
+   * @returns {object} Object with x, y screen coordinates
+   */
+  project3D(x, y, z)
+  {
+    return {
+      x: this.transformX(x, y, z),
+      y: this.transformY(x, y, z)
+    };
+  }
+
+  /**
    * Draw a 3D line
    * @param {number} x0 - Start X coordinate
    * @param {number} y0 - Start Y coordinate

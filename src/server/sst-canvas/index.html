@@ -6,24 +6,53 @@
     <link rel="stylesheet" href="https://unpkg.com/open-props" />
 
     <!-- optional imports that use the props -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/open-props/normalize.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/open-props/buttons.min.css"
-    />
+    <link rel="stylesheet" href="https://unpkg.com/open-props/normalize.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/open-props/buttons.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <title>SSTorytime Chapter TOC Visualization</title>
+
+    <!-- MathJax Configuration -->
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["$", "$"],
+            ["\\(", "\\)"],
+          ],
+          displayMath: [
+            ["$$", "$$"],
+            ["\\[", "\\]"],
+          ],
+          processEscapes: true,
+          processEnvironments: true,
+        },
+        startup: {
+          ready: () => {
+            MathJax.startup.defaultReady();
+            MathJax.startup.promise.then(() => {
+              console.log("MathJax v4 initial typesetting complete");
+              if (window.initializeApp) {
+                window.initializeApp();
+              }
+            });
+          },
+        },
+      };
+    </script>
+
+    <!-- MathJax v4 -->
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <title>SSTorytime Generic API Visualization</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body class="bg-slate-950">
     <div class="container">
       <div class="header">
-        <p>3D Table of Contents Visualization</p>
+        <p>SSTorytime API Visualization</p>
         <p class="subtitle">
-          Exploring semantic chapters in spacetime coordinates
+          Exploring semantic data in spacetime coordinates with equations
         </p>
       </div>
 
@@ -38,6 +67,7 @@
               Real TOC Data (\chapter "notes on chinese")
             </option>
             <option value="chapter-data-chinese.json">Real TOC Data</option>
+            <option value="orbit-data-0.json">Real Orbit Data</option>
           </select>
         </div>
 
@@ -49,21 +79,13 @@
             min="0"
             max="0.05"
             step="0.005"
-            value="0.01"
-          />
+            value="0.01" />
           <span id="speedValue">0.01</span>
         </div>
 
         <div class="control-group">
           <label for="viewAngle">👁️ View Angle:</label>
-          <input
-            type="range"
-            id="viewAngle"
-            min="0"
-            max="6.28"
-            step="0.1"
-            value="0.35"
-          />
+          <input type="range" id="viewAngle" min="0" max="6.28" step="0.1" value="0.35" />
           <span id="angleValue">0.35</span>
         </div>
 
@@ -73,9 +95,15 @@
         </div>
 
         <div class="control-group">
+          <label for="smartLabels">🏷️ Smart Labels:</label>
+          <input type="checkbox" id="smartLabels" checked />
+          <small class="text-xs text-gray-400">Distance-based label visibility</small>
+        </div>
+
+        <div class="control-group">
           <button id="toggleAnimation">⏸️ Pause</button>
           <button id="resetView">🔄 Reset</button>
-          <button id="focusChapter">🎯 Focus</button>
+          <button id="focusChapter">🎯 Focus/Clear</button>
         </div>
       </div>
 
@@ -92,6 +120,10 @@
           </div>
           <div class="info-item">
             <strong>Ambient:</strong> <span id="ambientInfo">Loading...</span>
+          </div>
+          <div class="info-item">
+            <strong>Distance:</strong> $d = \sqrt{(x_2-x_1)^2 + (y_2-y_1)^2 +
+            (z_2-z_1)^2}$
           </div>
 
           <div class="stats">
@@ -121,29 +153,25 @@
             <div class="legend-item">
               <div
                 class="legend-color"
-                style="background: linear-gradient(45deg, #e74c3c, #c0392b)"
-              ></div>
+                style="background: linear-gradient(45deg, #e74c3c, #c0392b)"></div>
               <span>Chapter Nodes</span>
             </div>
             <div class="legend-item">
               <div
                 class="legend-color"
-                style="background: linear-gradient(45deg, #3498db, #2980b9)"
-              ></div>
+                style="background: linear-gradient(45deg, #3498db, #2980b9)"></div>
               <span>Context Fragments</span>
             </div>
             <div class="legend-item">
               <div
                 class="legend-color"
-                style="background: linear-gradient(45deg, #f39c12, #e67e22)"
-              ></div>
+                style="background: linear-gradient(45deg, #f39c12, #e67e22)"></div>
               <span>Single Contexts</span>
             </div>
             <div class="legend-item">
               <div
                 class="legend-color"
-                style="background: linear-gradient(45deg, #27ae60, #229954)"
-              ></div>
+                style="background: linear-gradient(45deg, #27ae60, #229954)"></div>
               <span>Common Contexts</span>
             </div>
           </div>
@@ -152,6 +180,6 @@
     </div>
 
     <script src="sstcanvas3d.js"></script>
-    <script src="/main.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>

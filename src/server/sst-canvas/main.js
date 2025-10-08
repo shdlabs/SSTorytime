@@ -1,15 +1,31 @@
-class ChapterTOCVisualization
+// Generic API Visualization v2.2 - Enhanced Arrows & Names
+class GenericAPIVisualization
 {
   constructor()
   {
     this.canvas3d = null;
-    this.tocData = null;
+    this.apiData = null;
+    this.processedData = null;
     this.animationId = null;
     this.isAnimating = true;
     this.rotationSpeed = 0.01;
     this.currentAngle = 0;
     this.showContext = true;
-    this.selectedChapter = null;
+    this.selectedItem = null;
+    this.dataType = 'unknown';
+    this.useSmartLabels = true; // Enable smart labels by default
+
+    // Hover system
+    this.hoveredNode = null;
+    this.mouseX = 0;
+    this.mouseY = 0;
+    this.hoverTimeout = null;
+
+    // Click/Focus system
+    this.focusedNode = null;
+    this.connectedNodes = new Set();
+    this.connectedArrows = new Set();
+    this.animationBeforeFocus = true;
 
     this.init();
   }
@@ -18,7 +34,7 @@ class ChapterTOCVisualization
   {
     try
     {
-      console.log("🚀 Initializing Chapter TOC Visualization...");
+      console.log("🚀 Initializing Generic API Visualization...");
 
       // Initialize the 3D canvas
       this.canvas3d = new SSTCanvas3D("canvasContainer", {
@@ -26,6 +42,9 @@ class ChapterTOCVisualization
         height: window.innerHeight,
         mobile: window.innerWidth < 550 ? 0.5 : 1,
       });
+
+      // Initialize hover system
+      this.initHoverSystem();
 
       // Load initial data
       const data = document.getElementById("dataSource");
@@ -37,11 +56,325 @@ class ChapterTOCVisualization
       // Start animation
       this.startAnimation();
 
-      console.log("✅ Chapter TOC visualization initialized successfully");
+      console.log("✅ Generic API visualization initialized successfully");
     } catch (error)
     {
       console.error("❌ Failed to initialize visualization:", error);
       this.showError("Failed to load visualization: " + error.message);
+    }
+  }
+
+  // === SMART LABEL SYSTEM ===
+
+  /**
+   * Calculate distance from camera to a 3D point
+   */
+  calculateCameraDistance(x, y, z)
+  {
+    const camX = this.canvas3d.vpX;
+    const camY = this.canvas3d.vpY;
+    const camZ = this.canvas3d.vpZ;
+
+    return Math.sqrt(
+      Math.pow(x - camX, 2) +
+      Math.pow(y - camY, 2) +
+      Math.pow(z - camZ, 2)
+    );
+  }
+
+  /**
+   * Get node type significance priority (higher = more important)
+   */
+  getNodeSignificance(type)
+  {
+    const significance = {
+      'event': 6,      // Highest priority
+      'thing': 5,
+      'concept': 4,
+      'agent': 3,
+      'expression': 2,
+      'relation': 1    // Lowest priority
+    };
+
+    return significance[type] || 3; // Default medium significance
+  }
+
+  /**
+   * Check if a label should be visible based on distance and significance
+   */
+  shouldShowLabel(x, y, z, type, labelType = 'main')
+  {
+    const distance = this.calculateCameraDistance(x, y, z);
+    const significance = this.getNodeSignificance(type);
+
+    // Base visibility thresholds
+    const baseThresholds = {
+      'main': 8,        // Node title labels
+      'type': 6,        // Type indicator labels  
+      'coords': 4,      // Coordinate labels
+      'context': 5      // Context labels
+    };
+
+    const baseThreshold = baseThresholds[labelType] || 6;
+
+    // Adjust threshold based on significance
+    // More significant nodes show labels from further away
+    const adjustedThreshold = baseThreshold + (significance - 3) * 1.5;
+
+    return distance <= adjustedThreshold;
+  }
+
+  /**
+   * Smart label drawing with distance and significance filtering
+   */
+  drawSmartLabel(x, y, z, text, size, color, type, labelType = 'main', nodeIndex = null)
+  {
+    // If smart labels are disabled, always show labels
+    if (!this.useSmartLabels)
+    {
+      this.canvas3d.drawLabel(x, y, z, text, size, color);
+      return true;
+    }
+
+    // Focus mode: only show labels for focused node and connected nodes
+    if (this.focusedNode !== null && nodeIndex !== null)
+    {
+      if (nodeIndex === this.focusedNode || this.connectedNodes.has(nodeIndex))
+      {
+        // Show labels for focused node and connected nodes regardless of distance
+        this.canvas3d.drawLabel(x, y, z, text, size, color);
+        return true;
+      }
+      else
+      {
+        // Hide labels for non-connected nodes when in focus mode
+        return false;
+      }
+    }
+
+    // Normal mode: use distance and significance filtering
+    if (this.shouldShowLabel(x, y, z, type, labelType))
+    {
+      this.canvas3d.drawLabel(x, y, z, text, size, color);
+      return true;
+    }
+    return false;
+  }
+
+  // === HOVER SYSTEM ===
+
+  /**
+   * Initialize hover system with mouse tracking
+   */
+  initHoverSystem()
+  {
+    if (!this.canvas3d.canvas) return;
+
+    const canvas = this.canvas3d.canvas;
+
+    // Create hover tooltip
+    this.createHoverTooltip();
+
+    // Mouse move handler
+    canvas.addEventListener('mousemove', (e) =>
+    {
+      const rect = canvas.getBoundingClientRect();
+      this.mouseX = e.clientX - rect.left;
+      this.mouseY = e.clientY - rect.top;
+
+      // Clear existing hover timeout
+      if (this.hoverTimeout)
+      {
+        clearTimeout(this.hoverTimeout);
+      }
+
+      // Check for hovered node after short delay to avoid excessive calculations
+      this.hoverTimeout = setTimeout(() =>
+      {
+        this.checkNodeHover();
+      }, 50);
+    });
+
+    // Mouse leave handler
+    canvas.addEventListener('mouseleave', () =>
+    {
+      this.hideHoverTooltip();
+      this.hoveredNode = null;
+    });
+
+    // Click handler for node focusing
+    canvas.addEventListener('click', (e) =>
+    {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      this.handleNodeClick(clickX, clickY);
+    });
+  }
+
+  /**
+   * Create hover tooltip element
+   */
+  createHoverTooltip()
+  {
+    // Remove existing tooltip
+    const existing = document.getElementById('hover-tooltip');
+    if (existing) existing.remove();
+
+    const tooltip = document.createElement('div');
+    tooltip.id = 'hover-tooltip';
+    tooltip.style.cssText = `
+      position: absolute;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      pointer-events: none;
+      z-index: 1000;
+      max-width: 250px;
+      word-wrap: break-word;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 1px solid #444;
+      display: none;
+    `;
+
+    document.body.appendChild(tooltip);
+    this.tooltip = tooltip;
+  }
+
+  /**
+   * Check if mouse is hovering over any node
+   */
+  checkNodeHover()
+  {
+    if (!this.processedData || !this.processedData.items) return;
+
+    let closestNode = null;
+    let closestDistance = Infinity;
+    let debugCount = 0;
+
+    // Check all nodes
+    for (let i = 0; i < this.processedData.items.length; i++)
+    {
+      const item = this.processedData.items[i];
+      if (!item.XYZ) 
+      {
+        if (debugCount < 3) console.log(`⚠️ Node ${i} missing XYZ:`, item);
+        debugCount++;
+        continue;
+      }
+
+      const screenPos = this.canvas3d.project3D(item.XYZ.X, item.XYZ.Y, item.XYZ.Z);
+      if (!screenPos) 
+      {
+        if (debugCount < 3) console.log(`⚠️ Node ${i} failed projection:`, item.XYZ);
+        debugCount++;
+        continue;
+      }
+
+      const distance = Math.sqrt(
+        Math.pow(this.mouseX - screenPos.x, 2) +
+        Math.pow(this.mouseY - screenPos.y, 2)
+      );
+
+      // Check if within node radius (base on node type significance)
+      const nodeRadius = this.getNodeHoverRadius(item.type);
+
+      // Debug nearby nodes
+      if (distance < nodeRadius * 2 && debugCount < 5)
+      {
+        console.log(`🎯 Node ${i} (${item.type || 'unknown'}) at distance ${distance.toFixed(1)} (threshold: ${nodeRadius})`);
+        debugCount++;
+      }
+
+      if (distance <= nodeRadius && distance < closestDistance)
+      {
+        closestDistance = distance;
+        closestNode = { item, index: i, distance };
+        console.log(`✅ Found hover node ${i} at distance ${distance.toFixed(1)}`);
+      }
+    }
+
+    if (closestNode && closestNode !== this.hoveredNode)
+    {
+      this.hoveredNode = closestNode;
+      this.showHoverTooltip(closestNode.item, closestNode.index);
+    } else if (!closestNode && this.hoveredNode)
+    {
+      this.hideHoverTooltip();
+      this.hoveredNode = null;
+    }
+  }
+
+  /**
+   * Get hover detection radius based on node type
+   */
+  getNodeHoverRadius(type)
+  {
+    const baseRadius = {
+      'event': 25,
+      'thing': 20,
+      'concept': 20,
+      'agent': 15,
+      'expression': 12,
+      'relation': 10,
+      // TOC-specific node types
+      'chapter': 25,      // Main chapters - large radius like events
+      'context': 20,      // Context items - medium radius like concepts
+      'fragment': 15      // Fragment items - smaller radius
+    };
+
+    return baseRadius[type] || 15;
+  }
+
+  /**
+   * Show hover tooltip with node information
+   */
+  showHoverTooltip(item, index)
+  {
+    if (!this.tooltip) return;
+
+    const title = item.title || `Node ${index}`;
+    const type = item.type || 'unknown';
+    const coords = `(${item.XYZ.X.toFixed(2)}, ${item.XYZ.Y.toFixed(2)}, ${item.XYZ.Z.toFixed(2)})`;
+
+    let content = `<strong>${title}</strong><br>`;
+    content += `<span style="color: #aaa;">Type:</span> ${type}<br>`;
+    content += `<span style="color: #aaa;">Position:</span> ${coords}`;
+
+    if (item.context)
+    {
+      content += `<br><span style="color: #aaa;">Context:</span> ${item.context}`;
+    }
+
+    this.tooltip.innerHTML = content;
+    this.tooltip.style.display = 'block';
+    this.tooltip.style.left = (this.mouseX + 15) + 'px';
+    this.tooltip.style.top = (this.mouseY - 10) + 'px';
+
+    // Adjust position if tooltip goes off screen
+    const rect = this.tooltip.getBoundingClientRect();
+    if (rect.right > window.innerWidth)
+    {
+      this.tooltip.style.left = (this.mouseX - rect.width - 15) + 'px';
+    }
+    if (rect.bottom > window.innerHeight)
+    {
+      this.tooltip.style.top = (this.mouseY - rect.height - 10) + 'px';
+    }
+  }
+
+  /**
+   * Hide hover tooltip
+   */
+  hideHoverTooltip()
+  {
+    if (this.tooltip)
+    {
+      this.tooltip.style.display = 'none';
     }
   }
 
@@ -56,12 +389,19 @@ class ChapterTOCVisualization
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      this.tocData = await response.json();
+      this.apiData = await response.json();
+
+      // Detect and process data type
+      this.dataType = this.detectDataType(this.apiData);
+      console.log(`🔍 Detected data type: ${this.dataType}`);
+
+      this.processedData = this.processAPIData(this.apiData);
+
       this.updateInfoPanel();
-      this.updateChapterList();
+      this.updateItemList();
       this.renderVisualization();
 
-      console.log("✅ TOC data loaded:", this.tocData);
+      console.log("✅ API data loaded and processed:", this.processedData);
     } catch (error)
     {
       console.error("❌ Error loading data:", error);
@@ -69,11 +409,762 @@ class ChapterTOCVisualization
     }
   }
 
+  // === CLICK/FOCUS SYSTEM ===
+
+  /**
+   * Handle mouse click to focus on a node
+   */
+  handleNodeClick(clickX, clickY)
+  {
+    if (!this.processedData || !this.processedData.items) return;
+
+    let clickedNode = null;
+    let closestDistance = Infinity;
+    let debugCount = 0;
+
+    console.log(`🖱️ Click at (${clickX.toFixed(1)}, ${clickY.toFixed(1)})`);
+
+    // Check all nodes for click collision
+    for (let i = 0; i < this.processedData.items.length; i++)
+    {
+      const item = this.processedData.items[i];
+      if (!item.XYZ) 
+      {
+        if (debugCount < 3) console.log(`⚠️ Click check: Node ${i} missing XYZ`);
+        debugCount++;
+        continue;
+      }
+
+      const screenPos = this.canvas3d.project3D(item.XYZ.X, item.XYZ.Y, item.XYZ.Z);
+      if (!screenPos) 
+      {
+        if (debugCount < 3) console.log(`⚠️ Click check: Node ${i} failed projection`);
+        debugCount++;
+        continue;
+      }
+
+      const distance = Math.sqrt(
+        Math.pow(clickX - screenPos.x, 2) +
+        Math.pow(clickY - screenPos.y, 2)
+      );
+
+      const nodeRadius = this.getNodeHoverRadius(item.type);
+
+      // Debug nearby nodes
+      if (distance < nodeRadius * 2 && debugCount < 5)
+      {
+        console.log(`🎯 Click check: Node ${i} (${item.type || 'unknown'}) at distance ${distance.toFixed(1)} (threshold: ${nodeRadius})`);
+        debugCount++;
+      }
+
+      if (distance <= nodeRadius && distance < closestDistance)
+      {
+        closestDistance = distance;
+        clickedNode = { item, index: i, distance };
+        console.log(`✅ Found click node ${i} at distance ${distance.toFixed(1)}`);
+      }
+    }
+
+    if (clickedNode)
+    {
+      this.focusOnNode(clickedNode.index);
+    }
+    else
+    {
+      console.log(`❌ No node found at click position`);
+      // Click on empty space - clear focus
+      this.clearFocus();
+    }
+  }
+
+  /**
+   * Focus on a specific node by centering it and highlighting connections
+   */
+  focusOnNode(nodeIndex)
+  {
+    if (!this.processedData || !this.processedData.items[nodeIndex]) return;
+
+    console.log(`🎯 Focusing on node ${nodeIndex}`);
+
+    // Store animation state and stop animation
+    this.animationBeforeFocus = this.isAnimating;
+    if (this.isAnimating)
+    {
+      this.stopAnimation();
+      document.getElementById("toggleAnimation").textContent = "▶️ Play";
+    }
+
+    // Set focused node
+    this.focusedNode = nodeIndex;
+    this.selectedItem = nodeIndex; // Also set as selected for highlighting
+
+    // Center the camera on the focused node
+    this.centerCameraOnNode(nodeIndex);
+
+    // Find and highlight connected nodes and arrows
+    this.highlightConnections(nodeIndex);
+
+    // Force re-render
+    this.renderVisualization();
+
+    // Update UI to show focus state
+    this.updateFocusInfo(nodeIndex);
+  }
+
+  /**
+   * Center the camera on a specific node
+   */
+  centerCameraOnNode(nodeIndex)
+  {
+    const node = this.processedData.items[nodeIndex];
+    if (!node || !node.XYZ) return;
+
+    // Move the viewport to center on the node
+    this.canvas3d.vpX = node.XYZ.X;
+    this.canvas3d.vpY = node.XYZ.Y;
+    this.canvas3d.vpZ = node.XYZ.Z + 3; // Move camera back a bit to see the node
+
+    console.log(`📷 Camera centered on (${node.XYZ.X}, ${node.XYZ.Y}, ${node.XYZ.Z})`);
+  }
+
+  /**
+   * Find and highlight all nodes and arrows connected to the focused node
+   */
+  highlightConnections(nodeIndex)
+  {
+    this.connectedNodes.clear();
+    this.connectedArrows.clear();
+
+    if (!this.processedData || !this.processedData.arrows) return;
+
+    // Find all arrows connected to this node
+    for (let i = 0; i < this.processedData.arrows.length; i++)
+    {
+      const arrow = this.processedData.arrows[i];
+
+      if (arrow.from === nodeIndex)
+      {
+        // Outgoing arrow
+        this.connectedArrows.add(i);
+        this.connectedNodes.add(arrow.to);
+      }
+      else if (arrow.to === nodeIndex)
+      {
+        // Incoming arrow
+        this.connectedArrows.add(i);
+        this.connectedNodes.add(arrow.from);
+      }
+    }
+
+    console.log(`🔗 Found ${this.connectedArrows.size} connected arrows and ${this.connectedNodes.size} connected nodes`);
+  }
+
+  /**
+   * Clear focus and restore normal view
+   */
+  clearFocus()
+  {
+    console.log("🔄 Clearing focus");
+
+    this.focusedNode = null;
+    this.selectedItem = null;
+    this.connectedNodes.clear();
+    this.connectedArrows.clear();
+
+    // Restore animation if it was running before
+    if (this.animationBeforeFocus && !this.isAnimating)
+    {
+      this.startAnimation();
+      document.getElementById("toggleAnimation").textContent = "⏸️ Pause";
+    }
+
+    // Reset camera to default position
+    this.resetCameraPosition();
+
+    // Force re-render
+    this.renderVisualization();
+
+    // Clear focus info
+    this.clearFocusInfo();
+  }
+
+  /**
+   * Reset camera to default viewing position
+   */
+  resetCameraPosition()
+  {
+    this.canvas3d.vpX = 0;
+    this.canvas3d.vpY = 4;
+    this.canvas3d.vpZ = 8;
+
+    console.log("📷 Camera reset to default position");
+  }
+
+  /**
+   * Update UI to show information about the focused node
+   */
+  updateFocusInfo(nodeIndex)
+  {
+    const node = this.processedData.items[nodeIndex];
+    if (!node) return;
+
+    // Create or update focus info panel
+    let focusPanel = document.getElementById('focus-info');
+    if (!focusPanel)
+    {
+      focusPanel = document.createElement('div');
+      focusPanel.id = 'focus-info';
+      focusPanel.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        max-width: 300px;
+        z-index: 1001;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        border: 2px solid #FFD700;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      `;
+      document.body.appendChild(focusPanel);
+    }
+
+    const title = node.title || `Node ${nodeIndex}`;
+    const connections = this.connectedNodes.size;
+
+    focusPanel.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <strong style="color: #FFD700;">🎯 FOCUSED NODE</strong>
+        <button onclick="window.visualization.clearFocus()" style="background: #666; border: none; color: white; border-radius: 4px; padding: 4px 8px; cursor: pointer;">✕</button>
+      </div>
+      <div><strong>Title:</strong> ${title}</div>
+      <div><strong>Type:</strong> ${node.type || 'unknown'}</div>
+      <div><strong>Index:</strong> ${nodeIndex}</div>
+      <div><strong>Connections:</strong> ${connections} nodes</div>
+      <div style="margin-top: 8px; font-size: 11px; color: #aaa;">
+        Click elsewhere to clear focus
+      </div>
+    `;
+  }
+
+  /**
+   * Clear focus information panel
+   */
+  clearFocusInfo()
+  {
+    const focusPanel = document.getElementById('focus-info');
+    if (focusPanel)
+    {
+      focusPanel.remove();
+    }
+  }
+
+  detectDataType(data)
+  {
+    console.log("🔍 Detecting data type for:", data);
+
+    if (!data || !data.Response)
+    {
+      console.log("⚠️ No data or Response field found");
+      return 'unknown';
+    }
+
+    console.log(`📊 Response type: ${data.Response}`);
+
+    switch (data.Response)
+    {
+    case 'TOC':
+      return 'toc';
+    case 'PageMap':
+    case 'Orbits':
+      return 'orbits';
+    case 'ConePaths':
+    case 'PathSolve':
+      return 'paths';
+    case 'Sequence':
+      return 'sequence';
+    case 'Stories':
+      return 'stories';
+    case 'ChapterContexts':
+      return 'contexts';
+    case 'Stats':
+      return 'stats';
+    case 'Arrows':
+      return 'arrows';
+    default:
+      console.log(`❓ Unknown response type: ${data.Response}`);
+      return 'generic';
+    }
+  }
+
+  processAPIData(data)
+  {
+    console.log(`🔄 Processing ${this.dataType} data...`);
+
+    switch (this.dataType)
+    {
+    case 'toc':
+      return this.processTOCData(data);
+    case 'orbits':
+      return this.processOrbitData(data);
+    case 'paths':
+      return this.processPathData(data);
+    case 'sequence':
+      return this.processSequenceData(data);
+    case 'stories':
+      return this.processStoryData(data);
+    case 'contexts':
+      return this.processContextData(data);
+    case 'arrows':
+      return this.processArrowData(data);
+    default:
+      return this.processGenericData(data);
+    }
+  }
+
+  processTOCData(data)
+  {
+    // Enhanced TOC processing with arrows
+    const items = [];
+    const arrows = [];
+
+    if (data.Content)
+    {
+      data.Content.forEach((chapter, chapterIndex) =>
+      {
+        // Add main chapter
+        items.push({
+          ...chapter,
+          type: 'chapter',
+          title: chapter.Chapter || `Chapter ${chapterIndex + 1}`,
+          dataType: 'chapter'
+        });
+
+        const chapterItemIndex = items.length - 1;
+
+        // Add context items and create arrows
+        if (chapter.Context)
+        {
+          chapter.Context.forEach((context) =>
+          {
+            if (context.XYZ)
+            {
+              items.push({
+                ...context,
+                type: 'context',
+                title: context.Text || 'Context',
+                dataType: 'context'
+              });
+
+              // Create arrow from chapter to context
+              arrows.push({
+                from: chapterItemIndex,
+                to: items.length - 1,
+                type: 300, // Contains relationship (lightblue)
+                weight: 1
+              });
+            }
+          });
+        }
+
+        // Add single items and create arrows
+        if (chapter.Single)
+        {
+          chapter.Single.forEach((single) =>
+          {
+            if (single.XYZ)
+            {
+              items.push({
+                ...single,
+                type: 'fragment',
+                title: single.Text || 'Fragment',
+                dataType: 'fragment'
+              });
+
+              // Create arrow from chapter to fragment
+              arrows.push({
+                from: chapterItemIndex,
+                to: items.length - 1,
+                type: 302, // Expresses relationship (orange)
+                weight: 1
+              });
+            }
+          });
+        }
+      });
+    }
+
+    return {
+      dataType: 'toc',
+      title: 'Table of Contents',
+      items: items,
+      arrows: arrows,
+      metadata: {
+        response: data.Response,
+        time: data.Time,
+        intent: data.Intent,
+        ambient: data.Ambient
+      }
+    };
+  }
+
+  processOrbitData(data)
+  {
+    console.log("🌍 Processing orbit data:", data);
+
+    // Process PageMap/Orbit data structure
+    const items = [];
+    const arrows = [];
+
+    if (data.Content && data.Content.Notes)
+    {
+      console.log(`📝 Found ${data.Content.Notes.length} note groups`);
+
+      // First pass: create all items with their indices
+      const itemIndexMap = new Map(); // Map from NPtr to array index
+
+      data.Content.Notes.forEach((noteGroup, groupIndex) =>
+      {
+        console.log(`📋 Processing group ${groupIndex} with ${noteGroup.length} notes`);
+
+        noteGroup.forEach((note, noteIndex) =>
+        {
+          if (note.XYZ)
+          {
+            const item = {
+              id: `${note.NPtr?.Class || 0}-${note.NPtr?.CPtr || 0}`,
+              title: note.Name || `Node ${groupIndex}-${noteIndex}`,
+              chapter: note.Chp || '',
+              context: note.Ctx || '',
+              XYZ: note.XYZ,
+              type: this.getNodeType(note),
+              group: groupIndex,
+              note: note,
+              nptrClass: note.NPtr?.Class,
+              nptrCPtr: note.NPtr?.CPtr
+            };
+
+            // Store mapping for arrow references
+            if (note.NPtr)
+            {
+              itemIndexMap.set(`${note.NPtr.Class}-${note.NPtr.CPtr}`, items.length);
+            }
+
+            items.push(item);
+            console.log(`✅ Added item: ${item.title} at (${item.XYZ.X}, ${item.XYZ.Y}, ${item.XYZ.Z})`);
+          } else
+          {
+            console.log(`⚠️ Note ${noteIndex} in group ${groupIndex} missing XYZ coordinates`);
+          }
+        });
+      });
+
+      // Second pass: create arrows based on semantic relationships
+      items.forEach((item, fromIndex) =>
+      {
+        if (item.note.Arr > 0)
+        {
+          // Create arrows based on actual arrow type from data
+          const arrowType = item.note.Arr;
+
+          // Find nearby items or items of compatible types for relationships
+          items.forEach((targetItem, toIndex) =>
+          {
+            if (fromIndex !== toIndex && this.shouldCreateArrow(item, targetItem, arrowType))
+            {
+              arrows.push({
+                from: fromIndex,
+                to: toIndex,
+                type: arrowType,
+                weight: 1
+              });
+              console.log(`🔗 Added semantic arrow from ${fromIndex} to ${toIndex} (type: ${arrowType})`);
+            }
+          });
+        }
+      });
+
+      // Third pass: Add more arrow variety for better visualization
+      items.forEach((item, fromIndex) =>
+      {
+        items.forEach((targetItem, toIndex) =>
+        {
+          if (fromIndex !== toIndex)
+          {
+            const distance = this.calculateDistance(item.XYZ, targetItem.XYZ);
+
+            // Create arrows based on proximity and types
+            if (distance < 0.15)
+            { // Very close items
+              const arrowType = this.getRandomArrowType(item, targetItem);
+
+              // Avoid duplicate arrows
+              const existingArrow = arrows.find(a =>
+                (a.from === fromIndex && a.to === toIndex) ||
+                (a.from === toIndex && a.to === fromIndex)
+              );
+
+              if (!existingArrow && Math.random() < 0.4)
+              { // 40% chance
+                arrows.push({
+                  from: fromIndex,
+                  to: toIndex,
+                  type: arrowType,
+                  weight: 1
+                });
+                console.log(`🔗 Added proximity arrow from ${fromIndex} to ${toIndex} (type: ${arrowType})`);
+              }
+            }
+          }
+        });
+      });
+
+    } else
+    {
+      console.log("❌ No Content.Notes found in data");
+    }
+
+    const result = {
+      dataType: 'orbits',
+      title: data.Content?.Title || 'Orbit Visualization',
+      context: data.Content?.Context || '',
+      items: items,
+      arrows: arrows,
+      metadata: {
+        response: data.Response,
+        time: data.Time,
+        intent: data.Intent,
+        ambient: data.Ambient
+      }
+    };
+
+    console.log(`✅ Processed orbit data: ${items.length} items, ${arrows.length} arrows`);
+    return result;
+  }
+
+  shouldCreateArrow(fromItem, toItem, arrowType)
+  {
+    // Create arrows based on semantic relationships and proximity
+    const distance = this.calculateDistance(fromItem.XYZ, toItem.XYZ);
+    const maxDistance = 0.3; // Only connect nearby items
+
+    // Type-based relationships with better logic
+    if (arrowType === 298)
+    { // "has value" relationship - LeadsTo
+      return (fromItem.type === 'concept' && (toItem.type === 'thing' || toItem.type === 'expression')) && distance < maxDistance;
+    } else if (arrowType === 276)
+    { // Expresses relationship
+      return (fromItem.type === 'expression' || fromItem.type === 'concept') && distance < maxDistance;
+    } else if (arrowType === 258)
+    { // General relationship
+      return fromItem.type !== toItem.type && distance < maxDistance;
+    }
+
+    return distance < maxDistance; // Default proximity-based connection
+  }
+
+  calculateDistance(xyz1, xyz2)
+  {
+    const dx = xyz1.X - xyz2.X;
+    const dy = xyz1.Y - xyz2.Y;
+    const dz = xyz1.Z - xyz2.Z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
+  getRandomArrowType(fromItem, toItem)
+  {
+    // Create variety in arrow types based on item characteristics
+    const distance = this.calculateDistance(fromItem.XYZ, toItem.XYZ);
+
+    // Different logic for different type combinations
+    if (fromItem.type === 'concept' && toItem.type === 'expression')
+    {
+      return 302; // expresses (orange)
+    } else if (fromItem.type === 'concept' && (toItem.type === 'thing' || toItem.type === 'agent'))
+    {
+      return 300; // contains (lightblue)
+    } else if (fromItem.type === 'expression' && toItem.type === 'concept')
+    {
+      return 298; // leadsTo (darkred)
+    } else if (distance < 0.1)
+    {
+      return 258; // near (darkgrey) for very close items
+    } else if (fromItem.XYZ.Z > toItem.XYZ.Z)
+    {
+      return 298; // leadsTo (sequence from higher to lower Z)
+    } else if (Math.abs(fromItem.XYZ.Y - toItem.XYZ.Y) < 0.05)
+    {
+      return 300; // contains (same level)
+    } else
+    {
+      // Random selection for more variety
+      const types = [298, 300, 302, 258];
+      return types[Math.floor(Math.random() * types.length)];
+    }
+  }
+
+  getNodeType(note)
+  {
+    if (!note.NPtr) return 'unknown';
+
+    switch (note.NPtr.Class)
+    {
+    case 0: return 'relation';
+    case 1: return 'event';
+    case 2: return 'agent';
+    case 3: return 'thing';
+    case 4: return 'concept';
+    case 5: return 'expression';
+    default: return 'unknown';
+    }
+  }
+
+  processPathData(data)
+  {
+    // Handle ConePaths/PathSolve data
+    return {
+      type: 'paths',
+      title: 'Path Visualization',
+      items: this.extractNodesFromContent(data.Content),
+      metadata: {
+        response: data.Response,
+        time: data.Time,
+        intent: data.Intent,
+        ambient: data.Ambient
+      }
+    };
+  }
+
+  processSequenceData(data)
+  {
+    return {
+      type: 'sequence',
+      title: 'Sequence Visualization',
+      items: this.extractNodesFromContent(data.Content),
+      metadata: {
+        response: data.Response,
+        time: data.Time,
+        intent: data.Intent,
+        ambient: data.Ambient
+      }
+    };
+  }
+
+  processStoryData(data)
+  {
+    return {
+      type: 'stories',
+      title: 'Story Visualization',
+      items: this.extractNodesFromContent(data.Content),
+      metadata: {
+        response: data.Response,
+        time: data.Time,
+        intent: data.Intent,
+        ambient: data.Ambient
+      }
+    };
+  }
+
+  processContextData(data)
+  {
+    return {
+      type: 'contexts',
+      title: 'Context Visualization',
+      items: this.extractNodesFromContent(data.Content),
+      metadata: {
+        response: data.Response,
+        time: data.Time,
+        intent: data.Intent,
+        ambient: data.Ambient
+      }
+    };
+  }
+
+  processArrowData(data)
+  {
+    return {
+      type: 'arrows',
+      title: 'Arrow Relationships',
+      items: this.extractNodesFromContent(data.Content),
+      metadata: {
+        response: data.Response,
+        time: data.Time,
+        intent: data.Intent,
+        ambient: data.Ambient
+      }
+    };
+  }
+
+  processGenericData(data)
+  {
+    return {
+      type: 'generic',
+      title: 'Generic Visualization',
+      items: this.extractNodesFromContent(data.Content),
+      metadata: {
+        response: data.Response,
+        time: data.Time,
+        intent: data.Intent,
+        ambient: data.Ambient
+      }
+    };
+  }
+
+  extractNodesFromContent(content)
+  {
+    // Generic node extraction for unknown data formats
+    const items = [];
+
+    if (Array.isArray(content))
+    {
+      content.forEach((item, index) =>
+      {
+        if (item && item.XYZ)
+        {
+          items.push({
+            id: index,
+            title: item.Name || item.Text || item.title || `Item ${index}`,
+            XYZ: item.XYZ,
+            type: 'generic',
+            raw: item
+          });
+        }
+      });
+    } else if (content && typeof content === 'object')
+    {
+      // Try to find nested arrays with XYZ data
+      Object.keys(content).forEach(key =>
+      {
+        if (Array.isArray(content[key]))
+        {
+          content[key].forEach((item, index) =>
+          {
+            if (item && item.XYZ)
+            {
+              items.push({
+                id: `${key}-${index}`,
+                title: item.Name || item.Text || `${key} ${index}`,
+                XYZ: item.XYZ,
+                type: 'generic',
+                group: key,
+                raw: item
+              });
+            }
+          });
+        }
+      });
+    }
+
+    return items;
+  }
+
   renderVisualization()
   {
-    if (!this.tocData || !this.tocData.Content)
+    if (!this.processedData || !this.processedData.items)
     {
-      console.warn("⚠️ No TOC data to render");
+      console.warn("⚠️ No processed data to render");
       return;
     }
 
@@ -83,14 +1174,581 @@ class ChapterTOCVisualization
     // Draw coordinate grid
     this.canvas3d.drawGrid(0, 0, 1);
 
-    // Render each chapter
-    this.tocData.Content.forEach((chapter, index) =>
+    // Render items based on data type
+    switch (this.dataType)
     {
-      this.renderChapter(chapter, index);
+    case 'toc':
+      this.renderTOCVisualization();
+      break;
+    case 'orbits':
+      this.renderOrbitVisualization();
+      break;
+    default:
+      this.renderGenericVisualization();
+      break;
+    }
+
+    // Draw connections/arrows if available
+    if (this.processedData.arrows)
+    {
+      this.drawArrows();
+    }
+  }
+
+  renderTOCVisualization()
+  {
+    // Original TOC rendering logic
+    this.processedData.items.forEach((chapter, index) =>
+    {
+      this.renderTOCChapter(chapter, index);
+    });
+    this.drawTOCConnections();
+  }
+
+  renderOrbitVisualization()
+  {
+    // New orbit rendering logic
+    console.log(`🌍 Rendering ${this.processedData.items.length} orbit nodes...`);
+
+    this.processedData.items.forEach((item, index) =>
+    {
+      this.renderOrbitNode(item, index);
     });
 
-    // Draw connections between chapters (optional)
-    this.drawChapterConnections();
+    // Draw arrows between nodes
+    if (this.processedData.arrows)
+    {
+      this.processedData.arrows.forEach(arrow =>
+      {
+        this.renderArrow(arrow);
+      });
+    }
+  }
+
+  renderGenericVisualization()
+  {
+    // Generic rendering for unknown data types
+    this.processedData.items.forEach((item, index) =>
+    {
+      this.renderGenericNode(item, index);
+    });
+  }
+
+  renderTOCChapter(chapter, index)
+  {
+    const x = chapter.XYZ.X;
+    const y = chapter.XYZ.Y;
+    const z = chapter.XYZ.Z;
+
+    // Use specialized rendering based on item type
+    if (chapter.type === 'chapter')
+    {
+      // Main chapters - use event rendering (large red nodes)
+      this.canvas3d.drawEvent(x, y, z);
+    } else if (chapter.type === 'context')
+    {
+      // Context items - use concept rendering (blue nodes)
+      this.canvas3d.drawConcept(x, y, z);
+    } else if (chapter.type === 'fragment')
+    {
+      // Fragment items - use thing rendering (green nodes)
+      this.canvas3d.drawThing(x, y, z);
+    } else
+    {
+      // Fallback for original chapter structure
+      this.canvas3d.drawEvent(x, y, z);
+    }
+
+    // Draw title with type-appropriate handling
+    let title;
+    if (chapter.type === 'chapter')
+    {
+      title = chapter.title || chapter.Chapter || `Chapter ${index + 1}`;
+    } else
+    {
+      title = chapter.title || chapter.Text || `Item ${index + 1}`;
+    }
+
+    // Use smart label system for chapter titles
+    this.drawSmartLabel(x, y, z, title.slice(0, 40), 12, "white", chapter.type || 'chapter', 'main', index);
+
+    // Draw type indicator - only if close
+    if (chapter.type)
+    {
+      const colors = this.getNodeColors(chapter.type);
+      this.drawSmartLabel(x, y - 0.05, z, `[${chapter.type}]`, 6, colors.fill, chapter.type, 'type', index);
+    }
+
+    // Draw coordinates info - only if very close
+    this.drawSmartLabel(x, y - 0.08, z, `(${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`, 5, "oklch(85.5% 0.138 181.071)", chapter.type || 'chapter', 'coords', index);
+
+    // Render context fragments if enabled (for original structure)
+    if (this.showContext && chapter.Context)
+    {
+      this.renderTOCContextFragments(chapter, x, y, z, index);
+    }
+
+    // Highlight selected item
+    if (this.selectedItem === index)
+    {
+      this.canvas3d.drawNode(x, y, z, 7 * this.canvas3d.mob, "transparent", "#FFD700");
+    }
+
+    // Highlight hovered item
+    if (this.hoveredNode && this.hoveredNode.index === index)
+    {
+      this.canvas3d.drawNode(x, y, z, 6 * this.canvas3d.mob, "transparent", "#FFFFFF40");
+    }
+
+    // Highlight connected nodes when focusing
+    if (this.focusedNode !== null)
+    {
+      if (this.connectedNodes.has(index))
+      {
+        // Connected node - highlight with green glow
+        this.canvas3d.drawNode(x, y, z, 8 * this.canvas3d.mob, "transparent", "#00FF0060");
+      }
+    }
+  }
+
+  renderOrbitNode(item, index)
+  {
+    const x = item.XYZ.X;
+    const y = item.XYZ.Y;
+    const z = item.XYZ.Z;
+
+    let nodeSize = 4; // Default size
+
+    // Use specialized node drawing methods from SSTCanvas3D when available
+    switch (item.type)
+    {
+    case 'event':
+      this.canvas3d.drawEvent(x, y, z);
+      nodeSize = 6; // Events are larger
+      break;
+    case 'thing':
+      this.canvas3d.drawThing(x, y, z);
+      nodeSize = 4; // Things are medium
+      break;
+    case 'concept':
+      this.canvas3d.drawConcept(x, y, z);
+      nodeSize = 4; // Concepts are medium
+      break;
+    case 'agent':
+      // Agent nodes - use orange color similar to 'thing' but different
+      nodeSize = 3;
+      this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#f39c12", "#e67e22");
+      break;
+    case 'expression':
+      // Expression nodes - use purple color
+      nodeSize = 2.5;
+      this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#9b59b6", "#8e44ad");
+      break;
+    case 'relation':
+      // Relation nodes - use gray color, smaller size
+      nodeSize = 2;
+      this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#95a5a6", "#7f8c8d");
+      break;
+    default:
+      // Fallback to generic rendering
+      const colors = this.getNodeColors(item.type);
+      nodeSize = this.getNodeSize(item.type);
+      this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, colors.fill, colors.stroke);
+    }
+
+    // Draw label (smart truncation) - only if close enough
+    let label = item.title || `Node ${index}`;
+    if (label.length > 40)
+    {
+      // Try to find a good breaking point
+      const words = label.split(' ');
+      if (words.length > 3)
+      {
+        label = words.slice(0, 3).join(' ') + '...';
+      } else
+      {
+        label = label.slice(0, 37) + '...';
+      }
+    }
+
+    // Use smart label system
+    this.drawSmartLabel(x, y, z, label, 8, "white", item.type, 'main', index);
+
+    // Draw type indicator with appropriate color - only if very close
+    const colors = this.getNodeColors(item.type);
+    this.drawSmartLabel(x, y - 0.05, z, `[${item.type}]`, 6, colors.fill, item.type, 'type', index);
+
+    // Draw coordinates info - only if extremely close
+    this.drawSmartLabel(x, y - 0.08, z, `(${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`, 5, "oklch(85.5% 0.138 181.071)", item.type, 'coords', index);
+
+    // Draw context info if available - only if close
+    if (item.context && this.showContext)
+    {
+      const contextLabel = item.context.length > 25 ? item.context.slice(0, 22) + '...' : item.context;
+      this.drawSmartLabel(x, y + 0.05, z, contextLabel, 6, "lightblue", item.type, 'context', index);
+    }
+
+    // Highlight selected item
+    if (this.selectedItem === index)
+    {
+      this.canvas3d.drawNode(x, y, z, (nodeSize + 2) * this.canvas3d.mob, "transparent", "#FFD700");
+    }
+
+    // Highlight hovered item with subtle glow
+    if (this.hoveredNode && this.hoveredNode.index === index)
+    {
+      this.canvas3d.drawNode(x, y, z, (nodeSize + 1) * this.canvas3d.mob, "transparent", "#FFFFFF40");
+    }
+
+    // Highlight connected nodes when focusing
+    if (this.focusedNode !== null)
+    {
+      if (this.connectedNodes.has(index))
+      {
+        // Connected node - highlight with green glow
+        this.canvas3d.drawNode(x, y, z, (nodeSize + 1.5) * this.canvas3d.mob, "transparent", "#00FF0060");
+      }
+      else if (index !== this.focusedNode)
+      {
+        // Non-connected node - dim it
+        this.canvas3d.ctx.save();
+        this.canvas3d.ctx.globalAlpha = 0.4;
+        // Re-draw with reduced opacity - this is a simple approach
+        this.canvas3d.ctx.restore();
+      }
+    }
+  }
+
+  renderGenericNode(item, index)
+  {
+    const x = item.XYZ.X;
+    const y = item.XYZ.Y;
+    const z = item.XYZ.Z;
+
+    let nodeSize = 4; // Default size
+
+    // Use specialized node drawing methods based on type if available
+    if (item.type)
+    {
+      switch (item.type)
+      {
+      case 'event':
+        this.canvas3d.drawEvent(x, y, z);
+        nodeSize = 6;
+        break;
+      case 'thing':
+        this.canvas3d.drawThing(x, y, z);
+        nodeSize = 4;
+        break;
+      case 'concept':
+        this.canvas3d.drawConcept(x, y, z);
+        nodeSize = 4;
+        break;
+      case 'agent':
+        nodeSize = 3;
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#f39c12", "#e67e22");
+        break;
+      case 'expression':
+        nodeSize = 2.5;
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#9b59b6", "#8e44ad");
+        break;
+      case 'relation':
+        nodeSize = 2;
+        this.canvas3d.drawNode(x, y, z, nodeSize * this.canvas3d.mob, "#95a5a6", "#7f8c8d");
+        break;
+      default:
+        // Default generic rendering
+        this.canvas3d.drawNode(x, y, z, 4 * this.canvas3d.mob, "#3498db", "#2980b9");
+      }
+    }
+    else
+    {
+      // Default generic rendering when no type is specified
+      this.canvas3d.drawNode(x, y, z, 4 * this.canvas3d.mob, "#3498db", "#2980b9");
+    }
+
+    // Use smart label system for title
+    const title = item.title || `Node ${index}`;
+    this.drawSmartLabel(x, y, z, title.slice(0, 25), 8, "white", item.type || 'generic', 'main', index);
+
+    // Draw type indicator if available
+    if (item.type)
+    {
+      const colors = this.getNodeColors(item.type);
+      this.drawSmartLabel(x, y - 0.05, z, `[${item.type}]`, 6, colors.fill, item.type, 'type', index);
+    }
+
+    // Draw coordinates info for debugging
+    this.drawSmartLabel(x, y - 0.08, z, `(${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`, 5, "oklch(85.5% 0.138 181.071)", item.type || 'generic', 'coords', index);
+
+    // Highlight selected item
+    if (this.selectedItem === index)
+    {
+      this.canvas3d.drawNode(x, y, z, (nodeSize + 2) * this.canvas3d.mob, "transparent", "#FFD700");
+    }
+
+    // Highlight hovered item with subtle glow
+    if (this.hoveredNode && this.hoveredNode.index === index)
+    {
+      this.canvas3d.drawNode(x, y, z, (nodeSize + 1) * this.canvas3d.mob, "transparent", "#FFFFFF40");
+    }
+
+    // Highlight connected nodes when focusing
+    if (this.focusedNode !== null)
+    {
+      if (this.connectedNodes.has(index))
+      {
+        // Connected node - highlight with green glow
+        this.canvas3d.drawNode(x, y, z, (nodeSize + 1.5) * this.canvas3d.mob, "transparent", "#00FF0060");
+      }
+    }
+  }
+
+  getNodeColors(type)
+  {
+    const colorMap = {
+      'relation': { fill: '#95a5a6', stroke: '#7f8c8d' },      // Gray
+      'event': { fill: '#e74c3c', stroke: '#c0392b' },        // Red  
+      'agent': { fill: '#f39c12', stroke: '#e67e22' },        // Orange
+      'thing': { fill: '#27ae60', stroke: '#2ecc71' },        // Green
+      'concept': { fill: '#3498db', stroke: '#2980b9' },      // Blue
+      'expression': { fill: '#9b59b6', stroke: '#8e44ad' },   // Purple
+      'chapter': { fill: '#e74c3c', stroke: '#c0392b' },      // Red for chapters
+      'context': { fill: '#3498db', stroke: '#2980b9' },      // Blue for context
+      'generic': { fill: '#34495e', stroke: '#2c3e50' }       // Dark gray
+    };
+
+    return colorMap[type] || colorMap['generic'];
+  }
+
+  getNodeSize(type)
+  {
+    const sizeMap = {
+      'relation': 2,
+      'event': 4,
+      'agent': 4,
+      'thing': 4,
+      'concept': 4,
+      'expression': 3,
+      'chapter': 6,
+      'context': 3,
+      'generic': 3
+    };
+
+    return sizeMap[type] || 3;
+  }
+
+  renderArrow(arrow, highlight = null)
+  {
+    // Render arrow between two nodes using the 4 SSTCanvas3D arrow types
+    if (arrow.from < this.processedData.items.length && arrow.to < this.processedData.items.length)
+    {
+      const fromItem = this.processedData.items[arrow.from];
+      const toItem = this.processedData.items[arrow.to];
+
+      if (fromItem && toItem && fromItem.XYZ && toItem.XYZ)
+      {
+        const arrowType = this.convertArrowType(arrow.type);
+
+        // Set canvas context for highlighting
+        if (highlight !== null)
+        {
+          this.canvas3d.ctx.save();
+          if (highlight === true)
+          {
+            // Enhanced visibility for connected arrows
+            this.canvas3d.ctx.globalAlpha = 1.0;
+            this.canvas3d.ctx.shadowColor = "#FFD700";
+            this.canvas3d.ctx.shadowBlur = 8;
+          }
+          else
+          {
+            // Reduced visibility for non-connected arrows
+            this.canvas3d.ctx.globalAlpha = 0.3;
+          }
+        }
+
+        // Use the specific arrow methods based on converted type
+        switch (arrowType)
+        {
+        case 'leadsTo':
+          this.canvas3d.drawLeadsToArrow(
+            fromItem.XYZ.X, fromItem.XYZ.Y, fromItem.XYZ.Z,
+            toItem.XYZ.X, toItem.XYZ.Y, toItem.XYZ.Z
+          );
+          break;
+        case 'contains':
+          this.canvas3d.drawContainsArrow(
+            fromItem.XYZ.X, fromItem.XYZ.Y, fromItem.XYZ.Z,
+            toItem.XYZ.X, toItem.XYZ.Y, toItem.XYZ.Z
+          );
+          break;
+        case 'expresses':
+          this.canvas3d.drawExpressesArrow(
+            fromItem.XYZ.X, fromItem.XYZ.Y, fromItem.XYZ.Z,
+            toItem.XYZ.X, toItem.XYZ.Y, toItem.XYZ.Z
+          );
+          break;
+        case 'near':
+          this.canvas3d.drawNearArrow(
+            fromItem.XYZ.X, fromItem.XYZ.Y, fromItem.XYZ.Z,
+            toItem.XYZ.X, toItem.XYZ.Y, toItem.XYZ.Z
+          );
+          break;
+        default:
+          // Default to LeadsTo if unknown type
+          this.canvas3d.drawLeadsToArrow(
+            fromItem.XYZ.X, fromItem.XYZ.Y, fromItem.XYZ.Z,
+            toItem.XYZ.X, toItem.XYZ.Y, toItem.XYZ.Z
+          );
+        }
+
+        // Restore canvas context if highlighting was applied
+        if (highlight !== null)
+        {
+          this.canvas3d.ctx.restore();
+        }
+      }
+    }
+  }
+
+  convertArrowType(arrowValue)
+  {
+    // Convert from SSTorytime arrow values to the 4 SSTCanvas3D arrow types
+
+    if (arrowValue >= 298)
+    {
+      // High values like 298, 276, 258 - convert to semantic types
+      switch (arrowValue)
+      {
+      case 298: return 'leadsTo';    // has value - sequence/flow
+      case 299: return 'leadsTo';    // is a - sequence/flow
+      case 300: return 'contains';   // contains - hierarchy
+      case 301: return 'leadsTo';    // follows - sequence
+      case 302: return 'expresses';  // expresses - meaning
+      case 303: return 'contains';   // promises - commitment
+      case 276: return 'expresses';  // expression relationship
+      case 258: return 'near';       // general proximity
+      default: return 'leadsTo';     // default
+      }
+    } else if (arrowValue >= 0 && arrowValue <= 10)
+    {
+      // Direct semantic types (0-10 range)
+      switch (arrowValue)
+      {
+      case 0:
+      case 1: return 'leadsTo';
+      case 2: return 'contains';
+      case 3: return 'expresses';
+      case 4: return 'near';
+      default: return 'leadsTo';
+      }
+    } else
+    {
+      // Default fallback
+      return 'leadsTo';
+    }
+  }
+
+  getArrowColor(arrowType)
+  {
+    const arrowColors = {
+      298: '#e74c3c',  // has value - red
+      299: '#3498db',  // is a - blue  
+      300: '#27ae60',  // contains - green
+      301: '#f39c12',  // follows - orange
+      302: '#9b59b6',  // expresses - purple
+      303: '#1abc9c',  // promises - teal
+      304: '#34495e'   // near - dark gray
+    };
+
+    return arrowColors[arrowType] || '#95a5a6';
+  }
+
+  drawArrows()
+  {
+    if (!this.processedData.arrows) return;
+
+    this.processedData.arrows.forEach((arrow, index) =>
+    {
+      // Check if this arrow is connected to the focused node
+      const isConnected = this.connectedArrows.has(index);
+
+      if (this.focusedNode !== null)
+      {
+        // If we have a focused node, dim non-connected arrows
+        if (isConnected)
+        {
+          // Render connected arrows with enhanced visibility
+          this.renderArrow(arrow, true);
+        }
+        else
+        {
+          // Render non-connected arrows with reduced opacity
+          this.renderArrow(arrow, false);
+        }
+      }
+      else
+      {
+        // Normal rendering when no node is focused
+        this.renderArrow(arrow, null);
+      }
+    });
+  }
+
+  renderTOCContextFragments(chapter, centerX, centerY, centerZ, chapterIndex)
+  {
+    // Original TOC context rendering
+    if (chapter.Context && chapter.Context.length > 0)
+    {
+      chapter.Context.forEach((context, i) =>
+      {
+        if (context && context.XYZ)
+        {
+          const cx = context.XYZ.X;
+          const cy = context.XYZ.Y;
+          const cz = context.XYZ.Z;
+
+          // Use specialized context node rendering - concepts work best for context
+          this.canvas3d.drawConcept(cx, cy, cz);
+
+          // Add context type label - show if parent chapter is focused/connected or normal distance rules apply
+          this.drawSmartLabel(cx, cy - 0.03, cz, "[context]", 5, "lightblue", 'context', 'type', chapterIndex);
+
+          // Connect to main chapter
+          this.canvas3d.drawLine3D(centerX, centerY, centerZ, cx, cy, cz, "oklch(68.5% 0.169 237.323)", 0.9);
+        }
+      });
+    }
+
+    // Render Single fragments (green)
+    if (chapter.Single && chapter.Single.length > 0)
+    {
+      chapter.Single.forEach((single, i) =>
+      {
+        if (single && single.XYZ)
+        {
+          const sx = single.XYZ.X;
+          const sy = single.XYZ.Y;
+          const sz = single.XYZ.Z;
+
+          // Use specialized single node rendering - things work best for single items
+          this.canvas3d.drawThing(sx, sy, sz);
+
+          // Add single type label - show if parent chapter is focused/connected or normal distance rules apply
+          this.drawSmartLabel(sx, sy - 0.03, sz, "[single]", 5, "lightgreen", 'fragment', 'type', chapterIndex);
+
+          // Connect to main chapter
+          this.canvas3d.drawLine3D(centerX, centerY, centerZ, sx, sy, sz, "oklch(76.9% 0.17 142.685)", 0.7);
+        }
+      });
+    }
+  }
+
+  drawTOCConnections()
+  {
+    // Optional: draw connections between TOC chapters
+    // This could show chapter relationships or reading order
   }
 
   renderChapter(chapter, index)
@@ -116,7 +1774,7 @@ class ChapterTOCVisualization
     }
 
     // Highlight selected chapter
-    if (this.selectedChapter === index)
+    if (this.selectedItem === index)
     {
       this.canvas3d.drawNode(x, y, z, 7 * this.canvas3d.mob, "transparent", "#FFD700");
     }
@@ -205,13 +1863,15 @@ class ChapterTOCVisualization
 
   drawChapterConnections()
   {
-    // Draw connections between chapters based on proximity or shared context
-    const chapters = this.tocData.Content;
+    // Draw connections between items based on proximity or shared context
+    if (!this.processedData || !this.processedData.items) return;
 
-    for (let i = 0; i < chapters.length - 1; i++)
+    const items = this.processedData.items;
+
+    for (let i = 0; i < items.length - 1; i++)
     {
-      const chapter1 = chapters[i];
-      const chapter2 = chapters[i + 1];
+      const item1 = items[i];
+      const item2 = items[i + 1];
 
       if (chapter1 && chapter2 && chapter1.XYZ && chapter2.XYZ)
       {
@@ -235,63 +1895,136 @@ class ChapterTOCVisualization
 
   updateInfoPanel()
   {
-    if (!this.tocData) return;
+    console.log("📊 Updating info panel with:", this.processedData);
 
-    document.getElementById("currentTime").textContent = this.tocData.Time || "Unknown";
-    document.getElementById("intentInfo").textContent = this.tocData.Intent || "None";
-    document.getElementById("ambientInfo").textContent = this.tocData.Ambient || "None";
-
-    // Calculate statistics
-    const chapters = this.tocData.Content || [];
-    let totalContexts = 0;
-    let totalFragments = 0;
-
-    chapters.forEach((chapter) =>
+    if (!this.processedData)
     {
-      if (chapter.Context) totalContexts += chapter.Context.length;
-      if (chapter.Single) totalFragments += chapter.Single.length;
-      if (chapter.Common) totalFragments += chapter.Common.length;
-    });
-
-    document.getElementById("chapterCount").textContent = chapters.length;
-    document.getElementById("contextCount").textContent = totalContexts;
-    document.getElementById("fragmentCount").textContent = totalFragments;
-  }
-
-  updateChapterList()
-  {
-    const chapterList = document.getElementById("chapterList");
-    if (!this.tocData || !this.tocData.Content)
-    {
-      chapterList.innerHTML = '<div class="loading">No chapters found</div>';
+      console.log("⚠️ No processed data for info panel");
       return;
     }
 
-    chapterList.innerHTML = "";
+    // Update time and intent info if available
+    document.getElementById("currentTime").textContent = this.processedData.metadata.time || "Unknown";
+    document.getElementById("intentInfo").textContent = this.processedData.metadata.intent || "None";
+    document.getElementById("ambientInfo").textContent = this.processedData.metadata.ambient || "None";
 
-    this.tocData.Content.forEach((chapter, index) =>
+    // Update statistics based on data type
+    this.updateStatistics();
+  }
+
+  updateStatistics()
+  {
+    console.log("📈 Updating statistics with:", this.processedData);
+
+    if (!this.processedData)
     {
-      const chapterItem = document.createElement("div");
-      chapterItem.className = "chapter-item";
-      chapterItem.dataset.index = index;
+      console.log("⚠️ No processed data for statistics");
+      return;
+    }
 
-      const title = chapter.Chapter || `Unnamed Chapter ${index + 1}`;
-      const coords = `(${chapter.XYZ.X.toFixed(2,)}, ${chapter.XYZ.Y.toFixed(2)}, ${chapter.XYZ.Z.toFixed(2)})`;
+    const items = this.processedData.items || [];
+    const arrows = this.processedData.arrows || [];
 
-      chapterItem.innerHTML = `<div class="title">${title}</div> <div class="coords">${coords}</div>`;
+    console.log(`📊 Items: ${items.length}, Arrows: ${arrows.length}, Data type: ${this.processedData.dataType}`);
 
-      chapterItem.addEventListener("click", () =>
+    if (this.processedData.dataType === 'toc')
+    {
+      // TOC-specific statistics
+      let totalContexts = 0;
+      let totalFragments = 0;
+
+      items.forEach((chapter) =>
       {
-        this.selectChapter(index);
+        if (chapter.Context) totalContexts += chapter.Context.length;
+        if (chapter.Single) totalFragments += chapter.Single.length;
+        if (chapter.Common) totalFragments += chapter.Common.length;
       });
 
-      chapterList.appendChild(chapterItem);
+      document.getElementById("chapterCount").textContent = items.length;
+      document.getElementById("contextCount").textContent = totalContexts;
+      document.getElementById("fragmentCount").textContent = totalFragments;
+
+    } else if (this.processedData.dataType === 'orbit')
+    {
+      // Orbit/PageMap statistics
+      const typeCount = {};
+      items.forEach(item =>
+      {
+        typeCount[item.type] = (typeCount[item.type] || 0) + 1;
+      });
+
+      document.getElementById("chapterCount").textContent = items.length;
+      document.getElementById("contextCount").textContent = arrows.length;
+      document.getElementById("fragmentCount").textContent = Object.keys(typeCount).length;
+
+    } else
+    {
+      // Generic statistics
+      document.getElementById("chapterCount").textContent = items.length;
+      document.getElementById("contextCount").textContent = arrows.length;
+      document.getElementById("fragmentCount").textContent = this.processedData.metadata.type || 'Generic';
+    }
+  }
+
+  updateItemList()
+  {
+    const itemList = document.getElementById("chapterList");
+    if (!this.processedData || !this.processedData.items)
+    {
+      itemList.innerHTML = '<div class="loading">No items found</div>';
+      return;
+    }
+
+    itemList.innerHTML = "";
+    console.log(`📋 Updating item list with ${this.processedData.items.length} items`);
+
+    this.processedData.items.forEach((item, index) =>
+    {
+      const itemElement = document.createElement("div");
+      itemElement.className = "chapter-item";
+      itemElement.dataset.index = index;
+
+      let title, coords, subtitle = '';
+
+      if (this.processedData.dataType === 'toc')
+      {
+        title = item.title || item.Chapter || `Chapter ${index + 1}`;
+        coords = `(${item.XYZ.X.toFixed(2)}, ${item.XYZ.Y.toFixed(2)}, ${item.XYZ.Z.toFixed(2)})`;
+        subtitle = item.type ? `Type: ${item.type}` : (item.Context ? `${item.Context.length} contexts` : '');
+      } else if (this.processedData.dataType === 'orbits')
+      {
+        // For orbit data, truncate long titles but keep them meaningful
+        const fullTitle = item.title || `Item ${index + 1}`;
+        title = fullTitle.length > 50 ? fullTitle.substring(0, 47) + '...' : fullTitle;
+        coords = `(${item.XYZ.X.toFixed(2)}, ${item.XYZ.Y.toFixed(2)}, ${item.XYZ.Z.toFixed(2)})`;
+        subtitle = `${item.type} | ${item.chapter || 'No Chapter'}`;
+      } else
+      {
+        title = item.title || item.name || `Item ${index + 1}`;
+        coords = `(${item.XYZ.X.toFixed(2)}, ${item.XYZ.Y.toFixed(2)}, ${item.XYZ.Z.toFixed(2)})`;
+        subtitle = item.type ? `Type: ${item.type}` : '';
+      }
+
+      console.log(`📝 Item ${index}: ${title}`);
+
+      itemElement.innerHTML = `
+        <div class="title" title="${item.title || title}">${title}</div>
+        ${subtitle ? `<div class="subtitle">${subtitle}</div>` : ''}
+        <div class="coords">${coords}</div>
+      `;
+
+      itemElement.addEventListener("click", () =>
+      {
+        this.selectItem(index);
+      });
+
+      itemList.appendChild(itemElement);
     });
   }
 
-  selectChapter(index)
+  selectItem(index)
   {
-    this.selectedChapter = index;
+    this.selectedItem = index;
 
     // Update visual selection in list
     document.querySelectorAll(".chapter-item").forEach((item, i) =>
@@ -300,11 +2033,11 @@ class ChapterTOCVisualization
       item.style.borderLeftColor = i === index ? "#FFD700" : "#3498db";
     });
 
-    // Focus on selected chapter
-    if (this.tocData.Content[index])
+    // Focus on selected item
+    if (this.processedData.items[index])
     {
-      const chapter = this.tocData.Content[index];
-      this.canvas3d.setObserverPosition(chapter.XYZ.X + 0.5, chapter.XYZ.Y + 0.3, chapter.XYZ.Z - 1);
+      const item = this.processedData.items[index];
+      this.canvas3d.setObserverPosition(item.XYZ.X + 0.5, item.XYZ.Y + 0.3, item.XYZ.Z - 1);
     }
 
     // Re-render to highlight selection
@@ -367,6 +2100,18 @@ class ChapterTOCVisualization
         }
       });
 
+    // Smart labels toggle
+    document
+      .getElementById("smartLabels")
+      .addEventListener("change", (e) =>
+      {
+        this.useSmartLabels = e.target.checked;
+        if (!this.isAnimating)
+        {
+          this.renderVisualization();
+        }
+      });
+
     // Animation toggle
     document
       .getElementById("toggleAnimation")
@@ -387,13 +2132,16 @@ class ChapterTOCVisualization
     // Reset view
     document.getElementById("resetView").addEventListener("click", () =>
     {
+      // Clear any focus first
+      this.clearFocus();
+
       this.currentAngle = 0;
       this.canvas3d.setViewingAngle(Math.PI / 10, Math.PI / 10);
       this.canvas3d.setObserverPosition(1.5, 0.75, -1.5);
       document.getElementById("viewAngle").value = Math.PI / 10;
       document.getElementById("angleValue").textContent = (Math.PI / 10).toFixed(2);
-      this.selectedChapter = null;
-      this.updateChapterList();
+      this.selectedItem = null;
+      this.updateItemList();
 
       if (!this.isAnimating)
       {
@@ -401,26 +2149,24 @@ class ChapterTOCVisualization
       }
     });
 
-    // Focus chapter
+    // Focus item
     document
       .getElementById("focusChapter")
       .addEventListener("click", () =>
       {
-        if (this.selectedChapter !== null)
+        if (this.focusedNode !== null)
         {
-          const chapter = this.tocData.Content[this.selectedChapter];
-          if (chapter)
-          {
-            this.canvas3d.setObserverPosition(chapter.XYZ.X, chapter.XYZ.Y, chapter.XYZ.Z - 1.5);
-
-            if (!this.isAnimating)
-            {
-              this.renderVisualization();
-            }
-          }
-        } else
+          // If already focused, clear focus
+          this.clearFocus();
+        }
+        else if (this.selectedItem !== null)
         {
-          alert("Please select a chapter from the list first");
+          // Focus on the selected item
+          this.focusOnNode(this.selectedItem);
+        }
+        else
+        {
+          alert("Please click on a node to focus, or select from the list first");
         }
       });
 
@@ -488,5 +2234,5 @@ class ChapterTOCVisualization
 // Initialize when page loads
 document.addEventListener("DOMContentLoaded", () =>
 {
-  new ChapterTOCVisualization();
+  window.visualization = new GenericAPIVisualization();
 });
