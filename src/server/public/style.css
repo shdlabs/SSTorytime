@@ -50,7 +50,7 @@ header {
     padding-block: 1ch;
     overflow-x: clip;
     font-size: clamp(0.3rem, 0.5rem + 1svw, 1.2rem);
-    font-weight: var(--font-weight-5);
+    font-weight: var(--font-weight-4);
     color: rgba(24, 50, 77, 0.6);
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
   }
@@ -197,6 +197,12 @@ h3 {
     text-wrap: wrap balance;
     overflow: clip;
     font-size: var(--font-size-fluid-0);
+    font-weight: var(--font-weight-4);
+  }
+
+  & td {
+    padding: 3ch;
+    margin-left: 2ch;
   }
 
   & > span:first-child {
@@ -269,58 +275,89 @@ h3 {
 #radius-1 {
   min-width: fit-content;
   display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 0px;
 }
 
 #radius-2 {
   min-width: fit-content;
   display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 0px;
+}
+
+#radial-satellite { 
+  text-indent: 1ch;
+  min-width: fit-content;
+  display: inline-block;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 0px;
 }
 
 .NCM-N {
   color: blue;
 }
+
 #cntxt {
   font-size: var(--font-size-fluid-0);
   text-wrap: wrap balance;
 }
+
 #arrow-0 {
+  /* -express */
+  margin-top: 0px;
+  margin-bottom: 0px;
   color: purple;
   font-size: var(--font-size-fluid-0);
-  /* -express */
 }
 
 #arrow-1 {
   /* -contain */
+  margin-top: 0px;
+  margin-bottom: 0px;
   color: darkblue;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-2 {
   /* -leadsto */
+  margin-top: 0px;
+  margin-bottom: 0px;
   color: darkred;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-3 {
   /* near */
+  margin-top: 0px;
+  margin-bottom: 0px;
   color: blue;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-4 {
   /* +leadsto */
+  margin-top: 0px;
+  margin-bottom: 0px;
   color: red;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-5 {
   /* +contain */
+  margin-top: 0px;
+  margin-bottom: 0px;
   color: darkcyan;
   font-size: var(--font-size-fluid-0);
 }
 
 #arrow-6 {
   /* +express */
+  margin-top: 0px;
+  margin-bottom: 0px;
   color: purple;
   font-size: var(--font-size-fluid-0);
 }

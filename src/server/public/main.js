@@ -106,6 +106,7 @@ let HEIGHT = CANVAS.offsetHeight;
 
 CANVAS.width = WIDTH;
 
+let UNINITIALIZED = -99;
 let ORGX = WIDTH / 2;
 let ORGY = HEIGHT / 2;
 let THETA = Math.PI / 9;
@@ -370,6 +371,7 @@ CANVAS = CreateCanvas();
 DrawGrid(0, 0, 1);
 
 // Iterate over the cones from different starting nodes
+
 for (let head_nptr of obj.Content)
    {
    let nclass = head_nptr.NClass;
@@ -395,11 +397,15 @@ for (let head_nptr of obj.Content)
 
    // Add the centrality box at bottom of page (still ugly)
 
+   let item2 = document.createElement("h4");
+   item2.textContent = "Symmetry analysis:";
+   card.appendChild(item2);
+
    let tab = document.createElement("table");
    let row = document.createElement("tr");
    let col1 = document.createElement("td");
-   let hd1 = document.createElement("h4");
 
+   let hd1 = document.createElement("strong");
    hd1.textContent = "Betweenness Centrality Rank";
    col1.appendChild(hd1);
 
@@ -419,7 +425,7 @@ for (let head_nptr of obj.Content)
       col1.appendChild(lst1);
 
       let col2 = document.createElement("td");
-      let hd2 = document.createElement("h4");
+      let hd2 = document.createElement("strong");
       hd2.textContent = "Supernode summary";
       col2.appendChild(hd2);
       let lst2 = document.createElement("ol");
@@ -809,19 +815,24 @@ let box = document.createElement("div");
 box.id = "radius-" + radius;
 
 // any arrow comes first
-let prefix = " . .  " + "╠═▹  ";
+let spacer = "║";
+let prefix = "╠═▹  ";
 
 for (let indent = 0; indent < radius; indent++)
    {
-   prefix = " . . . . . " + prefix;
+   prefix = "           " + prefix;
+   spacer = "           " + spacer;
    }
 
 if (radius == 2)
    {
-   prefix = " . . . . . . .  ║ . . .  " + prefix;
+   prefix = "                          " + prefix;
+   spacer = "                ║       " + spacer;
    }
 
+// next orbital
 let hier_pre = document.createElement("span");
+hier_pre.id = "radial-satellite";
 hier_pre.textContent = prefix;
 box.appendChild(hier_pre);
 
@@ -907,14 +918,14 @@ return parent;
 
 function PrintPaths(parent, array)
 {
-if (array.length < 1)
+if (array == null || array.length < 1)
    {
    return parent;
    }
 
-let lastx = 0;
-let lasty = 0;
-let lastz = 0;
+let lastx = UNINITIALIZED;
+let lasty = UNINITIALIZED;
+let lastz = UNINITIALIZED;
 let lastarrow = 0;
 let newpath;
 
@@ -930,6 +941,7 @@ for (let path = 0; path < array.length; path++)
    let thisz;
 
    // The WebPath protocol alternates node-arrow...
+
    for (let i = 0; i < array[path].length; i++)
       {
       if (i == 0)
@@ -961,9 +973,9 @@ for (let path = 0; path < array.length; path++)
             } 
          else
             {
-            lastx = 0;
-            lasty = 0;
-            lastz = 0;
+            lastx = UNINITIALIZED;;
+            lasty = UNINITIALIZED;;
+            lastz = UNINITIALIZED;;
             }
 
          Event(thisx, thisy, thisz);
@@ -1046,7 +1058,7 @@ return parent;
 
 function DrawPath(lastarrow, thisx, thisy, thisz, lastx, lasty, lastz)
 {
-if (lastx != 0 || lasty != 0 || lastz != 0)
+if (lastx != UNINITIALIZED || lasty != UNINITIALIZED || lastz != UNINITIALIZED)
    {
    switch (lastarrow)
       {
@@ -1363,24 +1375,24 @@ if (counter == 0)
    setting.appendChild(text2);
 
    let ctxlink = document.createElement("a");
-   ctxlink.textContent = '"' + event.Context + '"';
+   ctxlink.textContent = '"' + event.Context + '"   ';
 
    ctxlink.onclick = function ()
       {
       sendLinkSearch('any \\context "' + CtxSplice(event.Context) + '"');
       };
+
    setting.appendChild(ctxlink);
 
    child.appendChild(setting);
+   ProgressCheckBox(setting,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
    }
 
-ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
-
 // See what pathways we are part of and add notes
-CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
-CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
-CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
-CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
+CheckSingleCone(child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
+CheckSingleCone(child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
+CheckSingleCone(child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
+CheckSingleCone(child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
 
 // Next we add the satellite nodes in column_2of3 and column_3of3
 // Each vector from Im3...Ie3, one by one
@@ -1413,6 +1425,10 @@ if (event == null)
    return;
    }
 
+let maintext = document.createElement("span");
+child.appendChild(maintext);
+
+let from_text;
 let text = counter + ". " + event.Text;
 let nptrtxt = "(" + event.NPtr.Class + "," + event.NPtr.CPtr + ")";
 
@@ -1425,13 +1441,13 @@ if (text.includes("\n"))
       sendlinkData(event.NPtr.Class, event.NPtr.CPtr);
       };
 
-   let from_text = document.createElement("pre");
+   from_text = document.createElement("pre");
    from_text.nameClass = "text";
    from_text.textContent = text;
    from_link.nameClass = "text";
    from_link.appendChild(from_text);
 
-   child.appendChild(from_link);
+   maintext.appendChild(from_link);
    }
 else
    {
@@ -1445,30 +1461,32 @@ else
    from_link.nameClass = "text";
    from_link.appendChild(from_text);
 
-   child.appendChild(from_link);
+   maintext.appendChild(from_link);
 
    from_text.textContent = text + "    ";
    }
 
-ProgressCheckBox(child,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
+ProgressCheckBox(maintext,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
 
 // See what pathways we are part of and add notes
-CheckSingleCone(panel,child,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
-CheckSingleCone(panel,child,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
-CheckSingleCone(panel,child,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
-CheckSingleCone(panel,child,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
+CheckSingleCone(maintext,"[LT]",event.NPtr.Class,event.NPtr.CPtr,1,event.Orbits[Im1],event.Orbits[Il1]);
+CheckSingleCone(maintext,"[CN]",event.NPtr.Class,event.NPtr.CPtr,2,event.Orbits[Im2],event.Orbits[Ic2]);
+CheckSingleCone(maintext,"[EP]",event.NPtr.Class,event.NPtr.CPtr,3,event.Orbits[Im3],event.Orbits[Ie3]);
+CheckSingleCone(maintext,"[NR]",event.NPtr.Class,event.NPtr.CPtr,0,event.Orbits[In0],event.Orbits[In0]);
 
 let text2 = document.createElement("i");
-text2.textContent = ", . . . context ";
-child.appendChild(text2);
+text2.textContent = "  , . . . context ";
+maintext.appendChild(text2);
 
 let ctxlink = document.createElement("a");
+
 ctxlink.textContent = '"' + event.Context + '"';
 ctxlink.onclick = function ()
    {
    sendLinkSearch('any \\context "' + CtxSplice(event.Context) + '"');
    };
-child.appendChild(ctxlink);
+
+maintext.appendChild(ctxlink);
 }
 
 /***********************************************************/
@@ -1567,7 +1585,7 @@ panel.appendChild(docpart);
 
 /***********************************************************/
 
-function CheckSingleCone(panel,docpart,name,nclass,nptr,arrow,bwd,fwd)
+function CheckSingleCone(docpart,name,nclass,nptr,arrow,bwd,fwd)
 {
 if (bwd == null || fwd == null)
    {
