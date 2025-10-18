@@ -1,0 +1,25 @@
+- JSON Import
+
++ shd-test
+
+ test
+      " (contain) user
+ user
+      " (contain) name
+           " (propt) Alice
+      " (contain) age
+           " (propt) 30
+      " (contain) skills
+ skills
+      " (setof) collection
+      " (contain) "skills[0]"
+           " (propt) Go
+ "skills[0]"
+      " (in-set) skills
+      " (contain) "skills[1]"
+           " (propt) Python
+ "skills[1]"
+      " (in-set) skills
+
+
+

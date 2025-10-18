@@ -1,0 +1,45 @@
+- JSON Import
+
+     :: shd-test ::
+
+     Test data for bidirectional JSON  N4L conversion
+
+     ::  json contains ::
+     
+     User properties and set collections
+
+@test_1 test
+      " (contain) user
+@user_2 user
+      " (contain) name
+           " (propt) Alice
+@tag1 name
+      " (belong) user
+      " (contain) age
+           " (prop) 30
+@tag2 age
+      " (belong) user
+      " (contain) skills
+      " (hasX) 30
+@tag3 skills
+      " (setof) collection
+      " (contain) "skills[0]"
+           " (propt) Go
+
+  :: skills ::
+
+ "skills[0]"
+      " (in-set) skills
+      " (contain) "skills[1]"
+           " (propt) Python
+ "skills[1]"
+      " (in-set) skills
+
+ skills
+      " (belong) user
+
+ user
+      " (belong) test
+      " (age) 30
+      " (hasX) 30
+     

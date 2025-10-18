@@ -1,0 +1,53 @@
+- Simple Style Example
+
+# Converted from JSON to N4L
+
+# JSON Object: example_semantic (2 keys)
+ example_semantic
+      " (contain) api
+ # JSON Object: api (2 keys)
+ api
+      " (contain) version
+           " (contain) 2.0
+      " (contain) endpoints
+  # JSON Array: endpoints [3 items]
+ endpoints
+      " (contain) "endpoints[0]"
+           " (contain) /users
+      " (contain) "endpoints[1]"
+           " (contain) /posts
+      " (contain) "endpoints[2]"
+           " (contain) /comments
+
+
+      " (contain) user
+ # JSON Object: user (5 keys)
+ user
+      " (contain) profile
+  # JSON Object: profile (3 keys)
+ profile
+      " (contain) bio
+           " (contain) "Software engineer passionate about semantic knowledge graphs"
+      " (contain) location
+           " (contain) "San Francisco"
+      " (contain) skills
+   # JSON Array: skills [3 items]
+ skills
+      " (contain) "skills[0]"
+           " (contain) Go
+      " (contain) "skills[1]"
+           " (contain) Python
+      " (contain) "skills[2]"
+           " (contain) N4L
+
+
+      " (contain) id
+           " (contain) 12345
+      " (contain) name
+           " (contain) "Alice Johnson"
+      " (contain) email
+           " (contain) alice@example.com
+      " (contain) active
+           " (contain) true
+
+

@@ -1,0 +1,2268 @@
+- Go Standard Library Documentation
+
++ golang
++ stdlib
++ documentation
++ reference
+
+
+ "errors"
+      " (contain) "package type"
+           " (contain) stdlib
+ errors
+      " (contain) "import path"
+           " (contain) errors
+      " (contain) documentation
+           " (contain) "Package errors implements functions to manipulate errors."
+           " (contain) "The New function creates errors whose only content is a text message."
+      " (contain) functions
+           " (contain) As
+                " (contain) signature
+                     " (contain) "func As(err error, target any) bool"
+                " (contain) description
+                     " (contain) "As finds the first error in err's tree that matches target, and if one is found, sets target to that error value and returns true. Otherwise, it returns false."
+           " (contain) Is
+                " (contain) signature
+                     " (contain) "func Is(err, target error) bool"
+                " (contain) description
+                     " (contain) "Is reports whether any error in err's tree matches target."
+           " (contain) Join
+                " (contain) signature
+                     " (contain) "func Join(errs ...error) error"
+                " (contain) description
+                     " (contain) "Join returns an error that wraps the given errors. Any nil error values are discarded. Join returns nil if every value in errs is nil. The error formats as the concatenation of the strings obtained by calling the Error method of each element of errs, with a newline between each string."
+           " (contain) New
+                " (contain) signature
+                     " (contain) "func New(text string) error"
+                " (contain) description
+                     " (contain) "New returns an error that formats as the given text. Each call to New returns a distinct error value even if the text is identical."
+           " (contain) Unwrap
+                " (contain) signature
+                     " (contain) "func Unwrap(err error) error"
+                " (contain) description
+                     " (contain) "Unwrap returns the result of calling the Unwrap method on err, if err's type contains an Unwrap method returning error. Otherwise, Unwrap returns nil."
+
+ "io"
+      " (contain) "package type"
+           " (contain) stdlib
+ io
+      " (contain) "import path"
+           " (contain) io
+      " (contain) documentation
+           " (contain) "Package io provides basic interfaces to I/O primitives. Its primary job is to wrap existing implementations of such primitives, such as those in package os, into shared public interfaces that abstract the functionality, plus some other related primitives."
+           " (contain) "Because these interfaces and primitives wrap lower-level operations with various implementations, unless otherwise informed clients should not assume they are safe for parallel execution."
+      " (contain) functions
+           " (contain) Copy
+                " (contain) signature
+                     " (contain) "func Copy(dst Writer, src Reader) (written int64, err error)"
+                " (contain) description
+                     " (contain) "Copy copies from src to dst until either EOF is reached on src or an error occurs. It returns the number of bytes copied and the first error encountered while copying, if any."
+           " (contain) CopyBuffer
+                " (contain) signature
+                     " (contain) "func CopyBuffer(dst Writer, src Reader, buf []byte) (written int64, err error)"
+                " (contain) description
+                     " (contain) "CopyBuffer is identical to Copy except that it stages through the provided buffer (if one is required) rather than allocating a temporary one. If buf is nil, one is allocated; otherwise if it has zero length, CopyBuffer panics."
+           " (contain) CopyN
+                " (contain) signature
+                     " (contain) "func CopyN(dst Writer, src Reader, n int64) (written int64, err error)"
+                " (contain) description
+                     " (contain) "CopyN copies n bytes (or until an error) from src to dst. It returns the number of bytes copied and the earliest error encountered while copying. On return, written == n if and only if err == nil."
+           " (contain) Pipe
+                " (contain) signature
+                     " (contain) "func Pipe() (*PipeReader, *PipeWriter)"
+                " (contain) description
+                     " (contain) "Pipe creates a synchronous in-memory pipe. It can be used to connect code expecting an io.Reader with code expecting an io.Writer."
+           " (contain) ReadAll
+                " (contain) signature
+                     " (contain) "func ReadAll(r Reader) ([]byte, error)"
+                " (contain) description
+                     " (contain) "ReadAll reads from r until an error or EOF and returns the data it read. A successful call returns err == nil, not err == EOF. Because ReadAll is defined to read from src until EOF, it does not treat an EOF from Read as an error to be reported."
+           " (contain) ReadAtLeast
+                " (contain) signature
+                     " (contain) "func ReadAtLeast(r Reader, buf []byte, min int) (n int, err error)"
+                " (contain) description
+                     " (contain) "ReadAtLeast reads from r into buf until it has read at least min bytes. It returns the number of bytes copied and an error if fewer bytes were read. The error is EOF only if no bytes were read. If an EOF happens after reading fewer than min bytes, ReadAtLeast returns ErrUnexpectedEOF. If min is greater than the length of buf, ReadAtLeast returns ErrShortBuffer. On return, n >= min if and only if err == nil. If r returns an error having read at least min bytes, the error is dropped."
+           " (contain) ReadFull
+                " (contain) signature
+                     " (contain) "func ReadFull(r Reader, buf []byte) (n int, err error)"
+                " (contain) description
+                     " (contain) "ReadFull reads exactly len(buf) bytes from r into buf. It returns the number of bytes copied and an error if fewer bytes were read. The error is EOF only if no bytes were read. If an EOF happens after reading some but not all the bytes, ReadFull returns ErrUnexpectedEOF. On return, n == len(buf) if and only if err == nil. If r returns an error having read at least len(buf) bytes, the error is dropped."
+           " (contain) WriteString
+                " (contain) signature
+                     " (contain) "func WriteString(w Writer, s string) (n int, err error)"
+                " (contain) description
+                     " (contain) "WriteString writes the contents of the string s to w, which accepts a slice of bytes. If w implements StringWriter, [StringWriter.WriteString] is invoked directly. Otherwise, [Writer.Write] is called exactly once."
+      " (contain) types
+           " (contain) ByteReader
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ByteReader is the interface that wraps the ReadByte method."
+           " (contain) ByteScanner
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ByteScanner is the interface that adds the UnreadByte method to the basic ReadByte method."
+           " (contain) ByteWriter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ByteWriter is the interface that wraps the WriteByte method."
+           " (contain) Closer
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Closer is the interface that wraps the basic Close method."
+           " (contain) LimitedReader
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A LimitedReader reads from R but limits the amount of data returned to just N bytes. Each call to Read updates N to reflect the new amount remaining. Read returns EOF when N <= 0 or when the underlying R returns EOF."
+           " (contain) OffsetWriter
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An OffsetWriter maps writes at offset base to offset base+off in the underlying writer."
+           " (contain) PipeReader
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A PipeReader is the read half of a pipe."
+           " (contain) PipeWriter
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A PipeWriter is the write half of a pipe."
+           " (contain) ReadCloser
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadCloser is the interface that groups the basic Read and Close methods."
+           " (contain) ReadSeekCloser
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadSeekCloser is the interface that groups the basic Read, Seek and Close methods."
+           " (contain) ReadSeeker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadSeeker is the interface that groups the basic Read and Seek methods."
+           " (contain) ReadWriteCloser
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadWriteCloser is the interface that groups the basic Read, Write and Close methods."
+           " (contain) ReadWriteSeeker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadWriteSeeker is the interface that groups the basic Read, Write and Seek methods."
+           " (contain) ReadWriter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadWriter is the interface that groups the basic Read and Write methods."
+           " (contain) Reader
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Reader is the interface that wraps the basic Read method."
+           " (contain) ReaderAt
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReaderAt is the interface that wraps the basic ReadAt method."
+           " (contain) ReaderFrom
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReaderFrom is the interface that wraps the ReadFrom method."
+           " (contain) RuneReader
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "RuneReader is the interface that wraps the ReadRune method."
+           " (contain) RuneScanner
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "RuneScanner is the interface that adds the UnreadRune method to the basic ReadRune method."
+           " (contain) SectionReader
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "SectionReader implements Read, Seek, and ReadAt on a section of an underlying ReaderAt."
+           " (contain) Seeker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Seeker is the interface that wraps the basic Seek method."
+           " (contain) StringWriter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "StringWriter is the interface that wraps the WriteString method."
+           " (contain) WriteCloser
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "WriteCloser is the interface that groups the basic Write and Close methods."
+           " (contain) WriteSeeker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "WriteSeeker is the interface that groups the basic Write and Seek methods."
+           " (contain) Writer
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Writer is the interface that wraps the basic Write method."
+           " (contain) WriterAt
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "WriterAt is the interface that wraps the basic WriteAt method."
+           " (contain) WriterTo
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "WriterTo is the interface that wraps the WriteTo method."
+
+ "fmt"
+      " (contain) "package type"
+           " (contain) stdlib
+ fmt
+      " (contain) "import path"
+           " (contain) fmt
+      " (contain) documentation
+           " (contain) "Package fmt implements formatted I/O with functions analogous to C's printf and scanf. The format 'verbs' are derived from C's but are simpler."
+           " (contain) "The verbs:"
+      " (contain) functions
+           " (contain) Append
+                " (contain) signature
+                     " (contain) "func Append(b []byte, a ...any) []byte"
+                " (contain) description
+                     " (contain) "Append formats using the default formats for its operands, appends the result to the byte slice, and returns the updated slice."
+           " (contain) Appendf
+                " (contain) signature
+                     " (contain) "func Appendf(b []byte, format string, a ...any) []byte"
+                " (contain) description
+                     " (contain) "Appendf formats according to a format specifier, appends the result to the byte slice, and returns the updated slice."
+           " (contain) Appendln
+                " (contain) signature
+                     " (contain) "func Appendln(b []byte, a ...any) []byte"
+                " (contain) description
+                     " (contain) "Appendln formats using the default formats for its operands, appends the result to the byte slice, and returns the updated slice. Spaces are always added between operands and a newline is appended."
+           " (contain) Errorf
+                " (contain) signature
+                     " (contain) "func Errorf(format string, a ...any) error"
+                " (contain) description
+                     " (contain) "Errorf formats according to a format specifier and returns the string as a value that satisfies error."
+           " (contain) FormatString
+                " (contain) signature
+                     " (contain) "func FormatString(state State, verb rune) string"
+                " (contain) description
+                     " (contain) "FormatString returns a string representing the fully qualified formatting directive captured by the State, followed by the argument verb. (State does not itself contain the verb.) The result has a leading percent sign followed by any flags, the width, and the precision. Missing flags, width, and precision are omitted. This function allows a Formatter to reconstruct the original directive triggering the call to Format."
+           " (contain) Fprint
+                " (contain) signature
+                     " (contain) "func Fprint(w io.Writer, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fprint formats using the default formats for its operands and writes to w. Spaces are added between operands when neither is a string. It returns the number of bytes written and any write error encountered."
+           " (contain) Fprintf
+                " (contain) signature
+                     " (contain) "func Fprintf(w io.Writer, format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fprintf formats according to a format specifier and writes to w. It returns the number of bytes written and any write error encountered."
+           " (contain) Fprintln
+                " (contain) signature
+                     " (contain) "func Fprintln(w io.Writer, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fprintln formats using the default formats for its operands and writes to w. Spaces are always added between operands and a newline is appended. It returns the number of bytes written and any write error encountered."
+           " (contain) Fscan
+                " (contain) signature
+                     " (contain) "func Fscan(r io.Reader, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fscan scans text read from r, storing successive space-separated values into successive arguments. Newlines count as space. It returns the number of items successfully scanned. If that is less than the number of arguments, err will report why."
+           " (contain) Fscanf
+                " (contain) signature
+                     " (contain) "func Fscanf(r io.Reader, format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fscanf scans text read from r, storing successive space-separated values into successive arguments as determined by the format. It returns the number of items successfully parsed. Newlines in the input must match newlines in the format."
+           " (contain) Fscanln
+                " (contain) signature
+                     " (contain) "func Fscanln(r io.Reader, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fscanln is similar to Fscan, but stops scanning at a newline and after the final item there must be a newline or EOF."
+           " (contain) Print
+                " (contain) signature
+                     " (contain) "func Print(a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Print formats using the default formats for its operands and writes to standard output. Spaces are added between operands when neither is a string. It returns the number of bytes written and any write error encountered."
+           " (contain) Printf
+                " (contain) signature
+                     " (contain) "func Printf(format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Printf formats according to a format specifier and writes to standard output. It returns the number of bytes written and any write error encountered."
+           " (contain) Println
+                " (contain) signature
+                     " (contain) "func Println(a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Println formats using the default formats for its operands and writes to standard output. Spaces are always added between operands and a newline is appended. It returns the number of bytes written and any write error encountered."
+           " (contain) Scan
+                " (contain) signature
+                     " (contain) "func Scan(a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Scan scans text read from standard input, storing successive space-separated values into successive arguments. Newlines count as space. It returns the number of items successfully scanned. If that is less than the number of arguments, err will report why."
+           " (contain) Scanf
+                " (contain) signature
+                     " (contain) "func Scanf(format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Scanf scans text read from standard input, storing successive space-separated values into successive arguments as determined by the format. It returns the number of items successfully scanned. If that is less than the number of arguments, err will report why. Newlines in the input must match newlines in the format. The one exception: the verb %c always scans the next rune in the input, even if it is a space (or tab etc.) or newline."
+           " (contain) Scanln
+                " (contain) signature
+                     " (contain) "func Scanln(a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Scanln is similar to Scan, but stops scanning at a newline and after the final item there must be a newline or EOF."
+           " (contain) Sprint
+                " (contain) signature
+                     " (contain) "func Sprint(a ...any) string"
+                " (contain) description
+                     " (contain) "Sprint formats using the default formats for its operands and returns the resulting string. Spaces are added between operands when neither is a string."
+           " (contain) Sprintf
+                " (contain) signature
+                     " (contain) "func Sprintf(format string, a ...any) string"
+                " (contain) description
+                     " (contain) "Sprintf formats according to a format specifier and returns the resulting string."
+           " (contain) Sprintln
+                " (contain) signature
+                     " (contain) "func Sprintln(a ...any) string"
+                " (contain) description
+                     " (contain) "Sprintln formats using the default formats for its operands and returns the resulting string. Spaces are always added between operands and a newline is appended."
+           " (contain) Sscan
+                " (contain) signature
+                     " (contain) "func Sscan(str string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Sscan scans the argument string, storing successive space-separated values into successive arguments. Newlines count as space. It returns the number of items successfully scanned. If that is less than the number of arguments, err will report why."
+           " (contain) Sscanf
+                " (contain) signature
+                     " (contain) "func Sscanf(str string, format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Sscanf scans the argument string, storing successive space-separated values into successive arguments as determined by the format. It returns the number of items successfully parsed. Newlines in the input must match newlines in the format."
+           " (contain) Sscanln
+                " (contain) signature
+                     " (contain) "func Sscanln(str string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Sscanln is similar to Sscan, but stops scanning at a newline and after the final item there must be a newline or EOF."
+      " (contain) types
+           " (contain) Formatter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Formatter is implemented by any value that has a Format method. The implementation controls how State and rune are interpreted, and may call Sprint or Fprint(f) etc. to generate its output."
+           " (contain) GoStringer
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "GoStringer is implemented by any value that has a GoString method, which defines the Go syntax for that value. The GoString method is used to print values passed as an operand to a %#v format."
+           " (contain) ScanState
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ScanState represents the scanner state passed to custom scanners. Scanners may do rune-at-a-time scanning or ask the ScanState to discover the next space-delimited token."
+           " (contain) Scanner
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Scanner is implemented by any value that has a Scan method, which scans the input for the representation of a value and stores the result in the receiver, which must be a pointer to be useful. The Scan method is called for any argument to Scan, Scanf, or Scanln that implements it."
+           " (contain) State
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "State represents the printer state passed to custom formatters. It provides access to the io.Writer interface plus information about the flags and options for the operand's format specifier."
+           " (contain) Stringer
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Stringer is implemented by any value that has a String method, which defines the “native” format for that value. The String method is used to print values passed as an operand to any format that accepts a string or to an unformatted printer such as Print."
+
+ "bufio"
+      " (contain) "package type"
+           " (contain) stdlib
+ bufio
+      " (contain) "import path"
+           " (contain) bufio
+      " (contain) documentation
+           " (contain) "Package bufio implements buffered I/O. It wraps an io.Reader or io.Writer object, creating another object (Reader or Writer) that also implements the interface but provides buffering and some help for textual I/O."
+      " (contain) functions
+           " (contain) ScanBytes
+                " (contain) signature
+                     " (contain) "func ScanBytes(data []byte, atEOF bool) (advance int, token []byte, err error)"
+                " (contain) description
+                     " (contain) "ScanBytes is a split function for a Scanner that returns each byte as a token."
+           " (contain) ScanLines
+                " (contain) signature
+                     " (contain) "func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error)"
+                " (contain) description
+                     " (contain) "ScanLines is a split function for a Scanner that returns each line of text, stripped of any trailing end-of-line marker. The returned line may be empty. The end-of-line marker is one optional carriage return followed by one mandatory newline. In regular expression notation, it is `\r?\n`. The last non-empty line of input will be returned even if it has no newline."
+           " (contain) ScanRunes
+                " (contain) signature
+                     " (contain) "func ScanRunes(data []byte, atEOF bool) (advance int, token []byte, err error)"
+                " (contain) description
+                     " (contain) "ScanRunes is a split function for a Scanner that returns each UTF-8-encoded rune as a token. The sequence of runes returned is equivalent to that from a range loop over the input as a string, which means that erroneous UTF-8 encodings translate to U+FFFD = '\xef\xbf\xbd'. Because of the Scan interface, this makes it impossible for the client to distinguish correctly encoded replacement runes from encoding errors."
+           " (contain) ScanWords
+                " (contain) signature
+                     " (contain) "func ScanWords(data []byte, atEOF bool) (advance int, token []byte, err error)"
+                " (contain) description
+                     " (contain) "ScanWords is a split function for a Scanner that returns each space-separated word of text, with surrounding spaces deleted. It will never return an empty string. The definition of space is set by unicode.IsSpace."
+      " (contain) types
+           " (contain) ReadWriter
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "ReadWriter stores pointers to a Reader and a Writer. It implements io.ReadWriter."
+           " (contain) Reader
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Reader implements buffering for an io.Reader object. A new Reader is created by calling NewReader or NewReaderSize; alternatively the zero value of a Reader may be used after calling [Reset] on it."
+           " (contain) Scanner
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Scanner provides a convenient interface for reading data such as a file of newline-delimited lines of text. Successive calls to the Scanner.Scan method will step through the 'tokens' of a file, skipping the bytes between the tokens. The specification of a token is defined by a split function of type SplitFunc; the default split function breaks the input into lines with line termination stripped. Scanner.Split functions are defined in this package for scanning a file into lines, bytes, UTF-8-enco..."
+           " (contain) SplitFunc
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "SplitFunc is the signature of the split function used to tokenize the input. The arguments are an initial substring of the remaining unprocessed data and a flag, atEOF, that reports whether the Reader has no more data to give. The return values are the number of bytes to advance the input and the next token to return to the user, if any, plus an error, if any."
+           " (contain) Writer
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Writer implements buffering for an io.Writer object. If an error occurs writing to a Writer, no more data will be accepted and all subsequent writes, and Writer.Flush, will return the error. After all data has been written, the client should call the Writer.Flush method to guarantee all data has been forwarded to the underlying io.Writer."
+
+ "flag"
+      " (contain) "package type"
+           " (contain) stdlib
+ flag
+      " (contain) "import path"
+           " (contain) flag
+      " (contain) documentation
+           " (contain) "Package flag implements command-line flag parsing."
+           " (contain) "Define flags using flag.String, Bool, Int, etc."
+      " (contain) functions
+           " (contain) Arg
+                " (contain) signature
+                     " (contain) "func Arg(i int) string"
+                " (contain) description
+                     " (contain) "Arg returns the i'th command-line argument. Arg(0) is the first remaining argument after flags have been processed. Arg returns an empty string if the requested element does not exist."
+           " (contain) Args
+                " (contain) signature
+                     " (contain) "func Args() []string"
+                " (contain) description
+                     " (contain) "Args returns the non-flag command-line arguments."
+           " (contain) Bool
+                " (contain) signature
+                     " (contain) "func Bool(name string, value bool, usage string) *bool"
+                " (contain) description
+                     " (contain) "Bool defines a bool flag with specified name, default value, and usage string. The return value is the address of a bool variable that stores the value of the flag."
+           " (contain) BoolFunc
+                " (contain) signature
+                     " (contain) "func BoolFunc(name, usage string, fn func(string) error)"
+                " (contain) description
+                     " (contain) "BoolFunc defines a flag with the specified name and usage string without requiring values. Each time the flag is seen, fn is called with the value of the flag. If fn returns a non-nil error, it will be treated as a flag value parsing error."
+           " (contain) BoolVar
+                " (contain) signature
+                     " (contain) "func BoolVar(p *bool, name string, value bool, usage string)"
+                " (contain) description
+                     " (contain) "BoolVar defines a bool flag with specified name, default value, and usage string. The argument p points to a bool variable in which to store the value of the flag."
+           " (contain) Duration
+                " (contain) signature
+                     " (contain) "func Duration(name string, value time.Duration, usage string) *time.Duration"
+                " (contain) description
+                     " (contain) "Duration defines a time.Duration flag with specified name, default value, and usage string. The return value is the address of a time.Duration variable that stores the value of the flag. The flag accepts a value acceptable to time.ParseDuration."
+           " (contain) DurationVar
+                " (contain) signature
+                     " (contain) "func DurationVar(p *time.Duration, name string, value time.Duration, usage string)"
+                " (contain) description
+                     " (contain) "DurationVar defines a time.Duration flag with specified name, default value, and usage string. The argument p points to a time.Duration variable in which to store the value of the flag. The flag accepts a value acceptable to time.ParseDuration."
+           " (contain) Float64
+                " (contain) signature
+                     " (contain) "func Float64(name string, value float64, usage string) *float64"
+                " (contain) description
+                     " (contain) "Float64 defines a float64 flag with specified name, default value, and usage string. The return value is the address of a float64 variable that stores the value of the flag."
+           " (contain) Float64Var
+                " (contain) signature
+                     " (contain) "func Float64Var(p *float64, name string, value float64, usage string)"
+                " (contain) description
+                     " (contain) "Float64Var defines a float64 flag with specified name, default value, and usage string. The argument p points to a float64 variable in which to store the value of the flag."
+           " (contain) Func
+                " (contain) signature
+                     " (contain) "func Func(name, usage string, fn func(string) error)"
+                " (contain) description
+                     " (contain) "Func defines a flag with the specified name and usage string. Each time the flag is seen, fn is called with the value of the flag. If fn returns a non-nil error, it will be treated as a flag value parsing error."
+           " (contain) Int
+                " (contain) signature
+                     " (contain) "func Int(name string, value int, usage string) *int"
+                " (contain) description
+                     " (contain) "Int defines an int flag with specified name, default value, and usage string. The return value is the address of an int variable that stores the value of the flag."
+           " (contain) Int64
+                " (contain) signature
+                     " (contain) "func Int64(name string, value int64, usage string) *int64"
+                " (contain) description
+                     " (contain) "Int64 defines an int64 flag with specified name, default value, and usage string. The return value is the address of an int64 variable that stores the value of the flag."
+           " (contain) Int64Var
+                " (contain) signature
+                     " (contain) "func Int64Var(p *int64, name string, value int64, usage string)"
+                " (contain) description
+                     " (contain) "Int64Var defines an int64 flag with specified name, default value, and usage string. The argument p points to an int64 variable in which to store the value of the flag."
+           " (contain) IntVar
+                " (contain) signature
+                     " (contain) "func IntVar(p *int, name string, value int, usage string)"
+                " (contain) description
+                     " (contain) "IntVar defines an int flag with specified name, default value, and usage string. The argument p points to an int variable in which to store the value of the flag."
+           " (contain) NArg
+                " (contain) signature
+                     " (contain) "func NArg() int"
+                " (contain) description
+                     " (contain) "NArg is the number of arguments remaining after flags have been processed."
+           " (contain) NFlag
+                " (contain) signature
+                     " (contain) "func NFlag() int"
+                " (contain) description
+                     " (contain) "NFlag returns the number of command-line flags that have been set."
+           " (contain) Parse
+                " (contain) signature
+                     " (contain) "func Parse()"
+                " (contain) description
+                     " (contain) "Parse parses the command-line flags from os.Args[1:]. Must be called after all flags are defined and before flags are accessed by the program."
+           " (contain) Parsed
+                " (contain) signature
+                     " (contain) "func Parsed() bool"
+                " (contain) description
+                     " (contain) "Parsed reports whether the command-line flags have been parsed."
+           " (contain) PrintDefaults
+                " (contain) signature
+                     " (contain) "func PrintDefaults()"
+                " (contain) description
+                     " (contain) "PrintDefaults prints, to standard error unless configured otherwise, a usage message showing the default settings of all defined command-line flags. For an integer valued flag x, the default output has the form"
+           " (contain) Set
+                " (contain) signature
+                     " (contain) "func Set(name, value string) error"
+                " (contain) description
+                     " (contain) "Set sets the value of the named command-line flag."
+           " (contain) String
+                " (contain) signature
+                     " (contain) "func String(name string, value string, usage string) *string"
+                " (contain) description
+                     " (contain) "String defines a string flag with specified name, default value, and usage string. The return value is the address of a string variable that stores the value of the flag."
+           " (contain) StringVar
+                " (contain) signature
+                     " (contain) "func StringVar(p *string, name string, value string, usage string)"
+                " (contain) description
+                     " (contain) "StringVar defines a string flag with specified name, default value, and usage string. The argument p points to a string variable in which to store the value of the flag."
+           " (contain) TextVar
+                " (contain) signature
+                     " (contain) "func TextVar(p encoding.TextUnmarshaler, name string, value encoding.TextMarshaler, usage string)"
+                " (contain) description
+                     " (contain) "TextVar defines a flag with a specified name, default value, and usage string. The argument p must be a pointer to a variable that will hold the value of the flag, and p must implement encoding.TextUnmarshaler. If the flag is used, the flag value will be passed to p's UnmarshalText method. The type of the default value must be the same as the type of p."
+           " (contain) Uint
+                " (contain) signature
+                     " (contain) "func Uint(name string, value uint, usage string) *uint"
+                " (contain) description
+                     " (contain) "Uint defines a uint flag with specified name, default value, and usage string. The return value is the address of a uint variable that stores the value of the flag."
+           " (contain) Uint64
+                " (contain) signature
+                     " (contain) "func Uint64(name string, value uint64, usage string) *uint64"
+                " (contain) description
+                     " (contain) "Uint64 defines a uint64 flag with specified name, default value, and usage string. The return value is the address of a uint64 variable that stores the value of the flag."
+           " (contain) Uint64Var
+                " (contain) signature
+                     " (contain) "func Uint64Var(p *uint64, name string, value uint64, usage string)"
+                " (contain) description
+                     " (contain) "Uint64Var defines a uint64 flag with specified name, default value, and usage string. The argument p points to a uint64 variable in which to store the value of the flag."
+           " (contain) UintVar
+                " (contain) signature
+                     " (contain) "func UintVar(p *uint, name string, value uint, usage string)"
+                " (contain) description
+                     " (contain) "UintVar defines a uint flag with specified name, default value, and usage string. The argument p points to a uint variable in which to store the value of the flag."
+           " (contain) UnquoteUsage
+                " (contain) signature
+                     " (contain) "func UnquoteUsage(flag *Flag) (name string, usage string)"
+                " (contain) description
+                     " (contain) "UnquoteUsage extracts a back-quoted name from the usage string for a flag and returns it and the un-quoted usage. Given 'a `name` to show' it returns ('name', 'a name to show'). If there are no back quotes, the name is an educated guess of the type of the flag's value, or the empty string if the flag is boolean."
+           " (contain) Var
+                " (contain) signature
+                     " (contain) "func Var(value Value, name string, usage string)"
+                " (contain) description
+                     " (contain) "Var defines a flag with the specified name and usage string. The type and value of the flag are represented by the first argument, of type Value, which typically holds a user-defined implementation of Value. For instance, the caller could create a flag that turns a comma-separated string into a slice of strings by giving the slice the methods of Value; in particular, Set would decompose the comma-separated string into the slice."
+           " (contain) Visit
+                " (contain) signature
+                     " (contain) "func Visit(fn func(*Flag))"
+                " (contain) description
+                     " (contain) "Visit visits the command-line flags in lexicographical order, calling fn for each. It visits only those flags that have been set."
+           " (contain) VisitAll
+                " (contain) signature
+                     " (contain) "func VisitAll(fn func(*Flag))"
+                " (contain) description
+                     " (contain) "VisitAll visits the command-line flags in lexicographical order, calling fn for each. It visits all flags, even those not set."
+      " (contain) types
+           " (contain) ErrorHandling
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "ErrorHandling defines how FlagSet.Parse behaves if the parse fails."
+           " (contain) Flag
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Flag represents the state of a flag."
+           " (contain) FlagSet
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A FlagSet represents a set of defined flags. The zero value of a FlagSet has no name and has ContinueOnError error handling."
+           " (contain) Getter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Getter is an interface that allows the contents of a Value to be retrieved. It wraps the Value interface, rather than being part of it, because it appeared after Go 1 and its compatibility rules. All Value types provided by this package satisfy the Getter interface, except the type used by Func."
+           " (contain) Value
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Value is the interface to the dynamic value stored in a flag. (The default value is represented as a string.)"
+      " (contain) "imported packages"
+           " (contain) flag
+
+ "os"
+      " (contain) "package type"
+           " (contain) stdlib
+ os
+      " (contain) "import path"
+           " (contain) os
+      " (contain) documentation
+           " (contain) "Package os provides a platform-independent interface to operating system functionality. The design is Unix-like, although the error handling is Go-like; failing calls return values of type error rather than error numbers. Often, more information is available within the error. For example, if a call that takes a file name fails, such as Open or Stat, the error will include the failing file name when printed and will be of type *PathError, which may be unpacked for more information."
+           " (contain) "The os interface is intended to be uniform across all operating systems. Features not generally available appear in the system-specific package syscall."
+      " (contain) functions
+           " (contain) Chdir
+                " (contain) signature
+                     " (contain) "func Chdir(dir string) error"
+                " (contain) description
+                     " (contain) "Chdir changes the current working directory to the named directory. If there is an error, it will be of type *PathError."
+           " (contain) Chmod
+                " (contain) signature
+                     " (contain) "func Chmod(name string, mode FileMode) error"
+                " (contain) description
+                     " (contain) "Chmod changes the mode of the named file to mode. If the file is a symbolic link, it changes the mode of the link's target. If there is an error, it will be of type *PathError."
+           " (contain) Chown
+                " (contain) signature
+                     " (contain) "func Chown(name string, uid, gid int) error"
+                " (contain) description
+                     " (contain) "Chown changes the numeric uid and gid of the named file. If the file is a symbolic link, it changes the uid and gid of the link's target. A uid or gid of -1 means to not change that value. If there is an error, it will be of type *PathError."
+           " (contain) Chtimes
+                " (contain) signature
+                     " (contain) "func Chtimes(name string, atime time.Time, mtime time.Time) error"
+                " (contain) description
+                     " (contain) "Chtimes changes the access and modification times of the named file, similar to the Unix utime() or utimes() functions. A zero time.Time value will leave the corresponding file time unchanged."
+           " (contain) Clearenv
+                " (contain) signature
+                     " (contain) "func Clearenv()"
+                " (contain) description
+                     " (contain) "Clearenv deletes all environment variables."
+           " (contain) CopyFS
+                " (contain) signature
+                     " (contain) "func CopyFS(dir string, fsys fs.FS) error"
+                " (contain) description
+                     " (contain) "CopyFS copies the file system fsys into the directory dir, creating dir if necessary."
+           " (contain) DirFS
+                " (contain) signature
+                     " (contain) "func DirFS(dir string) fs.FS"
+                " (contain) description
+                     " (contain) "DirFS returns a file system (an fs.FS) for the tree of files rooted at the directory dir."
+           " (contain) Environ
+                " (contain) signature
+                     " (contain) "func Environ() []string"
+                " (contain) description
+                     " (contain) "Environ returns a copy of strings representing the environment, in the form 'key=value'."
+           " (contain) Executable
+                " (contain) signature
+                     " (contain) "func Executable() (string, error)"
+                " (contain) description
+                     " (contain) "Executable returns the path name for the executable that started the current process. There is no guarantee that the path is still pointing to the correct executable. If a symlink was used to start the process, depending on the operating system, the result might be the symlink or the path it pointed to. If a stable result is needed, path/filepath.EvalSymlinks might help."
+           " (contain) Exit
+                " (contain) signature
+                     " (contain) "func Exit(code int)"
+                " (contain) description
+                     " (contain) "Exit causes the current program to exit with the given status code. Conventionally, code zero indicates success, non-zero an error. The program terminates immediately; deferred functions are not run."
+           " (contain) Expand
+                " (contain) signature
+                     " (contain) "func Expand(s string, mapping func(string) string) string"
+                " (contain) description
+                     " (contain) "Expand replaces ${var} or $var in the string based on the mapping function. For example, os.ExpandEnv(s) is equivalent to os.Expand(s, os.Getenv)."
+           " (contain) ExpandEnv
+                " (contain) signature
+                     " (contain) "func ExpandEnv(s string) string"
+                " (contain) description
+                     " (contain) "ExpandEnv replaces ${var} or $var in the string according to the values of the current environment variables. References to undefined variables are replaced by the empty string."
+           " (contain) Getegid
+                " (contain) signature
+                     " (contain) "func Getegid() int"
+                " (contain) description
+                     " (contain) "Getegid returns the numeric effective group id of the caller."
+           " (contain) Getenv
+                " (contain) signature
+                     " (contain) "func Getenv(key string) string"
+                " (contain) description
+                     " (contain) "Getenv retrieves the value of the environment variable named by the key. It returns the value, which will be empty if the variable is not present. To distinguish between an empty value and an unset value, use LookupEnv."
+           " (contain) Geteuid
+                " (contain) signature
+                     " (contain) "func Geteuid() int"
+                " (contain) description
+                     " (contain) "Geteuid returns the numeric effective user id of the caller."
+           " (contain) Getgid
+                " (contain) signature
+                     " (contain) "func Getgid() int"
+                " (contain) description
+                     " (contain) "Getgid returns the numeric group id of the caller."
+           " (contain) Getgroups
+                " (contain) signature
+                     " (contain) "func Getgroups() ([]int, error)"
+                " (contain) description
+                     " (contain) "Getgroups returns a list of the numeric ids of groups that the caller belongs to."
+           " (contain) Getpagesize
+                " (contain) signature
+                     " (contain) "func Getpagesize() int"
+                " (contain) description
+                     " (contain) "Getpagesize returns the underlying system's memory page size."
+           " (contain) Getpid
+                " (contain) signature
+                     " (contain) "func Getpid() int"
+                " (contain) description
+                     " (contain) "Getpid returns the process id of the caller."
+           " (contain) Getppid
+                " (contain) signature
+                     " (contain) "func Getppid() int"
+                " (contain) description
+                     " (contain) "Getppid returns the process id of the caller's parent."
+           " (contain) Getuid
+                " (contain) signature
+                     " (contain) "func Getuid() int"
+                " (contain) description
+                     " (contain) "Getuid returns the numeric user id of the caller."
+           " (contain) Getwd
+                " (contain) signature
+                     " (contain) "func Getwd() (dir string, err error)"
+                " (contain) description
+                     " (contain) "Getwd returns an absolute path name corresponding to the current directory. If the current directory can be reached via multiple paths (due to symbolic links), Getwd may return any one of them."
+           " (contain) Hostname
+                " (contain) signature
+                     " (contain) "func Hostname() (name string, err error)"
+                " (contain) description
+                     " (contain) "Hostname returns the host name reported by the kernel."
+           " (contain) IsExist
+                " (contain) signature
+                     " (contain) "func IsExist(err error) bool"
+                " (contain) description
+                     " (contain) "IsExist returns a boolean indicating whether its argument is known to report that a file or directory already exists. It is satisfied by ErrExist as well as some syscall errors."
+           " (contain) IsNotExist
+                " (contain) signature
+                     " (contain) "func IsNotExist(err error) bool"
+                " (contain) description
+                     " (contain) "IsNotExist returns a boolean indicating whether its argument is known to report that a file or directory does not exist. It is satisfied by ErrNotExist as well as some syscall errors."
+           " (contain) IsPathSeparator
+                " (contain) signature
+                     " (contain) "func IsPathSeparator(c uint8) bool"
+                " (contain) description
+                     " (contain) "IsPathSeparator reports whether c is a directory separator character."
+           " (contain) IsPermission
+                " (contain) signature
+                     " (contain) "func IsPermission(err error) bool"
+                " (contain) description
+                     " (contain) "IsPermission returns a boolean indicating whether its argument is known to report that permission is denied. It is satisfied by ErrPermission as well as some syscall errors."
+           " (contain) IsTimeout
+                " (contain) signature
+                     " (contain) "func IsTimeout(err error) bool"
+                " (contain) description
+                     " (contain) "IsTimeout returns a boolean indicating whether its argument is known to report that a timeout occurred."
+           " (contain) Lchown
+                " (contain) signature
+                     " (contain) "func Lchown(name string, uid, gid int) error"
+                " (contain) description
+                     " (contain) "Lchown changes the numeric uid and gid of the named file. If the file is a symbolic link, it changes the uid and gid of the link itself. If there is an error, it will be of type *PathError."
+           " (contain) Link
+                " (contain) signature
+                     " (contain) "func Link(oldname, newname string) error"
+                " (contain) description
+                     " (contain) "Link creates newname as a hard link to the oldname file. If there is an error, it will be of type *LinkError."
+           " (contain) LookupEnv
+                " (contain) signature
+                     " (contain) "func LookupEnv(key string) (string, bool)"
+                " (contain) description
+                     " (contain) "LookupEnv retrieves the value of the environment variable named by the key. If the variable is present in the environment the value (which may be empty) is returned and the boolean is true. Otherwise the returned value will be empty and the boolean will be false."
+           " (contain) Mkdir
+                " (contain) signature
+                     " (contain) "func Mkdir(name string, perm FileMode) error"
+                " (contain) description
+                     " (contain) "Mkdir creates a new directory with the specified name and permission bits (before umask). If there is an error, it will be of type *PathError."
+           " (contain) MkdirAll
+                " (contain) signature
+                     " (contain) "func MkdirAll(path string, perm FileMode) error"
+                " (contain) description
+                     " (contain) "MkdirAll creates a directory named path, along with any necessary parents, and returns nil, or else returns an error. The permission bits perm (before umask) are used for all directories that MkdirAll creates. If path is already a directory, MkdirAll does nothing and returns nil."
+           " (contain) MkdirTemp
+                " (contain) signature
+                     " (contain) "func MkdirTemp(dir, pattern string) (string, error)"
+                " (contain) description
+                     " (contain) "MkdirTemp creates a new temporary directory in the directory dir and returns the pathname of the new directory. The new directory's name is generated by adding a random string to the end of pattern. If pattern includes a '*', the random string replaces the last '*' instead. The directory is created with mode 0o700 (before umask). If dir is the empty string, MkdirTemp uses the default directory for temporary files, as returned by TempDir. Multiple programs or goroutines calling MkdirTemp simultan..."
+           " (contain) NewSyscallError
+                " (contain) signature
+                     " (contain) "func NewSyscallError(syscall string, err error) error"
+                " (contain) description
+                     " (contain) "NewSyscallError returns, as an error, a new SyscallError with the given system call name and error details. As a convenience, if err is nil, NewSyscallError returns nil."
+           " (contain) Pipe
+                " (contain) signature
+                     " (contain) "func Pipe() (r *File, w *File, err error)"
+                " (contain) description
+                     " (contain) "Pipe returns a connected pair of Files; reads from r return bytes written to w. It returns the files and an error, if any."
+           " (contain) ReadFile
+                " (contain) signature
+                     " (contain) "func ReadFile(name string) ([]byte, error)"
+                " (contain) description
+                     " (contain) "ReadFile reads the named file and returns the contents. A successful call returns err == nil, not err == EOF. Because ReadFile reads the whole file, it does not treat an EOF from Read as an error to be reported."
+           " (contain) Readlink
+                " (contain) signature
+                     " (contain) "func Readlink(name string) (string, error)"
+                " (contain) description
+                     " (contain) "Readlink returns the destination of the named symbolic link. If there is an error, it will be of type *PathError."
+           " (contain) Remove
+                " (contain) signature
+                     " (contain) "func Remove(name string) error"
+                " (contain) description
+                     " (contain) "Remove removes the named file or (empty) directory. If there is an error, it will be of type *PathError."
+           " (contain) RemoveAll
+                " (contain) signature
+                     " (contain) "func RemoveAll(path string) error"
+                " (contain) description
+                     " (contain) "RemoveAll removes path and any children it contains. It removes everything it can but returns the first error it encounters. If the path does not exist, RemoveAll returns nil (no error). If there is an error, it will be of type *PathError."
+           " (contain) Rename
+                " (contain) signature
+                     " (contain) "func Rename(oldpath, newpath string) error"
+                " (contain) description
+                     " (contain) "Rename renames (moves) oldpath to newpath. If newpath already exists and is not a directory, Rename replaces it. If newpath already exists and is a directory, Rename returns an error. OS-specific restrictions may apply when oldpath and newpath are in different directories. Even within the same directory, on non-Unix platforms Rename is not an atomic operation. If there is an error, it will be of type *LinkError."
+           " (contain) SameFile
+                " (contain) signature
+                     " (contain) "func SameFile(fi1, fi2 FileInfo) bool"
+                " (contain) description
+                     " (contain) "SameFile reports whether fi1 and fi2 describe the same file. For example, on Unix this means that the device and inode fields of the two underlying structures are identical; on other systems the decision may be based on the path names. SameFile only applies to results returned by this package's Stat. It returns false in other cases."
+           " (contain) Setenv
+                " (contain) signature
+                     " (contain) "func Setenv(key, value string) error"
+                " (contain) description
+                     " (contain) "Setenv sets the value of the environment variable named by the key. It returns an error, if any."
+           " (contain) Symlink
+                " (contain) signature
+                     " (contain) "func Symlink(oldname, newname string) error"
+                " (contain) description
+                     " (contain) "Symlink creates newname as a symbolic link to oldname. On Windows, a symlink to a non-existent oldname creates a file symlink; if oldname is later created as a directory the symlink will not work. If there is an error, it will be of type *LinkError."
+           " (contain) TempDir
+                " (contain) signature
+                     " (contain) "func TempDir() string"
+                " (contain) description
+                     " (contain) "TempDir returns the default directory to use for temporary files."
+           " (contain) Truncate
+                " (contain) signature
+                     " (contain) "func Truncate(name string, size int64) error"
+                " (contain) description
+                     " (contain) "Truncate changes the size of the named file. If the file is a symbolic link, it changes the size of the link's target. If there is an error, it will be of type *PathError."
+           " (contain) Unsetenv
+                " (contain) signature
+                     " (contain) "func Unsetenv(key string) error"
+                " (contain) description
+                     " (contain) "Unsetenv unsets a single environment variable."
+           " (contain) UserCacheDir
+                " (contain) signature
+                     " (contain) "func UserCacheDir() (string, error)"
+                " (contain) description
+                     " (contain) "UserCacheDir returns the default root directory to use for user-specific cached data. Users should create their own application-specific subdirectory within this one and use that."
+           " (contain) UserConfigDir
+                " (contain) signature
+                     " (contain) "func UserConfigDir() (string, error)"
+                " (contain) description
+                     " (contain) "UserConfigDir returns the default root directory to use for user-specific configuration data. Users should create their own application-specific subdirectory within this one and use that."
+           " (contain) UserHomeDir
+                " (contain) signature
+                     " (contain) "func UserHomeDir() (string, error)"
+                " (contain) description
+                     " (contain) "UserHomeDir returns the current user's home directory."
+           " (contain) WriteFile
+                " (contain) signature
+                     " (contain) "func WriteFile(name string, data []byte, perm FileMode) error"
+                " (contain) description
+                     " (contain) "WriteFile writes data to the named file, creating it if necessary. If the file does not exist, WriteFile creates it with permissions perm (before umask); otherwise WriteFile truncates it before writing, without changing permissions. Since WriteFile requires multiple system calls to complete, a failure mid-operation can leave the file in a partially written state."
+      " (contain) types
+           " (contain) DirEntry
+                " (contain) kind
+                     " (contain) alias
+                " (contain) description
+                     " (contain) "A DirEntry is an entry read from a directory (using the ReadDir function or a File.ReadDir method)."
+           " (contain) File
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "File represents an open file descriptor."
+           " (contain) FileInfo
+                " (contain) kind
+                     " (contain) alias
+                " (contain) description
+                     " (contain) "A FileInfo describes a file and is returned by Stat and Lstat."
+           " (contain) FileMode
+                " (contain) kind
+                     " (contain) alias
+                " (contain) description
+                     " (contain) "A FileMode represents a file's mode and permission bits. The bits have the same definition on all systems, so that information about files can be moved from one system to another portably. Not all bits apply to all systems. The only required bit is ModeDir for directories."
+           " (contain) LinkError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "LinkError records an error during a link or symlink or rename system call and the paths that caused it."
+           " (contain) PathError
+                " (contain) kind
+                     " (contain) alias
+                " (contain) description
+                     " (contain) "PathError records an error and the operation and file path that caused it."
+           " (contain) ProcAttr
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "ProcAttr holds the attributes that will be applied to a new process started by StartProcess."
+           " (contain) Process
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Process stores the information about a process created by StartProcess."
+           " (contain) ProcessState
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "ProcessState stores information about a process, as reported by Wait."
+           " (contain) Root
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Root may be used to only access files within a single directory tree."
+           " (contain) Signal
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "A Signal represents an operating system signal. The usual underlying implementation is operating system-dependent: on Unix it is syscall.Signal."
+           " (contain) SyscallError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "SyscallError records an error from a specific system call."
+
+ "context"
+      " (contain) "package type"
+           " (contain) stdlib
+ context
+      " (contain) "import path"
+           " (contain) context
+      " (contain) documentation
+           " (contain) "Package context defines the Context type, which carries deadlines, cancellation signals, and other request-scoped values across API boundaries and between processes."
+           " (contain) "Incoming requests to a server should create a Context, and outgoing calls to servers should accept a Context. The chain of function calls between them must propagate the Context, optionally replacing it with a derived Context created using WithCancel, WithDeadline, WithTimeout, or WithValue."
+      " (contain) functions
+           " (contain) AfterFunc
+                " (contain) signature
+                     " (contain) "func AfterFunc(ctx Context, f func()) (stop func() bool)"
+                " (contain) description
+                     " (contain) "AfterFunc arranges to call f in its own goroutine after ctx is canceled. If ctx is already canceled, AfterFunc calls f immediately in its own goroutine."
+           " (contain) Cause
+                " (contain) signature
+                     " (contain) "func Cause(c Context) error"
+                " (contain) description
+                     " (contain) "Cause returns a non-nil error explaining why c was canceled. The first cancellation of c or one of its parents sets the cause. If that cancellation happened via a call to CancelCauseFunc(err), then Cause returns err. Otherwise Cause(c) returns the same value as c.Err(). Cause returns nil if c has not been canceled yet."
+           " (contain) WithCancel
+                " (contain) signature
+                     " (contain) "func WithCancel(parent Context) (ctx Context, cancel CancelFunc)"
+                " (contain) description
+                     " (contain) "WithCancel returns a derived context that points to the parent context but has a new Done channel. The returned context's Done channel is closed when the returned cancel function is called or when the parent context's Done channel is closed, whichever happens first."
+           " (contain) WithCancelCause
+                " (contain) signature
+                     " (contain) "func WithCancelCause(parent Context) (ctx Context, cancel CancelCauseFunc)"
+                " (contain) description
+                     " (contain) "WithCancelCause behaves like WithCancel but returns a CancelCauseFunc instead of a CancelFunc. Calling cancel with a non-nil error (the 'cause') records that error in ctx; it can then be retrieved using Cause(ctx). Calling cancel with nil sets the cause to Canceled."
+           " (contain) WithDeadline
+                " (contain) signature
+                     " (contain) "func WithDeadline(parent Context, d time.Time) (Context, CancelFunc)"
+                " (contain) description
+                     " (contain) "WithDeadline returns a derived context that points to the parent context but has the deadline adjusted to be no later than d. If the parent's deadline is already earlier than d, WithDeadline(parent, d) is semantically equivalent to parent. The returned [Context.Done] channel is closed when the deadline expires, when the returned cancel function is called, or when the parent context's Done channel is closed, whichever happens first."
+           " (contain) WithDeadlineCause
+                " (contain) signature
+                     " (contain) "func WithDeadlineCause(parent Context, d time.Time, cause error) (Context, CancelFunc)"
+                " (contain) description
+                     " (contain) "WithDeadlineCause behaves like WithDeadline but also sets the cause of the returned Context when the deadline is exceeded. The returned CancelFunc does not set the cause."
+           " (contain) WithTimeout
+                " (contain) signature
+                     " (contain) "func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc)"
+                " (contain) description
+                     " (contain) "WithTimeout returns WithDeadline(parent, time.Now().Add(timeout))."
+           " (contain) WithTimeoutCause
+                " (contain) signature
+                     " (contain) "func WithTimeoutCause(parent Context, timeout time.Duration, cause error) (Context, CancelFunc)"
+                " (contain) description
+                     " (contain) "WithTimeoutCause behaves like WithTimeout but also sets the cause of the returned Context when the timeout expires. The returned CancelFunc does not set the cause."
+      " (contain) types
+           " (contain) CancelCauseFunc
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A CancelCauseFunc behaves like a CancelFunc but additionally sets the cancellation cause. This cause can be retrieved by calling Cause on the canceled Context or on any of its derived Contexts."
+           " (contain) CancelFunc
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A CancelFunc tells an operation to abandon its work. A CancelFunc does not wait for the work to stop. A CancelFunc may be called by multiple goroutines simultaneously. After the first call, subsequent calls to a CancelFunc do nothing."
+           " (contain) Context
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Context carries a deadline, a cancellation signal, and other values across API boundaries."
+
+ "sync"
+      " (contain) "package type"
+           " (contain) stdlib
+ sync
+      " (contain) "import path"
+           " (contain) sync
+      " (contain) documentation
+           " (contain) "Package sync provides basic synchronization primitives such as mutual exclusion locks. Other than the Once and WaitGroup types, most are intended for use by low-level library routines. Higher-level synchronization is better done via channels and communication."
+           " (contain) "Values containing the types defined in this package should not be copied."
+      " (contain) functions
+           " (contain) OnceFunc
+                " (contain) signature
+                     " (contain) "func OnceFunc(f func()) func()"
+                " (contain) description
+                     " (contain) "OnceFunc returns a function that invokes f only once. The returned function may be called concurrently."
+           " (contain) OnceValue
+                " (contain) signature
+                     " (contain) "func OnceValue[T any](f func() T) func() T"
+                " (contain) description
+                     " (contain) "OnceValue returns a function that invokes f only once and returns the value returned by f. The returned function may be called concurrently."
+           " (contain) OnceValues
+                " (contain) signature
+                     " (contain) "func OnceValues[T1, T2 any](f func() (T1, T2)) func() (T1, T2)"
+                " (contain) description
+                     " (contain) "OnceValues returns a function that invokes f only once and returns the values returned by f. The returned function may be called concurrently."
+      " (contain) types
+           " (contain) Cond
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Cond implements a condition variable, a rendezvous point for goroutines waiting for or announcing the occurrence of an event."
+           " (contain) Locker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "A Locker represents an object that can be locked and unlocked."
+           " (contain) Map
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Map is like a Go map[any]any but is safe for concurrent use by multiple goroutines without additional locking or coordination. Loads, stores, and deletes run in amortized constant time."
+           " (contain) Mutex
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Mutex is a mutual exclusion lock. The zero value for a Mutex is an unlocked mutex."
+           " (contain) Once
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Once is an object that will perform exactly one action."
+           " (contain) Pool
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Pool is a set of temporary objects that may be individually saved and retrieved."
+           " (contain) RWMutex
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A RWMutex is a reader/writer mutual exclusion lock. The lock can be held by an arbitrary number of readers or a single writer. The zero value for a RWMutex is an unlocked mutex."
+           " (contain) WaitGroup
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A WaitGroup is a counting semaphore typically used to wait for a group of goroutines or tasks to finish."
+
+ "strings"
+      " (contain) "package type"
+           " (contain) stdlib
+ strings
+      " (contain) "import path"
+           " (contain) strings
+      " (contain) documentation
+           " (contain) "Package strings implements simple functions to manipulate UTF-8 encoded strings."
+           " (contain) "For information about UTF-8 strings in Go, see https://blog.golang.org/strings."
+      " (contain) functions
+           " (contain) Clone
+                " (contain) signature
+                     " (contain) "func Clone(s string) string"
+                " (contain) description
+                     " (contain) "Clone returns a fresh copy of s. It guarantees to make a copy of s into a new allocation, which can be important when retaining only a small substring of a much larger string. Using Clone can help such programs use less memory. Of course, since using Clone makes a copy, overuse of Clone can make programs use more memory. Clone should typically be used only rarely, and only when profiling indicates that it is needed. For strings of length zero the string '' will be returned and no allocation is m..."
+           " (contain) Compare
+                " (contain) signature
+                     " (contain) "func Compare(a, b string) int"
+                " (contain) description
+                     " (contain) "Compare returns an integer comparing two strings lexicographically. The result will be 0 if a == b, -1 if a < b, and +1 if a > b."
+           " (contain) Contains
+                " (contain) signature
+                     " (contain) "func Contains(s, substr string) bool"
+                " (contain) description
+                     " (contain) "Contains reports whether substr is within s."
+           " (contain) ContainsAny
+                " (contain) signature
+                     " (contain) "func ContainsAny(s, chars string) bool"
+                " (contain) description
+                     " (contain) "ContainsAny reports whether any Unicode code points in chars are within s."
+           " (contain) ContainsFunc
+                " (contain) signature
+                     " (contain) "func ContainsFunc(s string, f func(rune) bool) bool"
+                " (contain) description
+                     " (contain) "ContainsFunc reports whether any Unicode code points r within s satisfy f(r)."
+           " (contain) ContainsRune
+                " (contain) signature
+                     " (contain) "func ContainsRune(s string, r rune) bool"
+                " (contain) description
+                     " (contain) "ContainsRune reports whether the Unicode code point r is within s."
+           " (contain) Count
+                " (contain) signature
+                     " (contain) "func Count(s, substr string) int"
+                " (contain) description
+                     " (contain) "Count counts the number of non-overlapping instances of substr in s. If substr is an empty string, Count returns 1 + the number of Unicode code points in s."
+           " (contain) Cut
+                " (contain) signature
+                     " (contain) "func Cut(s, sep string) (before, after string, found bool)"
+                " (contain) description
+                     " (contain) "Cut slices s around the first instance of sep, returning the text before and after sep. The found result reports whether sep appears in s. If sep does not appear in s, cut returns s, '', false."
+           " (contain) CutPrefix
+                " (contain) signature
+                     " (contain) "func CutPrefix(s, prefix string) (after string, found bool)"
+                " (contain) description
+                     " (contain) "CutPrefix returns s without the provided leading prefix string and reports whether it found the prefix. If s doesn't start with prefix, CutPrefix returns s, false. If prefix is the empty string, CutPrefix returns s, true."
+           " (contain) CutSuffix
+                " (contain) signature
+                     " (contain) "func CutSuffix(s, suffix string) (before string, found bool)"
+                " (contain) description
+                     " (contain) "CutSuffix returns s without the provided ending suffix string and reports whether it found the suffix. If s doesn't end with suffix, CutSuffix returns s, false. If suffix is the empty string, CutSuffix returns s, true."
+           " (contain) EqualFold
+                " (contain) signature
+                     " (contain) "func EqualFold(s, t string) bool"
+                " (contain) description
+                     " (contain) "EqualFold reports whether s and t, interpreted as UTF-8 strings, are equal under simple Unicode case-folding, which is a more general form of case-insensitivity."
+           " (contain) Fields
+                " (contain) signature
+                     " (contain) "func Fields(s string) []string"
+                " (contain) description
+                     " (contain) "Fields splits the string s around each instance of one or more consecutive white space characters, as defined by unicode.IsSpace, returning a slice of substrings of s or an empty slice if s contains only white space. Every element of the returned slice is non-empty. Unlike Split, leading and trailing runs runs of white space characters are discarded."
+           " (contain) FieldsFunc
+                " (contain) signature
+                     " (contain) "func FieldsFunc(s string, f func(rune) bool) []string"
+                " (contain) description
+                     " (contain) "FieldsFunc splits the string s at each run of Unicode code points c satisfying f(c) and returns an array of slices of s. If all code points in s satisfy f(c) or the string is empty, an empty slice is returned. Every element of the returned slice is non-empty. Unlike [SplitFunc], leading and trailing runs of code points satisfying f(c) are discarded."
+           " (contain) FieldsFuncSeq
+                " (contain) signature
+                     " (contain) "func FieldsFuncSeq(s string, f func(rune) bool) iter.Seq[string]"
+                " (contain) description
+                     " (contain) "FieldsFuncSeq returns an iterator over substrings of s split around runs of Unicode code points satisfying f(c). The iterator yields the same strings that would be returned by FieldsFunc(s), but without constructing the slice."
+           " (contain) FieldsSeq
+                " (contain) signature
+                     " (contain) "func FieldsSeq(s string) iter.Seq[string]"
+                " (contain) description
+                     " (contain) "FieldsSeq returns an iterator over substrings of s split around runs of whitespace characters, as defined by unicode.IsSpace. The iterator yields the same strings that would be returned by Fields(s), but without constructing the slice."
+           " (contain) HasPrefix
+                " (contain) signature
+                     " (contain) "func HasPrefix(s, prefix string) bool"
+                " (contain) description
+                     " (contain) "HasPrefix reports whether the string s begins with prefix."
+           " (contain) HasSuffix
+                " (contain) signature
+                     " (contain) "func HasSuffix(s, suffix string) bool"
+                " (contain) description
+                     " (contain) "HasSuffix reports whether the string s ends with suffix."
+           " (contain) Index
+                " (contain) signature
+                     " (contain) "func Index(s, substr string) int"
+                " (contain) description
+                     " (contain) "Index returns the index of the first instance of substr in s, or -1 if substr is not present in s."
+           " (contain) IndexAny
+                " (contain) signature
+                     " (contain) "func IndexAny(s, chars string) int"
+                " (contain) description
+                     " (contain) "IndexAny returns the index of the first instance of any Unicode code point from chars in s, or -1 if no Unicode code point from chars is present in s."
+           " (contain) IndexByte
+                " (contain) signature
+                     " (contain) "func IndexByte(s string, c byte) int"
+                " (contain) description
+                     " (contain) "IndexByte returns the index of the first instance of c in s, or -1 if c is not present in s."
+           " (contain) IndexFunc
+                " (contain) signature
+                     " (contain) "func IndexFunc(s string, f func(rune) bool) int"
+                " (contain) description
+                     " (contain) "IndexFunc returns the index into s of the first Unicode code point satisfying f(c), or -1 if none do."
+           " (contain) IndexRune
+                " (contain) signature
+                     " (contain) "func IndexRune(s string, r rune) int"
+                " (contain) description
+                     " (contain) "IndexRune returns the index of the first instance of the Unicode code point r, or -1 if rune is not present in s. If r is utf8.RuneError, it returns the first instance of any invalid UTF-8 byte sequence."
+           " (contain) Join
+                " (contain) signature
+                     " (contain) "func Join(elems []string, sep string) string"
+                " (contain) description
+                     " (contain) "Join concatenates the elements of its first argument to create a single string. The separator string sep is placed between elements in the resulting string."
+           " (contain) LastIndex
+                " (contain) signature
+                     " (contain) "func LastIndex(s, substr string) int"
+                " (contain) description
+                     " (contain) "LastIndex returns the index of the last instance of substr in s, or -1 if substr is not present in s."
+           " (contain) LastIndexAny
+                " (contain) signature
+                     " (contain) "func LastIndexAny(s, chars string) int"
+                " (contain) description
+                     " (contain) "LastIndexAny returns the index of the last instance of any Unicode code point from chars in s, or -1 if no Unicode code point from chars is present in s."
+           " (contain) LastIndexByte
+                " (contain) signature
+                     " (contain) "func LastIndexByte(s string, c byte) int"
+                " (contain) description
+                     " (contain) "LastIndexByte returns the index of the last instance of c in s, or -1 if c is not present in s."
+           " (contain) LastIndexFunc
+                " (contain) signature
+                     " (contain) "func LastIndexFunc(s string, f func(rune) bool) int"
+                " (contain) description
+                     " (contain) "LastIndexFunc returns the index into s of the last Unicode code point satisfying f(c), or -1 if none do."
+           " (contain) Lines
+                " (contain) signature
+                     " (contain) "func Lines(s string) iter.Seq[string]"
+                " (contain) description
+                     " (contain) "Lines returns an iterator over the newline-terminated lines in the string s. The lines yielded by the iterator include their terminating newlines. If s is empty, the iterator yields no lines at all. If s does not end in a newline, the final yielded line will not end in a newline. It returns a single-use iterator."
+           " (contain) Map
+                " (contain) signature
+                     " (contain) "func Map(mapping func(rune) rune, s string) string"
+                " (contain) description
+                     " (contain) "Map returns a copy of the string s with all its characters modified according to the mapping function. If mapping returns a negative value, the character is dropped from the string with no replacement."
+           " (contain) Repeat
+                " (contain) signature
+                     " (contain) "func Repeat(s string, count int) string"
+                " (contain) description
+                     " (contain) "Repeat returns a new string consisting of count copies of the string s."
+           " (contain) Replace
+                " (contain) signature
+                     " (contain) "func Replace(s, old, new string, n int) string"
+                " (contain) description
+                     " (contain) "Replace returns a copy of the string s with the first n non-overlapping instances of old replaced by new. If old is empty, it matches at the beginning of the string and after each UTF-8 sequence, yielding up to k+1 replacements for a k-rune string. If n < 0, there is no limit on the number of replacements."
+           " (contain) ReplaceAll
+                " (contain) signature
+                     " (contain) "func ReplaceAll(s, old, new string) string"
+                " (contain) description
+                     " (contain) "ReplaceAll returns a copy of the string s with all non-overlapping instances of old replaced by new. If old is empty, it matches at the beginning of the string and after each UTF-8 sequence, yielding up to k+1 replacements for a k-rune string."
+           " (contain) Split
+                " (contain) signature
+                     " (contain) "func Split(s, sep string) []string"
+                " (contain) description
+                     " (contain) "Split slices s into all substrings separated by sep and returns a slice of the substrings between those separators."
+           " (contain) SplitAfter
+                " (contain) signature
+                     " (contain) "func SplitAfter(s, sep string) []string"
+                " (contain) description
+                     " (contain) "SplitAfter slices s into all substrings after each instance of sep and returns a slice of those substrings."
+           " (contain) SplitAfterN
+                " (contain) signature
+                     " (contain) "func SplitAfterN(s, sep string, n int) []string"
+                " (contain) description
+                     " (contain) "SplitAfterN slices s into substrings after each instance of sep and returns a slice of those substrings."
+           " (contain) SplitAfterSeq
+                " (contain) signature
+                     " (contain) "func SplitAfterSeq(s, sep string) iter.Seq[string]"
+                " (contain) description
+                     " (contain) "SplitAfterSeq returns an iterator over substrings of s split after each instance of sep. The iterator yields the same strings that would be returned by SplitAfter(s, sep), but without constructing the slice. It returns a single-use iterator."
+           " (contain) SplitN
+                " (contain) signature
+                     " (contain) "func SplitN(s, sep string, n int) []string"
+                " (contain) description
+                     " (contain) "SplitN slices s into substrings separated by sep and returns a slice of the substrings between those separators."
+           " (contain) SplitSeq
+                " (contain) signature
+                     " (contain) "func SplitSeq(s, sep string) iter.Seq[string]"
+                " (contain) description
+                     " (contain) "SplitSeq returns an iterator over all substrings of s separated by sep. The iterator yields the same strings that would be returned by Split(s, sep), but without constructing the slice. It returns a single-use iterator."
+           " (contain) Title
+                " (contain) signature
+                     " (contain) "func Title(s string) string"
+                " (contain) description
+                     " (contain) "Title returns a copy of the string s with all Unicode letters that begin words mapped to their Unicode title case."
+           " (contain) ToLower
+                " (contain) signature
+                     " (contain) "func ToLower(s string) string"
+                " (contain) description
+                     " (contain) "ToLower returns s with all Unicode letters mapped to their lower case."
+           " (contain) ToLowerSpecial
+                " (contain) signature
+                     " (contain) "func ToLowerSpecial(c unicode.SpecialCase, s string) string"
+                " (contain) description
+                     " (contain) "ToLowerSpecial returns a copy of the string s with all Unicode letters mapped to their lower case using the case mapping specified by c."
+           " (contain) ToTitle
+                " (contain) signature
+                     " (contain) "func ToTitle(s string) string"
+                " (contain) description
+                     " (contain) "ToTitle returns a copy of the string s with all Unicode letters mapped to their Unicode title case."
+           " (contain) ToTitleSpecial
+                " (contain) signature
+                     " (contain) "func ToTitleSpecial(c unicode.SpecialCase, s string) string"
+                " (contain) description
+                     " (contain) "ToTitleSpecial returns a copy of the string s with all Unicode letters mapped to their Unicode title case, giving priority to the special casing rules."
+           " (contain) ToUpper
+                " (contain) signature
+                     " (contain) "func ToUpper(s string) string"
+                " (contain) description
+                     " (contain) "ToUpper returns s with all Unicode letters mapped to their upper case."
+           " (contain) ToUpperSpecial
+                " (contain) signature
+                     " (contain) "func ToUpperSpecial(c unicode.SpecialCase, s string) string"
+                " (contain) description
+                     " (contain) "ToUpperSpecial returns a copy of the string s with all Unicode letters mapped to their upper case using the case mapping specified by c."
+           " (contain) ToValidUTF8
+                " (contain) signature
+                     " (contain) "func ToValidUTF8(s, replacement string) string"
+                " (contain) description
+                     " (contain) "ToValidUTF8 returns a copy of the string s with each run of invalid UTF-8 byte sequences replaced by the replacement string, which may be empty."
+           " (contain) Trim
+                " (contain) signature
+                     " (contain) "func Trim(s, cutset string) string"
+                " (contain) description
+                     " (contain) "Trim returns a slice of the string s with all leading and trailing Unicode code points contained in cutset removed."
+           " (contain) TrimFunc
+                " (contain) signature
+                     " (contain) "func TrimFunc(s string, f func(rune) bool) string"
+                " (contain) description
+                     " (contain) "TrimFunc returns a slice of the string s with all leading and trailing Unicode code points c satisfying f(c) removed."
+           " (contain) TrimLeft
+                " (contain) signature
+                     " (contain) "func TrimLeft(s, cutset string) string"
+                " (contain) description
+                     " (contain) "TrimLeft returns a slice of the string s with all leading Unicode code points contained in cutset removed."
+           " (contain) TrimLeftFunc
+                " (contain) signature
+                     " (contain) "func TrimLeftFunc(s string, f func(rune) bool) string"
+                " (contain) description
+                     " (contain) "TrimLeftFunc returns a slice of the string s with all leading Unicode code points c satisfying f(c) removed."
+           " (contain) TrimPrefix
+                " (contain) signature
+                     " (contain) "func TrimPrefix(s, prefix string) string"
+                " (contain) description
+                     " (contain) "TrimPrefix returns s without the provided leading prefix string. If s doesn't start with prefix, s is returned unchanged."
+           " (contain) TrimRight
+                " (contain) signature
+                     " (contain) "func TrimRight(s, cutset string) string"
+                " (contain) description
+                     " (contain) "TrimRight returns a slice of the string s, with all trailing Unicode code points contained in cutset removed."
+           " (contain) TrimRightFunc
+                " (contain) signature
+                     " (contain) "func TrimRightFunc(s string, f func(rune) bool) string"
+                " (contain) description
+                     " (contain) "TrimRightFunc returns a slice of the string s with all trailing Unicode code points c satisfying f(c) removed."
+           " (contain) TrimSpace
+                " (contain) signature
+                     " (contain) "func TrimSpace(s string) string"
+                " (contain) description
+                     " (contain) "TrimSpace returns a slice of the string s, with all leading and trailing white space removed, as defined by Unicode."
+           " (contain) TrimSuffix
+                " (contain) signature
+                     " (contain) "func TrimSuffix(s, suffix string) string"
+                " (contain) description
+                     " (contain) "TrimSuffix returns s without the provided trailing suffix string. If s doesn't end with suffix, s is returned unchanged."
+      " (contain) types
+           " (contain) Builder
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Builder is used to efficiently build a string using Builder.Write methods. It minimizes memory copying. The zero value is ready to use. Do not copy a non-zero Builder."
+           " (contain) Reader
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Reader implements the io.Reader, io.ReaderAt, io.ByteReader, io.ByteScanner, io.RuneReader, io.RuneScanner, io.Seeker, and io.WriterTo interfaces by reading from a string. The zero value for Reader operates like a Reader of an empty string."
+           " (contain) Replacer
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Replacer replaces a list of strings with replacements. It is safe for concurrent use by multiple goroutines."
+
+ "strconv"
+      " (contain) "package type"
+           " (contain) stdlib
+ strconv
+      " (contain) "import path"
+           " (contain) strconv
+      " (contain) documentation
+           " (contain) "Package strconv implements conversions to and from string representations of basic data types."
+           " (contain) "The most common numeric conversions are Atoi (string to int) and Itoa (int to string)."
+      " (contain) functions
+           " (contain) AppendBool
+                " (contain) signature
+                     " (contain) "func AppendBool(dst []byte, b bool) []byte"
+                " (contain) description
+                     " (contain) "AppendBool appends 'true' or 'false', according to the value of b, to dst and returns the extended buffer."
+           " (contain) AppendFloat
+                " (contain) signature
+                     " (contain) "func AppendFloat(dst []byte, f float64, fmt byte, prec, bitSize int) []byte"
+                " (contain) description
+                     " (contain) "AppendFloat appends the string form of the floating-point number f, as generated by FormatFloat, to dst and returns the extended buffer."
+           " (contain) AppendInt
+                " (contain) signature
+                     " (contain) "func AppendInt(dst []byte, i int64, base int) []byte"
+                " (contain) description
+                     " (contain) "AppendInt appends the string form of the integer i, as generated by FormatInt, to dst and returns the extended buffer."
+           " (contain) AppendQuote
+                " (contain) signature
+                     " (contain) "func AppendQuote(dst []byte, s string) []byte"
+                " (contain) description
+                     " (contain) "AppendQuote appends a double-quoted Go string literal representing s, as generated by Quote, to dst and returns the extended buffer."
+           " (contain) AppendQuoteRune
+                " (contain) signature
+                     " (contain) "func AppendQuoteRune(dst []byte, r rune) []byte"
+                " (contain) description
+                     " (contain) "AppendQuoteRune appends a single-quoted Go character literal representing the rune, as generated by QuoteRune, to dst and returns the extended buffer."
+           " (contain) AppendQuoteRuneToASCII
+                " (contain) signature
+                     " (contain) "func AppendQuoteRuneToASCII(dst []byte, r rune) []byte"
+                " (contain) description
+                     " (contain) "AppendQuoteRuneToASCII appends a single-quoted Go character literal representing the rune, as generated by QuoteRuneToASCII, to dst and returns the extended buffer."
+           " (contain) AppendQuoteRuneToGraphic
+                " (contain) signature
+                     " (contain) "func AppendQuoteRuneToGraphic(dst []byte, r rune) []byte"
+                " (contain) description
+                     " (contain) "AppendQuoteRuneToGraphic appends a single-quoted Go character literal representing the rune, as generated by QuoteRuneToGraphic, to dst and returns the extended buffer."
+           " (contain) AppendQuoteToASCII
+                " (contain) signature
+                     " (contain) "func AppendQuoteToASCII(dst []byte, s string) []byte"
+                " (contain) description
+                     " (contain) "AppendQuoteToASCII appends a double-quoted Go string literal representing s, as generated by QuoteToASCII, to dst and returns the extended buffer."
+           " (contain) AppendQuoteToGraphic
+                " (contain) signature
+                     " (contain) "func AppendQuoteToGraphic(dst []byte, s string) []byte"
+                " (contain) description
+                     " (contain) "AppendQuoteToGraphic appends a double-quoted Go string literal representing s, as generated by QuoteToGraphic, to dst and returns the extended buffer."
+           " (contain) AppendUint
+                " (contain) signature
+                     " (contain) "func AppendUint(dst []byte, i uint64, base int) []byte"
+                " (contain) description
+                     " (contain) "AppendUint appends the string form of the unsigned integer i, as generated by FormatUint, to dst and returns the extended buffer."
+           " (contain) Atoi
+                " (contain) signature
+                     " (contain) "func Atoi(s string) (int, error)"
+                " (contain) description
+                     " (contain) "Atoi is equivalent to ParseInt(s, 10, 0), converted to type int."
+           " (contain) CanBackquote
+                " (contain) signature
+                     " (contain) "func CanBackquote(s string) bool"
+                " (contain) description
+                     " (contain) "CanBackquote reports whether the string s can be represented unchanged as a single-line backquoted string without control characters other than tab."
+           " (contain) FormatBool
+                " (contain) signature
+                     " (contain) "func FormatBool(b bool) string"
+                " (contain) description
+                     " (contain) "FormatBool returns 'true' or 'false' according to the value of b."
+           " (contain) FormatComplex
+                " (contain) signature
+                     " (contain) "func FormatComplex(c complex128, fmt byte, prec, bitSize int) string"
+                " (contain) description
+                     " (contain) "FormatComplex converts the complex number c to a string of the form (a+bi) where a and b are the real and imaginary parts, formatted according to the format fmt and precision prec."
+           " (contain) FormatFloat
+                " (contain) signature
+                     " (contain) "func FormatFloat(f float64, fmt byte, prec, bitSize int) string"
+                " (contain) description
+                     " (contain) "FormatFloat converts the floating-point number f to a string, according to the format fmt and precision prec. It rounds the result assuming that the original was obtained from a floating-point value of bitSize bits (32 for float32, 64 for float64)."
+           " (contain) FormatInt
+                " (contain) signature
+                     " (contain) "func FormatInt(i int64, base int) string"
+                " (contain) description
+                     " (contain) "FormatInt returns the string representation of i in the given base, for 2 <= base <= 36. The result uses the lower-case letters 'a' to 'z' for digit values >= 10."
+           " (contain) FormatUint
+                " (contain) signature
+                     " (contain) "func FormatUint(i uint64, base int) string"
+                " (contain) description
+                     " (contain) "FormatUint returns the string representation of i in the given base, for 2 <= base <= 36. The result uses the lower-case letters 'a' to 'z' for digit values >= 10."
+           " (contain) IsGraphic
+                " (contain) signature
+                     " (contain) "func IsGraphic(r rune) bool"
+                " (contain) description
+                     " (contain) "IsGraphic reports whether the rune is defined as a Graphic by Unicode. Such characters include letters, marks, numbers, punctuation, symbols, and spaces, from categories L, M, N, P, S, and Zs."
+           " (contain) IsPrint
+                " (contain) signature
+                     " (contain) "func IsPrint(r rune) bool"
+                " (contain) description
+                     " (contain) "IsPrint reports whether the rune is defined as printable by Go, with the same definition as unicode.IsPrint: letters, numbers, punctuation, symbols and ASCII space."
+           " (contain) Itoa
+                " (contain) signature
+                     " (contain) "func Itoa(i int) string"
+                " (contain) description
+                     " (contain) "Itoa is equivalent to FormatInt(int64(i), 10)."
+           " (contain) ParseBool
+                " (contain) signature
+                     " (contain) "func ParseBool(str string) (bool, error)"
+                " (contain) description
+                     " (contain) "ParseBool returns the boolean value represented by the string. It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False. Any other value returns an error."
+           " (contain) ParseComplex
+                " (contain) signature
+                     " (contain) "func ParseComplex(s string, bitSize int) (complex128, error)"
+                " (contain) description
+                     " (contain) "ParseComplex converts the string s to a complex number with the precision specified by bitSize: 64 for complex64, or 128 for complex128. When bitSize=64, the result still has type complex128, but it will be convertible to complex64 without changing its value."
+           " (contain) ParseFloat
+                " (contain) signature
+                     " (contain) "func ParseFloat(s string, bitSize int) (float64, error)"
+                " (contain) description
+                     " (contain) "ParseFloat converts the string s to a floating-point number with the precision specified by bitSize: 32 for float32, or 64 for float64. When bitSize=32, the result still has type float64, but it will be convertible to float32 without changing its value."
+           " (contain) ParseInt
+                " (contain) signature
+                     " (contain) "func ParseInt(s string, base int, bitSize int) (i int64, err error)"
+                " (contain) description
+                     " (contain) "ParseInt interprets a string s in the given base (0, 2 to 36) and bit size (0 to 64) and returns the corresponding value i."
+           " (contain) ParseUint
+                " (contain) signature
+                     " (contain) "func ParseUint(s string, base int, bitSize int) (uint64, error)"
+                " (contain) description
+                     " (contain) "ParseUint is like ParseInt but for unsigned numbers."
+           " (contain) Quote
+                " (contain) signature
+                     " (contain) "func Quote(s string) string"
+                " (contain) description
+                     " (contain) "Quote returns a double-quoted Go string literal representing s. The returned string uses Go escape sequences (\t, \n, \xFF, \u0100) for control characters and non-printable characters as defined by IsPrint."
+           " (contain) QuoteRune
+                " (contain) signature
+                     " (contain) "func QuoteRune(r rune) string"
+                " (contain) description
+                     " (contain) "QuoteRune returns a single-quoted Go character literal representing the rune. The returned string uses Go escape sequences (\t, \n, \xFF, \u0100) for control characters and non-printable characters as defined by IsPrint. If r is not a valid Unicode code point, it is interpreted as the Unicode replacement character U+FFFD."
+           " (contain) QuoteRuneToASCII
+                " (contain) signature
+                     " (contain) "func QuoteRuneToASCII(r rune) string"
+                " (contain) description
+                     " (contain) "QuoteRuneToASCII returns a single-quoted Go character literal representing the rune. The returned string uses Go escape sequences (\t, \n, \xFF, \u0100) for non-ASCII characters and non-printable characters as defined by IsPrint. If r is not a valid Unicode code point, it is interpreted as the Unicode replacement character U+FFFD."
+           " (contain) QuoteRuneToGraphic
+                " (contain) signature
+                     " (contain) "func QuoteRuneToGraphic(r rune) string"
+                " (contain) description
+                     " (contain) "QuoteRuneToGraphic returns a single-quoted Go character literal representing the rune. If the rune is not a Unicode graphic character, as defined by IsGraphic, the returned string will use a Go escape sequence (\t, \n, \xFF, \u0100). If r is not a valid Unicode code point, it is interpreted as the Unicode replacement character U+FFFD."
+           " (contain) QuoteToASCII
+                " (contain) signature
+                     " (contain) "func QuoteToASCII(s string) string"
+                " (contain) description
+                     " (contain) "QuoteToASCII returns a double-quoted Go string literal representing s. The returned string uses Go escape sequences (\t, \n, \xFF, \u0100) for non-ASCII characters and non-printable characters as defined by IsPrint."
+           " (contain) QuoteToGraphic
+                " (contain) signature
+                     " (contain) "func QuoteToGraphic(s string) string"
+                " (contain) description
+                     " (contain) "QuoteToGraphic returns a double-quoted Go string literal representing s. The returned string leaves Unicode graphic characters, as defined by IsGraphic, unchanged and uses Go escape sequences (\t, \n, \xFF, \u0100) for non-graphic characters."
+           " (contain) QuotedPrefix
+                " (contain) signature
+                     " (contain) "func QuotedPrefix(s string) (string, error)"
+                " (contain) description
+                     " (contain) "QuotedPrefix returns the quoted string (as understood by Unquote) at the prefix of s. If s does not start with a valid quoted string, QuotedPrefix returns an error."
+           " (contain) Unquote
+                " (contain) signature
+                     " (contain) "func Unquote(s string) (string, error)"
+                " (contain) description
+                     " (contain) "Unquote interprets s as a single-quoted, double-quoted, or backquoted Go string literal, returning the string value that s quotes. (If s is single-quoted, it would be a Go character literal; Unquote returns the corresponding one-character string. For an empty character literal Unquote returns the empty string.)"
+           " (contain) UnquoteChar
+                " (contain) signature
+                     " (contain) "func UnquoteChar(s string, quote byte) (value rune, multibyte bool, tail string, err error)"
+                " (contain) description
+                     " (contain) "UnquoteChar decodes the first character or byte in the escaped string or character literal represented by the string s. It returns four values:"
+      " (contain) types
+           " (contain) NumError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A NumError records a failed conversion."
+
+ "encoding/json"
+      " (contain) "package type"
+           " (contain) stdlib
+ json
+      " (contain) "import path"
+           " (contain) json
+      " (contain) documentation
+           " (contain) "Package json implements encoding and decoding of JSON as defined in RFC 7159. The mapping between JSON and Go values is described in the documentation for the Marshal and Unmarshal functions."
+           " (contain) "See 'JSON and Go' for an introduction to this package: https://golang.org/doc/articles/json_and_go.html"
+      " (contain) functions
+           " (contain) Compact
+                " (contain) signature
+                     " (contain) "func Compact(dst *bytes.Buffer, src []byte) error"
+                " (contain) description
+                     " (contain) "Compact appends to dst the JSON-encoded src with insignificant space characters elided."
+           " (contain) HTMLEscape
+                " (contain) signature
+                     " (contain) "func HTMLEscape(dst *bytes.Buffer, src []byte)"
+                " (contain) description
+                     " (contain) "HTMLEscape appends to dst the JSON-encoded src with <, >, &, U+2028 and U+2029 characters inside string literals changed to \u003c, \u003e, \u0026, \u2028, \u2029 so that the JSON will be safe to embed inside HTML <script> tags. For historical reasons, web browsers don't honor standard HTML escaping within <script> tags, so an alternative JSON encoding must be used."
+           " (contain) Indent
+                " (contain) signature
+                     " (contain) "func Indent(dst *bytes.Buffer, src []byte, prefix, indent string) error"
+                " (contain) description
+                     " (contain) "Indent appends to dst an indented form of the JSON-encoded src. Each element in a JSON object or array begins on a new, indented line beginning with prefix followed by one or more copies of indent according to the indentation nesting. The data appended to dst does not begin with the prefix nor any indentation, to make it easier to embed inside other formatted JSON data. Although leading space characters (space, tab, carriage return, newline) at the beginning of src are dropped, trailing space ch..."
+           " (contain) Marshal
+                " (contain) signature
+                     " (contain) "func Marshal(v any) ([]byte, error)"
+                " (contain) description
+                     " (contain) "Marshal returns the JSON encoding of v."
+           " (contain) MarshalIndent
+                " (contain) signature
+                     " (contain) "func MarshalIndent(v any, prefix, indent string) ([]byte, error)"
+                " (contain) description
+                     " (contain) "MarshalIndent is like Marshal but applies Indent to format the output. Each JSON element in the output will begin on a new line beginning with prefix followed by one or more copies of indent according to the indentation nesting."
+           " (contain) Unmarshal
+                " (contain) signature
+                     " (contain) "func Unmarshal(data []byte, v any) error"
+                " (contain) description
+                     " (contain) "Unmarshal parses the JSON-encoded data and stores the result in the value pointed to by v. If v is nil or not a pointer, Unmarshal returns an InvalidUnmarshalError."
+           " (contain) Valid
+                " (contain) signature
+                     " (contain) "func Valid(data []byte) bool"
+                " (contain) description
+                     " (contain) "Valid reports whether data is a valid JSON encoding."
+      " (contain) types
+           " (contain) Decoder
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Decoder reads and decodes JSON values from an input stream."
+           " (contain) Delim
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A Delim is a JSON array or object delimiter, one of [ ] { or }."
+           " (contain) Encoder
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An Encoder writes JSON values to an output stream."
+           " (contain) InvalidUTF8Error
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Before Go 1.2, an InvalidUTF8Error was returned by Marshal when attempting to encode a string value with invalid UTF-8 sequences. As of Go 1.2, Marshal instead coerces the string to valid UTF-8 by replacing invalid bytes with the Unicode replacement rune U+FFFD."
+           " (contain) InvalidUnmarshalError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An InvalidUnmarshalError describes an invalid argument passed to Unmarshal. (The argument to Unmarshal must be a non-nil pointer.)"
+           " (contain) Marshaler
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Marshaler is the interface implemented by types that can marshal themselves into valid JSON."
+           " (contain) MarshalerError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A MarshalerError represents an error from calling a [Marshaler.MarshalJSON] or encoding.TextMarshaler.MarshalText method."
+           " (contain) Number
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A Number represents a JSON number literal."
+           " (contain) RawMessage
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "RawMessage is a raw encoded JSON value. It implements Marshaler and Unmarshaler and can be used to delay JSON decoding or precompute a JSON encoding."
+           " (contain) SyntaxError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A SyntaxError is a description of a JSON syntax error. Unmarshal will return a SyntaxError if the JSON can't be parsed."
+           " (contain) Token
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A Token holds a value of one of these types:"
+           " (contain) UnmarshalFieldError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An UnmarshalFieldError describes a JSON object key that led to an unexported (and therefore unwritable) struct field."
+           " (contain) UnmarshalTypeError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An UnmarshalTypeError describes a JSON value that was not appropriate for a value of a specific Go type."
+           " (contain) Unmarshaler
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Unmarshaler is the interface implemented by types that can unmarshal a JSON description of themselves. The input can be assumed to be a valid encoding of a JSON value. UnmarshalJSON must copy the JSON data if it wishes to retain the data after returning."
+           " (contain) UnsupportedTypeError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An UnsupportedTypeError is returned by Marshal when attempting to encode an unsupported value type."
+           " (contain) UnsupportedValueError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An UnsupportedValueError is returned by Marshal when attempting to encode an unsupported value."
+
+ "net"
+      " (contain) "package type"
+           " (contain) stdlib
+ net
+      " (contain) "import path"
+           " (contain) net
+      " (contain) documentation
+           " (contain) "Package net provides a portable interface for network I/O, including TCP/IP, UDP, domain name resolution, and Unix domain sockets."
+           " (contain) "Although the package provides access to low-level networking primitives, most clients will need only the basic interface provided by the Dial, Listen, and Accept functions and the associated Conn and Listener interfaces. The crypto/tls package uses the same interfaces and similar Dial and Listen functions."
+      " (contain) functions
+           " (contain) JoinHostPort
+                " (contain) signature
+                     " (contain) "func JoinHostPort(host, port string) string"
+                " (contain) description
+                     " (contain) "JoinHostPort combines host and port into a network address of the form 'host:port'. If host contains a colon, as found in literal IPv6 addresses, then JoinHostPort returns '[host]:port'."
+           " (contain) LookupAddr
+                " (contain) signature
+                     " (contain) "func LookupAddr(addr string) (names []string, err error)"
+                " (contain) description
+                     " (contain) "LookupAddr performs a reverse lookup for the given address, returning a list of names mapping to that address."
+           " (contain) LookupCNAME
+                " (contain) signature
+                     " (contain) "func LookupCNAME(host string) (cname string, err error)"
+                " (contain) description
+                     " (contain) "LookupCNAME returns the canonical name for the given host. Callers that do not care about the canonical name can call LookupHost or LookupIP directly; both take care of resolving the canonical name as part of the lookup."
+           " (contain) LookupHost
+                " (contain) signature
+                     " (contain) "func LookupHost(host string) (addrs []string, err error)"
+                " (contain) description
+                     " (contain) "LookupHost looks up the given host using the local resolver. It returns a slice of that host's addresses."
+           " (contain) LookupPort
+                " (contain) signature
+                     " (contain) "func LookupPort(network, service string) (port int, err error)"
+                " (contain) description
+                     " (contain) "LookupPort looks up the port for the given network and service."
+           " (contain) LookupTXT
+                " (contain) signature
+                     " (contain) "func LookupTXT(name string) ([]string, error)"
+                " (contain) description
+                     " (contain) "LookupTXT returns the DNS TXT records for the given domain name."
+           " (contain) ParseCIDR
+                " (contain) signature
+                     " (contain) "func ParseCIDR(s string) (IP, *IPNet, error)"
+                " (contain) description
+                     " (contain) "ParseCIDR parses s as a CIDR notation IP address and prefix length, like '192.0.2.0/24' or '2001:db8::/32', as defined in RFC 4632 and RFC 4291."
+           " (contain) Pipe
+                " (contain) signature
+                     " (contain) "func Pipe() (Conn, Conn)"
+                " (contain) description
+                     " (contain) "Pipe creates a synchronous, in-memory, full duplex network connection; both ends implement the Conn interface. Reads on one end are matched with writes on the other, copying data directly between the two; there is no internal buffering."
+           " (contain) SplitHostPort
+                " (contain) signature
+                     " (contain) "func SplitHostPort(hostport string) (host, port string, err error)"
+                " (contain) description
+                     " (contain) "SplitHostPort splits a network address of the form 'host:port', 'host%zone:port', '[host]:port' or '[host%zone]:port' into host or host%zone and port."
+      " (contain) types
+           " (contain) Addr
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Addr represents a network end point address."
+           " (contain) AddrError
+                " (contain) kind
+                     " (contain) struct
+           " (contain) Buffers
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "Buffers contains zero or more runs of bytes to write."
+           " (contain) Conn
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Conn is a generic stream-oriented network connection."
+           " (contain) DNSConfigError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "DNSConfigError represents an error reading the machine's DNS configuration. (No longer used; kept for compatibility.)"
+           " (contain) DNSError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "DNSError represents a DNS lookup error."
+           " (contain) Dialer
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Dialer contains options for connecting to an address."
+           " (contain) Error
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "An Error represents a network error."
+           " (contain) Flags
+                " (contain) kind
+                     " (contain) other
+           " (contain) HardwareAddr
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A HardwareAddr represents a physical hardware address."
+           " (contain) IP
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "An IP is a single IP address, a slice of bytes. Functions in this package accept either 4-byte (IPv4) or 16-byte (IPv6) slices as input."
+           " (contain) IPAddr
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "IPAddr represents the address of an IP end point."
+           " (contain) IPConn
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "IPConn is the implementation of the Conn and PacketConn interfaces for IP network connections."
+           " (contain) IPMask
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "An IPMask is a bitmask that can be used to manipulate IP addresses for IP addressing and routing."
+           " (contain) IPNet
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An IPNet represents an IP network."
+           " (contain) Interface
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Interface represents a mapping between network interface name and index. It also represents network interface facility information."
+           " (contain) InvalidAddrError
+                " (contain) kind
+                     " (contain) other
+           " (contain) KeepAliveConfig
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "KeepAliveConfig contains TCP keep-alive options."
+           " (contain) ListenConfig
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "ListenConfig contains options for listening to an address."
+           " (contain) Listener
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "A Listener is a generic network listener for stream-oriented protocols."
+           " (contain) MX
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An MX represents a single DNS MX record."
+           " (contain) NS
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An NS represents a single DNS NS record."
+           " (contain) OpError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "OpError is the error type usually returned by functions in the net package. It describes the operation, network type, and address of an error."
+           " (contain) PacketConn
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "PacketConn is a generic packet-oriented network connection."
+           " (contain) ParseError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A ParseError is the error type of literal network address parsers."
+           " (contain) Resolver
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Resolver looks up names and numbers."
+           " (contain) SRV
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An SRV represents a single DNS SRV record."
+           " (contain) TCPAddr
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "TCPAddr represents the address of a TCP end point."
+           " (contain) TCPConn
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "TCPConn is an implementation of the Conn interface for TCP network connections."
+           " (contain) TCPListener
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "TCPListener is a TCP network listener. Clients should typically use variables of type Listener instead of assuming TCP."
+           " (contain) UDPAddr
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UDPAddr represents the address of a UDP end point."
+           " (contain) UDPConn
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UDPConn is the implementation of the Conn and PacketConn interfaces for UDP network connections."
+           " (contain) UnixAddr
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UnixAddr represents the address of a Unix domain socket end point."
+           " (contain) UnixConn
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UnixConn is an implementation of the Conn interface for connections to Unix domain sockets."
+           " (contain) UnixListener
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UnixListener is a Unix domain socket listener. Clients should typically use variables of type Listener instead of assuming Unix domain sockets."
+           " (contain) UnknownNetworkError
+                " (contain) kind
+                     " (contain) other
+
+ "net/http"
+      " (contain) "package type"
+           " (contain) stdlib
+ http
+      " (contain) "import path"
+           " (contain) http
+      " (contain) documentation
+           " (contain) "Package http provides HTTP client and server implementations."
+           " (contain) "Get, Head, Post, and PostForm make HTTP (or HTTPS) requests:"
+      " (contain) functions
+           " (contain) CanonicalHeaderKey
+                " (contain) signature
+                     " (contain) "func CanonicalHeaderKey(s string) string"
+                " (contain) description
+                     " (contain) "CanonicalHeaderKey returns the canonical format of the header key s. The canonicalization converts the first letter and any letter following a hyphen to upper case; the rest are converted to lowercase. For example, the canonical key for 'accept-encoding' is 'Accept-Encoding'. If s contains a space or invalid header field bytes, it is returned without modifications."
+           " (contain) DetectContentType
+                " (contain) signature
+                     " (contain) "func DetectContentType(data []byte) string"
+                " (contain) description
+                     " (contain) "DetectContentType implements the algorithm described at https://mimesniff.spec.whatwg.org/ to determine the Content-Type of the given data. It considers at most the first 512 bytes of data. DetectContentType always returns a valid MIME type: if it cannot determine a more specific one, it returns 'application/octet-stream'."
+           " (contain) Error
+                " (contain) signature
+                     " (contain) "func Error(w ResponseWriter, error string, code int)"
+                " (contain) description
+                     " (contain) "Error replies to the request with the specified error message and HTTP code. It does not otherwise end the request; the caller should ensure no further writes are done to w. The error message should be plain text."
+           " (contain) Handle
+                " (contain) signature
+                     " (contain) "func Handle(pattern string, handler Handler)"
+                " (contain) description
+                     " (contain) "Handle registers the handler for the given pattern in DefaultServeMux. The documentation for ServeMux explains how patterns are matched."
+           " (contain) HandleFunc
+                " (contain) signature
+                     " (contain) "func HandleFunc(pattern string, handler func(ResponseWriter, *Request))"
+                " (contain) description
+                     " (contain) "HandleFunc registers the handler function for the given pattern in DefaultServeMux. The documentation for ServeMux explains how patterns are matched."
+           " (contain) ListenAndServe
+                " (contain) signature
+                     " (contain) "func ListenAndServe(addr string, handler Handler) error"
+                " (contain) description
+                     " (contain) "ListenAndServe listens on the TCP network address addr and then calls Serve with handler to handle requests on incoming connections. Accepted connections are configured to enable TCP keep-alives."
+           " (contain) ListenAndServeTLS
+                " (contain) signature
+                     " (contain) "func ListenAndServeTLS(addr, certFile, keyFile string, handler Handler) error"
+                " (contain) description
+                     " (contain) "ListenAndServeTLS acts identically to ListenAndServe, except that it expects HTTPS connections. Additionally, files containing a certificate and matching private key for the server must be provided. If the certificate is signed by a certificate authority, the certFile should be the concatenation of the server's certificate, any intermediates, and the CA's certificate."
+           " (contain) MaxBytesReader
+                " (contain) signature
+                     " (contain) "func MaxBytesReader(w ResponseWriter, r io.ReadCloser, n int64) io.ReadCloser"
+                " (contain) description
+                     " (contain) "MaxBytesReader is similar to io.LimitReader but is intended for limiting the size of incoming request bodies. In contrast to io.LimitReader, MaxBytesReader's result is a ReadCloser, returns a non-nil error of type *MaxBytesError for a Read beyond the limit, and closes the underlying reader when its Close method is called."
+           " (contain) NotFound
+                " (contain) signature
+                     " (contain) "func NotFound(w ResponseWriter, r *Request)"
+                " (contain) description
+                     " (contain) "NotFound replies to the request with an HTTP 404 not found error."
+           " (contain) ParseHTTPVersion
+                " (contain) signature
+                     " (contain) "func ParseHTTPVersion(vers string) (major, minor int, ok bool)"
+                " (contain) description
+                     " (contain) "ParseHTTPVersion parses an HTTP version string according to RFC 7230, section 2.6. 'HTTP/1.0' returns (1, 0, true). Note that strings without a minor version, such as 'HTTP/2', are not valid."
+           " (contain) ParseTime
+                " (contain) signature
+                     " (contain) "func ParseTime(text string) (t time.Time, err error)"
+                " (contain) description
+                     " (contain) "ParseTime parses a time header (such as the Date: header), trying each of the three formats allowed by HTTP/1.1: TimeFormat, time.RFC850, and time.ANSIC."
+           " (contain) ProxyFromEnvironment
+                " (contain) signature
+                     " (contain) "func ProxyFromEnvironment(req *Request) (*url.URL, error)"
+                " (contain) description
+                     " (contain) "ProxyFromEnvironment returns the URL of the proxy to use for a given request, as indicated by the environment variables HTTP_PROXY, HTTPS_PROXY and NO_PROXY (or the lowercase versions thereof). Requests use the proxy from the environment variable matching their scheme, unless excluded by NO_PROXY."
+           " (contain) ProxyURL
+                " (contain) signature
+                     " (contain) "func ProxyURL(fixedURL *url.URL) func(*Request) (*url.URL, error)"
+                " (contain) description
+                     " (contain) "ProxyURL returns a proxy function (for use in a Transport) that always returns the same URL."
+           " (contain) Redirect
+                " (contain) signature
+                     " (contain) "func Redirect(w ResponseWriter, r *Request, url string, code int)"
+                " (contain) description
+                     " (contain) "Redirect replies to the request with a redirect to url, which may be a path relative to the request path. Any non-ASCII characters in url will be percent-encoded, but existing percent encodings will not be changed."
+           " (contain) Serve
+                " (contain) signature
+                     " (contain) "func Serve(l net.Listener, handler Handler) error"
+                " (contain) description
+                     " (contain) "Serve accepts incoming HTTP connections on the listener l, creating a new service goroutine for each. The service goroutines read requests and then call handler to reply to them."
+           " (contain) ServeContent
+                " (contain) signature
+                     " (contain) "func ServeContent(w ResponseWriter, req *Request, name string, modtime time.Time, content io.ReadSeeker)"
+                " (contain) description
+                     " (contain) "ServeContent replies to the request using the content in the provided ReadSeeker. The main benefit of ServeContent over io.Copy is that it handles Range requests properly, sets the MIME type, and handles If-Match, If-Unmodified-Since, If-None-Match, If-Modified-Since, and If-Range requests."
+           " (contain) ServeFile
+                " (contain) signature
+                     " (contain) "func ServeFile(w ResponseWriter, r *Request, name string)"
+                " (contain) description
+                     " (contain) "ServeFile replies to the request with the contents of the named file or directory."
+           " (contain) ServeFileFS
+                " (contain) signature
+                     " (contain) "func ServeFileFS(w ResponseWriter, r *Request, fsys fs.FS, name string)"
+                " (contain) description
+                     " (contain) "ServeFileFS replies to the request with the contents of the named file or directory from the file system fsys. The files provided by fsys must implement io.Seeker."
+           " (contain) ServeTLS
+                " (contain) signature
+                     " (contain) "func ServeTLS(l net.Listener, handler Handler, certFile, keyFile string) error"
+                " (contain) description
+                     " (contain) "ServeTLS accepts incoming HTTPS connections on the listener l, creating a new service goroutine for each. The service goroutines read requests and then call handler to reply to them."
+           " (contain) SetCookie
+                " (contain) signature
+                     " (contain) "func SetCookie(w ResponseWriter, cookie *Cookie)"
+                " (contain) description
+                     " (contain) "SetCookie adds a Set-Cookie header to the provided ResponseWriter's headers. The provided cookie must have a valid Name. Invalid cookies may be silently dropped."
+           " (contain) StatusText
+                " (contain) signature
+                     " (contain) "func StatusText(code int) string"
+                " (contain) description
+                     " (contain) "StatusText returns a text for the HTTP status code. It returns the empty string if the code is unknown."
+      " (contain) types
+           " (contain) Client
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Client is an HTTP client. Its zero value (DefaultClient) is a usable client that uses DefaultTransport."
+           " (contain) CloseNotifier
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "The CloseNotifier interface is implemented by ResponseWriters which allow detecting when the underlying connection has gone away."
+           " (contain) ConnState
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A ConnState represents the state of a client connection to a server. It's used by the optional [Server.ConnState] hook."
+           " (contain) Cookie
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Cookie represents an HTTP cookie as sent in the Set-Cookie header of an HTTP response or the Cookie header of an HTTP request."
+           " (contain) CookieJar
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "A CookieJar manages storage and use of cookies in HTTP requests."
+           " (contain) CrossOriginProtection
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "CrossOriginProtection implements protections against Cross-Site Request Forgery (CSRF) by rejecting non-safe cross-origin browser requests."
+           " (contain) Dir
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A Dir implements FileSystem using the native file system restricted to a specific directory tree."
+           " (contain) File
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "A File is returned by a FileSystem's Open method and can be served by the FileServer implementation."
+           " (contain) FileSystem
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "A FileSystem implements access to a collection of named files. The elements in a file path are separated by slash ('/', U+002F) characters, regardless of host operating system convention. See the FileServer function to convert a FileSystem to a Handler."
+           " (contain) Flusher
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "The Flusher interface is implemented by ResponseWriters that allow an HTTP handler to flush buffered data to the client."
+           " (contain) HTTP2Config
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "HTTP2Config defines HTTP/2 configuration parameters common to both Transport and Server."
+           " (contain) Handler
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "A Handler responds to an HTTP request."
+           " (contain) HandlerFunc
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "The HandlerFunc type is an adapter to allow the use of ordinary functions as HTTP handlers. If f is a function with the appropriate signature, HandlerFunc(f) is a Handler that calls f."
+           " (contain) Header
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A Header represents the key-value pairs in an HTTP header."
+           " (contain) Hijacker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "The Hijacker interface is implemented by ResponseWriters that allow an HTTP handler to take over the connection."
+           " (contain) MaxBytesError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "MaxBytesError is returned by MaxBytesReader when its read limit is exceeded."
+           " (contain) ProtocolError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "ProtocolError represents an HTTP protocol error."
+           " (contain) Protocols
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Protocols is a set of HTTP protocols. The zero value is an empty set of protocols."
+           " (contain) PushOptions
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "PushOptions describes options for [Pusher.Push]."
+           " (contain) Pusher
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Pusher is the interface implemented by ResponseWriters that support HTTP/2 server push. For more background, see https://tools.ietf.org/html/rfc7540#section-8.2."
+           " (contain) Request
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Request represents an HTTP request received by a server or to be sent by a client."
+           " (contain) Response
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Response represents the response from an HTTP request."
+           " (contain) ResponseController
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A ResponseController is used by an HTTP handler to control the response."
+           " (contain) ResponseWriter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "A ResponseWriter interface is used by an HTTP handler to construct an HTTP response."
+           " (contain) RoundTripper
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "RoundTripper is an interface representing the ability to execute a single HTTP transaction, obtaining the Response for a given Request."
+           " (contain) SameSite
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "SameSite allows a server to define a cookie attribute making it impossible for the browser to send this cookie along with cross-site requests. The main goal is to mitigate the risk of cross-origin information leakage, and provide some protection against cross-site request forgery attacks."
+           " (contain) ServeMux
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "ServeMux is an HTTP request multiplexer. It matches the URL of each incoming request against a list of registered patterns and calls the handler for the pattern that most closely matches the URL."
+           " (contain) Server
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Server defines parameters for running an HTTP server. The zero value for Server is a valid configuration."
+           " (contain) Transport
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Transport is an implementation of RoundTripper that supports HTTP, HTTPS, and HTTP proxies (for either HTTP or HTTPS with CONNECT)."
+
+ "net/url"
+      " (contain) "package type"
+           " (contain) stdlib
+ url
+      " (contain) "import path"
+           " (contain) url
+      " (contain) documentation
+           " (contain) "Package url parses URLs and implements query escaping."
+           " (contain) "See RFC 3986. This package generally follows RFC 3986, except where it deviates for compatibility reasons. RFC 6874 followed for IPv6 zone literals."
+      " (contain) functions
+           " (contain) JoinPath
+                " (contain) signature
+                     " (contain) "func JoinPath(base string, elem ...string) (result string, err error)"
+                " (contain) description
+                     " (contain) "JoinPath returns a URL string with the provided path elements joined to the existing path of base and the resulting path cleaned of any ./ or ../ elements."
+           " (contain) PathEscape
+                " (contain) signature
+                     " (contain) "func PathEscape(s string) string"
+                " (contain) description
+                     " (contain) "PathEscape escapes the string so it can be safely placed inside a URL path segment, replacing special characters (including /) with %XX sequences as needed."
+           " (contain) PathUnescape
+                " (contain) signature
+                     " (contain) "func PathUnescape(s string) (string, error)"
+                " (contain) description
+                     " (contain) "PathUnescape does the inverse transformation of PathEscape, converting each 3-byte encoded substring of the form '%AB' into the hex-decoded byte 0xAB. It returns an error if any % is not followed by two hexadecimal digits."
+           " (contain) QueryEscape
+                " (contain) signature
+                     " (contain) "func QueryEscape(s string) string"
+                " (contain) description
+                     " (contain) "QueryEscape escapes the string so it can be safely placed inside a URL query."
+           " (contain) QueryUnescape
+                " (contain) signature
+                     " (contain) "func QueryUnescape(s string) (string, error)"
+                " (contain) description
+                     " (contain) "QueryUnescape does the inverse transformation of QueryEscape, converting each 3-byte encoded substring of the form '%AB' into the hex-decoded byte 0xAB. It returns an error if any % is not followed by two hexadecimal digits."
+      " (contain) types
+           " (contain) Error
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Error reports an error and the operation and URL that caused it."
+           " (contain) EscapeError
+                " (contain) kind
+                     " (contain) other
+           " (contain) InvalidHostError
+                " (contain) kind
+                     " (contain) other
+           " (contain) URL
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A URL represents a parsed URL (technically, a URI reference)."
+           " (contain) Userinfo
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "The Userinfo type is an immutable encapsulation of username and password details for a URL. An existing Userinfo value is guaranteed to have a username set (potentially empty, as allowed by RFC 2396), and optionally a password."
+           " (contain) Values
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "Values maps a string key to a list of values. It is typically used for query parameters and form values. Unlike in the http.Header map, the keys in a Values map are case-sensitive."

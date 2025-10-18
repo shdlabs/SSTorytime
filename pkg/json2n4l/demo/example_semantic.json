@@ -1,0 +1,17 @@
+{
+  "user": {
+    "id": 12345,
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "active": true,
+    "profile": {
+      "bio": "Software engineer passionate about semantic knowledge graphs",
+      "location": "San Francisco",
+      "skills": ["Go", "Python", "N4L"]
+    }
+  },
+  "api": {
+    "version": "2.0",
+    "endpoints": ["/users", "/posts", "/comments"]
+  }
+}

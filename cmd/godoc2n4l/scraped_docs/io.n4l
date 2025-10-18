@@ -1,0 +1,190 @@
+- io - Basic I/O interfaces
+
++ golang
++ stdlib
++ docs-analysis
++ io
+
+ "Discover Packages Standard library io"
+      " (contain) "import path"
+           " (contain) "Discover Packages Standard library io"
+      " (contain) documentation
+           " (contain) "Package io provides basic interfaces to I/O primitives. Its primary job is to wrap existing implementations of such primitives, such as those in package os, into shared public interfaces that abstract the functionality, plus some other related primitives."
+           " (contain) "Because these interfaces and primitives wrap lower-level operations with various implementations, unless otherwise informed clients should not assume they are safe for parallel execution."
+      " (contain) functions
+           " (contain) Copy
+                " (contain) signature
+                     " (contain) "func Copy(dst Writer, src Reader) (written int64, err error)"
+                " (contain) description
+                     " (contain) "Copy copies from src to dst until either EOF is reached on src or an error occurs. It returns the number of bytes copied and the first error encountered while copying, if any."
+           " (contain) CopyBuffer
+                " (contain) signature
+                     " (contain) "func CopyBuffer(dst Writer, src Reader, buf []byte) (written int64, err error)"
+                " (contain) description
+                     " (contain) "CopyBuffer is identical to Copy except that it stages through the provided buffer (if one is required) rather than allocating a temporary one. If buf is nil, one is allocated; otherwise if it has zero length, CopyBuffer panics."
+           " (contain) CopyN
+                " (contain) signature
+                     " (contain) "func CopyN(dst Writer, src Reader, n int64) (written int64, err error)"
+                " (contain) description
+                     " (contain) "CopyN copies n bytes (or until an error) from src to dst. It returns the number of bytes copied and the earliest error encountered while copying. On return, written == n if and only if err == nil."
+           " (contain) Pipe
+                " (contain) signature
+                     " (contain) "func Pipe() (*PipeReader, *PipeWriter)"
+                " (contain) description
+                     " (contain) "Pipe creates a synchronous in-memory pipe. It can be used to connect code expecting an io.Reader with code expecting an io.Writer."
+           " (contain) ReadAll
+                " (contain) signature
+                     " (contain) "func ReadAll(r Reader) ([]byte, error)"
+                " (contain) description
+                     " (contain) "ReadAll reads from r until an error or EOF and returns the data it read. A successful call returns err == nil, not err == EOF. Because ReadAll is defined to read from src until EOF, it does not treat an EOF from Read as an error to be reported."
+           " (contain) ReadAtLeast
+                " (contain) signature
+                     " (contain) "func ReadAtLeast(r Reader, buf []byte, min int) (n int, err error)"
+                " (contain) description
+                     " (contain) "ReadAtLeast reads from r into buf until it has read at least min bytes. It returns the number of bytes copied and an error if fewer bytes were read. The error is EOF only if no bytes were read. If an EOF happens after reading fewer than min bytes, ReadAtLeast returns ErrUnexpectedEOF. If min is greater than the length of buf, ReadAtLeast returns ErrShortBuffer. On return, n >= min if and only if err == nil. If r returns an error having read at least min bytes, the error is dropped."
+           " (contain) ReadFull
+                " (contain) signature
+                     " (contain) "func ReadFull(r Reader, buf []byte) (n int, err error)"
+                " (contain) description
+                     " (contain) "ReadFull reads exactly len(buf) bytes from r into buf. It returns the number of bytes copied and an error if fewer bytes were read. The error is EOF only if no bytes were read. If an EOF happens after reading some but not all the bytes, ReadFull returns ErrUnexpectedEOF. On return, n == len(buf) if and only if err == nil. If r returns an error having read at least len(buf) bytes, the error is dropped."
+           " (contain) WriteString
+                " (contain) signature
+                     " (contain) "func WriteString(w Writer, s string) (n int, err error)"
+                " (contain) description
+                     " (contain) "WriteString writes the contents of the string s to w, which accepts a slice of bytes. If w implements StringWriter, [StringWriter.WriteString] is invoked directly. Otherwise, [Writer.Write] is called exactly once."
+      " (contain) types
+           " (contain) ByteReader
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ByteReader is the interface that wraps the ReadByte method."
+           " (contain) ByteScanner
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ByteScanner is the interface that adds the UnreadByte method to the basic ReadByte method."
+           " (contain) ByteWriter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ByteWriter is the interface that wraps the WriteByte method."
+           " (contain) Closer
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Closer is the interface that wraps the basic Close method."
+           " (contain) LimitedReader
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A LimitedReader reads from R but limits the amount of data returned to just N bytes. Each call to Read updates N to reflect the new amount remaining. Read returns EOF when N <= 0 or when the underlying R returns EOF."
+           " (contain) OffsetWriter
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An OffsetWriter maps writes at offset base to offset base+off in the underlying writer."
+           " (contain) PipeReader
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A PipeReader is the read half of a pipe."
+           " (contain) PipeWriter
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A PipeWriter is the write half of a pipe."
+           " (contain) ReadCloser
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadCloser is the interface that groups the basic Read and Close methods."
+           " (contain) ReadSeekCloser
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadSeekCloser is the interface that groups the basic Read, Seek and Close methods."
+           " (contain) ReadSeeker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadSeeker is the interface that groups the basic Read and Seek methods."
+           " (contain) ReadWriteCloser
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadWriteCloser is the interface that groups the basic Read, Write and Close methods."
+           " (contain) ReadWriteSeeker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadWriteSeeker is the interface that groups the basic Read, Write and Seek methods."
+           " (contain) ReadWriter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReadWriter is the interface that groups the basic Read and Write methods."
+           " (contain) Reader
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Reader is the interface that wraps the basic Read method."
+           " (contain) ReaderAt
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReaderAt is the interface that wraps the basic ReadAt method."
+           " (contain) ReaderFrom
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ReaderFrom is the interface that wraps the ReadFrom method."
+           " (contain) RuneReader
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "RuneReader is the interface that wraps the ReadRune method."
+           " (contain) RuneScanner
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "RuneScanner is the interface that adds the UnreadRune method to the basic ReadRune method."
+           " (contain) SectionReader
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "SectionReader implements Read, Seek, and ReadAt on a section of an underlying ReaderAt."
+           " (contain) Seeker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Seeker is the interface that wraps the basic Seek method."
+           " (contain) StringWriter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "StringWriter is the interface that wraps the WriteString method."
+           " (contain) WriteCloser
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "WriteCloser is the interface that groups the basic Write and Close methods."
+           " (contain) WriteSeeker
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "WriteSeeker is the interface that groups the basic Write and Seek methods."
+           " (contain) Writer
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Writer is the interface that wraps the basic Write method."
+           " (contain) WriterAt
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "WriterAt is the interface that wraps the basic WriteAt method."
+           " (contain) WriterTo
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "WriterTo is the interface that wraps the WriteTo method."
