@@ -93,13 +93,16 @@ func (f *N4LFormatter) WriteN4L(pkg *Package, w io.Writer) error {
 		}
 	}
 
-	// Imports
-	if len(pkg.Imports) > 0 {
-		fmt.Fprintln(w, "      \" (contain) \"imported packages\"")
-		for _, imp := range pkg.Imports {
-			fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(imp))
-		}
-	}
+	// Imports - skip for now to avoid self-reference issues
+	// TODO: Filter out self-imports and re-enable
+	// if len(pkg.Imports) > 0 {
+	// 	fmt.Fprintln(w, "      \" (contain) \"imported packages\"")
+	// 	for _, imp := range pkg.Imports {
+	// 		if imp != pkg.ImportPath {  // Skip self-import
+	// 			fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(imp))
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }
@@ -142,6 +145,7 @@ func (f *N4LFormatter) writeExample(w io.Writer, ex *Example) {
 }
 
 // escapeN4L escapes text for N4L format
+// Always returns a quoted string to avoid annotation parsing issues
 func escapeN4L(s string) string {
 	if len(s) > 500 {
 		s = s[:500] + "..."
@@ -164,13 +168,22 @@ func escapeN4L(s string) string {
 		return "\"(no description)\""
 	}
 
-	// Replace == with = to avoid N4L arrow parsing issues
-	s = strings.ReplaceAll(s, "==", "=")
+	// Replace internal quotes with single quotes to avoid quote escaping issues
+	s = strings.ReplaceAll(s, `"`, "'")
 
-	// Quote if needed
-	if strings.ContainsAny(s, " \t()[]{}") {
-		s = `"` + strings.ReplaceAll(s, `"`, "'") + `"`
-	}
-
-	return s
+	// Remove ALL annotation symbols from SSTconfig/annotations.sst
+	// These can't be escaped in N4L quoted strings
+	// Order matters - replace longer sequences first!
+	s = strings.ReplaceAll(s, "**", " DOUBLESTAR ")
+	s = strings.ReplaceAll(s, ">>", " DOUBLEGREATER ")
+	s = strings.ReplaceAll(s, "==", " equals ")
+	s = strings.ReplaceAll(s, "!=", " not-equals ")
+	s = strings.ReplaceAll(s, ">=", " greater-or-equal ")
+	s = strings.ReplaceAll(s, "<=", " less-or-equal ")
+	s = strings.ReplaceAll(s, "=>", " implies ")
+	s = strings.ReplaceAll(s, "=", " equals ") // Single = after multi-char
+	s = strings.ReplaceAll(s, ">", " GREATER ")
+	s = strings.ReplaceAll(s, "<", " LESS ")
+	s = strings.ReplaceAll(s, "%", " PERCENT ") // Always quote to protect from annotation parsing
+	return `"` + s + `"`
 }
