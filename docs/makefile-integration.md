@@ -13,12 +13,14 @@ Updated the examples Makefile to integrate the `n4l-validate` tool, providing **
 ### 1. Validate-First Workflow
 
 **Before:**
+
 - Uploaded files one by one
 - Errors discovered during upload (too late!)
 - Partial uploads could corrupt database
 - No safety net
 
 **After:**
+
 - ✅ Validates ALL files first (fail-fast)
 - ✅ Only uploads if all files pass
 - ✅ Database wiped cleanly before upload
@@ -27,9 +29,11 @@ Updated the examples Makefile to integrate the `n4l-validate` tool, providing **
 ### 2. New Targets
 
 #### `make` (default - full rebuild)
+
 ```bash
 make
 ```
+
 1. Checks validator is installed
 2. Validates ALL N4L files
 3. If any fail → stops immediately with error details
@@ -38,6 +42,7 @@ make
 6. First file uses `-wipe` flag
 
 **Output:**
+
 ```
 =========================================
   Pre-flight: Validating All Files
@@ -57,37 +62,45 @@ make
 ```
 
 #### `make validate`
+
 ```bash
 make validate
 ```
+
 - Validates all files WITHOUT uploading
 - Shows which files pass/fail
 - Great for quick syntax checks
 - No database modifications
 
 #### `make upload FILE=<file> [FORCE=1]`
+
 ```bash
 make upload FILE=astronomy.n4l
 make upload FILE=moon.n4l FORCE=1  # Overwrite existing
 ```
+
 - Validates single file
 - Uploads if validation passes
 - Optional FORCE=1 for `-force` flag
 
 #### `make watch FILE=<file>`
+
 ```bash
 make watch FILE=moon.n4l
 ```
+
 - Starts validator in watch mode
 - Auto-validates on file changes
 - Perfect for editing sessions
 
 #### `make help`
+
 Shows all available targets with examples
 
 ### 3. Safety Features
 
 #### Pre-flight Validation
+
 ```makefile
 validate-all:
     # Validates ALL files before any upload
@@ -96,12 +109,14 @@ validate-all:
 ```
 
 Benefits:
+
 - ✅ **Fail Fast**: Catch errors before database changes
 - ✅ **Clear Errors**: See exact line numbers and hints
 - ✅ **No Partial Uploads**: All or nothing approach
 - ✅ **Time Saved**: Don't wait for upload to find syntax errors
 
 #### Validator Check
+
 ```makefile
 check-validator:
     # Ensures n4l-validate is installed
@@ -136,11 +151,14 @@ Used consistently across all upload operations.
 ## Usage Examples
 
 ### Full Database Rebuild
+
 ```bash
 cd /home/alex/SSTorytime/examples
 make
 ```
+
 This will:
+
 1. Validate all 14 N4L files
 2. Wipe the database
 3. Upload all files fresh
@@ -148,21 +166,27 @@ This will:
 **Safe:** Won't touch database if ANY file has errors!
 
 ### Quick Syntax Check
+
 ```bash
 make validate
 ```
+
 Fast feedback - no database changes.
 
 ### Single File Update
+
 ```bash
 make upload FILE=astronomy.n4l FORCE=1
 ```
+
 Validates and force-uploads one file.
 
 ### Live Editing
+
 ```bash
 make watch FILE=moon.n4l
 ```
+
 Edit `moon.n4l` in another terminal - see instant validation!
 
 ## Error Handling Example
@@ -193,18 +217,21 @@ make: *** [Makefile:66: validate-all] Error 1
 ## Benefits
 
 ### For Developers
+
 - ✅ Instant feedback during editing
 - ✅ No accidental database corruption
 - ✅ Clear error messages
 - ✅ Watch mode for live editing
 
 ### For Database Integrity
+
 - ✅ All files validated before ANY upload
 - ✅ Clean wipe + upload cycle
 - ✅ No partial uploads
 - ✅ Consistent state
 
 ### For Workflow
+
 - ✅ Simple commands (`make`, `make validate`)
 - ✅ Self-documenting (`make help`)
 - ✅ Flexible (single file or all files)
@@ -213,6 +240,7 @@ make: *** [Makefile:66: validate-all] Error 1
 ## Comparison
 
 ### Old Workflow
+
 ```bash
 # Edit file
 vim moon.n4l
@@ -226,6 +254,7 @@ vim moon.n4l
 ```
 
 ### New Workflow
+
 ```bash
 # Start watching (once)
 make watch FILE=moon.n4l
@@ -265,11 +294,13 @@ make validate
 ```
 
 **Found errors in:**
+
 - `SSTorytime.n4l` (line 131: unterminated string)
 - `chinese_comments.n4l` (line 6: unterminated string)
 - `chinese_story_fox.n4l` (errors found)
 
 **Passed:**
+
 - All other files (11/14 files)
 
 This validation would have **prevented database corruption** if we had run `make` directly!
@@ -277,15 +308,19 @@ This validation would have **prevented database corruption** if we had run `make
 ## Integration with Existing Workflow
 
 ### Compatible with Mark's N4L
+
 The Makefile still uses `../src/N4L` for uploads, just adds validation first.
 
 ### Backward Compatible
+
 Old commands still work:
+
 ```bash
 ../src/N4L -u myfile.n4l  # Still works!
 ```
 
 But now you have better options:
+
 ```bash
 make upload FILE=myfile.n4l  # Validates first!
 make watch FILE=myfile.n4l   # Live editing!
@@ -294,6 +329,7 @@ make watch FILE=myfile.n4l   # Live editing!
 ## Future Enhancements
 
 Possible additions:
+
 - [ ] `make fix` - Auto-fix common errors
 - [ ] `make diff` - Show what changed before upload
 - [ ] `make backup` - Backup database before wipe
@@ -304,6 +340,7 @@ Possible additions:
 ## Conclusion
 
 The Makefile now provides:
+
 1. **Safety**: Validate before upload (fail-fast)
 2. **Clarity**: Clear error messages with context
 3. **Speed**: Fast validation (~50-100µs per file)
