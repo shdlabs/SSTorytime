@@ -38,7 +38,7 @@ func (f *N4LFormatter) WriteN4L(pkg *Package, w io.Writer) error {
 	// Import path
 	if pkg.ImportPath != "" {
 		fmt.Fprintln(w, "      \" (contain) \"import path\"")
-		fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(pkg.ImportPath))
+		fmt.Fprintf(w, "           \" (contain) \"path: %s\"\n", pkg.ImportPath)
 	}
 
 	// Synopsis
@@ -159,8 +159,16 @@ func escapeN4L(s string) string {
 
 	s = strings.TrimSpace(s)
 
+	// Never return empty string - use placeholder
+	if s == "" {
+		return "\"(no description)\""
+	}
+
+	// Replace == with = to avoid N4L arrow parsing issues
+	s = strings.ReplaceAll(s, "==", "=")
+
 	// Quote if needed
-	if strings.ContainsAny(s, " \t()[]{}") || s == "" {
+	if strings.ContainsAny(s, " \t()[]{}") {
 		s = `"` + strings.ReplaceAll(s, `"`, "'") + `"`
 	}
 

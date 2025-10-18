@@ -1,0 +1,11 @@
+- Test validation errors
+
++ context1
+
+ This is a valid node (contain) another node
+
+ Missing closing quote: "this is broken
+
+ " (hasX) ditto test
+
+ Valid again (next) final node

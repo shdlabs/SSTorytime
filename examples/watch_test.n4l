@@ -1,0 +1,9 @@
+- Watch mode test
+
++ test context
+
+ First node (contain) second node
+
+ Second node (belong) first node
+
+ Third node (hasX) some value

@@ -82,10 +82,12 @@ for pkg in "${packages[@]}"; do
   echo "           \" (contain) stdlib" >> "$OUTPUT_FILE"
   
   # Extract content after context tags, indent it under the package
+  # Skip the first node line (the package name itself) to avoid self-reference
   sed -n '/^$/,$p' "$temp_file" | \
     grep -v '^-' | \
     grep -v '^+' | \
     sed '/^$/d' | \
+    tail -n +2 | \
     sed 's/^ / /' \
     >> "$OUTPUT_FILE"
   

@@ -1,0 +1,128 @@
+
+# Validator command (installed via go install)
+VALIDATOR := n4l-validate
+N4L := ../src/N4L
+
+# Helper function to validate then upload
+# Usage: $(call validate_and_upload,filename,upload_flags)
+define validate_and_upload
+	@echo "� Validating $(1)..."
+	@if $(VALIDATOR) $(1) > /dev/null 2>&1; then \
+		echo "✅ Validation passed"; \
+		echo "📤 Uploading $(1)..."; \
+		if $(N4L) -u $(2) $(1) 2>&1 | tail -5; then \
+			echo "✓ $(1) uploaded successfully"; \
+		else \
+			echo "❌ $(1) upload FAILED"; \
+		fi; \
+	else \
+		echo "❌ $(1) validation FAILED - skipping upload"; \
+		echo "   Run: $(VALIDATOR) $(1)"; \
+		echo "   to see detailed errors"; \
+	fi
+	@echo ""
+endef
+
+all: check-validator ../src/N4L
+	@echo "========================================="
+	@echo "  Validate & Upload N4L Files"
+	@echo "========================================="
+	@echo ""
+	$(call validate_and_upload,doors.n4l,-wipe)
+	$(call validate_and_upload,Mary.n4l)
+	$(call validate_and_upload,branches.n4l)
+	$(call validate_and_upload,doubleslit.n4l)
+	$(call validate_and_upload,wardleymap.n4l)
+	$(call validate_and_upload,kubernetes.n4l)
+	#$(call validate_and_upload,SSTorytime.n4l)
+	$(call validate_and_upload,SSTsearchexamples.n4l)
+	$(call validate_and_upload,integral.n4l)
+	$(call validate_and_upload,reasoning.n4l)
+	$(call validate_and_upload,moon.n4l)
+	$(call validate_and_upload,astronomy.n4l)
+	$(call validate_and_upload,music-catalogue.n4l)
+	$(call validate_and_upload,reminders.n4l)
+	@echo "========================================="
+	@echo "  Upload Complete"
+	@echo "========================================="
+
+# Check if validator is installed
+check-validator:
+	@command -v $(VALIDATOR) >/dev/null 2>&1 || { \
+		echo "❌ n4l-validate not found!"; \
+		echo ""; \
+		echo "Install with:"; \
+		echo "  cd /home/alex/SSTorytime"; \
+		echo "  go install ./cmd/n4l-validate"; \
+		echo ""; \
+		exit 1; \
+	}
+	@echo "✓ Validator found: $$(which $(VALIDATOR))"
+	@echo ""
+
+# Validate all files without uploading
+validate:
+	@echo "========================================="
+	@echo "  Validating All N4L Files"
+	@echo "========================================="
+	@echo ""
+	@for file in *.n4l; do \
+		echo "� Validating $$file..."; \
+		if $(VALIDATOR) $$file > /dev/null 2>&1; then \
+			echo "✅ $$file passed"; \
+		else \
+			echo "❌ $$file FAILED"; \
+			$(VALIDATOR) $$file; \
+		fi; \
+		echo ""; \
+	done
+	@echo "========================================="
+	@echo "  Validation Complete"
+	@echo "========================================="
+
+# Upload a single file (validate first)
+# Usage: make upload FILE=myfile.n4l
+upload:
+	@if [ -z "$(FILE)" ]; then \
+		echo "❌ Usage: make upload FILE=myfile.n4l"; \
+		exit 1; \
+	fi
+	$(call validate_and_upload,$(FILE))
+
+# Watch a file for changes (validation only)
+# Usage: make watch FILE=myfile.n4l
+watch:
+	@if [ -z "$(FILE)" ]; then \
+		echo "❌ Usage: make watch FILE=myfile.n4l"; \
+		exit 1; \
+	fi
+	@echo "👁️  Starting watch mode for $(FILE)"
+	@echo "Press Ctrl+C to stop"
+	@echo ""
+	@$(VALIDATOR) -w $(FILE)
+
+# Show help
+help:
+	@echo "N4L Examples Makefile"
+	@echo ""
+	@echo "Targets:"
+	@echo "  make all          - Validate and upload all N4L files (default)"
+	@echo "  make validate     - Validate all files without uploading"
+	@echo "  make upload FILE=<file>  - Validate and upload a single file"
+	@echo "  make watch FILE=<file>   - Watch a file for changes (validation only)"
+	@echo "  make clean        - Remove temporary files"
+	@echo "  make help         - Show this help message"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make validate"
+	@echo "  make upload FILE=astronomy.n4l"
+	@echo "  make watch FILE=moon.n4l"
+	@echo ""
+	@echo "The validator (n4l-validate) must be installed first:"
+	@echo "  cd .. && go install ./cmd/n4l-validate"
+
+clean:
+	rm -f *_test_log *~
+
+.PHONY: all check-validator validate upload watch help clean
+

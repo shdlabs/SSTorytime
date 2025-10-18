@@ -5,27 +5,33 @@ N4L := ../src/N4L
 
 # List of all N4L files to process
 N4L_FILES := doors.n4l Mary.n4l branches.n4l doubleslit.n4l \
-             wardleymap.n4l kubernetes.n4l \
+             wardleymap.n4l kubernetes.n4l SSTorytime.n4l \
              SSTsearchexamples.n4l integral.n4l reasoning.n4l \
              moon.n4l astronomy.n4l music-catalogue.n4l reminders.n4l
 
-# Helper function to validate then upload
+# Helper function to upload with post-failure validation
 # Usage: $(call validate_and_upload,filename,upload_flags)
+# Tries upload first, only validates if upload fails (to diagnose issues)
 define validate_and_upload
-	@echo "🔍 Validating $(1)..."
-	@if $(VALIDATOR) $(1) > /dev/null 2>&1; then \
-		echo "✅ Validation passed"; \
-		echo "📤 Uploading $(1)..."; \
-		if $(N4L) -u $(2) $(1) 2>&1 | tail -5; then \
-			echo "✓ $(1) uploaded successfully"; \
-		else \
-			echo "❌ $(1) upload FAILED"; \
-			exit 1; \
-		fi; \
+	@echo "📤 Uploading $(1)..."
+	@if $(N4L) -u $(2) $(1) > /tmp/n4l_upload_$$$$.log 2>&1; then \
+		echo "✓ $(1) uploaded successfully"; \
+		tail -3 /tmp/n4l_upload_$$$$.log; \
+		rm -f /tmp/n4l_upload_$$$$.log; \
 	else \
-		echo "❌ $(1) validation FAILED - aborting"; \
-		echo "   Run: $(VALIDATOR) $(1)"; \
-		echo "   to see detailed errors"; \
+		echo "❌ $(1) upload FAILED"; \
+		echo ""; \
+		echo "Upload output:"; \
+		cat /tmp/n4l_upload_$$$$.log; \
+		rm -f /tmp/n4l_upload_$$$$.log; \
+		echo ""; \
+		echo "🔍 Running validator to diagnose issue..."; \
+		if $(VALIDATOR) $(1); then \
+			echo "✅ File passed validation but N4L upload failed"; \
+			echo "   This may be a semantic error or N4L bug"; \
+		else \
+			echo "❌ File has syntax errors - fix these first"; \
+		fi; \
 		exit 1; \
 	fi
 	@echo ""
@@ -45,7 +51,7 @@ all: check-validator ../src/N4L validate-all
 	$(call validate_and_upload,doubleslit.n4l)
 	$(call validate_and_upload,wardleymap.n4l)
 	$(call validate_and_upload,kubernetes.n4l)
-# 	$(call validate_and_upload,SSTorytime.n4l)
+#	$(call validate_and_upload,SSTorytime.n4l)
 	$(call validate_and_upload,SSTsearchexamples.n4l)
 	$(call validate_and_upload,integral.n4l)
 	$(call validate_and_upload,reasoning.n4l)
@@ -126,12 +132,12 @@ upload:
 	@if [ -z "$(FILE)" ]; then \
 		echo "❌ Usage: make upload FILE=myfile.n4l [FORCE=1]"; \
 		exit 1; \
-	fi; \
-	if [ "$(FORCE)" = "1" ]; then \
-		$(call validate_and_upload,$(FILE),-force); \
-	else \
-		$(call validate_and_upload,$(FILE)); \
 	fi
+ifeq ($(FORCE),1)
+	$(call validate_and_upload,$(FILE),-force)
+else
+	$(call validate_and_upload,$(FILE))
+endif
 
 # Watch a file for changes (validation only)
 # Usage: make watch FILE=myfile.n4l
