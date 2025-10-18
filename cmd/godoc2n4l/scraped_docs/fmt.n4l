@@ -1,0 +1,160 @@
+- fmt - Formatted I/O with printing
+
++ golang
++ stdlib
++ docs-analysis
++ fmt
+
+ "Discover Packages Standard library fmt"
+      " (contain) "import path"
+           " (contain) "Discover Packages Standard library fmt"
+      " (contain) documentation
+           " (contain) "Package fmt implements formatted I/O with functions analogous to C's printf and scanf. The format 'verbs' are derived from C's but are simpler."
+           " (contain) "The verbs:"
+      " (contain) functions
+           " (contain) Append
+                " (contain) signature
+                     " (contain) "func Append(b []byte, a ...any) []byte"
+                " (contain) description
+                     " (contain) "Append formats using the default formats for its operands, appends the result to the byte slice, and returns the updated slice."
+           " (contain) Appendf
+                " (contain) signature
+                     " (contain) "func Appendf(b []byte, format string, a ...any) []byte"
+                " (contain) description
+                     " (contain) "Appendf formats according to a format specifier, appends the result to the byte slice, and returns the updated slice."
+           " (contain) Appendln
+                " (contain) signature
+                     " (contain) "func Appendln(b []byte, a ...any) []byte"
+                " (contain) description
+                     " (contain) "Appendln formats using the default formats for its operands, appends the result to the byte slice, and returns the updated slice. Spaces are always added between operands and a newline is appended."
+           " (contain) Errorf
+                " (contain) signature
+                     " (contain) "func Errorf(format string, a ...any) error"
+                " (contain) description
+                     " (contain) "Errorf formats according to a format specifier and returns the string as a value that satisfies error."
+           " (contain) FormatString
+                " (contain) signature
+                     " (contain) "func FormatString(state State, verb rune) string"
+                " (contain) description
+                     " (contain) "FormatString returns a string representing the fully qualified formatting directive captured by the State, followed by the argument verb. (State does not itself contain the verb.) The result has a leading percent sign followed by any flags, the width, and the precision. Missing flags, width, and precision are omitted. This function allows a Formatter to reconstruct the original directive triggering the call to Format."
+           " (contain) Fprint
+                " (contain) signature
+                     " (contain) "func Fprint(w io.Writer, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fprint formats using the default formats for its operands and writes to w. Spaces are added between operands when neither is a string. It returns the number of bytes written and any write error encountered."
+           " (contain) Fprintf
+                " (contain) signature
+                     " (contain) "func Fprintf(w io.Writer, format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fprintf formats according to a format specifier and writes to w. It returns the number of bytes written and any write error encountered."
+           " (contain) Fprintln
+                " (contain) signature
+                     " (contain) "func Fprintln(w io.Writer, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fprintln formats using the default formats for its operands and writes to w. Spaces are always added between operands and a newline is appended. It returns the number of bytes written and any write error encountered."
+           " (contain) Fscan
+                " (contain) signature
+                     " (contain) "func Fscan(r io.Reader, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fscan scans text read from r, storing successive space-separated values into successive arguments. Newlines count as space. It returns the number of items successfully scanned. If that is less than the number of arguments, err will report why."
+           " (contain) Fscanf
+                " (contain) signature
+                     " (contain) "func Fscanf(r io.Reader, format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fscanf scans text read from r, storing successive space-separated values into successive arguments as determined by the format. It returns the number of items successfully parsed. Newlines in the input must match newlines in the format."
+           " (contain) Fscanln
+                " (contain) signature
+                     " (contain) "func Fscanln(r io.Reader, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Fscanln is similar to Fscan, but stops scanning at a newline and after the final item there must be a newline or EOF."
+           " (contain) Print
+                " (contain) signature
+                     " (contain) "func Print(a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Print formats using the default formats for its operands and writes to standard output. Spaces are added between operands when neither is a string. It returns the number of bytes written and any write error encountered."
+           " (contain) Printf
+                " (contain) signature
+                     " (contain) "func Printf(format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Printf formats according to a format specifier and writes to standard output. It returns the number of bytes written and any write error encountered."
+           " (contain) Println
+                " (contain) signature
+                     " (contain) "func Println(a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Println formats using the default formats for its operands and writes to standard output. Spaces are always added between operands and a newline is appended. It returns the number of bytes written and any write error encountered."
+           " (contain) Scan
+                " (contain) signature
+                     " (contain) "func Scan(a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Scan scans text read from standard input, storing successive space-separated values into successive arguments. Newlines count as space. It returns the number of items successfully scanned. If that is less than the number of arguments, err will report why."
+           " (contain) Scanf
+                " (contain) signature
+                     " (contain) "func Scanf(format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Scanf scans text read from standard input, storing successive space-separated values into successive arguments as determined by the format. It returns the number of items successfully scanned. If that is less than the number of arguments, err will report why. Newlines in the input must match newlines in the format. The one exception: the verb %c always scans the next rune in the input, even if it is a space (or tab etc.) or newline."
+           " (contain) Scanln
+                " (contain) signature
+                     " (contain) "func Scanln(a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Scanln is similar to Scan, but stops scanning at a newline and after the final item there must be a newline or EOF."
+           " (contain) Sprint
+                " (contain) signature
+                     " (contain) "func Sprint(a ...any) string"
+                " (contain) description
+                     " (contain) "Sprint formats using the default formats for its operands and returns the resulting string. Spaces are added between operands when neither is a string."
+           " (contain) Sprintf
+                " (contain) signature
+                     " (contain) "func Sprintf(format string, a ...any) string"
+                " (contain) description
+                     " (contain) "Sprintf formats according to a format specifier and returns the resulting string."
+           " (contain) Sprintln
+                " (contain) signature
+                     " (contain) "func Sprintln(a ...any) string"
+                " (contain) description
+                     " (contain) "Sprintln formats using the default formats for its operands and returns the resulting string. Spaces are always added between operands and a newline is appended."
+           " (contain) Sscan
+                " (contain) signature
+                     " (contain) "func Sscan(str string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Sscan scans the argument string, storing successive space-separated values into successive arguments. Newlines count as space. It returns the number of items successfully scanned. If that is less than the number of arguments, err will report why."
+           " (contain) Sscanf
+                " (contain) signature
+                     " (contain) "func Sscanf(str string, format string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Sscanf scans the argument string, storing successive space-separated values into successive arguments as determined by the format. It returns the number of items successfully parsed. Newlines in the input must match newlines in the format."
+           " (contain) Sscanln
+                " (contain) signature
+                     " (contain) "func Sscanln(str string, a ...any) (n int, err error)"
+                " (contain) description
+                     " (contain) "Sscanln is similar to Sscan, but stops scanning at a newline and after the final item there must be a newline or EOF."
+      " (contain) types
+           " (contain) Formatter
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Formatter is implemented by any value that has a Format method. The implementation controls how State and rune are interpreted, and may call Sprint or Fprint(f) etc. to generate its output."
+           " (contain) GoStringer
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "GoStringer is implemented by any value that has a GoString method, which defines the Go syntax for that value. The GoString method is used to print values passed as an operand to a %#v format."
+           " (contain) ScanState
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "ScanState represents the scanner state passed to custom scanners. Scanners may do rune-at-a-time scanning or ask the ScanState to discover the next space-delimited token."
+           " (contain) Scanner
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Scanner is implemented by any value that has a Scan method, which scans the input for the representation of a value and stores the result in the receiver, which must be a pointer to be useful. The Scan method is called for any argument to Scan, Scanf, or Scanln that implements it."
+           " (contain) State
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "State represents the printer state passed to custom formatters. It provides access to the io.Writer interface plus information about the flags and options for the operand's format specifier."
+           " (contain) Stringer
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Stringer is implemented by any value that has a String method, which defines the “native” format for that value. The String method is used to print values passed as an operand to any format that accepts a string or to an unformatted printer such as Print."

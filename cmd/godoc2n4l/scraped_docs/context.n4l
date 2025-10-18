@@ -1,0 +1,70 @@
+- context - Context for cancellation
+
++ golang
++ stdlib
++ docs-analysis
++ context
+
+ "Discover Packages Standard library context"
+      " (contain) "import path"
+           " (contain) "Discover Packages Standard library context"
+      " (contain) documentation
+           " (contain) "Package context defines the Context type, which carries deadlines, cancellation signals, and other request-scoped values across API boundaries and between processes."
+           " (contain) "Incoming requests to a server should create a Context, and outgoing calls to servers should accept a Context. The chain of function calls between them must propagate the Context, optionally replacing it with a derived Context created using WithCancel, WithDeadline, WithTimeout, or WithValue."
+      " (contain) functions
+           " (contain) AfterFunc
+                " (contain) signature
+                     " (contain) "func AfterFunc(ctx Context, f func()) (stop func() bool)"
+                " (contain) description
+                     " (contain) "AfterFunc arranges to call f in its own goroutine after ctx is canceled. If ctx is already canceled, AfterFunc calls f immediately in its own goroutine."
+           " (contain) Cause
+                " (contain) signature
+                     " (contain) "func Cause(c Context) error"
+                " (contain) description
+                     " (contain) "Cause returns a non-nil error explaining why c was canceled. The first cancellation of c or one of its parents sets the cause. If that cancellation happened via a call to CancelCauseFunc(err), then Cause returns err. Otherwise Cause(c) returns the same value as c.Err(). Cause returns nil if c has not been canceled yet."
+           " (contain) WithCancel
+                " (contain) signature
+                     " (contain) "func WithCancel(parent Context) (ctx Context, cancel CancelFunc)"
+                " (contain) description
+                     " (contain) "WithCancel returns a derived context that points to the parent context but has a new Done channel. The returned context's Done channel is closed when the returned cancel function is called or when the parent context's Done channel is closed, whichever happens first."
+           " (contain) WithCancelCause
+                " (contain) signature
+                     " (contain) "func WithCancelCause(parent Context) (ctx Context, cancel CancelCauseFunc)"
+                " (contain) description
+                     " (contain) "WithCancelCause behaves like WithCancel but returns a CancelCauseFunc instead of a CancelFunc. Calling cancel with a non-nil error (the 'cause') records that error in ctx; it can then be retrieved using Cause(ctx). Calling cancel with nil sets the cause to Canceled."
+           " (contain) WithDeadline
+                " (contain) signature
+                     " (contain) "func WithDeadline(parent Context, d time.Time) (Context, CancelFunc)"
+                " (contain) description
+                     " (contain) "WithDeadline returns a derived context that points to the parent context but has the deadline adjusted to be no later than d. If the parent's deadline is already earlier than d, WithDeadline(parent, d) is semantically equivalent to parent. The returned [Context.Done] channel is closed when the deadline expires, when the returned cancel function is called, or when the parent context's Done channel is closed, whichever happens first."
+           " (contain) WithDeadlineCause
+                " (contain) signature
+                     " (contain) "func WithDeadlineCause(parent Context, d time.Time, cause error) (Context, CancelFunc)"
+                " (contain) description
+                     " (contain) "WithDeadlineCause behaves like WithDeadline but also sets the cause of the returned Context when the deadline is exceeded. The returned CancelFunc does not set the cause."
+           " (contain) WithTimeout
+                " (contain) signature
+                     " (contain) "func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc)"
+                " (contain) description
+                     " (contain) "WithTimeout returns WithDeadline(parent, time.Now().Add(timeout))."
+           " (contain) WithTimeoutCause
+                " (contain) signature
+                     " (contain) "func WithTimeoutCause(parent Context, timeout time.Duration, cause error) (Context, CancelFunc)"
+                " (contain) description
+                     " (contain) "WithTimeoutCause behaves like WithTimeout but also sets the cause of the returned Context when the timeout expires. The returned CancelFunc does not set the cause."
+      " (contain) types
+           " (contain) CancelCauseFunc
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A CancelCauseFunc behaves like a CancelFunc but additionally sets the cancellation cause. This cause can be retrieved by calling Cause on the canceled Context or on any of its derived Contexts."
+           " (contain) CancelFunc
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A CancelFunc tells an operation to abandon its work. A CancelFunc does not wait for the work to stop. A CancelFunc may be called by multiple goroutines simultaneously. After the first call, subsequent calls to a CancelFunc do nothing."
+           " (contain) Context
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Context carries a deadline, a cancellation signal, and other values across API boundaries."

@@ -1,0 +1,232 @@
+- net - Network I/O
+
++ golang
++ stdlib
++ docs-analysis
++ net
+
+ "Discover Packages Standard library net"
+      " (contain) "import path"
+           " (contain) "Discover Packages Standard library net"
+      " (contain) documentation
+           " (contain) "Package net provides a portable interface for network I/O, including TCP/IP, UDP, domain name resolution, and Unix domain sockets."
+           " (contain) "Although the package provides access to low-level networking primitives, most clients will need only the basic interface provided by the Dial, Listen, and Accept functions and the associated Conn and Listener interfaces. The crypto/tls package uses the same interfaces and similar Dial and Listen functions."
+      " (contain) functions
+           " (contain) JoinHostPort
+                " (contain) signature
+                     " (contain) "func JoinHostPort(host, port string) string"
+                " (contain) description
+                     " (contain) "JoinHostPort combines host and port into a network address of the form 'host:port'. If host contains a colon, as found in literal IPv6 addresses, then JoinHostPort returns '[host]:port'."
+           " (contain) LookupAddr
+                " (contain) signature
+                     " (contain) "func LookupAddr(addr string) (names []string, err error)"
+                " (contain) description
+                     " (contain) "LookupAddr performs a reverse lookup for the given address, returning a list of names mapping to that address."
+           " (contain) LookupCNAME
+                " (contain) signature
+                     " (contain) "func LookupCNAME(host string) (cname string, err error)"
+                " (contain) description
+                     " (contain) "LookupCNAME returns the canonical name for the given host. Callers that do not care about the canonical name can call LookupHost or LookupIP directly; both take care of resolving the canonical name as part of the lookup."
+           " (contain) LookupHost
+                " (contain) signature
+                     " (contain) "func LookupHost(host string) (addrs []string, err error)"
+                " (contain) description
+                     " (contain) "LookupHost looks up the given host using the local resolver. It returns a slice of that host's addresses."
+           " (contain) LookupPort
+                " (contain) signature
+                     " (contain) "func LookupPort(network, service string) (port int, err error)"
+                " (contain) description
+                     " (contain) "LookupPort looks up the port for the given network and service."
+           " (contain) LookupTXT
+                " (contain) signature
+                     " (contain) "func LookupTXT(name string) ([]string, error)"
+                " (contain) description
+                     " (contain) "LookupTXT returns the DNS TXT records for the given domain name."
+           " (contain) ParseCIDR
+                " (contain) signature
+                     " (contain) "func ParseCIDR(s string) (IP, *IPNet, error)"
+                " (contain) description
+                     " (contain) "ParseCIDR parses s as a CIDR notation IP address and prefix length, like '192.0.2.0/24' or '2001:db8::/32', as defined in RFC 4632 and RFC 4291."
+           " (contain) Pipe
+                " (contain) signature
+                     " (contain) "func Pipe() (Conn, Conn)"
+                " (contain) description
+                     " (contain) "Pipe creates a synchronous, in-memory, full duplex network connection; both ends implement the Conn interface. Reads on one end are matched with writes on the other, copying data directly between the two; there is no internal buffering."
+           " (contain) SplitHostPort
+                " (contain) signature
+                     " (contain) "func SplitHostPort(hostport string) (host, port string, err error)"
+                " (contain) description
+                     " (contain) "SplitHostPort splits a network address of the form 'host:port', 'host%zone:port', '[host]:port' or '[host%zone]:port' into host or host%zone and port."
+      " (contain) types
+           " (contain) Addr
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Addr represents a network end point address."
+           " (contain) AddrError
+                " (contain) kind
+                     " (contain) struct
+           " (contain) Buffers
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "Buffers contains zero or more runs of bytes to write."
+           " (contain) Conn
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "Conn is a generic stream-oriented network connection."
+           " (contain) DNSConfigError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "DNSConfigError represents an error reading the machine's DNS configuration. (No longer used; kept for compatibility.)"
+           " (contain) DNSError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "DNSError represents a DNS lookup error."
+           " (contain) Dialer
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Dialer contains options for connecting to an address."
+           " (contain) Error
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "An Error represents a network error."
+           " (contain) Flags
+                " (contain) kind
+                     " (contain) other
+           " (contain) HardwareAddr
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "A HardwareAddr represents a physical hardware address."
+           " (contain) IP
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "An IP is a single IP address, a slice of bytes. Functions in this package accept either 4-byte (IPv4) or 16-byte (IPv6) slices as input."
+           " (contain) IPAddr
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "IPAddr represents the address of an IP end point."
+           " (contain) IPConn
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "IPConn is the implementation of the Conn and PacketConn interfaces for IP network connections."
+           " (contain) IPMask
+                " (contain) kind
+                     " (contain) other
+                " (contain) description
+                     " (contain) "An IPMask is a bitmask that can be used to manipulate IP addresses for IP addressing and routing."
+           " (contain) IPNet
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An IPNet represents an IP network."
+           " (contain) Interface
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "Interface represents a mapping between network interface name and index. It also represents network interface facility information."
+           " (contain) InvalidAddrError
+                " (contain) kind
+                     " (contain) other
+           " (contain) KeepAliveConfig
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "KeepAliveConfig contains TCP keep-alive options."
+           " (contain) ListenConfig
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "ListenConfig contains options for listening to an address."
+           " (contain) Listener
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "A Listener is a generic network listener for stream-oriented protocols."
+           " (contain) MX
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An MX represents a single DNS MX record."
+           " (contain) NS
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An NS represents a single DNS NS record."
+           " (contain) OpError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "OpError is the error type usually returned by functions in the net package. It describes the operation, network type, and address of an error."
+           " (contain) PacketConn
+                " (contain) kind
+                     " (contain) interface
+                " (contain) description
+                     " (contain) "PacketConn is a generic packet-oriented network connection."
+           " (contain) ParseError
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A ParseError is the error type of literal network address parsers."
+           " (contain) Resolver
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "A Resolver looks up names and numbers."
+           " (contain) SRV
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "An SRV represents a single DNS SRV record."
+           " (contain) TCPAddr
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "TCPAddr represents the address of a TCP end point."
+           " (contain) TCPConn
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "TCPConn is an implementation of the Conn interface for TCP network connections."
+           " (contain) TCPListener
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "TCPListener is a TCP network listener. Clients should typically use variables of type Listener instead of assuming TCP."
+           " (contain) UDPAddr
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UDPAddr represents the address of a UDP end point."
+           " (contain) UDPConn
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UDPConn is the implementation of the Conn and PacketConn interfaces for UDP network connections."
+           " (contain) UnixAddr
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UnixAddr represents the address of a Unix domain socket end point."
+           " (contain) UnixConn
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UnixConn is an implementation of the Conn interface for connections to Unix domain sockets."
+           " (contain) UnixListener
+                " (contain) kind
+                     " (contain) struct
+                " (contain) description
+                     " (contain) "UnixListener is a Unix domain socket listener. Clients should typically use variables of type Listener instead of assuming Unix domain sockets."
+           " (contain) UnknownNetworkError
+                " (contain) kind
+                     " (contain) other

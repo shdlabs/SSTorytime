@@ -1,0 +1,106 @@
+\chapter{API Response}
+
+\context{rest, api, example}
+
+response
+  !has-key! timestamp
+  timestamp
+    !has-value! 2025-10-17T14:30:00Z
+    !belong! response
+  !has-key! name
+  name
+    !has-value! "Example API Response"
+    !belong! response
+  !has-key! version
+  version
+    !has-value! 1.0.0
+    !belong! response
+  !has-key! status
+  status
+    !has-value! success
+    !belong! response
+  !has-key! data
+  data
+    !has-key! users
+    users
+      !has-element! "users[0]"
+      "users[0]"
+        !has-key! id
+        id
+          !has-value! 1
+          !belong! "users[0]"
+        !has-key! username
+        username
+          !has-value! alice
+          !belong! "users[0]"
+        !has-key! email
+        email
+          !has-value! alice@example.com
+          !belong! "users[0]"
+        !has-key! active
+        active
+          !has-value! true
+          !belong! "users[0]"
+        !has-key! roles
+        roles
+          !has-element! "roles[0]"
+          "roles[0]"
+            !has-value! admin
+            !in-array! roles
+          !has-element! "roles[1]"
+          "roles[1]"
+            !has-value! user
+            !in-array! roles
+
+          !belong! "users[0]"
+
+        !in-array! users
+      !has-element! "users[1]"
+      "users[1]"
+        !has-key! email
+        email
+          !has-value! bob@example.com
+          !belong! "users[1]"
+        !has-key! active
+        active
+          !has-value! false
+          !belong! "users[1]"
+        !has-key! roles
+        roles
+          !has-element! "roles[0]"
+          "roles[0]"
+            !has-value! user
+            !in-array! roles
+
+          !belong! "users[1]"
+        !has-key! id
+        id
+          !has-value! 2
+          !belong! "users[1]"
+        !has-key! username
+        username
+          !has-value! bob
+          !belong! "users[1]"
+
+        !in-array! users
+
+      !belong! data
+    !has-key! metadata
+    metadata
+      !has-key! total
+      total
+        !has-value! 2
+        !belong! metadata
+      !has-key! page
+      page
+        !has-value! 1
+        !belong! metadata
+      !has-key! limit
+      limit
+        !has-value! 10
+        !belong! metadata
+
+      !belong! data
+
+    !belong! response
+

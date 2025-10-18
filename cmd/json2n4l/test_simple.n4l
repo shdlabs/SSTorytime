@@ -1,0 +1,20 @@
+- JSON Import
+
++ shd-test
+
+ test
+      " (contain) user
+ user
+      " (contain) name
+           " (contain) Alice
+      " (contain) age
+           " (contain) 30
+      " (contain) skills
+ skills
+      " (contain) "skills[0]"
+           " (contain) Go
+      " (contain) "skills[1]"
+           " (contain) Python
+
+
+

@@ -1,0 +1,68 @@
+- Option Functions Example
+
+# Converted from JSON to N4L
+# Using semantic arrows from SSTconfig CN-2
+
+# JSON Object: example_semantic (2 keys)
+@example_semantic_1 example_semantic
+      " (contain) user
+ # JSON Object: user (5 keys)
+@user_2 user
+      " (contain) name
+           " (propt) "Alice Johnson" {string}
+      " (contain) email
+           " (propt) alice@example.com {string}
+      " (contain) active
+           " (propt) true {bool}
+      " (contain) profile
+  # JSON Object: profile (3 keys)
+@profile_3 profile
+      " (contain) bio
+           " (propt) "Software engineer passionate about semantic knowledge graphs" {string}
+      " (contain) location
+           " (propt) "San Francisco" {string}
+      " (contain) skills
+   # JSON Array: skills [3 items]
+ skills
+      " (setof) collection
+      " (contain) "skills[0]"
+           " (propt) Go {string}
+ "skills[0]"
+      " (in-set) skills
+      " (contain) "skills[1]"
+           " (propt) Python {string}
+ "skills[1]"
+      " (in-set) skills
+      " (contain) "skills[2]"
+           " (propt) N4L {string}
+ "skills[2]"
+      " (in-set) skills
+
+
+      " (contain) id
+           " (propt) 12345 {number}
+
+      " (contain) api
+ # JSON Object: api (2 keys)
+@api_4 api
+      " (contain) version
+           " (propt) 2.0 {string}
+      " (contain) endpoints
+  # JSON Array: endpoints [3 items]
+ endpoints
+      " (setof) collection
+      " (contain) "endpoints[0]"
+           " (propt) /users {string}
+ "endpoints[0]"
+      " (in-set) endpoints
+      " (contain) "endpoints[1]"
+           " (propt) /posts {string}
+ "endpoints[1]"
+      " (in-set) endpoints
+      " (contain) "endpoints[2]"
+           " (propt) /comments {string}
+ "endpoints[2]"
+      " (in-set) endpoints
+
+
+

@@ -1,0 +1,91 @@
+- Bidirectional Style Example
+
+# Converted from JSON to N4L
+
+# JSON Object: example_semantic (2 keys)
+@example_semantic_1 example_semantic
+      " (contain) user
+ # JSON Object: user (5 keys)
+@user_2 user
+      " (contain) active
+           " (propt) true
+ active
+      " (belong) user
+      " (contain) profile
+  # JSON Object: profile (3 keys)
+@profile_3 profile
+      " (contain) bio
+           " (propt) "Software engineer passionate about semantic knowledge graphs"
+ bio
+      " (belong) profile
+      " (contain) location
+           " (propt) "San Francisco"
+ location
+      " (belong) profile
+      " (contain) skills
+   # JSON Array: skills [3 items]
+ skills
+      " (setof) collection
+      " (contain) "skills[0]"
+           " (propt) Go
+ "skills[0]"
+      " (in-set) skills
+      " (contain) "skills[1]"
+           " (propt) Python
+ "skills[1]"
+      " (in-set) skills
+      " (contain) "skills[2]"
+           " (propt) N4L
+ "skills[2]"
+      " (in-set) skills
+
+ skills
+      " (belong) profile
+
+ profile
+      " (belong) user
+      " (contain) id
+           " (propt) 12345
+ id
+      " (belong) user
+      " (contain) name
+           " (propt) "Alice Johnson"
+ name
+      " (belong) user
+      " (contain) email
+           " (propt) alice@example.com
+ email
+      " (belong) user
+
+ user
+      " (belong) example_semantic
+      " (contain) api
+ # JSON Object: api (2 keys)
+@api_4 api
+      " (contain) version
+           " (propt) 2.0
+ version
+      " (belong) api
+      " (contain) endpoints
+  # JSON Array: endpoints [3 items]
+ endpoints
+      " (setof) collection
+      " (contain) "endpoints[0]"
+           " (propt) /users
+ "endpoints[0]"
+      " (in-set) endpoints
+      " (contain) "endpoints[1]"
+           " (propt) /posts
+ "endpoints[1]"
+      " (in-set) endpoints
+      " (contain) "endpoints[2]"
+           " (propt) /comments
+ "endpoints[2]"
+      " (in-set) endpoints
+
+ endpoints
+      " (belong) api
+
+ api
+      " (belong) example_semantic
+

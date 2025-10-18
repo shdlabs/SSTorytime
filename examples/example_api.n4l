@@ -1,0 +1,71 @@
+- JSON Import
+
+# Converted from JSON to N4L
+
+# JSON Object: example_api
+ example_api
+      " (contain) version
+           " (contain) 1.0.0
+      " (contain) status
+           " (contain) success
+      " (contain) data
+ # JSON Object: data
+ data
+      " (contain) users
+  # JSON Array: users [2 items]
+ users
+      " (contain) "users[0]"
+   # JSON Object: users[0]
+ "users[0]"
+      " (contain) id
+           " (contain) 1
+      " (contain) username
+           " (contain) alice
+      " (contain) email
+           " (contain) alice@example.com
+      " (contain) active
+           " (contain) true
+      " (contain) roles
+    # JSON Array: roles [2 items]
+ roles
+      " (contain) "roles[0]"
+           " (contain) admin
+      " (contain) "roles[1]"
+           " (contain) user
+
+
+      " (contain) "users[1]"
+   # JSON Object: users[1]
+ "users[1]"
+      " (contain) id
+           " (contain) 2
+      " (contain) username
+           " (contain) bob
+      " (contain) email
+           " (contain) bob@example.com
+      " (contain) active
+           " (contain) false
+      " (contain) roles
+    # JSON Array: roles [1 items]
+ roles
+      " (contain) "roles[0]"
+           " (contain) user
+
+
+
+      " (contain) metadata
+  # JSON Object: metadata
+ metadata
+      " (contain) page
+           " (contain) 1
+      " (contain) limit
+           " (contain) 10
+      " (contain) total
+           " (contain) 2
+
+
+      " (contain) timestamp
+           " (contain) 2025-10-17T14:30:00Z
+      " (contain) name
+           " (contain) "Example API Response"
+
