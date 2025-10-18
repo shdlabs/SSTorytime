@@ -126,8 +126,8 @@ upload:
 	@if [ -z "$(FILE)" ]; then \
 		echo "❌ Usage: make upload FILE=myfile.n4l [FORCE=1]"; \
 		exit 1; \
-	fi
-	@if [ "$(FORCE)" = "1" ]; then \
+	fi; \
+	if [ "$(FORCE)" = "1" ]; then \
 		$(call validate_and_upload,$(FILE),-force); \
 	else \
 		$(call validate_and_upload,$(FILE)); \
