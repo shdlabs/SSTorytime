@@ -131,7 +131,7 @@ func (s *PkgGoDev) Scrape(ctx context.Context, url string) (*Package, error) {
 	return pkg, nil
 }
 
-func (s *PkgGoDev) extractImportPath(doc *goquery.Document, url string) string {
+func (s *PkgGoDev) extractImportPath(_ *goquery.Document, url string) string {
 	// Best approach: extract from URL directly
 	// This avoids picking up breadcrumb navigation text
 	parts := strings.Split(url, "/")

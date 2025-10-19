@@ -47,34 +47,31 @@ echo ""
 echo "Scraping into unified document..."
 echo ""
 
+# Global @sep counter
+sep_counter=0
+
 for pkg in "${packages[@]}"; do
   count=$((count + 1))
   echo "[$count/$total] 📦 Scraping $pkg..."
   
-  # Scrape to temp file
-  filename=$(echo "$pkg" | tr '/' '_')
-  temp_file="/tmp/godoc_${filename}.n4l"
+  # Scrape to temp file with current counter
+  temp_file="/tmp/godoc_temp_$$.n4l"
   
-  ./godoc2n4l \
-    -chapter "TEMP" \
-    -context "TEMP" \
+  # Scrape in unified mode, capture stderr for counter update
+  output=$(./godoc2n4l \
+    -unified \
+    -sep "$sep_counter" \
     -o "$temp_file" \
-    "http://localhost:6060/$pkg" 2>&1 | grep -E "(functions|types|examples)" || true
+    "http://localhost:6060/$pkg" 2>&1)
   
-  # Extract package content (skip chapter and context lines)
-  # The individual scraper now creates the package node with proper formatting
-  pkg_name=$(basename "$pkg")
-  echo "" >> "$OUTPUT_FILE"
-  
-  # Extract everything after the context tags
-  # Skip first 3 lines (chapter, empty, context tags)
-  sed -n '/^$/,$p' "$temp_file" | \
-    grep -v '^-' | \
-    grep -v '^+' | \
-    sed '/^$/d' \
-    >> "$OUTPUT_FILE"
-  
+  # Append to main file
+  cat "$temp_file" >> "$OUTPUT_FILE"
   rm -f "$temp_file"
+  
+  # Extract updated counter from stderr
+  if [[ "$output" =~ SEP_COUNTER=([0-9]+) ]]; then
+    sep_counter="${BASH_REMATCH[1]}"
+  fi
 done
 
 echo ""

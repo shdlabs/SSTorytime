@@ -760,6 +760,13 @@ func Close(ctx PoSST) {
 // **************************************************************************
 
 func GetContext(contextptr ContextPtr) string {
+	start := time.Now()
+	defer func() {
+		slog.Debug("GetContext completed",
+			"duration_ms", time.Since(start).Milliseconds(),
+			"contextptr", contextptr)
+	}()
+
 	exists := int(contextptr) < len(CONTEXT_DIRECTORY)
 
 	if exists {
@@ -3499,37 +3506,87 @@ func GetDBNodePtrMatchingName(ctx PoSST, name, chap string) []NodePtr {
 
 func GetDBNodePtrMatchingNCCS(ctx PoSST, nm, chap string, cn []string, arrow []ArrowPtr, seq bool, limit int) []NodePtr {
 	// Order by L to favour exact matches
-	slog.Info("DB: GetDBNodePtrMatchingNCCS", "name", nm, "chapter", chap, "contexts", cn, "context_count", len(cn), "arrows", len(arrow), "limit", limit)
+	startTime := time.Now()
+	slog.Info("DB: GetDBNodePtrMatchingNCCS starting",
+		"name", nm,
+		"chapter", chap,
+		"contexts", cn,
+		"context_count", len(cn),
+		"arrows", len(arrow),
+		"limit", limit)
 
+	// Step 1: SQL Escaping
+	escapeStart := time.Now()
 	nm = SQLEscape(nm)
 	chap = SQLEscape(chap)
+	slog.Debug("GetDBNodePtrMatchingNCCS: SQLEscape completed",
+		"duration_ms", time.Since(escapeStart).Milliseconds())
 
-	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L,NPtr LIMIT %d", NodeWhereString(nm, chap, cn, arrow, seq), limit)
+	// Step 2: Build WHERE clause
+	whereStart := time.Now()
+	whereClause := NodeWhereString(nm, chap, cn, arrow, seq)
+	slog.Debug("GetDBNodePtrMatchingNCCS: NodeWhereString completed",
+		"duration_ms", time.Since(whereStart).Milliseconds(),
+		"where_length", len(whereClause))
+
+	// Step 3: Build full query
+	queryBuildStart := time.Now()
+	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L,NPtr LIMIT %d", whereClause, limit)
+	slog.Debug("GetDBNodePtrMatchingNCCS: Query built",
+		"duration_ms", time.Since(queryBuildStart).Milliseconds(),
+		"query_length", len(qstr))
 	slog.Debug("DB: Query", "sql", qstr)
 
+	// Step 4: Execute query
+	queryExecStart := time.Now()
 	row, err := ctx.DB.Query(qstr)
+	queryExecDuration := time.Since(queryExecStart).Milliseconds()
+	slog.Info("GetDBNodePtrMatchingNCCS: Query executed",
+		"duration_ms", queryExecDuration)
+
 	if err != nil {
 		slog.Error("DB: Query GetNodePtrMatchingNCC Failed", "error", err)
 		fmt.Println("QUERY GetNodePtrMatchingNCC Failed", err, qstr)
 	}
 
+	// Step 5: Parse results
+	parseStart := time.Now()
 	var whole string
 	var n NodePtr
 	var retval []NodePtr
+	rowCount := 0
 
 	for row.Next() {
 		err = row.Scan(&whole)
+		if err != nil {
+			slog.Error("DB: Scan error in GetNodePtrMatchingNCCS", "error", err)
+		}
 		fmt.Sscanf(whole, "(%d,%d)", &n.Class, &n.CPtr)
 		retval = append(retval, n)
+		rowCount++
 	}
+	parseDuration := time.Since(parseStart).Milliseconds()
+	slog.Debug("GetDBNodePtrMatchingNCCS: Results parsed",
+		"duration_ms", parseDuration,
+		"row_count", rowCount)
 
 	row.Close()
+
+	totalDuration := time.Since(startTime).Milliseconds()
+	slog.Info("GetDBNodePtrMatchingNCCS completed",
+		"total_duration_ms", totalDuration,
+		"query_exec_ms", queryExecDuration,
+		"parse_ms", parseDuration,
+		"results", len(retval))
+
 	return retval
 }
 
 // **************************************************************************
 
 func NodeWhereString(name, chap string, context []string, arrow []ArrowPtr, seq bool) string {
+	startTime := time.Now()
+
 	var chap_col, nm_col string
 	var ctx_col string
 	var qstr string
@@ -3537,7 +3594,7 @@ func NodeWhereString(name, chap string, context []string, arrow []ArrowPtr, seq 
 	// Format a WHERE clause for a Node search satisfying constraints
 
 	// Chapter first to limit search by block
-
+	chapStart := time.Now()
 	if chap != "any" && chap != "" {
 
 		remove_chap_accents, chap_stripped := IsBracketedSearchTerm(chap)
@@ -3552,9 +3609,11 @@ func NodeWhereString(name, chap string, context []string, arrow []ArrowPtr, seq 
 	} else {
 		chap_col = "true"
 	}
+	slog.Debug("NodeWhereString: Chapter clause built",
+		"duration_ms", time.Since(chapStart).Milliseconds())
 
 	// Name search using tsquery for wildcards and additional S = exact_constraint for !exact!
-
+	nameStart := time.Now()
 	outer_exact_match, nopling := IsExactMatch(name)
 	remove_name_accents, nobrack := IsBracketedSearchTerm(nopling)
 	inner_exact_match, bare_name := IsExactMatch(nobrack)
@@ -3574,6 +3633,8 @@ func NodeWhereString(name, chap string, context []string, arrow []ArrowPtr, seq 
 	if is_exact_match {
 		nm_col += fmt.Sprintf(" AND lower(S) = '%s'", bare_name)
 	}
+	slog.Debug("NodeWhereString: Name clause built",
+		"duration_ms", time.Since(nameStart).Milliseconds())
 
 	var seq_col string
 
@@ -3582,17 +3643,31 @@ func NodeWhereString(name, chap string, context []string, arrow []ArrowPtr, seq 
 	}
 
 	// context and arrows
-
+	contextStart := time.Now()
 	_, cn_stripped := IsBracketedSearchList(context)
 	ctx_col = FormatSQLStringArray(cn_stripped)
+	slog.Debug("NodeWhereString: Context array formatted",
+		"duration_ms", time.Since(contextStart).Milliseconds(),
+		"contexts", len(context))
 
+	arrowStart := time.Now()
 	arrows := FormatSQLIntArray(Arrow2Int(arrow))
 	sttypes := FormatSQLIntArray(GetSTtypesFromArrows(arrow))
+	slog.Debug("NodeWhereString: Arrow arrays formatted",
+		"duration_ms", time.Since(arrowStart).Milliseconds(),
+		"arrows", len(arrow))
 
 	dbcols := I_MEXPR + "," + I_MCONT + "," + I_MLEAD + "," + I_NEAR + "," + I_PLEAD + "," + I_PCONT + "," + I_PEXPR
 
+	finalStart := time.Now()
 	qstr = fmt.Sprintf("%s %s %s AND NCC_match(NPtr,%s,%s,%s,%s)",
 		chap_col, nm_col, seq_col, ctx_col, arrows, sttypes, dbcols)
+	slog.Debug("NodeWhereString: Final WHERE string built",
+		"duration_ms", time.Since(finalStart).Milliseconds())
+
+	totalDuration := time.Since(startTime).Milliseconds()
+	slog.Debug("NodeWhereString completed",
+		"total_duration_ms", totalDuration)
 
 	return qstr
 }
@@ -3703,6 +3778,13 @@ func GetDBContextByPtr(ctx PoSST, ptr ContextPtr) (string, ContextPtr) {
 // **************************************************************************
 
 func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
+	start := time.Now()
+	defer func() {
+		slog.Debug("GetSTtypesFromArrows completed",
+			"duration_ms", time.Since(start).Milliseconds(),
+			"arrows_len", len(arrows))
+	}()
+
 	var sttypes []int
 
 	for a := range arrows {
@@ -3717,6 +3799,13 @@ func GetSTtypesFromArrows(arrows []ArrowPtr) []int {
 // **************************************************************************
 
 func GetDBNodeByNodePtr(ctx PoSST, db_nptr NodePtr) Node {
+	start := time.Now()
+	defer func() {
+		slog.Debug("GetDBNodeByNodePtr completed",
+			"duration_ms", time.Since(start).Milliseconds(),
+			"nptr", db_nptr)
+	}()
+
 	im_nptr, cached := NODE_CACHE[db_nptr]
 
 	if cached {
@@ -3999,6 +4088,13 @@ func GetDBArrowByName(ctx PoSST, name string) ArrowPtr {
 // **************************************************************************
 
 func GetDBArrowByPtr(ctx PoSST, arrowptr ArrowPtr) ArrowDirectory {
+	start := time.Now()
+	defer func() {
+		slog.Debug("GetDBArrowByPtr completed",
+			"duration_ms", time.Since(start).Milliseconds(),
+			"arrowptr", arrowptr)
+	}()
+
 	if int(arrowptr) > len(ARROW_DIRECTORY) {
 		DownloadArrowsFromDB(ctx)
 	}
@@ -4308,6 +4404,15 @@ func GetFwdPathsAsLinks(ctx PoSST, start NodePtr, sttype, depth int, maxlimit in
 // **************************************************************************
 
 func GetEntireConePathsAsLinks(ctx PoSST, orientation string, start NodePtr, depth int, limit int) ([][]Link, int) {
+	startTime := time.Now()
+	defer func() {
+		slog.Debug("GetEntireConePathsAsLinks completed",
+			"duration_ms", time.Since(startTime).Milliseconds(),
+			"start", start,
+			"orientation", orientation,
+			"depth", depth)
+	}()
+
 	// orientation should be "fwd" or "bwd" else "both"
 
 	// Todo: how to limit path search? Usually solutions are small..?
@@ -8684,6 +8789,13 @@ func ParseSQLArrayString(whole_array string) []string {
 // **************************************************************************
 
 func FormatSQLIntArray(array []int) string {
+	start := time.Now()
+	defer func() {
+		slog.Debug("FormatSQLIntArray completed",
+			"duration_ms", time.Since(start).Milliseconds(),
+			"array_len", len(array))
+	}()
+
 	if len(array) == 0 {
 		return "'{ }'"
 	}
@@ -8709,6 +8821,13 @@ func FormatSQLIntArray(array []int) string {
 // **************************************************************************
 
 func FormatSQLStringArray(array []string) string {
+	start := time.Now()
+	defer func() {
+		slog.Debug("FormatSQLStringArray completed",
+			"duration_ms", time.Since(start).Milliseconds(),
+			"array_len", len(array))
+	}()
+
 	if len(array) == 0 {
 		return "'{ }'"
 	}
@@ -9296,6 +9415,13 @@ func Already(s string, cone map[int][]string) bool {
 //****************************************************************************
 
 func Arrow2Int(arr []ArrowPtr) []int {
+	start := time.Now()
+	defer func() {
+		slog.Debug("Arrow2Int completed",
+			"duration_ms", time.Since(start).Milliseconds(),
+			"array_len", len(arr))
+	}()
+
 	var ret []int
 
 	for a := range arr {
@@ -9317,6 +9443,13 @@ const (
 //****************************************************************************
 
 func IsBracketedSearchList(list []string) (bool, []string) {
+	start := time.Now()
+	defer func() {
+		slog.Debug("IsBracketedSearchList completed",
+			"duration_ms", time.Since(start).Milliseconds(),
+			"list_len", len(list))
+	}()
+
 	var stripped_list []string
 	retval := false
 
@@ -9339,6 +9472,12 @@ func IsBracketedSearchList(list []string) (bool, []string) {
 //****************************************************************************
 
 func IsBracketedSearchTerm(src string) (bool, string) {
+	start := time.Now()
+	defer func() {
+		slog.Debug("IsBracketedSearchTerm completed",
+			"duration_ms", time.Since(start).Milliseconds())
+	}()
+
 	retval := false
 	stripped := src
 
@@ -9360,6 +9499,12 @@ func IsBracketedSearchTerm(src string) (bool, string) {
 //****************************************************************************
 
 func IsExactMatch(org string) (bool, string) {
+	start := time.Now()
+	defer func() {
+		slog.Debug("IsExactMatch completed",
+			"duration_ms", time.Since(start).Milliseconds())
+	}()
+
 	org = strings.TrimSpace(org)
 
 	if len(org) == 0 {

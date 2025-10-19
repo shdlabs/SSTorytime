@@ -1,0 +1,17 @@
+- Golang Test
+
+golang
+packages
+documentation
+
+@sep1 tar (contain) Types in tar  (source) import-path: tar  (description) Package tar implements access to tar archives.
+      " (contain) FileInfoNames
+           " (description) interface
+      " (contain) Format (description) other  (description) Format represents the tar archive format.
+      " (contain) Header " (description) struct
+           " (description) A Header represents a single header in a tar archive. Some fields may not be populated.
+       (contain) Reader
+           " (description) struct
+       (contain) Writer
+           " (description) struct
+

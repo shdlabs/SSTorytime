@@ -11,6 +11,7 @@ import (
 type N4LFormatter struct {
 	ChapterName string
 	ContextTags []string
+	SepCounter  *int // Pointer to global separator counter for unified mode
 }
 
 // WriteN4L outputs package data in N4L format using bulletproof structure
@@ -34,10 +35,27 @@ func (f *N4LFormatter) WriteN4L(pkg *Package, w io.Writer) error {
 	}
 	fmt.Fprintln(w)
 
-	sepCounter := 0 // Track @sep numbers for unique IDs
+	f.writePackageContent(pkg, w)
+	return nil
+}
 
-	// Package root node
-	fmt.Fprintf(w, " %s\n", escapeN4L(pkg.Name))
+// WritePackageUnified outputs package data in unified mode (no chapter/context headers)
+// Package appears as context marker :: pkgname ::
+// SepCounter must be set to global counter
+func (f *N4LFormatter) WritePackageUnified(pkg *Package, w io.Writer) error {
+	f.writePackageContent(pkg, w)
+	return nil
+}
+
+func (f *N4LFormatter) writePackageContent(pkg *Package, w io.Writer) {
+	// Use global counter if available, otherwise local
+	var sepCounter int
+	if f.SepCounter != nil {
+		sepCounter = *f.SepCounter
+	}
+
+	// Package as context marker
+	fmt.Fprintf(w, ":: %s ::\n\n", pkg.Name)
 
 	// Import path with arrow - use a labeled node to avoid self-reference
 	if pkg.ImportPath != "" {
@@ -57,7 +75,7 @@ func (f *N4LFormatter) WriteN4L(pkg *Package, w io.Writer) error {
 	// Functions section with unique @sep ID (on same line!)
 	if len(pkg.Functions) > 0 {
 		sepCounter++
-		fmt.Fprintf(w, "\n@sep%d %s\n\n", sepCounter, escapeN4L("Functions in "+pkg.Name))
+		fmt.Fprintf(w, "@sep%d Functions in %s\n", sepCounter, pkg.Name)
 		for i := range pkg.Functions {
 			f.writeFunction(w, &pkg.Functions[i])
 		}
@@ -66,7 +84,7 @@ func (f *N4LFormatter) WriteN4L(pkg *Package, w io.Writer) error {
 	// Types section with unique @sep ID (on same line!)
 	if len(pkg.Types) > 0 {
 		sepCounter++
-		fmt.Fprintf(w, "\n@sep%d %s\n\n", sepCounter, escapeN4L("Types in "+pkg.Name))
+		fmt.Fprintf(w, "@sep%d Types in %s\n", sepCounter, pkg.Name)
 		for i := range pkg.Types {
 			f.writeType(w, &pkg.Types[i])
 		}
@@ -75,7 +93,7 @@ func (f *N4LFormatter) WriteN4L(pkg *Package, w io.Writer) error {
 	// Constants section with unique @sep ID (on same line!)
 	if len(pkg.Constants) > 0 {
 		sepCounter++
-		fmt.Fprintf(w, "\n@sep%d %s\n\n", sepCounter, escapeN4L("Constants in "+pkg.Name))
+		fmt.Fprintf(w, "@sep%d Constants in %s\n", sepCounter, pkg.Name)
 		for i := range pkg.Constants {
 			c := &pkg.Constants[i]
 			fmt.Fprintf(w, "      %s\n", escapeN4L(c.Name))
@@ -86,8 +104,12 @@ func (f *N4LFormatter) WriteN4L(pkg *Package, w io.Writer) error {
 		}
 	}
 
+	// Update global counter if we're using it
+	if f.SepCounter != nil {
+		*f.SepCounter = sepCounter
+	}
+
 	fmt.Fprintln(w)
-	return nil
 }
 
 func (f *N4LFormatter) writeFunction(w io.Writer, fn *Function) {

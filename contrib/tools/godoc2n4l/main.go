@@ -18,6 +18,8 @@ func main() {
 	chapter := flag.String("chapter", "", "chapter name (default: <package> package)")
 	contexts := flag.String("context", "", "context tags (comma-separated)")
 	verbose := flag.Bool("v", false, "verbose output")
+	unified := flag.Bool("unified", false, "unified mode (no chapter/context headers, for combining packages)")
+	sepCounter := flag.Int("sep", 0, "starting @sep counter for unified mode")
 
 	flag.Usage = usage
 	flag.Parse()
@@ -65,24 +67,37 @@ func main() {
 		ContextTags: contextTags,
 	}
 
-	if err := formatter.WriteN4L(pkg, f); err != nil {
-		log.Fatalf("❌ Writing N4L: %v\n", err)
+	if *unified {
+		// Unified mode: use global sep counter, no chapter/context headers
+		formatter.SepCounter = sepCounter
+		if err := formatter.WritePackageUnified(pkg, f); err != nil {
+			log.Fatalf("❌ Writing N4L: %v\n", err)
+		}
+		// Print the updated counter for shell script to use
+		fmt.Fprintf(os.Stderr, "SEP_COUNTER=%d\n", *sepCounter)
+	} else {
+		// Standard mode: full chapter with headers
+		if err := formatter.WriteN4L(pkg, f); err != nil {
+			log.Fatalf("❌ Writing N4L: %v\n", err)
+		}
 	}
 
-	// Stats
-	fmt.Printf("\n✓ Successfully scraped %s\n", pkg.Name)
-	fmt.Printf("  Import path: %s\n", pkg.ImportPath)
-	fmt.Printf("  Functions: %d\n", len(pkg.Functions))
-	fmt.Printf("  Types: %d\n", len(pkg.Types))
-	fmt.Printf("  Constants: %d\n", len(pkg.Constants))
-	fmt.Printf("  Examples: %d\n", len(pkg.Examples))
-	fmt.Printf("  Output: %s\n", outputFile)
+	// Stats (only in non-unified mode to avoid cluttering combined output)
+	if !*unified {
+		fmt.Printf("\n✓ Successfully scraped %s\n", pkg.Name)
+		fmt.Printf("  Import path: %s\n", pkg.ImportPath)
+		fmt.Printf("  Functions: %d\n", len(pkg.Functions))
+		fmt.Printf("  Types: %d\n", len(pkg.Types))
+		fmt.Printf("  Constants: %d\n", len(pkg.Constants))
+		fmt.Printf("  Examples: %d\n", len(pkg.Examples))
+		fmt.Printf("  Output: %s\n", outputFile)
 
-	fmt.Println("\nNext steps:")
-	fmt.Printf("  📊 View: cat %s\n", outputFile)
-	absPath, _ := filepath.Abs(outputFile)
-	relPath, _ := filepath.Rel(filepath.Dir(filepath.Dir(absPath)), absPath)
-	fmt.Printf("  📤 Upload: ../../src/N4L -u -force %s\n", relPath)
+		fmt.Println("\nNext steps:")
+		fmt.Printf("  📊 View: cat %s\n", outputFile)
+		absPath, _ := filepath.Abs(outputFile)
+		relPath, _ := filepath.Rel(filepath.Dir(filepath.Dir(absPath)), absPath)
+		fmt.Printf("  📤 Upload: ../../src/N4L -u -force %s\n", relPath)
+	}
 }
 
 func usage() {

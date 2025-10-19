@@ -8,10 +8,14 @@ A fast, modern N4L validator with watch mode for real-time feedback.
 # Build
 go build -o n4l-validate .
 
+# Install
+go install .
+
 # Validate once
 ./n4l-validate myfile.n4l
 
 # Watch mode - auto-validate on changes
+# May become better editor plugin or lsp in the future
 ./n4l-validate -w myfile.n4l
 ```
 

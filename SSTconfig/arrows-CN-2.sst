@@ -53,7 +53,7 @@
 
  :: warnings ::
 
-  + should not contain        (!contain) - shouldn't be contained in (!contain-in)
+ + should not contain        (!contain) - shouldn't be contained in (!contain-in)
 
  :: events ::
 

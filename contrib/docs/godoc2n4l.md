@@ -30,17 +30,13 @@ go install golang.org/x/pkgsite/cmd/pkgsite@latest
 #### Run the server:
 
 ```bash
-# Start server on port 8080
-pkgsite -http=:8080
-
-# Or specify a different port
 pkgsite -http=localhost:6060
 ```
 
 #### Access it:
 
 ```
-Open browser: http://localhost:8080
+Open browser: http://localhost:6060
 ```
 
 This gives you the **exact same interface** as pkg.go.dev but running locally!
@@ -88,11 +84,11 @@ Once running, just change the URL:
 ./godoc2n4l https://pkg.go.dev/flag
 
 # Use:
-./godoc2n4l http://localhost:8080/flag
+./godoc2n4l http://localhost:6060/flag
 
 # Or scrape many packages quickly:
 for pkg in flag fmt errors context io os net/http; do
-  ./godoc2n4l -v -o "$pkg.n4l" "http://localhost:8080/$pkg"
+  ./godoc2n4l -v -o "$pkg.n4l" "http://localhost:6060/$pkg"
 done
 ```
 
@@ -109,13 +105,13 @@ Local scraping:
 
 ```bash
 # 1. Start pkgsite
-pkgsite -http=:8080 &
+pkgsite -http=:6060 &
 
 # 2. Wait a moment for it to start
 sleep 2
 
 # 3. Test with curl
-curl -s http://localhost:8080/flag | grep -i "flag package"
+curl -s http://localhost:6060/flag | grep -i "flag package"
 
 # 4. If you see HTML with "Package flag", you're good to go!
 ```
@@ -124,15 +120,15 @@ curl -s http://localhost:8080/flag | grep -i "flag package"
 
 ```bash
 # Terminal 1: Start the server
-pkgsite -http=:8080
+pkgsite -http=:6060
 
 # Terminal 2: Use our scraper
 cd /home/alex/SSTorytime/cmd/godoc2n4l
 
 # Scrape some packages
-./godoc2n4l -v http://localhost:8080/flag
-./godoc2n4l -v http://localhost:8080/fmt
-./godoc2n4l -v http://localhost:8080/net/http
+./godoc2n4l -v http://localhost:6060/flag
+./godoc2n4l -v http://localhost:6060/fmt
+./godoc2n4l -v http://localhost:6060/net/http
 
 # Or use the batch script (after updating URLs)
 ./scrape_samples.sh
@@ -141,6 +137,6 @@ cd /home/alex/SSTorytime/cmd/godoc2n4l
 ## Next Steps
 
 1. Install pkgsite: `go install golang.org/x/pkgsite/cmd/pkgsite@latest`
-2. Start it: `pkgsite -http=:8080`
-3. Update scraper URLs from `pkg.go.dev` to `localhost:8080`
+2. Start it: `pkgsite -http=:6060`
+3. Update scraper URLs from `pkg.go.dev` to `localhost:6060`
 4. Scrape away! 🎉
