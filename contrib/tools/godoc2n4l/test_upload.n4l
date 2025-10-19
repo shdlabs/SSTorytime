@@ -1,0 +1,19 @@
+- Test
+
++ test
+
+  :: test ::
+
+ "testpkg" (abbrev) pkg:test
+      " (description) "documentation"
+           " "This is a test."
+      " (contain) "functions"
+           " "TestFunc"
+                " (def) "func TestFunc() error"
+                " (description) "TestFunc does testing."
+
+  :: test - lists ::
+
+ "List of test functions"
+      " (is-memb) "TestFunc"
+

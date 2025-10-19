@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/markburgess/SSTorytime/internal/n4l"
+	"github.com/markburgess/SSTorytime/contrib/internal/n4l"
 )
 
 func main() {

@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/markburgess/SSTorytime/internal/scraper"
+	"github.com/markburgess/SSTorytime/contrib/internal/scraper"
 )
 
 func main() {
