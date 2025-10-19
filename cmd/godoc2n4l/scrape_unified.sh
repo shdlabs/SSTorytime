@@ -35,28 +35,16 @@ cat > "$OUTPUT_FILE" << 'EOF'
 
 EOF
 
-# Packages to scrape (organized by category)
-declare -a packages=(
-  "errors"
-  "io"
-  "fmt"
-  "bufio"
-  "flag"
-  "os"
-  "context"
-  "sync"
-  "strings"
-  "strconv"
-  "encoding/json"
-  "net"
-  "net/http"
-  "net/url"
-)
+# Get ALL standard library packages
+echo "📚 Discovering all standard library packages..."
+readarray -t packages < <(go list std | grep -v "^cmd/" | grep -v "^internal/" | grep -v "^vendor/")
 
 total=${#packages[@]}
 count=0
 
-echo "Scraping $total packages into unified document..."
+echo "✓ Found $total stdlib packages to scrape"
+echo ""
+echo "Scraping into unified document..."
 echo ""
 
 for pkg in "${packages[@]}"; do
@@ -73,22 +61,17 @@ for pkg in "${packages[@]}"; do
     -o "$temp_file" \
     "http://localhost:6060/$pkg" 2>&1 | grep -E "(functions|types|examples)" || true
   
-  # Extract just the package content (skip chapter and context lines)
-  # Add package as a top-level node with proper escaping
+  # Extract package content (skip chapter and context lines)
+  # The individual scraper now creates the package node with proper formatting
   pkg_name=$(basename "$pkg")
   echo "" >> "$OUTPUT_FILE"
-  echo " \"$pkg\"" >> "$OUTPUT_FILE"
-  echo "      \" (contain) \"package type\"" >> "$OUTPUT_FILE"
-  echo "           \" (contain) stdlib" >> "$OUTPUT_FILE"
   
-  # Extract content after context tags, indent it under the package
-  # Skip the first node line (the package name itself) to avoid self-reference
+  # Extract everything after the context tags
+  # Skip first 3 lines (chapter, empty, context tags)
   sed -n '/^$/,$p' "$temp_file" | \
     grep -v '^-' | \
     grep -v '^+' | \
-    sed '/^$/d' | \
-    tail -n +2 | \
-    sed 's/^ / /' \
+    sed '/^$/d' \
     >> "$OUTPUT_FILE"
   
   rm -f "$temp_file"

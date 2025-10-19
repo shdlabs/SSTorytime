@@ -565,6 +565,8 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search S
 	var count int
 	var array []SST.NodeEvent
 
+	startTime := time.Now()
+	slog.Info("HandleOrbit starting", "total_nodes", len(nptrs), "limit", limit)
 	origin := SST.Coords{X: 0.0, Y: 0.0, Z: 0.0}
 
 	for n := 0; n < len(nptrs); n++ {
@@ -572,11 +574,11 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search S
 		count++
 
 		if count > limit {
-			slog.Info("Orbit limit reached", "limit", limit)
+			slog.Info("Orbit limit reached", "limit", limit, "processed", count-1)
 			break
 		}
 
-		slog.Info("Assembling Node Orbit", "node", nptrs[n])
+		slog.Debug("Processing node orbit", "index", n+1, "of", len(nptrs), "node", nptrs[n])
 
 		orb := SST.GetNodeOrbit(CTX, nptrs[n], "", limit)
 		// create a set of coords for len(nptrs) disconnected nodes
@@ -597,7 +599,8 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search S
 	if _, err := w.Write(response); err != nil {
 		slog.Error("Failed to write response", "error", err)
 	}
-	slog.Info("Reply Orbit sent")
+	duration := time.Since(startTime)
+	slog.Info("HandleOrbit completed", "processed_nodes", count, "duration_ms", duration.Milliseconds())
 }
 
 // *********************************************************************
@@ -1286,9 +1289,7 @@ func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
 	var retvar []SST.Loc
 
 	for c := range clist {
-
 		var contextgroup SST.Loc
-
 		contextgroup.Text = clist[c]
 		contextgroup.XYZ = SST.AssignFragmentCoordinates(ooo, c, len(clist))
 

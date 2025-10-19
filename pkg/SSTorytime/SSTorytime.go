@@ -1365,47 +1365,62 @@ func GraphToDB(ctx PoSST, wait_counter bool) {
 
 	slog.Info("Storing primary nodes ...", "function", "GraphToDB")
 
+	const BATCH_SIZE = 500 // Batch size for bulk inserts
+
 	for class := N1GRAM; class <= GT1024; class++ {
 
 		offset := int(BASE_DB_CHANNEL_STATE[class])
 
+		var directory []Node
 		switch class {
 		case N1GRAM:
-			for n := offset; n < len(NODE_DIRECTORY.N1directory); n++ {
-				org := NODE_DIRECTORY.N1directory[n]
-				UploadNodeToDB(ctx, org)
-				Waiting(wait_counter, total)
-			}
+			directory = NODE_DIRECTORY.N1directory[offset:]
 		case N2GRAM:
-			for n := offset; n < len(NODE_DIRECTORY.N2directory); n++ {
-				org := NODE_DIRECTORY.N2directory[n]
-				UploadNodeToDB(ctx, org)
-				Waiting(wait_counter, total)
-			}
+			directory = NODE_DIRECTORY.N2directory[offset:]
 		case N3GRAM:
-			for n := offset; n < len(NODE_DIRECTORY.N3directory); n++ {
-				org := NODE_DIRECTORY.N3directory[n]
-				UploadNodeToDB(ctx, org)
-				Waiting(wait_counter, total)
-			}
+			directory = NODE_DIRECTORY.N3directory[offset:]
 		case LT128:
-			for n := offset; n < len(NODE_DIRECTORY.LT128); n++ {
-				org := NODE_DIRECTORY.LT128[n]
-				UploadNodeToDB(ctx, org)
-				Waiting(wait_counter, total)
-			}
+			directory = NODE_DIRECTORY.LT128[offset:]
 		case LT1024:
-			for n := offset; n < len(NODE_DIRECTORY.LT1024); n++ {
-				org := NODE_DIRECTORY.LT1024[n]
-				UploadNodeToDB(ctx, org)
-				Waiting(wait_counter, total)
+			directory = NODE_DIRECTORY.LT1024[offset:]
+		case GT1024:
+			directory = NODE_DIRECTORY.GT1024[offset:]
+		}
+
+		// Batch insert nodes
+		slog.Info("Uploading nodes batch", "class", class, "count", len(directory))
+		for i := 0; i < len(directory); i += BATCH_SIZE {
+			end := i + BATCH_SIZE
+			if end > len(directory) {
+				end = len(directory)
 			}
 
-		case GT1024:
-			for n := offset; n < len(NODE_DIRECTORY.GT1024); n++ {
-				org := NODE_DIRECTORY.GT1024[n]
-				UploadNodeToDB(ctx, org)
+			batch := directory[i:end]
+			err := BatchInsertNodes(ctx, batch)
+			if err != nil {
+				slog.Error("Batch insert failed", "error", err)
+				// Fallback to individual inserts for this batch
+				for _, node := range batch {
+					UploadNodeToDB(ctx, node)
+				}
+			}
+
+			// Update progress
+			for range batch {
 				Waiting(wait_counter, total)
+			}
+		}
+
+		// Now upload links for all nodes in this class
+		slog.Info("Uploading links", "class", class)
+		for _, org := range directory {
+			// Only upload links, node already inserted
+			for stindex := 0; stindex < len(org.I); stindex++ {
+				for lnk := range org.I[stindex] {
+					dstlnk := org.I[stindex][lnk]
+					sttype := STIndexToSTType(stindex)
+					AppendDBLinkToNode(ctx, org.NPtr, dstlnk, sttype)
+				}
 			}
 		}
 	}
@@ -1552,6 +1567,53 @@ func HubJoin(ctx PoSST, name, chap string, nptrs []NodePtr, arrow string, contex
 
 // **************************************************************************
 // Lower level functions, for self-managed NPtr values
+// **************************************************************************
+
+func BatchInsertNodes(ctx PoSST, nodes []Node) error {
+	// Batch insert multiple nodes in a single query for better performance
+	if len(nodes) == 0 {
+		return nil
+	}
+
+	slog.Info("BatchInsertNodes", "count", len(nodes))
+
+	// Build multi-row INSERT statement using direct SQL (not InsertNode function)
+	// This avoids calling the function multiple times and allows ON CONFLICT handling
+	cols := I_MEXPR + "," + I_MCONT + "," + I_MLEAD + "," + I_NEAR + "," + I_PLEAD + "," + I_PCONT + "," + I_PEXPR
+
+	var values []string
+	for _, n := range nodes {
+		n.L, n.NPtr.Class = StorageClass(n.S)
+		cptr := n.NPtr.CPtr
+		es := SQLEscape(n.S)
+		ec := SQLEscape(n.Chap)
+
+		var seqstr string
+		if n.Seq {
+			seqstr = "true"
+		} else {
+			seqstr = "false"
+		}
+
+		// Build single row value for direct INSERT
+		// Format: (Chan, CPtr, L, S, Chap, Seq, empty arrays for 7 link types)
+		values = append(values, fmt.Sprintf("(%d,%d,%d,'%s','%s',%s,'{}','{}','{}','{}','{}','{}','{}')",
+			n.NPtr.Class, cptr, n.L, es, ec, seqstr))
+	}
+
+	// Use direct INSERT - PostgreSQL table doesn't have unique constraint on NPtr
+	qstr := fmt.Sprintf("INSERT INTO Node (Nptr.Chan,Nptr.Cptr,L,S,Chap,Seq,%s) VALUES %s",
+		cols, strings.Join(values, ","))
+
+	_, err := ctx.DB.Exec(qstr)
+	if err != nil {
+		slog.Error("Batch insert failed", "error", err)
+		return fmt.Errorf("batch insert failed: %w", err)
+	}
+
+	return nil
+}
+
 // **************************************************************************
 
 func ForceDBNode(ctx PoSST, n Node) {
@@ -3437,14 +3499,17 @@ func GetDBNodePtrMatchingName(ctx PoSST, name, chap string) []NodePtr {
 
 func GetDBNodePtrMatchingNCCS(ctx PoSST, nm, chap string, cn []string, arrow []ArrowPtr, seq bool, limit int) []NodePtr {
 	// Order by L to favour exact matches
+	slog.Info("DB: GetDBNodePtrMatchingNCCS", "name", nm, "chapter", chap, "contexts", cn, "context_count", len(cn), "arrows", len(arrow), "limit", limit)
 
 	nm = SQLEscape(nm)
 	chap = SQLEscape(chap)
 
 	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE %s ORDER BY L,NPtr LIMIT %d", NodeWhereString(nm, chap, cn, arrow, seq), limit)
+	slog.Debug("DB: Query", "sql", qstr)
 
 	row, err := ctx.DB.Query(qstr)
 	if err != nil {
+		slog.Error("DB: Query GetNodePtrMatchingNCC Failed", "error", err)
 		fmt.Println("QUERY GetNodePtrMatchingNCC Failed", err, qstr)
 	}
 
@@ -3658,6 +3723,8 @@ func GetDBNodeByNodePtr(ctx PoSST, db_nptr NodePtr) Node {
 		return GetMemoryNodeFromPtr(im_nptr)
 	}
 
+	slog.Debug("DB Query: GetDBNodeByNodePtr", "nptr", db_nptr)
+
 	// This ony works if we insert non-null arrays in initialization
 	cols := I_MEXPR + "," + I_MCONT + "," + I_MLEAD + "," + I_NEAR + "," + I_PLEAD + "," + I_PCONT + "," + I_PEXPR
 	qstr := fmt.Sprintf("select L,S,Chap,%s from Node where NPtr='(%d,%d)'::NodePtr AND NOT L=0", cols, db_nptr.Class, db_nptr.CPtr)
@@ -3687,8 +3754,10 @@ func GetDBNodeByNodePtr(ctx PoSST, db_nptr NodePtr) Node {
 	}
 
 	if count > 1 {
-		fmt.Println("GetDBNodeByNodePtr returned too many matches (multi-model conflict?):", count, "for ptr", db_nptr)
-		os.Exit(-1)
+		slog.Error("GetDBNodeByNodePtr returned too many matches (multi-model conflict?)",
+			"count", count, "nptr", db_nptr, "text", n.S)
+		// Return the first match instead of crashing the server
+		// TODO: Fix duplicate insertion issue
 	}
 
 	row.Close()
@@ -4008,6 +4077,8 @@ func ArrowPtrFromArrowsNames(ctx PoSST, arrows []string) ([]ArrowPtr, []int) {
 //******************************************************************
 
 func SolveNodePtrs(ctx PoSST, nodenames []string, search SearchParameters, arr []ArrowPtr, limit int) []NodePtr {
+	slog.Info("DB: SolveNodePtrs", "search_terms", nodenames, "term_count", len(nodenames), "arrows", len(arr), "limit", limit)
+
 	chap := search.Chapter
 	cntx := search.Context
 	seq := search.Sequence
@@ -5682,6 +5753,11 @@ func GetSequenceContainers(ctx PoSST, nodeptrs []NodePtr, arrowptrs []ArrowPtr, 
 
 func GetNodeOrbit(ctx PoSST, nptr NodePtr, exclude_vector string, limit int) [ST_TOP][]Orbit {
 	// Find the orbiting linked nodes of NPtr, start with properties of node
+
+	start := time.Now()
+	defer func() {
+		slog.Debug("GetNodeOrbit completed", "nptr", nptr, "duration_ms", time.Since(start).Milliseconds())
+	}()
 
 	const probe_radius = 3
 
@@ -8717,6 +8793,7 @@ func ParseSQLLinkString(s string) Link {
 //**************************************************************
 
 func ParseLinkArray(s string) []Link {
+	slog.Debug("Parsing link array", "length", len(s))
 	var array []Link
 
 	s = strings.TrimSpace(s)

@@ -13,7 +13,9 @@ type N4LFormatter struct {
 	ContextTags []string
 }
 
-// WriteN4L outputs package data in N4L format
+// WriteN4L outputs package data in N4L format using bulletproof structure
+// Goal: ALWAYS uploadable, user can refine later
+// Uses tabs for indentation, arrows for relationships, @sepN for unique section IDs
 func (f *N4LFormatter) WriteN4L(pkg *Package, w io.Writer) error {
 	// Chapter header
 	chapterName := f.ChapterName
@@ -32,120 +34,98 @@ func (f *N4LFormatter) WriteN4L(pkg *Package, w io.Writer) error {
 	}
 	fmt.Fprintln(w)
 
-	// Package node
+	sepCounter := 0 // Track @sep numbers for unique IDs
+
+	// Package root node
 	fmt.Fprintf(w, " %s\n", escapeN4L(pkg.Name))
 
-	// Import path
+	// Import path with arrow - use a labeled node to avoid self-reference
 	if pkg.ImportPath != "" {
-		fmt.Fprintln(w, "      \" (contain) \"import path\"")
-		fmt.Fprintf(w, "           \" (contain) \"path: %s\"\n", pkg.ImportPath)
+		fmt.Fprintf(w, "      \" (source) %s\n", escapeN4L("import-path: "+pkg.ImportPath))
 	}
 
-	// Synopsis
+	// Description with arrow - ditto before arrow
 	if pkg.Synopsis != "" {
-		fmt.Fprintln(w, "      \" (contain) synopsis")
-		fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(pkg.Synopsis))
-	}
-
-	// Documentation
-	if pkg.Doc != "" {
-		fmt.Fprintln(w, "      \" (contain) documentation")
-		for i, para := range strings.Split(pkg.Doc, "\n\n") {
-			if i >= 2 {
-				break
-			}
-			fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(para))
+		fmt.Fprintf(w, "      \" (description) %s\n", escapeN4L(pkg.Synopsis))
+	} else if pkg.Doc != "" {
+		paras := strings.Split(pkg.Doc, "\n\n")
+		if len(paras) > 0 && len(paras[0]) > 0 {
+			fmt.Fprintf(w, "      \" (description) %s\n", escapeN4L(paras[0]))
 		}
 	}
 
-	// Functions
+	// Functions section with unique @sep ID (on same line!)
 	if len(pkg.Functions) > 0 {
-		fmt.Fprintln(w, "      \" (contain) functions")
+		sepCounter++
+		fmt.Fprintf(w, "\n@sep%d %s\n\n", sepCounter, escapeN4L("Functions in "+pkg.Name))
 		for i := range pkg.Functions {
 			f.writeFunction(w, &pkg.Functions[i])
 		}
 	}
 
-	// Types
+	// Types section with unique @sep ID (on same line!)
 	if len(pkg.Types) > 0 {
-		fmt.Fprintln(w, "      \" (contain) types")
+		sepCounter++
+		fmt.Fprintf(w, "\n@sep%d %s\n\n", sepCounter, escapeN4L("Types in "+pkg.Name))
 		for i := range pkg.Types {
 			f.writeType(w, &pkg.Types[i])
 		}
 	}
 
-	// Constants
+	// Constants section with unique @sep ID (on same line!)
 	if len(pkg.Constants) > 0 {
-		fmt.Fprintln(w, "      \" (contain) constants")
+		sepCounter++
+		fmt.Fprintf(w, "\n@sep%d %s\n\n", sepCounter, escapeN4L("Constants in "+pkg.Name))
 		for i := range pkg.Constants {
-			fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(pkg.Constants[i].Name))
-			if pkg.Constants[i].Doc != "" {
-				fmt.Fprintf(w, "                \" (contain) %s\n", escapeN4L(pkg.Constants[i].Doc))
+			c := &pkg.Constants[i]
+			fmt.Fprintf(w, "      %s\n", escapeN4L(c.Name))
+			if c.Doc != "" && len(c.Doc) < 150 {
+				// Arrow with ditto (child of child = 11 spaces)
+				fmt.Fprintf(w, "           \" (description) %s\n", escapeN4L(c.Doc))
 			}
 		}
 	}
 
-	// Examples
-	if len(pkg.Examples) > 0 {
-		fmt.Fprintln(w, "      \" (contain) examples")
-		for i := range pkg.Examples {
-			f.writeExample(w, &pkg.Examples[i])
-		}
-	}
-
-	// Imports - skip for now to avoid self-reference issues
-	// TODO: Filter out self-imports and re-enable
-	// if len(pkg.Imports) > 0 {
-	// 	fmt.Fprintln(w, "      \" (contain) \"imported packages\"")
-	// 	for _, imp := range pkg.Imports {
-	// 		if imp != pkg.ImportPath {  // Skip self-import
-	// 			fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(imp))
-	// 		}
-	// 	}
-	// }
-
+	fmt.Fprintln(w)
 	return nil
 }
 
 func (f *N4LFormatter) writeFunction(w io.Writer, fn *Function) {
-	fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(fn.Name))
+	// Function name as child node (6 spaces)
+	fmt.Fprintf(w, "      %s\n", escapeN4L(fn.Name))
 
-	if fn.Signature != "" {
-		fmt.Fprintln(w, "                \" (contain) signature")
-		fmt.Fprintf(w, "                     \" (contain) %s\n", escapeN4L(fn.Signature))
+	// Signature with arrow: ditto + (def) + signature (11 spaces for grandchild)
+	if fn.Signature != "" && len(fn.Signature) < 150 {
+		sig := escapeN4L(fn.Signature)
+		fmt.Fprintf(w, "           \" (def) %s\n", sig)
 	}
 
-	if fn.Doc != "" {
-		fmt.Fprintln(w, "                \" (contain) description")
-		fmt.Fprintf(w, "                     \" (contain) %s\n", escapeN4L(fn.Doc))
+	// Documentation with description arrow (11 spaces)
+	if fn.Doc != "" && len(fn.Doc) < 150 {
+		doc := escapeN4L(fn.Doc)
+		fmt.Fprintf(w, "           \" (description) %s\n", doc)
 	}
 }
 
 func (f *N4LFormatter) writeType(w io.Writer, t *Type) {
-	fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(t.Name))
+	// Type name as child node (6 spaces)
+	fmt.Fprintf(w, "      %s\n", escapeN4L(t.Name))
 
+	// Kind with description arrow (11 spaces)
 	if t.Kind != "" {
-		fmt.Fprintln(w, "                \" (contain) kind")
-		fmt.Fprintf(w, "                     \" (contain) %s\n", escapeN4L(t.Kind))
+		kind := escapeN4L(t.Kind)
+		fmt.Fprintf(w, "           \" (description) %s\n", kind)
 	}
 
-	if t.Doc != "" {
-		fmt.Fprintln(w, "                \" (contain) description")
-		fmt.Fprintf(w, "                     \" (contain) %s\n", escapeN4L(t.Doc))
-	}
-}
-
-func (f *N4LFormatter) writeExample(w io.Writer, ex *Example) {
-	fmt.Fprintf(w, "           \" (contain) %s\n", escapeN4L(ex.Name))
-
-	if ex.Code != "" {
-		fmt.Fprintln(w, "                \" (contain) code")
-		fmt.Fprintf(w, "                     \" (contain) %s\n", escapeN4L(ex.Code))
+	// Documentation with description arrow (11 spaces)
+	if t.Doc != "" && len(t.Doc) < 150 {
+		doc := escapeN4L(t.Doc)
+		fmt.Fprintf(w, "           \" (description) %s\n", doc)
 	}
 }
 
-// escapeN4L escapes text for N4L format
-// Always returns a quoted string to avoid annotation parsing issues
+// escapeN4L prepares text for N4L format
+// Only quotes when necessary (special chars, annotations, etc)
 func escapeN4L(s string) string {
 	if len(s) > 500 {
 		s = s[:500] + "..."
@@ -163,27 +143,50 @@ func escapeN4L(s string) string {
 
 	s = strings.TrimSpace(s)
 
-	// Never return empty string - use placeholder
+	// Never return empty string
 	if s == "" {
-		return "\"(no description)\""
+		return "no-description"
 	}
 
-	// Replace internal quotes with single quotes to avoid quote escaping issues
-	s = strings.ReplaceAll(s, `"`, "'")
+	// Check if we need quotes
+	needsQuotes := false
 
-	// Remove ALL annotation symbols from SSTconfig/annotations.sst
-	// These can't be escaped in N4L quoted strings
-	// Order matters - replace longer sequences first!
-	s = strings.ReplaceAll(s, "**", " DOUBLESTAR ")
-	s = strings.ReplaceAll(s, ">>", " DOUBLEGREATER ")
-	s = strings.ReplaceAll(s, "==", " equals ")
-	s = strings.ReplaceAll(s, "!=", " not-equals ")
-	s = strings.ReplaceAll(s, ">=", " greater-or-equal ")
-	s = strings.ReplaceAll(s, "<=", " less-or-equal ")
-	s = strings.ReplaceAll(s, "=>", " implies ")
-	s = strings.ReplaceAll(s, "=", " equals ") // Single = after multi-char
-	s = strings.ReplaceAll(s, ">", " GREATER ")
-	s = strings.ReplaceAll(s, "<", " LESS ")
-	s = strings.ReplaceAll(s, "%", " PERCENT ") // Always quote to protect from annotation parsing
-	return `"` + s + `"`
+	// Need quotes if contains special annotation symbols
+	if strings.ContainsAny(s, "%=<>*\"") {
+		needsQuotes = true
+	}
+
+	// Need quotes if contains parentheses (might conflict with arrows)
+	if strings.Contains(s, "(") || strings.Contains(s, ")") {
+		needsQuotes = true
+	}
+
+	// Need quotes if starts with special chars
+	if len(s) > 0 && (s[0] == '@' || s[0] == '+' || s[0] == '-' || s[0] == '#') {
+		needsQuotes = true
+	}
+
+	// If we need quotes, clean up the content
+	if needsQuotes {
+		// Replace internal quotes with single quotes
+		s = strings.ReplaceAll(s, `"`, "'")
+
+		// Remove annotation symbols - order matters!
+		s = strings.ReplaceAll(s, "**", " ")
+		s = strings.ReplaceAll(s, ">>", " RSHIFT ")
+		s = strings.ReplaceAll(s, "==", " equals ")
+		s = strings.ReplaceAll(s, "!=", " not-equals ")
+		s = strings.ReplaceAll(s, ">=", " GTE ")
+		s = strings.ReplaceAll(s, "<=", " LTE ")
+		s = strings.ReplaceAll(s, "=>", " implies ")
+		s = strings.ReplaceAll(s, "=", " equals ")
+		s = strings.ReplaceAll(s, ">", " GT ")
+		s = strings.ReplaceAll(s, "<", " LT ")
+		s = strings.ReplaceAll(s, "%", " PERCENT ")
+
+		return `"` + s + `"`
+	}
+
+	// Return plain text without quotes
+	return s
 }
