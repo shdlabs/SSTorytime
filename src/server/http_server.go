@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -23,6 +24,9 @@ import (
 	"time"
 
 	SST "SSTorytime"
+
+	"github.com/arl/statsviz"
+	"github.com/lmittmann/tint"
 )
 
 // Ugly Go directive to embed text files into the binary
@@ -38,14 +42,26 @@ var CTX SST.PoSST // just one persistent connection
 // Main
 // *********************************************************************
 
+func init() {
+	// Initialize structured logging with colored output
+	slog.SetDefault(slog.New(
+		tint.NewHandler(os.Stderr, &tint.Options{
+			Level:      slog.LevelDebug, // Change to LevelInfo to reduce verbosity
+			TimeFormat: "15:04:05.000",  // HH:MM:SS format
+			NoColor:    false,           // Enable colored output
+			AddSource:  true,
+		}),
+	))
+}
+
 func main() {
+	slog.Info("Starting SST Web Server")
 
 	CTX = SST.Open(true)
 
 	// 1. Create the filesystem view rooted inside the "public" directory.
 
 	publicFS, err := fs.Sub(content, "public")
-
 	if err != nil {
 		log.Fatal("failed to create sub-filesystem:", err)
 	}
@@ -54,22 +70,28 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	// Register statsviz for live runtime profiling at /debug/statsviz/
+	if err := statsviz.Register(mux); err != nil {
+		slog.Error("Failed to register statsviz", "error", err)
+	} else {
+		slog.Info("Statsviz profiling available", "url", "http://localhost:8080/debug/statsviz/")
+	}
+
 	fileServer := http.FileServer(http.FS(publicFS))
 
 	mux.Handle("/", fileServer)
-	mux.HandleFunc("/searchN4L", SearchN4LHandler)
-	mux.HandleFunc("/status", StatusHandler)
+	mux.HandleFunc("/searchN4L", LoggingMiddleware("SearchN4L", SearchN4LHandler))
+	mux.HandleFunc("/status", LoggingMiddleware("Status", StatusHandler)) // 3. Create an http.Server instance for graceful shutdown.
 
-	// 3. Create an http.Server instance for graceful shutdown.
-
-	srv := &http.Server{Addr:    "0.0.0.0:8080", Handler: EnableCORS(mux), }
+	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: EnableCORS(mux)}
 
 	// 4. Run the server in a goroutine so it doesn't block.
 
 	go func() {
-		log.Println("Server starting on http://localhost:8080")
+		slog.Info("Server starting", "address", "http://localhost:8080", "port", 8080)
 
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("Server failed to start", "error", err)
 			log.Fatalf("could not start server: %s\n", err)
 		}
 	}()
@@ -81,18 +103,67 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Server is shutting down...")
+	slog.Info("Server is shutting down...")
 
 	// 6. Perform a graceful shutdown with a timeout.
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
+		slog.Error("Server shutdown failed", "error", err)
 		log.Fatalf("Server shutdown failed: %s\n", err)
 	}
 
-	log.Println("Server exited properly")
+	slog.Info("Server exited properly")
+}
+
+// *********************************************************************
+// Middleware
+// *********************************************************************
+
+// LoggingMiddleware wraps HTTP handlers with automatic request/response logging
+func LoggingMiddleware(name string, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		// Log incoming request
+		slog.Info("HTTP request started",
+			"handler", name,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"remote_addr", r.RemoteAddr,
+			"user_agent", r.UserAgent())
+
+		// Create a response wrapper to capture status code
+		wrapper := &responseWrapper{
+			ResponseWriter: w,
+			statusCode:     http.StatusOK,
+		}
+
+		// Call the actual handler
+		next.ServeHTTP(wrapper, r)
+
+		// Log response
+		duration := time.Since(start)
+		slog.Info("HTTP request completed",
+			"handler", name,
+			"method", r.Method,
+			"path", r.URL.Path,
+			"status", wrapper.statusCode,
+			"duration_ms", duration.Milliseconds())
+	}
+}
+
+// responseWrapper wraps http.ResponseWriter to capture the status code
+type responseWrapper struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *responseWrapper) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
 }
 
 // *********************************************************************
@@ -100,9 +171,7 @@ func main() {
 // *********************************************************************
 
 func EnableCORS(next http.Handler) http.Handler {
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		// Set the Access-Control-Allow-Origin header to the origin of the request.
 
 		origin := r.Header.Get("Origin")
@@ -127,7 +196,6 @@ func EnableCORS(next http.Handler) http.Handler {
 // *********************************************************************
 
 func SignalHandler() {
-
 	signal_chan := make(chan os.Signal, 1)
 
 	signal.Notify(signal_chan,
@@ -162,7 +230,6 @@ func SignalHandler() {
 // *********************************************************************
 
 func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
-
 	switch r.Method {
 
 	case "POST", "GET":
@@ -205,6 +272,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 		HandleSearch(search, name, w, r)
 
 	default:
+		slog.Warn("Unsupported HTTP method", "method", r.Method)
 		http.Error(w, "Not supported", http.StatusMethodNotAllowed)
 	}
 }
@@ -212,10 +280,7 @@ func SearchN4LHandler(w http.ResponseWriter, r *http.Request) {
 // *********************************************************************
 
 func UpdateLastSawSection(w http.ResponseWriter, r *http.Request, query string) {
-
 	// update lastseen db
-
-	fmt.Println("UPDATING STATS FOR section", query)
 
 	SST.UpdateLastSawSection(CTX, query)
 }
@@ -223,7 +288,6 @@ func UpdateLastSawSection(w http.ResponseWriter, r *http.Request, query string) 
 // *********************************************************************
 
 func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request, class, cptr string, classifier string) {
-
 	// update lastseen db
 
 	var nptr SST.NodePtr
@@ -235,20 +299,15 @@ func UpdateLastSawNPtr(w http.ResponseWriter, r *http.Request, class, cptr strin
 	nptr.CPtr = SST.ClassedNodePtr(ncptr)
 
 	SST.UpdateLastSawNPtr(CTX, nclass, ncptr, classifier)
-
-	fmt.Println("UPDATING STATS FOR", nclass, ncptr, "WITHIN", classifier)
-
 	SST.UpdateLastSawSection(CTX, classifier)
 
 	response := fmt.Sprintf("{ \"Response\" : \"LastSaw\",\n \"Content\" : \"ack(%s,%s)\" }", class, cptr)
 	w.Write([]byte(response))
-
 }
 
 // *********************************************************************
 
 func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWriter, r *http.Request) {
-
 	// This is analogous to searchN4L
 
 	// OPTIONS *********************************************
@@ -285,21 +344,23 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 		}
 	}
 
-	fmt.Println()
-	tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)
-	fmt.Fprintln(tabWriter, "start set:\t", SL(search.Name))
-	fmt.Fprintln(tabWriter, "from:\t", SL(search.From))
-	fmt.Fprintln(tabWriter, "to:\t", SL(search.To))
-	fmt.Fprintln(tabWriter, "chapter:\t", search.Chapter)
-	fmt.Fprintln(tabWriter, "context:\t", SL(search.Context))
-	fmt.Fprintln(tabWriter, "arrows:\t", SL(search.Arrows))
-	fmt.Fprintln(tabWriter, "pageNR:\t", search.PageNr)
-	fmt.Fprintln(tabWriter, "sequence/story:\t", search.Sequence)
-	fmt.Fprintln(tabWriter, "limit/range/depth:\t", limit)
-	fmt.Fprintln(tabWriter, "show stats:\t", search.Stats)
+	{
+		fmt.Println()
+		tabWriter := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)
+		fmt.Fprintln(tabWriter, "start set:\t", SL(search.Name))
+		fmt.Fprintln(tabWriter, "from:\t", SL(search.From))
+		fmt.Fprintln(tabWriter, "to:\t", SL(search.To))
+		fmt.Fprintln(tabWriter, "chapter:\t", search.Chapter)
+		fmt.Fprintln(tabWriter, "context:\t", SL(search.Context))
+		fmt.Fprintln(tabWriter, "arrows:\t", SL(search.Arrows))
+		fmt.Fprintln(tabWriter, "pageNR:\t", search.PageNr)
+		fmt.Fprintln(tabWriter, "sequence/story:\t", search.Sequence)
+		fmt.Fprintln(tabWriter, "limit/range/depth:\t", limit)
+		fmt.Fprintln(tabWriter, "show stats:\t", search.Stats)
 
-	tabWriter.Flush()
-	fmt.Println()
+		tabWriter.Flush()
+		fmt.Println()
+	}
 
 	var nodeptrs, leftptrs, rightptrs []SST.NodePtr
 
@@ -333,7 +394,7 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 
 	if (name && from) || (name && to) {
 		fmt.Printf("\nSearch \"%s\" has conflicting parts <to|from> and match strings\n", line)
-		os.Exit(-1)
+		// os.Exit(-1)
 	}
 
 	// Closed path solving, two sets of nodeptrs
@@ -401,13 +462,12 @@ func HandleSearch(search SST.SearchParameters, line string, w http.ResponseWrite
 // *********************************************************************
 
 func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nptrs []SST.NodePtr, limit int) {
-
 	var count int
 	var array []SST.NodeEvent
 
 	origin := SST.Coords{X: 0.0, Y: 0.0, Z: 0.0}
 
-	for n := 0; n < len(nptrs); n++ {
+	for n := range nptrs {
 
 		count++
 
@@ -415,7 +475,7 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search S
 			break
 		}
 
-		fmt.Printf("Assembling Node Orbit(%v)\n", nptrs[n])
+		slog.Info("Assembling Node Orbit", "node", nptrs[n], "index", n)
 
 		orb := SST.GetNodeOrbit(CTX, nptrs[n], "", limit)
 		// create a set of coords for len(nptrs) disconnected nodes
@@ -430,21 +490,19 @@ func HandleOrbit(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search S
 	data, _ := json.Marshal(array)
 	response := PackageResponse(ctx, search, "Orbits", string(data))
 
-	//fmt.Println("REPLY:\n",string(response))
-
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-	fmt.Println("Reply Orbit sent")
+	if _, err := w.Write(response); err != nil {
+		slog.Error("Failed to write orbit response", "error", err)
+		return
+	}
 }
 
 // *********************************************************************
 
 func HandleCausalCones(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, nptrs []SST.NodePtr, search SST.SearchParameters, arrows []SST.ArrowPtr, sttype []int, limit int) {
-
 	chap := search.Chapter
 	context := search.Context
 
-	fmt.Println("HandleCausalCones()", nptrs)
 	var total int = 1
 
 	if len(sttype) == 0 {
@@ -474,17 +532,17 @@ func HandleCausalCones(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, np
 	array, _ := json.Marshal(cones)
 
 	response := PackageResponse(ctx, search, "ConePaths", string(array))
-	//fmt.Println("CasualConePath reponse",string(response))
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-	fmt.Println("Done/sent cone")
+	if _, err := w.Write(response); err != nil {
+		slog.Error("Failed to write causal cone response", "error", err)
+		return
+	}
 }
 
 //******************************************************************
 
 func PackageConeFromOrigin(ctx SST.PoSST, nptr SST.NodePtr, nth int, sttype int, chap string, context []string, dimnptr, limit int) (SST.WebConePaths, int) {
-
 	// Package a JSON object for the nth/dimnptr causal cone , assigning each nth the same width
 
 	var wpaths [][]SST.WebPath
@@ -509,11 +567,8 @@ func PackageConeFromOrigin(ctx SST.PoSST, nptr SST.NodePtr, nth int, sttype int,
 //******************************************************************
 
 func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, leftptrs, rightptrs []SST.NodePtr, search SST.SearchParameters, arrowptrs []SST.ArrowPtr, sttype []int, maxdepth int) {
-
 	chapter := search.Chapter
 	context := search.Context
-
-	fmt.Println("HandlePathSolve(", leftptrs, ",", rightptrs, ")")
 
 	var Lnum, Rnum int
 	var left_paths, right_paths [][]SST.Link
@@ -571,10 +626,11 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, left
 
 			response := PackageResponse(ctx, search, "PathSolve", string(array_pack))
 
-			//fmt.Println("PATH SOLVE:",string(response))
-
 			w.Header().Set("Content-Type", "application/json")
-			w.Write(response)
+			if _, err := w.Write(response); err != nil {
+				slog.Error("Failed to write pathsolve response", "error", err)
+				return
+			}
 			return
 		}
 
@@ -585,21 +641,18 @@ func HandlePathSolve(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, left
 		}
 	}
 
-	fmt.Println("No paths satisfy constraints")
 	response := PackageResponse(ctx, search, "PathSolve", "[]")
 
-	//fmt.Println("PATHSOLVE NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-	fmt.Println("Done/sent path solve")
+	if _, err := w.Write(response); err != nil {
+		slog.Error("Failed to write pathsolve response", "error", err)
+		return
+	}
 }
 
 //******************************************************************
 
 func HandlePageMap(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, notes []SST.PageMap) {
-
-	fmt.Println("Solver/handler: HandlePageMap()")
-
 	jstr := SST.JSONPage(CTX, notes)
 	response := PackageResponse(ctx, search, "PageMap", jstr)
 
@@ -607,21 +660,19 @@ func HandlePageMap(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search
 		UpdateLastSawSection(w, r, notes[0].Chapter)
 	}
 
-	//fmt.Println("PAGEMAP NOTES",string(response))
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-	fmt.Println("Done/sent pagemap")
+	if _, err := w.Write(response); err != nil {
+		slog.Error("Failed to write pagemap response", "error", err)
+		return
+	}
 }
 
 //******************************************************************
 
 func HandleStories(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nodeptrs []SST.NodePtr, arrowptrs []SST.ArrowPtr, sttypes []int, limit int) {
-
 	if arrowptrs == nil {
 		arrowptrs, sttypes = SST.ArrowPtrFromArrowsNames(CTX, []string{"!then!"})
 	}
-
-	fmt.Println("Solver/handler: HandleStories()")
 
 	stories := SST.GetSequenceContainers(ctx, nodeptrs, arrowptrs, sttypes, limit)
 
@@ -644,20 +695,16 @@ func HandleStories(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search
 
 	response := PackageResponse(ctx, search, "Sequence", jarray)
 
-	//fmt.Println("Sequence...",string(response))
-
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-	fmt.Println("Done/sent sequence")
-
+	if _, err := w.Write(response); err != nil {
+		slog.Error("Failed to write sequence response", "error", err)
+		return
+	}
 }
 
 // *********************************************************************
 
 func HandleMatchingArrows(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, arrowptrs []SST.ArrowPtr, sttype []int) {
-
-	fmt.Println("Solver/handler: HandleMatchingArrows()")
-
 	type ArrowList struct {
 		ArrPtr  SST.ArrowPtr
 		ASTtype int
@@ -710,23 +757,21 @@ func HandleMatchingArrows(w http.ResponseWriter, r *http.Request, ctx SST.PoSST,
 	data, _ := json.Marshal(arrows)
 	response := PackageResponse(ctx, search, "Arrows", string(data))
 
-	fmt.Println("Arrows...", string(response))
-
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-	fmt.Println("Done/sent arrows")
+	if _, err := w.Write(response); err != nil {
+		slog.Error("Failed to write arrows response", "error", err)
+		return
+	}
 }
 
 // *********************************************************************
 
 func ShowStats(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, nptrs []SST.NodePtr) {
-
 	var retval []SST.LastSeen
 
 	if nptrs == nil {
 		retval = SST.GetLastSawSection(ctx)
 	} else {
-
 		for n := range nptrs {
 			nptr := SST.GetLastSawNPtr(ctx, nptrs[n])
 			retval = append(retval, nptr)
@@ -738,19 +783,17 @@ func ShowStats(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST
 	response := PackageResponse(ctx, search, "STAT", string(data))
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-	fmt.Println("Done/sent stat")
-
+	if _, err := w.Write(response); err != nil {
+		slog.Error("Failed to write stats response", "error", err)
+		return
+	}
 }
 
 // *********************************************************************
 
 func ShowChapterContexts(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, search SST.SearchParameters, limit int) {
-
 	chap := search.Chapter
 	context := search.Context
-
-	fmt.Println("Solver/handler: ShowChapterContexts()")
 
 	var chapters []SST.ChCtx
 	var chap_list []string
@@ -786,17 +829,16 @@ func ShowChapterContexts(w http.ResponseWriter, r *http.Request, ctx SST.PoSST, 
 	data, _ := json.Marshal(chapters)
 	response := PackageResponse(ctx, search, "TOC", string(data))
 
-	//fmt.Println("Chap/context...", string(response))
-
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(response)
-	fmt.Println("Done/sent content")
+	if _, err := w.Write(response); err != nil {
+		slog.Error("Failed to write TOC response", "error", err)
+		return
+	}
 }
 
 //******************************************************************
 
 func GetContextSets(dim int, clist []string, adj [][]int, xyz SST.Coords) []SST.Loc {
-
 	var retvar []SST.Loc
 
 	for c := 0; c < len(adj); c++ {
@@ -821,7 +863,6 @@ func GetContextSets(dim int, clist []string, adj [][]int, xyz SST.Coords) []SST.
 //******************************************************************
 
 func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
-
 	var retvar []SST.Loc
 
 	for c := 0; c < len(clist); c++ {
@@ -841,7 +882,6 @@ func GetContextFragments(clist []string, ooo SST.Coords) []SST.Loc {
 // *********************************************************************
 
 func JSONStoryNodeEvent(en SST.NodeEvent) string {
-
 	var jstr string
 
 	//	j,_ := json.Marshal(en)
@@ -902,7 +942,6 @@ func GenHeader(w http.ResponseWriter, r *http.Request) {
 // *********************************************************************
 
 func CleanText(c string) string {
-
 	c = strings.Replace(c, "{", "", -1)
 	c = strings.Replace(c, "}", "", -1)
 	c = strings.Replace(c, ",", " ", -1)
@@ -913,7 +952,6 @@ func CleanText(c string) string {
 // **********************************************************
 
 func ShowNode(ctx SST.PoSST, nptr []SST.NodePtr) string {
-
 	var ret string
 
 	for n := 0; n < len(nptr); n++ {
@@ -930,7 +968,6 @@ func ShowNode(ctx SST.PoSST, nptr []SST.NodePtr) string {
 // **********************************************************
 
 func PackageResponse(ctx SST.PoSST, search SST.SearchParameters, kind string, jstr string) []byte {
-
 	ambien, key, now := SST.GetTimeContext()
 	now_ctx := SST.UpdateSTMContext(CTX, ambien, key, now, search)
 
@@ -945,7 +982,6 @@ func PackageResponse(ctx SST.PoSST, search SST.SearchParameters, kind string, js
 //******************************************************************
 
 func SL(list []string) string {
-
 	var s string
 
 	s += fmt.Sprint(" [")
