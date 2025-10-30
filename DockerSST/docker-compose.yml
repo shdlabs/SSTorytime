@@ -19,8 +19,8 @@ services:
 
   server:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: DockerSST/Dockerfile
     container_name: sstorytime-server
     ports:
       - "8080:8080"
@@ -37,8 +37,8 @@ services:
 
   cli:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: DockerSST/Dockerfile
     container_name: sstorytime-cli
     environment:
       - SST_DB_HOST=postgres
@@ -50,8 +50,8 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./examples:/app/examples
-      - ./SSTconfig:/app/SSTconfig
+      - ../examples:/app/examples
+      - ../SSTconfig:/app/SSTconfig
     command: ["sleep", "infinity"]  # Keep container alive for exec commands
     profiles:
       - tools  # Only start with --profile tools

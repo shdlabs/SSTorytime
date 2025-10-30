@@ -3,10 +3,10 @@ FROM golang:alpine AS builder
 
 WORKDIR /build
 
-# Copy everything needed for build
-COPY go.mod ./
-COPY pkg/ ./pkg/
-COPY src/ ./src/
+# Copy everything needed for build from parent directory
+COPY ../go.mod ./
+COPY ../pkg/ ./pkg/
+COPY ../src/ ./src/
 
 # Build all binaries from src directory
 WORKDIR /build/src
@@ -36,9 +36,9 @@ COPY --from=builder /build/src/notes ./
 COPY --from=builder /build/src/graph_report ./
 COPY --from=builder /build/src/http_server ./
 
-# Copy config and examples
-COPY SSTconfig/ ./SSTconfig/
-COPY examples/ ./examples/
+# Copy config and examples from parent directory
+COPY ../SSTconfig/ ./SSTconfig/
+COPY ../examples/ ./examples/
 
 # Default to http_server
 CMD ["./http_server"]

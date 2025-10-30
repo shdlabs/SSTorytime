@@ -5,6 +5,7 @@
 ### 1. Build and Start
 
 ```bash
+cd DockerSST
 ./start_docker.sh
 ```
 
@@ -13,6 +14,7 @@ This builds the Docker images and starts the database and web server.
 ### 2. Populate the Database
 
 ```bash
+cd DockerSST
 make -f Makefile.docker populate-db
 ```
 
@@ -33,18 +35,21 @@ http://localhost:8080
 ### Stop Everything
 
 ```bash
+cd DockerSST
 docker compose down
 ```
 
 ### Restart
 
 ```bash
+cd DockerSST
 docker compose up -d
 ```
 
 ### View Logs
 
 ```bash
+cd DockerSST
 docker compose logs -f server
 ```
 
@@ -53,12 +58,14 @@ docker compose logs -f server
 ```bash
 # 1. Put your .n4l file in the examples/ directory
 # 2. Load it:
+cd DockerSST
 docker compose exec cli ./N4L examples/yourfile.n4l
 ```
 
 ### Wipe Database and Start Fresh
 
 ```bash
+cd DockerSST
 docker compose down -v
 ./start_docker.sh
 make -f Makefile.docker populate-db

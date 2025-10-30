@@ -7,6 +7,7 @@ Complete guide for running SSTorytime in Docker.
 ## Quick Start (see DOCKER_QUICKSTART.md)
 
 ```bash
+cd DockerSST
 ./start_docker.sh
 make -f Makefile.docker populate-db
 # Open http://localhost:8080
@@ -71,24 +72,29 @@ docker compose exec cli sh -c "cd examples && ../N4L -u -wipe *.n4l"
 ### Start
 
 ```bash
+cd DockerSST
 docker compose up -d
 ```
 
 ### Stop
 
 ```bash
+cd DockerSST
 docker compose down
 ```
 
 ### Restart
 
 ```bash
+cd DockerSST
 docker compose restart
 ```
 
 ### View Logs
 
 ```bash
+cd DockerSST
+
 # All services
 docker compose logs -f
 
@@ -102,6 +108,7 @@ docker compose logs -f postgres
 ### Check Status
 
 ```bash
+cd DockerSST
 docker compose ps
 ```
 
@@ -112,18 +119,21 @@ docker compose ps
 ### Access Database Shell
 
 ```bash
+cd DockerSST
 docker compose exec postgres psql -U sstoryline -d sstoryline
 ```
 
 ### Count Nodes in Database
 
 ```bash
+cd DockerSST
 docker compose exec postgres psql -U sstoryline -d sstoryline -c "SELECT COUNT(*) FROM Node;"
 ```
 
 ### Wipe Database and Start Fresh
 
 ```bash
+cd DockerSST
 docker compose down -v
 docker compose up -d
 make -f Makefile.docker populate-db
@@ -136,12 +146,14 @@ make -f Makefile.docker populate-db
 ### Start CLI Container
 
 ```bash
+cd DockerSST
 docker compose --profile tools up -d cli
 ```
 
 ### Search
 
 ```bash
+cd DockerSST
 docker compose exec cli ./searchN4L "your search term"
 ```
 
@@ -162,18 +174,21 @@ docker compose exec cli ./searchN4L "your search term"
 ### Check if services are running
 
 ```bash
+cd DockerSST
 docker compose ps
 ```
 
 ### Database not connecting
 
 ```bash
+cd DockerSST
 docker compose logs postgres
 ```
 
 ### Web server not responding
 
 ```bash
+cd DockerSST
 docker compose logs server
 curl http://localhost:8080/status
 ```
@@ -181,6 +196,7 @@ curl http://localhost:8080/status
 ### Rebuild after code changes
 
 ```bash
+cd DockerSST
 docker compose down
 DOCKER_BUILDKIT=1 docker compose build
 docker compose up -d
@@ -207,6 +223,7 @@ You can override database settings by editing `docker-compose.yml` or setting en
 ## Advanced Commands (using Makefile.docker)
 
 ```bash
+cd DockerSST
 make -f Makefile.docker help        # Show all available commands
 make -f Makefile.docker build       # Build images
 make -f Makefile.docker up          # Start services
