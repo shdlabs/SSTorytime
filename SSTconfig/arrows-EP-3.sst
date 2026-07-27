@@ -147,12 +147,16 @@
  + has quote          (quote)      - is a quote from       (quote from)
  + has time duration  (duration)   - is the duration of    (is-duration)
 
- + means              (means)      - is meant by           (meansb)
- + promises           (promise)    - is promised by        (prom-by)
+ + means              (means)      - is meant by             (meansb)
+ + promises           (promise)    - is promised by          (prom-by)
  + represents/models  (repr)       - is represented/modelled by (repr-by)
- + make an offer of   (offering)   - is an offer by        (offer-by)       
- + is willing to accept (accepting)- may be accepted by    (accept-by)
- + makes assessments of (assesses) - is an assessment of   (assess-of)
+ + make an offer of   (offering)   - is an offer by          (offer-by)       
+ + is willing to accept (accepting)- may be accepted by      (accept-by)
+ + makes assessments of (assesses) - is an assessment of     (assess-of)
+
+ + offers / submits           (offer)      - is offered/submitted by (offby)
+ + will accept                (accept)     - is accepted by          (accby)
+ + conditional offer / result (cond-offer) - is a conditional offer by (coff-by)
 
  + obeys the rule (rule)      - is a rule for        (rule4)
  + has aspect     (aspect)    - is an aspect of      (aspect of)
@@ -170,14 +174,13 @@
 
  # Here we see type classifiers in action
 
- + is called       (called)  - is the appellation of         (appel)
- + has family name (family)  - is the family name of         (fam-nom-for)
- + has identifier  (ident)   - is an identifier for          (indent-for)
- + is moniker for  (moniker) - is the identity of            (mnk-for)
+ + is called       (called)     - is the appellation of         (appel)
+ + has family name (family)     - is the family name of         (fam-nom-for)
+ + has identifier  (ident)      - is an identifier for          (indent-for)
+ + is moniker for  (moniker)    - is the identity of            (mnk-for)
 
- + is based in     (based)    - is the base of operations for (base-of)
- + is an organization in (org)     - is the home of organization (has-org)
-
+ + is based in     (based)      - is the base of operations for (base-of)
+ + is an organization in (org)  - is the home of organization (has-org)
 
   :: facilities ::
 
@@ -223,7 +226,7 @@
  + reported                 (report)    - reported by (repby)
  + has possible motive      (motive)    - is a possible motive for (is-motive)
 
- + has service provider     (provider)  - is a service provider in (provides)
+ + has service provider     (provider)  - is a service provided by (provides)
  + implicates the use of    (with)      - is implicated in         (implicated)
  + involves                 (involves)  - is involved in           (involved)
  + has activity             (activity)  - is an activity of        (is-activ)

@@ -1151,13 +1151,7 @@ else
 
    let [isurl,link] = IsURL(str,arrow);
 
-   if (isurl)
-      {
-      text_link.href = link;
-      text_link.target = "_blank";
-      text_link.rel = "noopener";
-      } 
-   else if (IsImage(str,arrow))
+   if (IsImage(str,arrow))
       {
       text_link.href = str;
       text_link.target = "_blank";
@@ -1167,7 +1161,13 @@ else
       img.src = str;
       parent.appendChild(img);
       } 
-   else
+   else if (isurl)
+      {
+      text_link.href = link;
+      text_link.target = "_blank";
+      text_link.rel = "noopener";
+      } 
+   else 
       {
       text_link.onclick = function ()
          {
@@ -2212,9 +2212,9 @@ function IsImage(str,arrow)
 if (arrow == "has image" || arrow == "is an image for")
    {
    if (str.slice(0,6) == "http:/" || str.slice(0,7) == "https:/" || str.slice(0,1) == "/")
-      {
-      return true;
-      }
+       {
+       return true;
+       }
    }
 
 return false;

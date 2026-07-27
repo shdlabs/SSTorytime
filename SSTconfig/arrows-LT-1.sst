@@ -113,7 +113,8 @@
        + manages       (mang)     - is managed by         (managed-by)
        + supports      (support)  - is supported by       (suportby)
 
-       + sustains      (sust)     - depends on (dep-on)
+       + sustains           (sust)    - depends on           (dep-on)
+       + offers service to  (serves)  - accepts service from (service)
 
        + authenticates (auth)     - is authenticated by   (auth-by)
        + injects       (inject)   - is injected by        (inj-by) 
