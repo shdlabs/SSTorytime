@@ -32,37 +32,40 @@ print("RESULT v2:",fetch2)
 
 # Access class and instance variables
 
-print("------- Now simple search for paths in examples --------")
+print("\n------- Now simple search for paths in examples --------")
 
 leadsto = 1
+contains = 2
+express = 3
 result_limit = 30
 
 # Simplest cone search
 
-link_paths,dim = SST.GetFwdPathsAsLinks(sst,"(1,0)",leadsto,result_limit,100)
+link_paths,dim = SST.GetFwdPathsAsLinks(sst,"(4,1)",leadsto,result_limit,100)
 
-for path in link_paths:
-    print("Path: ",end="")
-    for lnk in path:
-        node = SST.GetDBNodeByNodePtr(sst,lnk[3])
-        print(lnk[3],"=",node[0],end=", ")
-    print("\n")
+if dim > 0:
+    for path in link_paths:
+        print("Path: ",end="")
+        for lnk in path:
+            node = SST.GetDBNodeByNodePtr(sst,lnk[3])
+            print(lnk[3],"=",node[0],end=", ")
+        print("\n")
 
-print("------- Now more sopisticated for paths in examples --------")
+print("\n------- Now more sopisticated for paths in examples --------")
 
 # All singing, all dancing cone search
 
-context = ['path']
-startset = [ '(1,0)' ]
+context = ['promises']
+startset = [ '(4,6)' ]
 
-super_paths,sdim = SST.GetEntireNCConePathsAsLinks(sst,"fwd",startset,10,"multi",context,result_limit)
+super_paths,sdim = SST.GetEntireNCConePathsAsLinks(sst,"fwd",startset,10,"",context,result_limit)
 
-for path in super_paths:
-    print("Path: ",end="")
-    for lnk in path:
-        node = SST.GetDBNodeByNodePtr(sst,lnk[3])
-        print(lnk[3],"=",node[0],end=", ")
-    print("\n")
-
+if sdim > 0:
+    for path in super_paths:
+        print("Path: ",end="")
+        for lnk in path:
+            node = SST.GetDBNodeByNodePtr(sst,lnk[3])
+            print(lnk[3],"=",node[0],end=", ")
+        print("\n")
 
 SST.Close(sst)

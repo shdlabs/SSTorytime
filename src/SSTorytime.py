@@ -291,7 +291,8 @@ def GetFwdPathsAsLinks(conn,nptr,sttype,depth,maxlimit):
     for pg_row in pg_rows:
         if len(pg_row[0]) > 0:
             links = ParseSQLPathArray(pg_row[0])
-    return links,len(links)
+            return links,len(links)
+    return None,0
 
 #
 
@@ -306,5 +307,6 @@ def GetEntireNCConePathsAsLinks(conn,orientation,nptrarr,depth,chapter,contex,li
     for pg_row in pg_rows:
         if len(pg_row[0]) > 1:
             links = ParseSQLPathArray(pg_row[0])
-    return links,len(links)
+            return links,len(links)
+    return None,0
 
