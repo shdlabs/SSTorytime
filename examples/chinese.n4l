@@ -3158,9 +3158,12 @@ wǒ de xínglǐ zài fángjiān lǐ (ph) 我的行李在房间里 (he) my luggag
 
 :: hotel, home, furniture, zi ::
 
-zhuōzi (ph) 桌子 (he) table 
+zhuōzi (ph) 桌子 (he) table
+    " (contains) zhuō
+    
 cānzhuō (ph) 餐桌 (he) dining table
     " (see) $dtable.1
+    " (contains) zhuō (ph) 桌 (he) table 
 
 shelf (eh) 架子 (hp) jiàzǐ
 chair  (eh) 椅子 (hp) yǐzi
@@ -3587,7 +3590,9 @@ click  (eh) 点击 (hp)  diǎnjī
 
  :: photo ::
 
-photograph (eh)  照片 (hp)  zhàopiàn
+photograph (eh)  照片 (hp)  zhàopiàn (involves) zhào
+
+zhào (ph) 照 (he) photograph/picture
 
 please share this photo (eh) 请分享这张照片 (hp) qǐng fēnxiǎng zhè zhāng zhàopiàn
 
@@ -4901,8 +4906,8 @@ zòuyuè (ph) 奏乐 (he) =play music
 
 ################
 
-  zuo  (sl) zhuo
-  zhuo (ll) zhao
+  zuo  (sl) zhuo zǒu (sl) zòu
+  zhuo (ll) zhao (ll) zhǎo
   zhuo (sl) zhou
   zhuo (ll) zhou
 
@@ -4925,7 +4930,7 @@ zuò (ph) 做 (he) do/make
  zhǎo 找 (sl) zhào 照
 
  zhǎo 找  (has-cmpt)  zhǎo
-    "       (has-cmpt)  找 
+    "    (has-cmpt)  找 
 
  zhào 照 (has-cmpt)  zhào
   "      (has-cmpt)  照
