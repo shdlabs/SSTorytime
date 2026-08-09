@@ -2389,7 +2389,7 @@ func ExtractWord(fulltext string,offset int) string {
 			continue
 		}
 
-		if !protected && !unicode.IsLetter(rune(runetext[r])) {
+		if !protected && unicode.IsSpace(rune(runetext[r])) {
 
 			sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
 			return sword
