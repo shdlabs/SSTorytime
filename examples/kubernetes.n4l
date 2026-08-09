@@ -115,7 +115,7 @@ PV (indep) lifecycle of individual ***pods
 
 cluster (consists of) ***"control plane" and ***worker nodes
 
-control plane (includes) ***API server, ***scheduler, ***controller-manager, ***etcd
+control plane (includes) ***API server, ***"scheduler", ***controller-manager, ***etcd
 
 node (runs) ***kubelet and ***container runtime
 

@@ -2376,6 +2376,7 @@ func EmbeddedSymbol(runetext []rune,offset int) (int,string) {
 func ExtractWord(fulltext string,offset int) string {
 
 	var protected bool = false
+	var end_of_protection = false
 
 	runetext := []rune(fulltext)
 	var word []rune
@@ -2384,12 +2385,17 @@ func ExtractWord(fulltext string,offset int) string {
 	for r := offset; r < len(runetext); r++ {
 
 		if runetext[r] == '"' || runetext[r] == '\'' {
+			if protected {
+				end_of_protection = true
+			}
 			protected = !protected
 			pair_quote = string(runetext[r]) + " "
 			continue
 		}
 
-		if !protected && unicode.IsSpace(rune(runetext[r])) {
+		// end of protection catches quote parts not ending in spaces
+		
+		if !protected && unicode.IsSpace(rune(runetext[r])) || !protected && end_of_protection {
 
 			sword := strings.Trim(strings.TrimSpace(string(word)),pair_quote)
 			return sword
