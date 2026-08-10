@@ -1395,7 +1395,7 @@ func ReadConfig() []string {
 			configs = append(configs,dir+"/"+files[f])
 		}
 
-		return configs
+	return configs
 
 	} else {
 		search_paths := []string{"./SSTconfig","../SSTconfig","../../SSTconfig"}
@@ -1545,20 +1545,22 @@ func ClassifyTokenRole(sst *SST.PoSST,token string) {
 		LINE_RELN_COUNTER++
 
 	case '"': // prior reference, unless it is a full quoted string
-	     if(len(token)>1) { // quoted string: treat as an ordinary item
-		  LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
-		  StoreAlias(token)
-		  AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
-		  LINE_ITEM_STATE = ROLE_EVENT
-		  LINE_ITEM_COUNTER++
-		  break
-             }
-             result := LookupAlias("PREV",LINE_ITEM_COUNTER)
-             LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
-             StoreAlias(result)
-             AssessGrammarCompletions(sst,result,LINE_ITEM_STATE)
-             LINE_ITEM_STATE = ROLE_EVENT
-             LINE_ITEM_COUNTER++
+
+		if len(token) > 1 { // quoted string: treat as an ordinary item
+			LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],token)
+			StoreAlias(token)
+			AssessGrammarCompletions(sst,token,LINE_ITEM_STATE)
+			LINE_ITEM_STATE = ROLE_EVENT
+			LINE_ITEM_COUNTER++
+			break
+		}
+		
+		result := LookupAlias("PREV",LINE_ITEM_COUNTER)
+		LINE_ITEM_CACHE["THIS"] = append(LINE_ITEM_CACHE["THIS"],result)
+		StoreAlias(result)
+		AssessGrammarCompletions(sst,result,LINE_ITEM_STATE)
+		LINE_ITEM_STATE = ROLE_EVENT
+		LINE_ITEM_COUNTER++
 
 	case '@':
 		LINE_ITEM_STATE = ROLE_LINE_ALIAS
@@ -1749,9 +1751,9 @@ func IdempAddLink(sst *SST.PoSST,from string, frptr SST.NodePtr, link SST.Link,t
 	}
 
 	if link.Wgt != 1 {
-		PVerbose("... Relation:",from,"--(",sst.ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")->",to,sst.CONTEXT_DIRECTORY[link.Ctx])
+		PVerbose("... Relation:",from,"--(",sst.ARROW_DIRECTORY[link.Arr].Long,",",link.Wgt,")-> '",to,"'",sst.CONTEXT_DIRECTORY[link.Ctx])
 	} else {
-		PVerbose("... Relation:",from,"--",sst.ARROW_DIRECTORY[link.Arr].Long,"->",to,sst.CONTEXT_DIRECTORY[link.Ctx])
+		PVerbose("... Relation:",from,"--",sst.ARROW_DIRECTORY[link.Arr].Long,"-> '",to,"'",sst.CONTEXT_DIRECTORY[link.Ctx])
 	}
 
         // Build PageMap
@@ -2261,6 +2263,17 @@ func StripAnnotations(fulltext string) string {
 
 	var protected bool = false
 	var deloused []rune
+
+	if fulltext[0] == fulltext[len(fulltext)-1] {
+		switch fulltext[0] {
+		case '"','\'':
+			if len(fulltext) > 1 {
+				fulltext = fulltext[1:len(fulltext)-1]
+				protected = true
+			}
+		}
+	}
+	
 	var preserve_unicode = []rune(fulltext)
 
 	for r := 0; r < len(preserve_unicode); r++ {
@@ -2269,9 +2282,6 @@ func StripAnnotations(fulltext string) string {
 			protected = !protected
 		        // here: drop surrounding quotes		  
             		// drop only the surrounding quote pair; embedded quotes stay
-            		if r == 0 || r == len(preserve_unicode)-1 {
-                	   continue
-            		}
 		}
 
 		if !protected {

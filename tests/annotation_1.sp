@@ -5,6 +5,10 @@
 
   Other string ="quoted insert"       // 'quoted insert', 'Other string "quoted insert"'
 
+  Doo bee ="doh boh doh" bee doo      // 'doh boh doh', 'Doo bee "doh boh doh" bee doo'
+
+  "https://domain1.com?q=test"        // 'none', 'https://domain1.com?q=test'
+  
   one two =three456 xyz               // 'three456', 'one two three456 xyz'
 
   alpha ="bully bully boo"456 to you  // 'bully bully boo', 'alpha "bully bully boo"456 to you'
