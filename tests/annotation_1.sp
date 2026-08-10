@@ -7,7 +7,7 @@
 
   Doo bee ="doh boh doh" bee doo      // 'doh boh doh', 'Doo bee "doh boh doh" bee doo'
 
-  "https://domain1.com?q=test"        // 'none', 'https://domain1.com?q=test'
+  Test =URL "https://domain1.com?q=test" // 'URL', 'Test URL "https://domain1.com?q=test"'
   
   one two =three456 xyz               // 'three456', 'one two three456 xyz'
 
