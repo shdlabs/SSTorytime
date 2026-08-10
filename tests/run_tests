@@ -158,7 +158,7 @@ if [[ $result == "" ]]
    then 
       echo -e "5. ${GREEN} Annotation extraction ok ${END}"
    else 
-      echo -e "5. ${RED} Annotation extraction broken? ${END}"
+      echo -e "5. ${RED} Annotation extraction broken? $result ${END}"
 fi
 
 rm *deleteme*
