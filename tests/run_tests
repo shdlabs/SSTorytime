@@ -141,3 +141,33 @@ if $DB_TEST_PROG > /dev/null;
    else 
       echo -e "5. ${RED} Context cache failure ${END}"
 fi
+
+######################################
+#
+# More specialized, harder to test
+#
+######################################
+
+../src/bin/N4L -v annotation_1.sp | grep Node | cut -d\' -f 2 | sort > annot_test_deleteme_1
+
+( cat annotation_1.sp | grep // | cut -d\' -f 2; cat annotation_1.sp | grep // | cut -d\' -f 4 ) | sort > annot_test_deleteme_2
+
+result=$(diff annot_test_deleteme_1 annot_test_deleteme_2)
+
+if [[ $result == "" ]]
+   then 
+      echo -e "5. ${GREEN} Annotation extraction ok ${END}"
+   else 
+      echo -e "5. ${RED} Annotation extraction broken? ${END}"
+fi
+
+rm *deleteme*
+
+
+
+
+
+
+
+
+
