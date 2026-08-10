@@ -87,7 +87,7 @@ func CollapsePsi(sst *PoSST,node Node,stindex int) (Etc, string) {
 		etc.C = false
 	}
 	
-	message = "Node " + "\"" + node.S + "\"  (seems to be of type)  " + ShowPsi(etc)
+	message = "Node " + "'" + node.S + "'  (seems to be of type)  " + ShowPsi(etc)
 	
 	return etc,message
 }
