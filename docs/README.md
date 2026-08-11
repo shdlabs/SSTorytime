@@ -59,11 +59,12 @@ The tool-set consistent of several components, starting with:
 
 * [API_EXAMPLE_3](API_EXAMPLE_3.go) - a maze solving example, showing higher functions.
 
-* [API_EXAMPLE_4](API_EXAMPLE_4.go) - a path solving example, with loop corrections (quantum style).
+* [API_EXAMPLE_4](API_EXAMPLE_4.go) - a path solving example, with
+  loop corrections (quantum style).
 
-* [python_integration_example.py](../src/python_integration_example.py) - a basic Python example
+* [python_integration_example.py](../cmd/python_integration_example.py) - a basic Python example
 
-* [SSTorytime.py](../src/SSTorytime.py) - Includable Python interface for SSTorytime, basic functions (TBD)
+* [SSTorytime.py](../cmd/SSTorytime.py) - Includable Python interface for SSTorytime, basic functions (TBD)
 
 
 ## External Articles and Tutorials (Deep Background)

@@ -28,7 +28,7 @@ $ make
 </pre>
 With data, you can now run the web server:
 <pre>
-cd src
+cd cmd
 ./http_server
 </pre>
 and open a web browser `http://localhost:8080`. Try searching for SSTorytime!
@@ -254,9 +254,9 @@ These are used to simplify the importing of packages. Finally, you need to link 
 
 ```
 % mkdir -p ~/go/bin
-% mkdir -p ~/go/src
+% mkdir -p ~/go/cmd
 % git clone https://github.com/markburgess/SSTorytime
-% ln -s ~/clonedirectory/pkg/SST ~/go/src/SSTorytime
+% ln -s ~/clonedirectory/pkg/SST ~/go/cmd/SSTorytime
 ```
 
 The last step links the directory where you will keep the Smart Spacetime code library to the list of libraries that Go knows about. You’ll also need to set a GOPATH environment variable and add the installation directory to your execution path.For Linux (using default bash shell) you edit the file “~/.bashrc” in your home directory using your favourite text editor. It should contain these lines, as per the golang destructions:
@@ -282,5 +282,5 @@ Now that everything is working, simply do the following to try out the examples 
 ```
 $ cd examples
 $ make
-$ ../src/N4L -u LoopyLoo.n4l
+$ ../cmd/N4L -u LoopyLoo.n4l
 ```
