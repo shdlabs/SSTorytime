@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -37,6 +38,10 @@ import (
 
 var content embed.FS
 var VERBOSE bool
+var httpAddr string
+var httpsAddr string
+var certFile string
+var keyFile string
 
 // *********************************************************************
 // Main
@@ -56,12 +61,20 @@ func Init() string {
 
 	verbosePtr := flag.Bool("v", false,"verbose")
 	resourcePtr := flag.String("resources", "/mnt", "Root directory for serving /Resources/ files")
+	httpPtr := flag.String("http", ":8080", "HTTP listen address (redirects to HTTPS)")
+	httpsPtr := flag.String("https", ":8443", "HTTPS listen address")
+	certPtr := flag.String("cert", "../server/cert.pem", "TLS certificate PEM path")
+	keyPtr := flag.String("key", "../server/key.pem", "TLS private key PEM path")
 
 	flag.Parse()
 
 	if *verbosePtr {
 		VERBOSE = true
 	}
+	httpAddr = *httpPtr
+	httpsAddr = *httpsPtr
+	certFile = *certPtr
+	keyFile = *keyPtr
 
 	return *resourcePtr
 }
@@ -73,7 +86,7 @@ func Usage() {
         // We assume that the server is run from the directory under which
 	// it will store all cached files. The resources directory is extra read-only
 
-	fmt.Printf("usage: http_server [-resources string]\n")
+	fmt.Printf("usage: http_server [-resources string] [-http addr] [-https addr] [-cert file] [-key file]\n")
 	flag.PrintDefaults()
 	os.Exit(0)
 }
@@ -114,16 +127,21 @@ func Start(resources string) {
 
 	// 3. Create server instances for graceful shutdown.
 
+	_, httpsPort, err := net.SplitHostPort(httpsAddr)
+	if err != nil || httpsPort == "" {
+		httpsPort = "8443"
+	}
+
 	http_srv := &http.Server{
-		Addr: ":8080",
+		Addr: httpAddr,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		shost := strings.Split(r.Host,":")[0]
-		fmt.Println("Redirecting http","https://"+shost+":8443"+r.URL.String())
-			http.Redirect(w, r, "https://"+shost+":8443"+r.URL.String(), http.StatusMovedPermanently)
+		fmt.Println("Redirecting http","https://"+shost+":"+httpsPort+r.URL.String())
+			http.Redirect(w, r, "https://"+shost+":"+httpsPort+r.URL.String(), http.StatusMovedPermanently)
 		}),
 	}
 
-	https_srv := &http.Server{Addr: ":8443", Handler: mux}
+	https_srv := &http.Server{Addr: httpsAddr, Handler: mux}
 
 	// Graceful Shutdown Channel
 
@@ -152,12 +170,12 @@ func Start(resources string) {
 	}()
 
 	go func() {
-		if err := https_srv.ListenAndServeTLS("../server/cert.pem", "../server/key.pem"); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := https_srv.ListenAndServeTLS(certFile, keyFile); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("HTTPS Listen: %v", err)
 		}
 	}()
 
-	log.Println("Servers running on :8080 and :8443")
+	log.Printf("Servers running on %s and %s (cert=%s key=%s)", httpAddr, httpsAddr, certFile, keyFile)
 	<-done
 
 	log.Println("Servers stopped gracefully")

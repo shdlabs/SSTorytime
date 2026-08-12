@@ -6,9 +6,10 @@ word on browsing the graph. In principle, every application might have its own c
 interface. This web page illustrates the Web API and is used to develop our thinking around
 graphs.
 
-The web server has a single argument:
+The web server takes a resources root and optional listen/TLS paths:
 <pre>
 ./http_server -resources /data/directory
+./http_server -http :8080 -https :8443 -cert ../server/cert.pem -key ../server/key.pem
 </pre>
 This is a directory path which serves as a root for any file paths referenced in URLs, e.g.
 where images of documents may be cached in order to be accessible from links rendered in the
@@ -31,7 +32,7 @@ to the URL
 http://localhost:8080/Resources/Rush/Presto/Folder.jpg
 </pre>
 
-* The web server exposes port 8080 for now.
+* HTTP on port **8080** (redirects to HTTPS); HTTPS on **8443**. Override with `-http` / `-https`.
 
 ## Four search formats
 
