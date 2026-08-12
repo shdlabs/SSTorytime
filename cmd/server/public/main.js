@@ -1186,6 +1186,7 @@ else
    text_link.appendChild(spantext);
    box.appendChild(text_link);
 
+   ReadButton(box,str);
    ProgressCheckBox(box, nclass, ncptr, chap, ctx);
    }
 
@@ -1607,6 +1608,7 @@ for (let line = 0; line < array.length; line++)
             subline.appendChild(text_link);
             }
 
+	 ReadButton(subline,str);
          ProgressCheckBox(subline,nclass,ncptr,array[line][i].Chp,array[line][i].Ctx);
          FetchAssets(subline,array[line][i].Name,array[line][i].Chp,array[line][i].Ctx);
          } // arrow
@@ -1741,6 +1743,7 @@ if (counter == 0)
    setting.appendChild(ctxlink);
 
    child.appendChild(setting);
+   ReadButton(setting,event.Text);
    ProgressCheckBox(setting,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
    Upload(setting,event.Text,event.Chap,event.Context);
    FetchAssets(setting,event.Text,event.Chap,event.Context);
@@ -1869,6 +1872,7 @@ else
    from_text.textContent = text + "    ";
    }
 
+ReadButton(maintext,text);
 ProgressCheckBox(maintext,event.NPtr.Class,event.NPtr.CPtr,event.Chap,event.Context);
 
 // See what pathways we are part of and add notes
@@ -1921,6 +1925,52 @@ spanner.className = "checkmark";
 label.appendChild(checkbox);
 label.appendChild(spanner);
 container.appendChild(label);
+}
+
+/***********************************************************/
+
+function ReadButton(container,text)
+{
+if (CountDiacritics(text) > 1)
+   {
+   // Probably a foreign language, which we can't read yet
+   return;
+   }
+
+let button = document.createElement("button");
+button.textContent = " r ";
+button.className = "checkbox";
+container.appendChild(button);
+
+var lang;
+ 
+if (/\p{Script=Han}/u.test(text))
+   {
+   lang = "chinese";
+   }
+else
+   {
+   lang = "default";
+   }
+
+button.onclick = function uploadbutton()
+   {
+   ReadText(text,lang);
+   };
+}
+
+/***********************************************************/
+
+function CountDiacritics(str) // helper function
+{
+// 1. Decompose string so accents become individual Unicode characters
+ const decomposed = str.normalize('NFD');
+ 
+ // 2. Match all diacritic marks globally
+ const matches = decomposed.match(/\p{Diacritic}/gu);
+ 
+ // 3. Return the count of matched diacritics
+ return matches ? matches.length : 0;
 }
 
 /***********************************************************/
@@ -3187,7 +3237,43 @@ CTX.beginPath();
 CTX.restore();
 }
 
+// *************************************************
+// Speech
+// *************************************************
 
+function ReadText(textvalue,lang)
+{
+
+// Check if browser supports speech synthesis
+if ('speechSynthesis' in window)
+   {
+   window.speechSynthesis.cancel(); // Stop any ongoing speech
+
+   const utterance = new SpeechSynthesisUtterance(textvalue);
+
+   utterance.rate = 1.0; // Speed of speech (0.1 to 10)
+   utterance.pitch = 1.2; // Pitch of voice (0 to 2)
+   
+   switch (lang)
+      {
+      case "chinese":
+         const voices = window.speechSynthesis.getVoices();
+         //const chineseFemale = voices.find(v => v.lang === 'zh-CN' && v.name.includes('male'));
+         //utterance.voice = chineseFemale;
+         utterance.lang = "zh-CN";
+         break;
+      default:
+         utterance.lang = "en-GB";
+      }
+
+   window.speechSynthesis.speak(utterance);
+   }
+ else
+    {
+    alert('Sorry, your browser does not support text reading.');
+    }
+}
+ 
 // Waiting Effect functions *****************************************************************
 
 function startHipnotize()
