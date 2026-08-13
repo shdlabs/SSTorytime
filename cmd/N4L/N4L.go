@@ -364,7 +364,7 @@ func ParseConfig(sst *SST.PoSST,src []rune) {
 
 	for pos := 0; pos < len(src); {
 
-		pos = SkipWhiteSpace(sst,src,pos)
+		pos,_ = SkipWhiteSpace(sst,src,pos)
 		token,pos = GetConfigToken(src,pos)
 
 		ClassifyConfigRole(sst,token)
@@ -1294,13 +1294,14 @@ func SearchIncidentRowClass(node SST.Node, searcharrows []SST.ArrowPtr,node_list
 func ParseN4L(sst *SST.PoSST,src []rune) {
 
 	var token string
+	var last  rune
 
 	for pos := 0; pos < len(src); {
 
-		pos = SkipWhiteSpace(sst,src,pos)
+		pos,last = SkipWhiteSpace(sst,src,pos)
 		token,pos = GetToken(sst,src,pos)
 
-		ClassifyTokenRole(sst,token)
+		ClassifyTokenRole(sst,token,last)
 	}
 
 	if Dangler() {
@@ -1310,10 +1311,14 @@ func ParseN4L(sst *SST.PoSST,src []rune) {
 
 //**************************************************************
 
-func SkipWhiteSpace(sst *SST.PoSST,src []rune, pos int) int {
+func SkipWhiteSpace(sst *SST.PoSST,src []rune, pos int) (int,rune) {
 
+	var last rune
+	
 	for ; pos < len(src) && IsWhiteSpace(src[pos],src[pos]); pos++ {
 
+		last = src[pos]
+		
 		if src[pos] == '\n' {
 			UpdateLastLineCache(sst)
 		} else {
@@ -1328,7 +1333,7 @@ func SkipWhiteSpace(sst *SST.PoSST,src []rune, pos int) int {
 		}
 	}
 
-	return pos
+	return pos,last
 }
 
 //**************************************************************
@@ -1492,11 +1497,21 @@ func GetToken(sst *SST.PoSST,src []rune, pos int) (string,int) {
 
 //**************************************************************
 
-func ClassifyTokenRole(sst *SST.PoSST,token string) {
+func ClassifyTokenRole(sst *SST.PoSST,token string,last rune) {
 
 	if len(token) == 0 {
 		return
 	}
+
+	// Chapter definition must be at the top
+
+	if token[0] == '-' && LINE_ITEM_STATE == ROLE_BLANK_LINE && last == '\n' {
+		SECTION_STATE = strings.TrimSpace(token[1:])
+		Box("New chapter:",SECTION_STATE)
+		LINE_ITEM_STATE = ROLE_SECTION
+		return
+	}
+
 
 	switch token[0] {
 
