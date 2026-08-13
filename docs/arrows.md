@@ -116,7 +116,7 @@ arrows that form cliques.
 If A is NEAR B and B is NEAR C, then A is NEAR C, as long as the arrow is not a negative.
 This is computed and completed without further ado.
 
-* Arrows forming polygon sequences can be closed automatically from end to start, e.g.
+* When linking items on a single line of notes, arrows forming polygon sequences can be closed automatically from end to start, e.g.
 the path sequence in `chinese.n4l` from Pinyin to Hanzi to English
 <pre>
  qǐng (ph) 请 (he) please
@@ -133,5 +133,5 @@ to complete sequences of the relevant arrows:
  (pe) + (eh) => (hp)
 
 </pre>
-
+NOTE: this works for a single line of notes. The compiler will not search for other instances.
 
