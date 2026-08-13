@@ -3251,8 +3251,8 @@ if ('speechSynthesis' in window)
 
    const utterance = new SpeechSynthesisUtterance(textvalue);
 
-   utterance.rate = 1.0; // Speed of speech (0.1 to 10)
-   utterance.pitch = 1.2; // Pitch of voice (0 to 2)
+   utterance.rate = 0.8; // Speed of speech (0.1 to 10)
+   utterance.pitch = 1.0; // Pitch of voice (0 to 2)
    
    switch (lang)
       {
