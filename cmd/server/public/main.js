@@ -1931,7 +1931,7 @@ container.appendChild(label);
 
 function ReadButton(container,text)
 {
-if (CountDiacritics(text) > 1)
+if (CountDiacritics(text) > 0)
    {
    // Probably a foreign language, which we can't read yet
    return;
@@ -3251,9 +3251,6 @@ if ('speechSynthesis' in window)
 
    const utterance = new SpeechSynthesisUtterance(textvalue);
 
-   utterance.rate = 0.8; // Speed of speech (0.1 to 10)
-   utterance.pitch = 1.0; // Pitch of voice (0 to 2)
-   
    switch (lang)
       {
       case "chinese":
@@ -3261,9 +3258,15 @@ if ('speechSynthesis' in window)
          //const chineseFemale = voices.find(v => v.lang === 'zh-CN' && v.name.includes('male'));
          //utterance.voice = chineseFemale;
          utterance.lang = "zh-CN";
-         break;
+	  utterance.rate = 0.7; // Speed of speech (0.1 to 10)
+	  utterance.pitch = 1.0; // Pitch of voice (0 to 2)
+          break;
       default:
-         utterance.lang = "en-GB";
+          utterance.lang = "en-GB";
+	  utterance.rate = 0.9; // Speed of speech (0.1 to 10)
+	  utterance.pitch = 1.2; // Pitch of voice (0 to 2)
+   
+
       }
 
    window.speechSynthesis.speak(utterance);
