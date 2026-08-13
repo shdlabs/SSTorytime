@@ -107,6 +107,16 @@ in the form:
  +  forward arrow meaning (short name) - backward arrow meaning (bwd alias)
 </pre>
 
+
+> [!NOTE]
+> SSTorytime uses the database as a cache and assumes it will be consistent.
+> If you try to add new notes (`N4L -u new.n4l`) that attempt to re-define arrows without wiping
+> the cache (`N4L -wipe -u new.n4l`), the arrows will conflict. The database version will 
+> mask a new attempt to redefine the arrow. This is necessary as all arrows are shared between
+> notes.
+> 
+
+
 ## Advanced arrow features
 
 The `N4L` compiler can reduce the pain of adding arrows where there are small clusters of
