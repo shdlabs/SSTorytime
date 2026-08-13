@@ -1692,7 +1692,6 @@ knife       (eh) 刀   (hp) dāo
 fork        (eh)  叉  (hp) chā
 spoon       (eh) 勺子  (hp) sháozǐ
 chopsticks   (eh) 筷子 (hp) kuàizi
-    "       (eh) 勺子  (hp) sháozi
 glass/of    (eh)  杯   (hp) bēi
 
 zài dìtiě wǒmen bù >>zhǔn chīfàn  (ph) 在地铁我们不准吃饭  (he) we are not allowed to eat in the subway
@@ -3123,6 +3122,7 @@ kōng qì zhá guō (ph) 空气炸锅 (he) air fryer
  # HOSPITAL, DOCTOR
  #
 
+ :: hospital, doctor ::
 
 医院  (hp) yīyuàn  (pe) hospital
 
