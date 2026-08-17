@@ -161,6 +161,11 @@ func DBCommit(sst *PoSST, qstr string) {
 
 func UploadNodeToDB(sst *PoSST, n Node) string {
 
+	if !WIPE_DB {
+		fmt.Println("\n\n!!!!!! NOTE: -u without -wipe is currently unsupported, pending a rethink !!!!!!\n")
+		os.Exit(-1)
+	}
+	
 	const nodecols  = "(NPtr.Chan,NPtr.Cptr,L,S,Chap,Seq," +
 		I_MEXPR + "," + I_MCONT + "," + I_MLEAD + "," + I_NEAR + "," + I_PLEAD + "," + I_PCONT + "," + I_PEXPR + ")"
 
