@@ -1505,13 +1505,6 @@ func ClassifyTokenRole(sst *SST.PoSST,token string,last rune) {
 
 	// Chapter definition must be at the top
 
-	if token[0] == '-' && LINE_ITEM_STATE == ROLE_BLANK_LINE && last == '\n' {
-		SECTION_STATE = strings.TrimSpace(token[1:])
-		Box("New chapter:",SECTION_STATE)
-		LINE_ITEM_STATE = ROLE_SECTION
-		return
-	}
-
 
 	switch token[0] {
 
@@ -1528,7 +1521,13 @@ func ClassifyTokenRole(sst *SST.PoSST,token string,last rune) {
 		AssessGrammarCompletions(sst,expression,LINE_ITEM_STATE)
 
 	case '-':
-		if token[len(token)-1:] == string(':') {
+		if last == '\n' && len(token) > 0 && !strings.Contains(token,"::") {
+				SECTION_STATE = strings.TrimSpace(token[1:])
+				Box("New chapter:",SECTION_STATE)
+				LINE_ITEM_STATE = ROLE_SECTION
+				LINE_ITEM_COUNTER += len(token)
+				return
+		} else if token[len(token)-1:] == string(':') {
 			expression := ExtractContextExpression(token)
 			CheckSequenceMode(expression,'-')
 			LINE_ITEM_STATE = ROLE_CONTEXT_SUBTRACT
