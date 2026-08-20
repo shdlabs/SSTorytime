@@ -23,7 +23,7 @@ func GraphToDB(sst PoSST,wait_counter bool) {
 
 	for class := N1GRAM; class <= GT1024; class++ {
 		
-		offset := int(sst.BASE_DB_CHANNEL_STATE[class])
+		offset := int(sst.HWM[class])
 
 		switch class {
 		case N1GRAM:

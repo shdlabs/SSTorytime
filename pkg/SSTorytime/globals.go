@@ -45,7 +45,7 @@ const (
 
 	// For separating text types
 
-	N_CHANNELS = 6;
+	N_CHANNELS = 7;
 	N1GRAM = 1
 	N2GRAM = 2
 	N3GRAM = 3

@@ -232,7 +232,7 @@ func SynchronizeNPtrs(sst *PoSST) {
 					var empty Node
 
 					// Remember this for uploading later ..
-					sst.BASE_DB_CHANNEL_STATE[channel] = ClassedNodePtr(cptr)
+					sst.HWM[channel] = ClassedNodePtr(cptr)
 
 					for n := 0; n <= cptr; n++ {
 

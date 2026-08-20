@@ -17,11 +17,12 @@ import (
 type PoSST struct {
 
 	DB *sql.DB
+
 	// Session globals
 	
-	NODE_DIRECTORY NodeDirectory  // Internal histo-representations
+	NODE_DIRECTORY NodeDirectory   // Internal histo-representations
 	NODE_CACHE map[NodePtr]NodePtr
-        BASE_DB_CHANNEL_STATE[7] ClassedNodePtr
+        HWM[N_CHANNELS] ClassedNodePtr // High water mark for existing database channels
 
 	ARROW_DIRECTORY []ArrowDirectory
 	ARROW_SHORT_DIR map[string]ArrowPtr
