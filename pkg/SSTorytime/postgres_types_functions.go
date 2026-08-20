@@ -226,6 +226,32 @@ func DefineStoredFunctions(sst PoSST) {
 
 	row.Close()
 
+
+        // Get the channel top values for appending
+
+	qstr = "CREATE OR REPLACE FUNCTION GetDBTopNodes(top int)\n" +
+		"RETURNS INT[] AS $fn$ " +
+		"DECLARE \n" +
+		"    dummy INT; \n" +
+		"    cptri INT[];\n" +
+		"BEGIN\n" +
+		"  FOR chani IN 0..top LOOP \n" +
+		"     SELECT max((Nptr).CPtr) INTO dummy FROM Node WHERE (Nptr).Chan=chani;\n"+
+                "     cptri = array_append(cptri,dummy);" +
+		"  END LOOP;\n" +
+		"  RETURN cptri;\n" +
+		"END ;\n" +
+		"$fn$ LANGUAGE plpgsql;";
+
+	row,err = sst.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("Error defining postgres function:",qstr,err)
+	}
+
+	row.Close()
+	
+
 	// Insert Context from API
 
 	qstr = "CREATE OR REPLACE FUNCTION IdempInsertContext(constr text,conptr int)\n" +
