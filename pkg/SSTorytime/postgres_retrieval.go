@@ -137,10 +137,42 @@ func GetBookmarksFromDB(sst PoSST) []Bookmark {
 
 //******************************************************************
 
-func GetDBNodePtrMatchingName(sst PoSST,name,chap string) []NodePtr {
+func GetDBNodePtrByName(sst PoSST,name string) []NodePtr {
 
 	// simplified, retain for compatibility
+	nm := SQLEscape(name)
 
+	qstr := fmt.Sprintf("SELECT NPtr FROM Node WHERE S = '%s'",nm)
+
+	row, err := sst.DB.Query(qstr)
+
+	if err != nil {
+		fmt.Println("QUERY GetNodePtrMatchingName Failed",err,qstr)
+	}
+
+	var whole string
+	var n NodePtr
+	var retval []NodePtr
+
+	if row != nil {
+		for row.Next() {		
+			err = row.Scan(&whole)
+			fmt.Sscanf(whole,"(%d,%d)",&n.Class,&n.CPtr)
+			retval = append(retval,n)
+		}
+
+		row.Close()
+	}
+
+	return retval
+}
+
+//******************************************************************
+
+func GetDBNodePtrMatchingName(sst PoSST,name,chap string) []NodePtr {
+	
+	// simplified, retain for compatibility
+	
 	return GetDBNodePtrMatchingNCCS(sst,name,chap,nil,nil,false,CAUSAL_CONE_MAXLIMIT)
 }
 

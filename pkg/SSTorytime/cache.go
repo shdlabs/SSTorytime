@@ -207,6 +207,8 @@ func SynchronizeNPtrs(sst *PoSST) {
 
 	// If we're merging (not recommended) N4L into an existing db, we need to synch
 
+	// GetDBTopNodes(N_CHANNELS) ?
+	
 	for channel := N1GRAM; channel <= GT1024; channel++ {
 		
 		qstr := fmt.Sprintf("SELECT max((Nptr).CPtr) FROM Node WHERE (Nptr).Chan=%d",channel)
@@ -217,24 +219,25 @@ func SynchronizeNPtrs(sst *PoSST) {
 			fmt.Println("QUERY Synchronizing nptrs",err)
 		}
 
-		var cptr int
+		var top_cptr int
 
 		if row != nil {
 			for row.Next() {			
-				err = row.Scan(&cptr)
+				err = row.Scan(&top_cptr)
 			
 				if err != nil {
 					continue // maybe not defined yet
 				}
 
-				if cptr > 0 {
+				if top_cptr > 0 {
 
 					var empty Node
 
-					// Remember this for uploading later ..
-					sst.HWM[channel] = ClassedNodePtr(cptr)
+					sst.HWM[channel] = ClassedNodePtr(top_cptr)
 
-					for n := 0; n <= cptr; n++ {
+					// Make sure internal accouting points to the right nodes
+					
+					for n := 0; n <= top_cptr; n++ {
 
 						switch channel {
 						case N1GRAM:
