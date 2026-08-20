@@ -227,6 +227,13 @@ $ make
 $ ../cmd/N4L -u LoopyLoo.n4l
 </pre>
 
+> [!NOTE]
+> In order to resolve cross references, you must load all overlapping data at the same time, 
+> or use -wipe to reset everything. The compiler will not go to the trouble of editing the
+> existing database to resolve new references to old ideas unless you rebuild.
+> Fortunately, rebuilding is fast.
+
+
 ## Searching
 
 You can search the SSTorytime knowledge graph with (hopefully intuitive) phrases like these:
